@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/error/api_exceptions.dart';
@@ -472,8 +473,10 @@ class ProgramsNotifier extends StateNotifier<ProgramsState> {
       state = state.copyWith(programs: programs, isLoading: false);
     } on ApiException catch (e) {
       state = state.copyWith(isLoading: false, error: e.message);
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'Erro ao carregar programas');
+    } catch (e, stackTrace) {
+      debugPrint('Erro ao carregar programas: $e');
+      debugPrint('StackTrace: $stackTrace');
+      state = state.copyWith(isLoading: false, error: 'Erro ao carregar programas: ${e.runtimeType}');
     }
   }
 

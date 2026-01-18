@@ -547,7 +547,17 @@ class WorkoutService {
 
       final response = await _client.get(ApiEndpoints.programs, queryParameters: params);
       if (response.statusCode == 200 && response.data != null) {
-        return (response.data as List).cast<Map<String, dynamic>>();
+        // Handle both array response and paginated response formats
+        final data = response.data;
+        if (data is List) {
+          return data.cast<Map<String, dynamic>>();
+        } else if (data is Map && data['data'] is List) {
+          return (data['data'] as List).cast<Map<String, dynamic>>();
+        } else if (data is Map && data['items'] is List) {
+          return (data['items'] as List).cast<Map<String, dynamic>>();
+        } else if (data is Map && data['results'] is List) {
+          return (data['results'] as List).cast<Map<String, dynamic>>();
+        }
       }
       return [];
     } on DioException catch (e) {
