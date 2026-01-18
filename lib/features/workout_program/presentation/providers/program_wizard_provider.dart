@@ -787,7 +787,21 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
   void removeExerciseFromWorkout(String workoutId, String exerciseId) {
     final workouts = state.workouts.map((w) {
       if (w.id == workoutId) {
-        final exercises = w.exercises.where((e) => e.id != exerciseId).toList();
+        // Find the exercise to check if it's in a group
+        final exerciseToRemove = w.exercises.firstWhere(
+          (e) => e.id == exerciseId,
+          orElse: () => const WizardExercise(id: '', exerciseId: '', name: '', muscleGroup: ''),
+        );
+        final groupId = exerciseToRemove.exerciseGroupId;
+
+        // Remove the exercise
+        var exercises = w.exercises.where((e) => e.id != exerciseId).toList();
+
+        // Renumber if it was in a group
+        if (groupId != null && groupId.isNotEmpty) {
+          exercises = _renumberGroup(exercises, groupId);
+        }
+
         return w.copyWith(exercises: exercises);
       }
       return w;
@@ -812,77 +826,225 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
     state = state.copyWith(workouts: workouts);
   }
 
-  void reorderExercises(String workoutId, int oldIndex, int newIndex) {
+  /// Reorder exercises using UI indices (where groups count as 1 item).
+  /// This method converts UI indices to data indices and handles groups properly.
+  void reorderExercises(String workoutId, int uiOldIndex, int uiNewIndex) {
     final workouts = state.workouts.map((w) {
       if (w.id == workoutId) {
         final exercises = List<WizardExercise>.from(w.exercises);
 
-        // Check if the item being moved is part of a group
-        final movingItem = exercises[oldIndex];
-        final groupId = movingItem.exerciseGroupId;
+        // Build UI-to-data index mapping
+        final uiToDataMapping = _buildUiToDataMapping(exercises);
 
-        if (groupId != null) {
-          // Find all exercises in the same group
-          final groupExercises = exercises
-              .where((e) => e.exerciseGroupId == groupId)
-              .toList()
-            ..sort((a, b) => a.exerciseGroupOrder.compareTo(b.exerciseGroupOrder));
+        if (uiOldIndex >= uiToDataMapping.length) return w;
 
-          // Find the indices of the group
-          final groupStartIndex = exercises.indexWhere((e) => e.exerciseGroupId == groupId);
-          final groupEndIndex = groupStartIndex + groupExercises.length - 1;
+        final oldMapping = uiToDataMapping[uiOldIndex];
+        final isMovingGroup = oldMapping.isGroup;
 
-          // If trying to move within the group, just reorder within group
-          if (oldIndex >= groupStartIndex && oldIndex <= groupEndIndex &&
-              newIndex >= groupStartIndex && newIndex <= groupEndIndex + 1) {
-            // Reorder within the group
-            var adjustedNewIndex = newIndex;
-            if (adjustedNewIndex > oldIndex) {
-              adjustedNewIndex -= 1;
-            }
-            final relativeOldIndex = oldIndex - groupStartIndex;
-            final relativeNewIndex = (adjustedNewIndex - groupStartIndex).clamp(0, groupExercises.length - 1);
+        // Adjust uiNewIndex for ReorderableListView behavior
+        var adjustedUiNewIndex = uiNewIndex;
+        if (adjustedUiNewIndex > uiOldIndex) {
+          adjustedUiNewIndex -= 1;
+        }
+        adjustedUiNewIndex = adjustedUiNewIndex.clamp(0, uiToDataMapping.length - 1);
 
-            // Update group order
-            final item = groupExercises.removeAt(relativeOldIndex);
-            groupExercises.insert(relativeNewIndex, item);
+        // If moving to same position, no change needed
+        if (adjustedUiNewIndex == uiOldIndex) return w;
 
-            // Update exerciseGroupOrder for all items in group
-            for (var i = 0; i < groupExercises.length; i++) {
-              groupExercises[i] = groupExercises[i].copyWith(exerciseGroupOrder: i);
-            }
+        if (isMovingGroup) {
+          // Moving an entire group
+          return w.copyWith(
+            exercises: _reorderGroup(
+              exercises,
+              oldMapping.groupId!,
+              uiOldIndex,
+              adjustedUiNewIndex,
+              uiToDataMapping,
+            ),
+          );
+        } else {
+          // Moving a single ungrouped exercise
+          return w.copyWith(
+            exercises: _reorderSingleExercise(
+              exercises,
+              oldMapping.dataStartIndex,
+              uiOldIndex,
+              adjustedUiNewIndex,
+              uiToDataMapping,
+            ),
+          );
+        }
+      }
+      return w;
+    }).toList();
+    state = state.copyWith(workouts: workouts);
+  }
 
-            // Rebuild exercises list
-            final newExercises = <WizardExercise>[];
-            for (final e in exercises) {
-              if (e.exerciseGroupId == groupId) {
-                continue; // Skip group items, we'll add them later
-              }
-              if (newExercises.length == groupStartIndex) {
-                newExercises.addAll(groupExercises);
-              }
-              newExercises.add(e);
-            }
-            if (newExercises.length == groupStartIndex) {
-              newExercises.addAll(groupExercises);
-            }
+  /// Mapping from UI position to data indices
+  List<_UiDataMapping> _buildUiToDataMapping(List<WizardExercise> exercises) {
+    final mapping = <_UiDataMapping>[];
+    final processedGroups = <String>{};
 
-            return w.copyWith(exercises: newExercises);
+    for (var i = 0; i < exercises.length; i++) {
+      final exercise = exercises[i];
+      final groupId = exercise.exerciseGroupId;
+
+      if (groupId == null) {
+        // Ungrouped exercise
+        mapping.add(_UiDataMapping(
+          dataStartIndex: i,
+          dataEndIndex: i,
+          isGroup: false,
+          groupId: null,
+        ));
+      } else if (!processedGroups.contains(groupId)) {
+        // First exercise of a group
+        processedGroups.add(groupId);
+
+        // Find all exercises in this group
+        var endIndex = i;
+        for (var j = i + 1; j < exercises.length; j++) {
+          if (exercises[j].exerciseGroupId == groupId) {
+            endIndex = j;
           } else {
-            // Moving group as a whole - not supported in current implementation
-            // Just do normal reorder for now (will move entire group when dragging leader)
-            // In the UI, groups are rendered as single items, so this handles that case
+            break;
           }
         }
 
-        // Normal reorder for ungrouped exercises or whole groups
-        var adjustedNewIndex = newIndex;
-        if (adjustedNewIndex > oldIndex) {
-          adjustedNewIndex -= 1;
+        mapping.add(_UiDataMapping(
+          dataStartIndex: i,
+          dataEndIndex: endIndex,
+          isGroup: true,
+          groupId: groupId,
+        ));
+      }
+      // Skip subsequent exercises of already processed groups
+    }
+
+    return mapping;
+  }
+
+  /// Reorder a single ungrouped exercise
+  List<WizardExercise> _reorderSingleExercise(
+    List<WizardExercise> exercises,
+    int dataIndex,
+    int uiOldIndex,
+    int uiNewIndex,
+    List<_UiDataMapping> mapping,
+  ) {
+    final result = List<WizardExercise>.from(exercises);
+    final item = result.removeAt(dataIndex);
+
+    // Calculate new data index based on target UI position
+    int newDataIndex;
+    if (uiNewIndex >= mapping.length) {
+      newDataIndex = result.length;
+    } else if (uiNewIndex < uiOldIndex) {
+      // Moving up - insert at the start of the target UI position
+      newDataIndex = mapping[uiNewIndex].dataStartIndex;
+      // Adjust because we removed an item before this position
+      if (dataIndex < newDataIndex) {
+        newDataIndex -= 1;
+      }
+    } else {
+      // Moving down - insert AFTER the target UI position
+      // So we use dataEndIndex + 1 to place after the target item
+      newDataIndex = mapping[uiNewIndex].dataEndIndex + 1;
+      // Adjust because we removed an item before this position
+      if (dataIndex < newDataIndex) {
+        newDataIndex -= 1;
+      }
+    }
+
+    newDataIndex = newDataIndex.clamp(0, result.length);
+    result.insert(newDataIndex, item);
+
+    return result;
+  }
+
+  /// Reorder an entire group
+  List<WizardExercise> _reorderGroup(
+    List<WizardExercise> exercises,
+    String groupId,
+    int uiOldIndex,
+    int uiNewIndex,
+    List<_UiDataMapping> mapping,
+  ) {
+    final oldMapping = mapping[uiOldIndex];
+    final groupSize = oldMapping.dataEndIndex - oldMapping.dataStartIndex + 1;
+
+    // Extract group exercises
+    final groupExercises = exercises
+        .sublist(oldMapping.dataStartIndex, oldMapping.dataEndIndex + 1);
+
+    // Remove group from list
+    final result = <WizardExercise>[
+      ...exercises.sublist(0, oldMapping.dataStartIndex),
+      ...exercises.sublist(oldMapping.dataEndIndex + 1),
+    ];
+
+    // Calculate new insertion point
+    int insertIndex;
+    if (uiNewIndex >= mapping.length - 1) {
+      insertIndex = result.length;
+    } else if (uiNewIndex < uiOldIndex) {
+      // Moving up - insert at the start of the target UI position
+      insertIndex = mapping[uiNewIndex].dataStartIndex;
+    } else {
+      // Moving down - we need to recalculate because we removed items
+      // Find the target in the new mapping (after group removal)
+      final targetMapping = mapping[uiNewIndex + 1]; // +1 because we removed one UI item
+      insertIndex = targetMapping.dataStartIndex - groupSize;
+    }
+
+    insertIndex = insertIndex.clamp(0, result.length);
+    result.insertAll(insertIndex, groupExercises);
+
+    return result;
+  }
+
+  /// Reorder exercises within a group (by exercise ID, not UI index)
+  void reorderWithinGroup(String workoutId, String groupId, int oldGroupOrder, int newGroupOrder) {
+    final workouts = state.workouts.map((w) {
+      if (w.id == workoutId) {
+        final exercises = List<WizardExercise>.from(w.exercises);
+
+        // Find group exercises
+        final groupExercises = exercises
+            .where((e) => e.exerciseGroupId == groupId)
+            .toList()
+          ..sort((a, b) => a.exerciseGroupOrder.compareTo(b.exerciseGroupOrder));
+
+        if (oldGroupOrder >= groupExercises.length || newGroupOrder >= groupExercises.length) {
+          return w;
         }
-        final item = exercises.removeAt(oldIndex);
-        exercises.insert(adjustedNewIndex, item);
-        return w.copyWith(exercises: exercises);
+
+        // Reorder within group
+        final item = groupExercises.removeAt(oldGroupOrder);
+        groupExercises.insert(newGroupOrder, item);
+
+        // Update exerciseGroupOrder
+        for (var i = 0; i < groupExercises.length; i++) {
+          groupExercises[i] = groupExercises[i].copyWith(exerciseGroupOrder: i);
+        }
+
+        // Rebuild exercises list maintaining group position
+        final groupStartIndex = exercises.indexWhere((e) => e.exerciseGroupId == groupId);
+        final result = <WizardExercise>[];
+        var groupInserted = false;
+
+        for (var i = 0; i < exercises.length; i++) {
+          if (exercises[i].exerciseGroupId == groupId) {
+            if (!groupInserted) {
+              result.addAll(groupExercises);
+              groupInserted = true;
+            }
+          } else {
+            result.add(exercises[i]);
+          }
+        }
+
+        return w.copyWith(exercises: result);
       }
       return w;
     }).toList();
@@ -1044,20 +1206,35 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
     return groupId;
   }
 
-  /// Remove an exercise from its group
+  /// Remove an exercise from its group and renumber remaining exercises
   void removeFromExerciseGroup(String workoutId, String exerciseId) {
     final workouts = state.workouts.map((w) {
       if (w.id == workoutId) {
-        final exercises = w.exercises.map((e) {
+        // Find the exercise to get its group ID before modification
+        final exerciseToRemove = w.exercises.firstWhere(
+          (e) => e.id == exerciseId,
+          orElse: () => const WizardExercise(id: '', exerciseId: '', name: '', muscleGroup: ''),
+        );
+        final groupId = exerciseToRemove.exerciseGroupId;
+
+        // Remove from group (set to null)
+        var exercises = w.exercises.map((e) {
           if (e.id == exerciseId) {
             return e.copyWith(
               exerciseGroupId: null,
               exerciseGroupOrder: 0,
               techniqueType: TechniqueType.normal,
+              restSeconds: 60, // Reset rest to default
             );
           }
           return e;
         }).toList();
+
+        // Renumber remaining exercises in the group
+        if (groupId != null && groupId.isNotEmpty) {
+          exercises = _renumberGroup(exercises, groupId);
+        }
+
         return w.copyWith(exercises: exercises);
       }
       return w;
@@ -1084,6 +1261,166 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
       return w;
     }).toList();
     state = state.copyWith(workouts: workouts);
+  }
+
+  /// Delete an entire exercise group (removes all exercises in the group)
+  void deleteExerciseGroup(String workoutId, String groupId) {
+    final workouts = state.workouts.map((w) {
+      if (w.id == workoutId) {
+        // Remove all exercises with this group ID
+        final exercises = w.exercises.where((e) => e.exerciseGroupId != groupId).toList();
+        return w.copyWith(exercises: exercises);
+      }
+      return w;
+    }).toList();
+    state = state.copyWith(workouts: workouts);
+  }
+
+  /// Add an exercise to an existing group
+  void addExerciseToGroup({
+    required String workoutId,
+    required String groupId,
+    required Exercise exercise,
+  }) {
+    final workouts = state.workouts.map((w) {
+      if (w.id == workoutId) {
+        // Find the group's exercises to determine the next order
+        final groupExercises = w.exercises.where((e) => e.exerciseGroupId == groupId).toList();
+        if (groupExercises.isEmpty) return w;
+
+        // Get technique type and instructions from existing group members
+        final techniqueType = groupExercises.first.techniqueType;
+        final groupInstructions = groupExercises.first.executionInstructions;
+        final nextOrder = groupExercises.map((e) => e.exerciseGroupOrder).reduce((a, b) => a > b ? a : b) + 1;
+
+        // Update technique type based on new group size
+        final newGroupSize = groupExercises.length + 1;
+        TechniqueType newTechniqueType = techniqueType;
+        if (newGroupSize == 2) {
+          newTechniqueType = TechniqueType.superset;
+        } else if (newGroupSize == 3) {
+          newTechniqueType = TechniqueType.triset;
+        } else if (newGroupSize >= 4) {
+          newTechniqueType = TechniqueType.giantset;
+        }
+
+        // Create new WizardExercise with group fields
+        final newExercise = WizardExercise(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          exerciseId: exercise.id,
+          name: exercise.name,
+          muscleGroup: exercise.muscleGroupName,
+          techniqueType: newTechniqueType,
+          exerciseGroupId: groupId,
+          exerciseGroupOrder: nextOrder,
+          executionInstructions: groupInstructions,
+          // Rest is 0 for non-last exercises in group
+          restSeconds: 0,
+        );
+
+        // Find the position of the last group exercise
+        final lastGroupExerciseIndex = w.exercises.lastIndexWhere((e) => e.exerciseGroupId == groupId);
+
+        // Insert the new exercise right after the last group exercise
+        final updatedExercises = List<WizardExercise>.from(w.exercises);
+
+        // Update existing group exercises technique type and fix rest times
+        for (var i = 0; i < updatedExercises.length; i++) {
+          if (updatedExercises[i].exerciseGroupId == groupId) {
+            updatedExercises[i] = updatedExercises[i].copyWith(
+              techniqueType: newTechniqueType,
+              restSeconds: 0, // All existing will have 0 rest (new one at end will get rest)
+            );
+          }
+        }
+
+        // Insert new exercise and set appropriate rest time
+        updatedExercises.insert(lastGroupExerciseIndex + 1, newExercise.copyWith(restSeconds: 60));
+
+        return w.copyWith(exercises: updatedExercises);
+      }
+      return w;
+    }).toList();
+
+    state = state.copyWith(workouts: workouts);
+  }
+
+  /// Update execution instructions for all exercises in a group
+  void updateGroupInstructions({
+    required String workoutId,
+    required String groupId,
+    required String instructions,
+  }) {
+    final workouts = state.workouts.map((w) {
+      if (w.id == workoutId) {
+        final exercises = w.exercises.map((e) {
+          if (e.exerciseGroupId == groupId) {
+            return e.copyWith(executionInstructions: instructions);
+          }
+          return e;
+        }).toList();
+        return w.copyWith(exercises: exercises);
+      }
+      return w;
+    }).toList();
+    state = state.copyWith(workouts: workouts);
+  }
+
+  /// Helper to renumber exercises in a group and auto-disband if only 1 remains
+  List<WizardExercise> _renumberGroup(List<WizardExercise> exercises, String groupId) {
+    final result = <WizardExercise>[];
+    int groupOrder = 0;
+    int groupCount = exercises.where((e) => e.exerciseGroupId == groupId).length;
+
+    // If only one exercise remains, disband the group
+    if (groupCount <= 1) {
+      for (final exercise in exercises) {
+        if (exercise.exerciseGroupId == groupId) {
+          result.add(exercise.copyWith(
+            exerciseGroupId: null,
+            exerciseGroupOrder: 0,
+            techniqueType: TechniqueType.normal,
+            restSeconds: 60, // Reset rest to default
+          ));
+        } else {
+          result.add(exercise);
+        }
+      }
+      return result;
+    }
+
+    // Update technique type based on remaining group size
+    TechniqueType newTechniqueType;
+    if (groupCount == 2) {
+      newTechniqueType = TechniqueType.superset;
+    } else if (groupCount == 3) {
+      newTechniqueType = TechniqueType.triset;
+    } else {
+      newTechniqueType = TechniqueType.giantset;
+    }
+
+    // Renumber and update technique type
+    final groupExercises = <WizardExercise>[];
+    for (final exercise in exercises) {
+      if (exercise.exerciseGroupId == groupId) {
+        groupExercises.add(exercise);
+      } else {
+        result.add(exercise);
+      }
+    }
+
+    // Sort by current order and reassign
+    groupExercises.sort((a, b) => a.exerciseGroupOrder.compareTo(b.exerciseGroupOrder));
+    for (var i = 0; i < groupExercises.length; i++) {
+      final isLast = i == groupExercises.length - 1;
+      result.add(groupExercises[i].copyWith(
+        exerciseGroupOrder: i,
+        techniqueType: newTechniqueType,
+        restSeconds: isLast ? 60 : 0, // Only last exercise has rest
+      ));
+    }
+
+    return result;
   }
 
   /// Get all exercises in a group within a workout
@@ -1215,8 +1552,7 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
       String? programId;
 
       if (state.isEditing) {
-        // Update existing program metadata
-        // Note: Workout structure updates require separate API calls
+        // Update existing program with metadata and workouts
         await workoutService.updateProgram(
           state.editingProgramId!,
           name: state.programName,
@@ -1225,6 +1561,7 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
           splitType: state.splitType.toApiValue(),
           durationWeeks: state.durationWeeks,
           isTemplate: state.isTemplate,
+          workouts: workoutsData, // Include workouts data
           // Diet fields
           includeDiet: state.includeDiet,
           dietType: state.dietType?.toApiValue(),
@@ -1285,3 +1622,18 @@ final programWizardProvider =
     StateNotifierProvider.autoDispose<ProgramWizardNotifier, ProgramWizardState>(
   (ref) => ProgramWizardNotifier(),
 );
+
+/// Helper class for mapping UI indices to data indices
+class _UiDataMapping {
+  final int dataStartIndex;
+  final int dataEndIndex;
+  final bool isGroup;
+  final String? groupId;
+
+  const _UiDataMapping({
+    required this.dataStartIndex,
+    required this.dataEndIndex,
+    required this.isGroup,
+    required this.groupId,
+  });
+}

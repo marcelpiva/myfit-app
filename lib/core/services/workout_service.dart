@@ -612,6 +612,15 @@ class WorkoutService {
     int? durationWeeks,
     bool isTemplate = false,
     List<Map<String, dynamic>>? workouts,
+    // Diet fields
+    bool? includeDiet,
+    String? dietType,
+    int? dailyCalories,
+    int? proteinGrams,
+    int? carbsGrams,
+    int? fatGrams,
+    int? mealsPerDay,
+    String? dietNotes,
   }) async {
     try {
       final data = <String, dynamic>{
@@ -623,6 +632,15 @@ class WorkoutService {
       };
       if (durationWeeks != null) data['duration_weeks'] = durationWeeks;
       if (workouts != null) data['workouts'] = workouts;
+      // Diet fields
+      if (includeDiet != null) data['include_diet'] = includeDiet;
+      if (dietType != null) data['diet_type'] = dietType;
+      if (dailyCalories != null) data['daily_calories'] = dailyCalories;
+      if (proteinGrams != null) data['protein_grams'] = proteinGrams;
+      if (carbsGrams != null) data['carbs_grams'] = carbsGrams;
+      if (fatGrams != null) data['fat_grams'] = fatGrams;
+      if (mealsPerDay != null) data['meals_per_day'] = mealsPerDay;
+      if (dietNotes != null) data['diet_notes'] = dietNotes;
 
       final response = await _client.post(ApiEndpoints.programs, data: data);
       if (response.statusCode == 201 && response.data != null) {
@@ -645,6 +663,16 @@ class WorkoutService {
     int? durationWeeks,
     bool? isTemplate,
     bool? isPublic,
+    List<Map<String, dynamic>>? workouts,
+    // Diet fields
+    bool? includeDiet,
+    String? dietType,
+    int? dailyCalories,
+    int? proteinGrams,
+    int? carbsGrams,
+    int? fatGrams,
+    int? mealsPerDay,
+    String? dietNotes,
   }) async {
     try {
       final data = <String, dynamic>{};
@@ -655,6 +683,16 @@ class WorkoutService {
       if (durationWeeks != null) data['duration_weeks'] = durationWeeks;
       if (isTemplate != null) data['is_template'] = isTemplate;
       if (isPublic != null) data['is_public'] = isPublic;
+      if (workouts != null) data['workouts'] = workouts;
+      // Diet fields
+      if (includeDiet != null) data['include_diet'] = includeDiet;
+      if (dietType != null) data['diet_type'] = dietType;
+      if (dailyCalories != null) data['daily_calories'] = dailyCalories;
+      if (proteinGrams != null) data['protein_grams'] = proteinGrams;
+      if (carbsGrams != null) data['carbs_grams'] = carbsGrams;
+      if (fatGrams != null) data['fat_grams'] = fatGrams;
+      if (mealsPerDay != null) data['meals_per_day'] = mealsPerDay;
+      if (dietNotes != null) data['diet_notes'] = dietNotes;
 
       final response = await _client.put(ApiEndpoints.program(programId), data: data);
       if (response.statusCode == 200 && response.data != null) {
@@ -682,11 +720,13 @@ class WorkoutService {
   /// Duplicate workout program
   Future<Map<String, dynamic>> duplicateProgram(String programId, {
     bool duplicateWorkouts = true,
+    String? newName,
   }) async {
     try {
       final params = <String, dynamic>{
         'duplicate_workouts': duplicateWorkouts,
       };
+      if (newName != null) params['new_name'] = newName;
       final response = await _client.post(
         ApiEndpoints.programDuplicate(programId),
         queryParameters: params,
