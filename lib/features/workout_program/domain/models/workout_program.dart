@@ -47,6 +47,106 @@ enum ProgramDifficulty {
   advanced,
 }
 
+/// Advanced training technique types
+enum TechniqueType {
+  @JsonValue('normal')
+  normal,
+  @JsonValue('superset')
+  superset,
+  @JsonValue('dropset')
+  dropset,
+  @JsonValue('triset')
+  triset,
+  @JsonValue('giantset')
+  giantset,
+  @JsonValue('rest_pause')
+  restPause,
+  @JsonValue('cluster')
+  cluster,
+}
+
+/// Extension to get display name for TechniqueType
+extension TechniqueTypeDisplay on TechniqueType {
+  String get displayName {
+    switch (this) {
+      case TechniqueType.normal:
+        return 'Normal';
+      case TechniqueType.superset:
+        return 'Super Serie';
+      case TechniqueType.dropset:
+        return 'Drop Set';
+      case TechniqueType.triset:
+        return 'Tri-Set';
+      case TechniqueType.giantset:
+        return 'Giant Set';
+      case TechniqueType.restPause:
+        return 'Rest Pause';
+      case TechniqueType.cluster:
+        return 'Cluster';
+    }
+  }
+
+  String get description {
+    switch (this) {
+      case TechniqueType.normal:
+        return 'Execucao padrao com descanso entre series';
+      case TechniqueType.superset:
+        return 'Dois exercicios seguidos sem descanso';
+      case TechniqueType.dropset:
+        return 'Reduz o peso e continua sem descanso';
+      case TechniqueType.triset:
+        return 'Tres exercicios seguidos sem descanso';
+      case TechniqueType.giantset:
+        return 'Quatro ou mais exercicios seguidos';
+      case TechniqueType.restPause:
+        return 'Pausas curtas (10-15s) durante a serie';
+      case TechniqueType.cluster:
+        return 'Mini-series com pausas curtas';
+    }
+  }
+
+  String toApiValue() {
+    switch (this) {
+      case TechniqueType.normal:
+        return 'normal';
+      case TechniqueType.superset:
+        return 'superset';
+      case TechniqueType.dropset:
+        return 'dropset';
+      case TechniqueType.triset:
+        return 'triset';
+      case TechniqueType.giantset:
+        return 'giantset';
+      case TechniqueType.restPause:
+        return 'rest_pause';
+      case TechniqueType.cluster:
+        return 'cluster';
+    }
+  }
+}
+
+/// Extension to parse TechniqueType from string
+extension TechniqueTypeParsing on String {
+  TechniqueType toTechniqueType() {
+    switch (toLowerCase()) {
+      case 'superset':
+        return TechniqueType.superset;
+      case 'dropset':
+        return TechniqueType.dropset;
+      case 'triset':
+        return TechniqueType.triset;
+      case 'giantset':
+        return TechniqueType.giantset;
+      case 'rest_pause':
+        return TechniqueType.restPause;
+      case 'cluster':
+        return TechniqueType.cluster;
+      default:
+        return TechniqueType.normal;
+    }
+  }
+}
+
 /// Extension to get API-compatible string values for WorkoutGoal
 extension WorkoutGoalToApi on WorkoutGoal {
   String toApiValue() {
@@ -277,11 +377,23 @@ sealed class ProgramExercise with _$ProgramExercise {
     required int restSeconds,
     String? notes,
     String? supersetWith,
+    // Advanced technique fields
+    String? executionInstructions,
+    int? isometricSeconds,
+    @Default(TechniqueType.normal) TechniqueType techniqueType,
+    String? exerciseGroupId,
+    @Default(0) int exerciseGroupOrder,
     ProgramExerciseDetail? exercise,
   }) = _ProgramExercise;
 
   factory ProgramExercise.fromJson(Map<String, dynamic> json) =>
       _$ProgramExerciseFromJson(json);
+
+  /// Check if exercise is part of a group (superset, triset, etc.)
+  bool get isGrouped => exerciseGroupId != null && exerciseGroupId!.isNotEmpty;
+
+  /// Check if this is the first exercise in a group
+  bool get isGroupLeader => isGrouped && exerciseGroupOrder == 0;
 }
 
 /// Exercise detail

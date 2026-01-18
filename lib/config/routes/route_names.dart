@@ -101,4 +101,7 @@ abstract class RouteNames {
   static const staff = '/staff';
   static const members = '/members';
   static const gymSettings = '/gym-settings';
+
+  // Invite routes
+  static const inviteAccept = '/invite/:token';
 }

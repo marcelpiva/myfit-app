@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../config/theme/tokens/exercise_theme.dart';
 import '../../../workout_builder/domain/models/exercise.dart';
 import '../../../workout_builder/presentation/providers/exercise_catalog_provider.dart';
 import '../../domain/models/workout_program.dart';
@@ -53,17 +54,7 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
     super.dispose();
   }
 
-  Color get _techniqueColor {
-    return switch (widget.technique) {
-      TechniqueType.superset => Colors.purple,
-      TechniqueType.triset => Colors.orange,
-      TechniqueType.giantset => Colors.red,
-      TechniqueType.dropset => Colors.blue,
-      TechniqueType.restPause => Colors.teal,
-      TechniqueType.cluster => Colors.indigo,
-      TechniqueType.normal => Colors.grey,
-    };
-  }
+  Color get _techniqueColor => ExerciseTheme.getColor(widget.technique);
 
   bool get _canConfirm {
     final count = _selectedExercises.length;
@@ -479,17 +470,7 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
     );
   }
 
-  IconData _getTechniqueIcon() {
-    return switch (widget.technique) {
-      TechniqueType.superset => LucideIcons.arrowRightLeft,
-      TechniqueType.triset => LucideIcons.triangle,
-      TechniqueType.giantset => LucideIcons.crown,
-      TechniqueType.dropset => LucideIcons.arrowDown,
-      TechniqueType.restPause => LucideIcons.pause,
-      TechniqueType.cluster => LucideIcons.boxes,
-      TechniqueType.normal => LucideIcons.dumbbell,
-    };
-  }
+  IconData _getTechniqueIcon() => ExerciseTheme.getIcon(widget.technique);
 }
 
 class _ExerciseListTile extends StatelessWidget {

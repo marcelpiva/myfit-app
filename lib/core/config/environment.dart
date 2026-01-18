@@ -50,11 +50,9 @@ class EnvironmentConfig {
       case Environment.staging:
         return 'https://api.myfitplatform.com/api/v1';
       case Environment.development:
-        // On web, use localhost to avoid CORS issues
-        // On mobile, use the local network IP
-        return kIsWeb
-            ? 'http://localhost:8000/api/v1'
-            : 'http://192.168.0.102:8000/api/v1';
+        // Use local network IP for both web and mobile
+        // This allows accessing from any device on the network
+        return 'http://192.168.0.102:8000/api/v1';
     }
   }
 

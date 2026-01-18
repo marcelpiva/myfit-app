@@ -899,7 +899,8 @@ as List<ProgramExercise>,
 /// @nodoc
 mixin _$ProgramExercise {
 
- String get id; String get exerciseId; int get order; int get sets; String get reps; int get restSeconds; String? get notes; String? get supersetWith; ProgramExerciseDetail? get exercise;
+ String get id; String get exerciseId; int get order; int get sets; String get reps; int get restSeconds; String? get notes; String? get supersetWith;// Advanced technique fields
+ String? get executionInstructions; int? get isometricSeconds; TechniqueType get techniqueType; String? get exerciseGroupId; int get exerciseGroupOrder; ProgramExerciseDetail? get exercise;
 /// Create a copy of ProgramExercise
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -912,16 +913,16 @@ $ProgramExerciseCopyWith<ProgramExercise> get copyWith => _$ProgramExerciseCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProgramExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.order, order) || other.order == order)&&(identical(other.sets, sets) || other.sets == sets)&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.restSeconds, restSeconds) || other.restSeconds == restSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.supersetWith, supersetWith) || other.supersetWith == supersetWith)&&(identical(other.exercise, exercise) || other.exercise == exercise));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProgramExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.order, order) || other.order == order)&&(identical(other.sets, sets) || other.sets == sets)&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.restSeconds, restSeconds) || other.restSeconds == restSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.supersetWith, supersetWith) || other.supersetWith == supersetWith)&&(identical(other.executionInstructions, executionInstructions) || other.executionInstructions == executionInstructions)&&(identical(other.isometricSeconds, isometricSeconds) || other.isometricSeconds == isometricSeconds)&&(identical(other.techniqueType, techniqueType) || other.techniqueType == techniqueType)&&(identical(other.exerciseGroupId, exerciseGroupId) || other.exerciseGroupId == exerciseGroupId)&&(identical(other.exerciseGroupOrder, exerciseGroupOrder) || other.exerciseGroupOrder == exerciseGroupOrder)&&(identical(other.exercise, exercise) || other.exercise == exercise));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,exerciseId,order,sets,reps,restSeconds,notes,supersetWith,exercise);
+int get hashCode => Object.hash(runtimeType,id,exerciseId,order,sets,reps,restSeconds,notes,supersetWith,executionInstructions,isometricSeconds,techniqueType,exerciseGroupId,exerciseGroupOrder,exercise);
 
 @override
 String toString() {
-  return 'ProgramExercise(id: $id, exerciseId: $exerciseId, order: $order, sets: $sets, reps: $reps, restSeconds: $restSeconds, notes: $notes, supersetWith: $supersetWith, exercise: $exercise)';
+  return 'ProgramExercise(id: $id, exerciseId: $exerciseId, order: $order, sets: $sets, reps: $reps, restSeconds: $restSeconds, notes: $notes, supersetWith: $supersetWith, executionInstructions: $executionInstructions, isometricSeconds: $isometricSeconds, techniqueType: $techniqueType, exerciseGroupId: $exerciseGroupId, exerciseGroupOrder: $exerciseGroupOrder, exercise: $exercise)';
 }
 
 
@@ -932,7 +933,7 @@ abstract mixin class $ProgramExerciseCopyWith<$Res>  {
   factory $ProgramExerciseCopyWith(ProgramExercise value, $Res Function(ProgramExercise) _then) = _$ProgramExerciseCopyWithImpl;
 @useResult
 $Res call({
- String id, String exerciseId, int order, int sets, String reps, int restSeconds, String? notes, String? supersetWith, ProgramExerciseDetail? exercise
+ String id, String exerciseId, int order, int sets, String reps, int restSeconds, String? notes, String? supersetWith, String? executionInstructions, int? isometricSeconds, TechniqueType techniqueType, String? exerciseGroupId, int exerciseGroupOrder, ProgramExerciseDetail? exercise
 });
 
 
@@ -949,7 +950,7 @@ class _$ProgramExerciseCopyWithImpl<$Res>
 
 /// Create a copy of ProgramExercise
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? exerciseId = null,Object? order = null,Object? sets = null,Object? reps = null,Object? restSeconds = null,Object? notes = freezed,Object? supersetWith = freezed,Object? exercise = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? exerciseId = null,Object? order = null,Object? sets = null,Object? reps = null,Object? restSeconds = null,Object? notes = freezed,Object? supersetWith = freezed,Object? executionInstructions = freezed,Object? isometricSeconds = freezed,Object? techniqueType = null,Object? exerciseGroupId = freezed,Object? exerciseGroupOrder = null,Object? exercise = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,exerciseId: null == exerciseId ? _self.exerciseId : exerciseId // ignore: cast_nullable_to_non_nullable
@@ -959,7 +960,12 @@ as int,reps: null == reps ? _self.reps : reps // ignore: cast_nullable_to_non_nu
 as String,restSeconds: null == restSeconds ? _self.restSeconds : restSeconds // ignore: cast_nullable_to_non_nullable
 as int,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String?,supersetWith: freezed == supersetWith ? _self.supersetWith : supersetWith // ignore: cast_nullable_to_non_nullable
-as String?,exercise: freezed == exercise ? _self.exercise : exercise // ignore: cast_nullable_to_non_nullable
+as String?,executionInstructions: freezed == executionInstructions ? _self.executionInstructions : executionInstructions // ignore: cast_nullable_to_non_nullable
+as String?,isometricSeconds: freezed == isometricSeconds ? _self.isometricSeconds : isometricSeconds // ignore: cast_nullable_to_non_nullable
+as int?,techniqueType: null == techniqueType ? _self.techniqueType : techniqueType // ignore: cast_nullable_to_non_nullable
+as TechniqueType,exerciseGroupId: freezed == exerciseGroupId ? _self.exerciseGroupId : exerciseGroupId // ignore: cast_nullable_to_non_nullable
+as String?,exerciseGroupOrder: null == exerciseGroupOrder ? _self.exerciseGroupOrder : exerciseGroupOrder // ignore: cast_nullable_to_non_nullable
+as int,exercise: freezed == exercise ? _self.exercise : exercise // ignore: cast_nullable_to_non_nullable
 as ProgramExerciseDetail?,
   ));
 }
@@ -1054,10 +1060,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String exerciseId,  int order,  int sets,  String reps,  int restSeconds,  String? notes,  String? supersetWith,  ProgramExerciseDetail? exercise)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String exerciseId,  int order,  int sets,  String reps,  int restSeconds,  String? notes,  String? supersetWith,  String? executionInstructions,  int? isometricSeconds,  TechniqueType techniqueType,  String? exerciseGroupId,  int exerciseGroupOrder,  ProgramExerciseDetail? exercise)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProgramExercise() when $default != null:
-return $default(_that.id,_that.exerciseId,_that.order,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.supersetWith,_that.exercise);case _:
+return $default(_that.id,_that.exerciseId,_that.order,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.supersetWith,_that.executionInstructions,_that.isometricSeconds,_that.techniqueType,_that.exerciseGroupId,_that.exerciseGroupOrder,_that.exercise);case _:
   return orElse();
 
 }
@@ -1075,10 +1081,10 @@ return $default(_that.id,_that.exerciseId,_that.order,_that.sets,_that.reps,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String exerciseId,  int order,  int sets,  String reps,  int restSeconds,  String? notes,  String? supersetWith,  ProgramExerciseDetail? exercise)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String exerciseId,  int order,  int sets,  String reps,  int restSeconds,  String? notes,  String? supersetWith,  String? executionInstructions,  int? isometricSeconds,  TechniqueType techniqueType,  String? exerciseGroupId,  int exerciseGroupOrder,  ProgramExerciseDetail? exercise)  $default,) {final _that = this;
 switch (_that) {
 case _ProgramExercise():
-return $default(_that.id,_that.exerciseId,_that.order,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.supersetWith,_that.exercise);}
+return $default(_that.id,_that.exerciseId,_that.order,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.supersetWith,_that.executionInstructions,_that.isometricSeconds,_that.techniqueType,_that.exerciseGroupId,_that.exerciseGroupOrder,_that.exercise);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -1092,10 +1098,10 @@ return $default(_that.id,_that.exerciseId,_that.order,_that.sets,_that.reps,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String exerciseId,  int order,  int sets,  String reps,  int restSeconds,  String? notes,  String? supersetWith,  ProgramExerciseDetail? exercise)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String exerciseId,  int order,  int sets,  String reps,  int restSeconds,  String? notes,  String? supersetWith,  String? executionInstructions,  int? isometricSeconds,  TechniqueType techniqueType,  String? exerciseGroupId,  int exerciseGroupOrder,  ProgramExerciseDetail? exercise)?  $default,) {final _that = this;
 switch (_that) {
 case _ProgramExercise() when $default != null:
-return $default(_that.id,_that.exerciseId,_that.order,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.supersetWith,_that.exercise);case _:
+return $default(_that.id,_that.exerciseId,_that.order,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.supersetWith,_that.executionInstructions,_that.isometricSeconds,_that.techniqueType,_that.exerciseGroupId,_that.exerciseGroupOrder,_that.exercise);case _:
   return null;
 
 }
@@ -1107,7 +1113,7 @@ return $default(_that.id,_that.exerciseId,_that.order,_that.sets,_that.reps,_tha
 @JsonSerializable()
 
 class _ProgramExercise extends ProgramExercise {
-  const _ProgramExercise({required this.id, required this.exerciseId, required this.order, required this.sets, required this.reps, required this.restSeconds, this.notes, this.supersetWith, this.exercise}): super._();
+  const _ProgramExercise({required this.id, required this.exerciseId, required this.order, required this.sets, required this.reps, required this.restSeconds, this.notes, this.supersetWith, this.executionInstructions, this.isometricSeconds, this.techniqueType = TechniqueType.normal, this.exerciseGroupId, this.exerciseGroupOrder = 0, this.exercise}): super._();
   factory _ProgramExercise.fromJson(Map<String, dynamic> json) => _$ProgramExerciseFromJson(json);
 
 @override final  String id;
@@ -1118,6 +1124,12 @@ class _ProgramExercise extends ProgramExercise {
 @override final  int restSeconds;
 @override final  String? notes;
 @override final  String? supersetWith;
+// Advanced technique fields
+@override final  String? executionInstructions;
+@override final  int? isometricSeconds;
+@override@JsonKey() final  TechniqueType techniqueType;
+@override final  String? exerciseGroupId;
+@override@JsonKey() final  int exerciseGroupOrder;
 @override final  ProgramExerciseDetail? exercise;
 
 /// Create a copy of ProgramExercise
@@ -1133,16 +1145,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProgramExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.order, order) || other.order == order)&&(identical(other.sets, sets) || other.sets == sets)&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.restSeconds, restSeconds) || other.restSeconds == restSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.supersetWith, supersetWith) || other.supersetWith == supersetWith)&&(identical(other.exercise, exercise) || other.exercise == exercise));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProgramExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.order, order) || other.order == order)&&(identical(other.sets, sets) || other.sets == sets)&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.restSeconds, restSeconds) || other.restSeconds == restSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.supersetWith, supersetWith) || other.supersetWith == supersetWith)&&(identical(other.executionInstructions, executionInstructions) || other.executionInstructions == executionInstructions)&&(identical(other.isometricSeconds, isometricSeconds) || other.isometricSeconds == isometricSeconds)&&(identical(other.techniqueType, techniqueType) || other.techniqueType == techniqueType)&&(identical(other.exerciseGroupId, exerciseGroupId) || other.exerciseGroupId == exerciseGroupId)&&(identical(other.exerciseGroupOrder, exerciseGroupOrder) || other.exerciseGroupOrder == exerciseGroupOrder)&&(identical(other.exercise, exercise) || other.exercise == exercise));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,exerciseId,order,sets,reps,restSeconds,notes,supersetWith,exercise);
+int get hashCode => Object.hash(runtimeType,id,exerciseId,order,sets,reps,restSeconds,notes,supersetWith,executionInstructions,isometricSeconds,techniqueType,exerciseGroupId,exerciseGroupOrder,exercise);
 
 @override
 String toString() {
-  return 'ProgramExercise(id: $id, exerciseId: $exerciseId, order: $order, sets: $sets, reps: $reps, restSeconds: $restSeconds, notes: $notes, supersetWith: $supersetWith, exercise: $exercise)';
+  return 'ProgramExercise(id: $id, exerciseId: $exerciseId, order: $order, sets: $sets, reps: $reps, restSeconds: $restSeconds, notes: $notes, supersetWith: $supersetWith, executionInstructions: $executionInstructions, isometricSeconds: $isometricSeconds, techniqueType: $techniqueType, exerciseGroupId: $exerciseGroupId, exerciseGroupOrder: $exerciseGroupOrder, exercise: $exercise)';
 }
 
 
@@ -1153,7 +1165,7 @@ abstract mixin class _$ProgramExerciseCopyWith<$Res> implements $ProgramExercise
   factory _$ProgramExerciseCopyWith(_ProgramExercise value, $Res Function(_ProgramExercise) _then) = __$ProgramExerciseCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String exerciseId, int order, int sets, String reps, int restSeconds, String? notes, String? supersetWith, ProgramExerciseDetail? exercise
+ String id, String exerciseId, int order, int sets, String reps, int restSeconds, String? notes, String? supersetWith, String? executionInstructions, int? isometricSeconds, TechniqueType techniqueType, String? exerciseGroupId, int exerciseGroupOrder, ProgramExerciseDetail? exercise
 });
 
 
@@ -1170,7 +1182,7 @@ class __$ProgramExerciseCopyWithImpl<$Res>
 
 /// Create a copy of ProgramExercise
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? exerciseId = null,Object? order = null,Object? sets = null,Object? reps = null,Object? restSeconds = null,Object? notes = freezed,Object? supersetWith = freezed,Object? exercise = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? exerciseId = null,Object? order = null,Object? sets = null,Object? reps = null,Object? restSeconds = null,Object? notes = freezed,Object? supersetWith = freezed,Object? executionInstructions = freezed,Object? isometricSeconds = freezed,Object? techniqueType = null,Object? exerciseGroupId = freezed,Object? exerciseGroupOrder = null,Object? exercise = freezed,}) {
   return _then(_ProgramExercise(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,exerciseId: null == exerciseId ? _self.exerciseId : exerciseId // ignore: cast_nullable_to_non_nullable
@@ -1180,7 +1192,12 @@ as int,reps: null == reps ? _self.reps : reps // ignore: cast_nullable_to_non_nu
 as String,restSeconds: null == restSeconds ? _self.restSeconds : restSeconds // ignore: cast_nullable_to_non_nullable
 as int,notes: freezed == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String?,supersetWith: freezed == supersetWith ? _self.supersetWith : supersetWith // ignore: cast_nullable_to_non_nullable
-as String?,exercise: freezed == exercise ? _self.exercise : exercise // ignore: cast_nullable_to_non_nullable
+as String?,executionInstructions: freezed == executionInstructions ? _self.executionInstructions : executionInstructions // ignore: cast_nullable_to_non_nullable
+as String?,isometricSeconds: freezed == isometricSeconds ? _self.isometricSeconds : isometricSeconds // ignore: cast_nullable_to_non_nullable
+as int?,techniqueType: null == techniqueType ? _self.techniqueType : techniqueType // ignore: cast_nullable_to_non_nullable
+as TechniqueType,exerciseGroupId: freezed == exerciseGroupId ? _self.exerciseGroupId : exerciseGroupId // ignore: cast_nullable_to_non_nullable
+as String?,exerciseGroupOrder: null == exerciseGroupOrder ? _self.exerciseGroupOrder : exerciseGroupOrder // ignore: cast_nullable_to_non_nullable
+as int,exercise: freezed == exercise ? _self.exercise : exercise // ignore: cast_nullable_to_non_nullable
 as ProgramExerciseDetail?,
   ));
 }

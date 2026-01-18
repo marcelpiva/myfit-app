@@ -3,6 +3,7 @@ import '../../../../core/utils/haptic_utils.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../config/theme/tokens/exercise_theme.dart';
 import '../../domain/models/workout_program.dart';
 
 /// Modal for selecting a training technique before adding exercises.
@@ -332,29 +333,9 @@ class _TechniqueCard extends StatelessWidget {
     required this.isDark,
   });
 
-  Color get _techniqueColor {
-    return switch (technique) {
-      TechniqueType.superset => Colors.purple,
-      TechniqueType.triset => Colors.orange,
-      TechniqueType.giantset => Colors.red,
-      TechniqueType.dropset => Colors.blue,
-      TechniqueType.restPause => Colors.teal,
-      TechniqueType.cluster => Colors.indigo,
-      TechniqueType.normal => Colors.grey,
-    };
-  }
+  Color get _techniqueColor => ExerciseTheme.getColor(technique);
 
-  IconData get _techniqueIcon {
-    return switch (technique) {
-      TechniqueType.superset => LucideIcons.arrowRightLeft,
-      TechniqueType.triset => LucideIcons.triangle,
-      TechniqueType.giantset => LucideIcons.crown,
-      TechniqueType.dropset => LucideIcons.arrowDown,
-      TechniqueType.restPause => LucideIcons.pause,
-      TechniqueType.cluster => LucideIcons.boxes,
-      TechniqueType.normal => LucideIcons.dumbbell,
-    };
-  }
+  IconData get _techniqueIcon => ExerciseTheme.getIcon(technique);
 
   String get _displayName {
     // Custom display name for Bi-Set/Tri-Set combined option

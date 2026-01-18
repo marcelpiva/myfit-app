@@ -233,14 +233,12 @@ class OrganizationService {
     String orgId, {
     required String email,
     required String role,
-    String? message,
   }) async {
     try {
       final data = <String, dynamic>{
         'email': email,
         'role': role,
       };
-      if (message != null) data['message'] = message;
 
       final response = await _client.post(
         ApiEndpoints.organizationInvite(orgId),
@@ -306,6 +304,22 @@ class OrganizationService {
   /// Generate invite link from token
   String generateInviteLink(String token) {
     return 'myfit://invite/$token';
+  }
+
+  /// Get invite preview (public, no auth required)
+  /// Returns organization name, inviter name, role, and email
+  Future<Map<String, dynamic>> getInvitePreview(String token) async {
+    try {
+      final response = await _client.get(ApiEndpoints.invitePreview(token));
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw const NotFoundException('Convite não encontrado');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Convite inválido ou expirado', e);
+    }
   }
 
   // ==================== Stats ====================

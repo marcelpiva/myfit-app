@@ -31,6 +31,7 @@ class ApiEndpoints {
   static String resendInvite(String orgId, String inviteId) =>
       '/organizations/$orgId/invites/$inviteId/resend';
   static const String acceptInvite = '/organizations/accept-invite';
+  static String invitePreview(String token) => '/organizations/invite/preview/$token';
 
   // ==================== Workouts ====================
   static const String workouts = '/workouts';
@@ -194,6 +195,7 @@ class ApiEndpoints {
 
   // ==================== Memberships ====================
   static const String userMemberships = '/users/me/memberships';
+  static const String userPendingInvites = '/users/me/pending-invites';
 
   // ==================== Billing ====================
   static const String billingPayments = '/billing/payments';

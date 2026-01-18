@@ -3,6 +3,7 @@ import '../../../../core/utils/haptic_utils.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../config/theme/tokens/exercise_theme.dart';
 import '../../domain/models/workout_program.dart';
 
 /// Configuration data for technique-specific parameters
@@ -90,17 +91,7 @@ class _TechniqueConfigModalState extends State<TechniqueConfigModal> {
     super.dispose();
   }
 
-  Color get _techniqueColor {
-    return switch (widget.technique) {
-      TechniqueType.superset => Colors.purple,
-      TechniqueType.triset => Colors.orange,
-      TechniqueType.giantset => Colors.red,
-      TechniqueType.dropset => Colors.blue,
-      TechniqueType.restPause => Colors.teal,
-      TechniqueType.cluster => Colors.indigo,
-      TechniqueType.normal => Colors.grey,
-    };
-  }
+  Color get _techniqueColor => ExerciseTheme.getColor(widget.technique);
 
   @override
   Widget build(BuildContext context) {
@@ -251,17 +242,7 @@ class _TechniqueConfigModalState extends State<TechniqueConfigModal> {
     );
   }
 
-  IconData _getIcon() {
-    return switch (widget.technique) {
-      TechniqueType.superset => LucideIcons.arrowRightLeft,
-      TechniqueType.triset => LucideIcons.triangle,
-      TechniqueType.giantset => LucideIcons.crown,
-      TechniqueType.dropset => LucideIcons.arrowDown,
-      TechniqueType.restPause => LucideIcons.pause,
-      TechniqueType.cluster => LucideIcons.boxes,
-      TechniqueType.normal => LucideIcons.dumbbell,
-    };
-  }
+  IconData _getIcon() => ExerciseTheme.getIcon(widget.technique);
 
   List<Widget> _buildConfigFields(ThemeData theme, bool isDark) {
     return switch (widget.technique) {

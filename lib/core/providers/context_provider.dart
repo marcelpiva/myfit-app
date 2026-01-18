@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/entities/entities.dart';
+import '../network/api_client.dart';
+import '../network/api_endpoints.dart';
 import '../services/membership_service.dart';
+import '../../features/trainer_workout/presentation/providers/trainer_students_provider.dart';
 
 /// Provider for MembershipService
 final membershipServiceProvider = Provider<MembershipService>((ref) {
@@ -74,4 +77,18 @@ final hasStudentRoleProvider = Provider<bool>((ref) {
     loading: () => false,
     error: (_, __) => false,
   );
+});
+
+/// Provider for pending invites for the current user
+final pendingInvitesForUserProvider = FutureProvider<List<PendingInvite>>((ref) async {
+  try {
+    final response = await ApiClient.instance.get(ApiEndpoints.userPendingInvites);
+    if (response.statusCode == 200 && response.data != null) {
+      final data = response.data as List;
+      return data.map((e) => PendingInvite.fromJson(e as Map<String, dynamic>)).toList();
+    }
+    return [];
+  } catch (e) {
+    return [];
+  }
 });

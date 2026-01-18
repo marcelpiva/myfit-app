@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/error/api_exceptions.dart';
+import '../../../../core/providers/context_provider.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../data/models/auth_models.dart';
 
@@ -89,6 +90,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
 
       _ref.read(currentUserProvider.notifier).state = response.user;
+      _ref.read(activeContextProvider.notifier).state = null;
+      _ref.invalidate(membershipsProvider);
       state = AuthState(
         status: AuthStatus.authenticated,
         user: response.user,
@@ -126,6 +129,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
 
       _ref.read(currentUserProvider.notifier).state = response.user;
+      _ref.read(activeContextProvider.notifier).state = null;
+      _ref.invalidate(membershipsProvider);
       state = AuthState(
         status: AuthStatus.authenticated,
         user: response.user,
@@ -151,6 +156,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     await _authService.logout();
     _ref.read(currentUserProvider.notifier).state = null;
+    _ref.read(activeContextProvider.notifier).state = null;
+    _ref.invalidate(membershipsProvider);
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 

@@ -1,0 +1,70 @@
+# Fastfile for MyFit iOS App
+# Docs: https://docs.fastlane.tools
+
+default_platform(:ios)
+
+platform :ios do
+  # API Key configuration
+  before_all do
+    app_store_connect_api_key(
+      key_id: "T64HTCDT7X",
+      issuer_id: "69a6de78-3c62-47e3-e053-5b8c7c11a4d1",
+      key_filepath: "./fastlane/AuthKey.p8",
+      in_house: false
+    )
+  end
+
+  desc "Push a new beta build to TestFlight"
+  lane :beta do
+    # Increment build number
+    increment_build_number(
+      build_number: Time.now.strftime("%Y%m%d%H%M"),
+      xcodeproj: "Runner.xcodeproj"
+    )
+
+    # Build Flutter IPA
+    Dir.chdir("../..") do
+      sh("flutter build ipa --release --export-options-plist=ios/ExportOptions.plist")
+    end
+
+    # Upload to TestFlight
+    upload_to_testflight(
+      ipa: "../build/ios/ipa/myfit_app.ipa",
+      skip_waiting_for_build_processing: true
+    )
+
+    puts "Successfully uploaded to TestFlight!"
+  end
+
+  desc "Quick upload - just build and upload"
+  lane :upload do
+    # Build Flutter IPA
+    Dir.chdir("../..") do
+      sh("flutter build ipa --release")
+    end
+
+    # Upload to TestFlight
+    pilot(
+      ipa: "../build/ios/ipa/myfit_app.ipa",
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "Increment version and upload"
+  lane :release do |options|
+    version = options[:version] || "1.0.0"
+
+    # Read current build number and increment
+    pubspec = File.read("../../pubspec.yaml")
+    current_build = pubspec.match(/version:\s*[\d.]+\+(\d+)/)[1].to_i
+    new_build = current_build + 1
+
+    # Update pubspec.yaml
+    new_pubspec = pubspec.gsub(/version:\s*([\d.]+)\+\d+/, "version: #{version}+#{new_build}")
+    File.write("../../pubspec.yaml", new_pubspec)
+    puts "Updated version to #{version}+#{new_build}"
+
+    # Build and upload
+    upload
+  end
+end

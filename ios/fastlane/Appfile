@@ -1,0 +1,5 @@
+# Team IDs
+team_id("9A8VXV8G83") # Developer Portal Team ID
+
+# App identifier
+app_identifier("com.marcelpiva.myfitplatform")

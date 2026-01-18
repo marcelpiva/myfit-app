@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../config/theme/tokens/exercise_theme.dart';
 import '../../../../core/services/workout_service.dart';
 import '../../../../core/widgets/video_player_page.dart';
 import '../../../workout_builder/domain/models/exercise.dart';
@@ -1089,30 +1090,6 @@ class _ExerciseGroupCard extends ConsumerWidget {
     required this.theme,
   });
 
-  Color _getTechniqueColor(TechniqueType type) {
-    return switch (type) {
-      TechniqueType.superset => Colors.purple,
-      TechniqueType.triset => Colors.orange,
-      TechniqueType.giantset => Colors.red,
-      TechniqueType.dropset => Colors.blue,
-      TechniqueType.restPause => Colors.teal,
-      TechniqueType.cluster => Colors.indigo,
-      TechniqueType.normal => Colors.grey,
-    };
-  }
-
-  IconData _getTechniqueIcon(TechniqueType type) {
-    return switch (type) {
-      TechniqueType.superset => LucideIcons.arrowRightLeft,
-      TechniqueType.triset => LucideIcons.triangle,
-      TechniqueType.giantset => LucideIcons.crown,
-      TechniqueType.dropset => LucideIcons.arrowDown,
-      TechniqueType.restPause => LucideIcons.pause,
-      TechniqueType.cluster => LucideIcons.boxes,
-      TechniqueType.normal => LucideIcons.dumbbell,
-    };
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (exercises.isEmpty) return const SizedBox.shrink();
@@ -1120,7 +1097,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
     final notifier = ref.read(programWizardProvider.notifier);
     final leader = exercises.first;
     final techniqueType = leader.techniqueType;
-    final techniqueColor = _getTechniqueColor(techniqueType);
+    final techniqueColor = ExerciseTheme.getColor(techniqueType);
     final groupInstructions = leader.executionInstructions;
 
     return Container(
@@ -1151,7 +1128,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
             child: Row(
               children: [
                 Icon(
-                  _getTechniqueIcon(techniqueType),
+                  ExerciseTheme.getIcon(techniqueType),
                   size: 18,
                   color: techniqueColor,
                 ),
@@ -2981,32 +2958,6 @@ class _ExerciseItem extends ConsumerWidget {
     );
   }
 
-  /// Get the color for a technique type
-  Color _getTechniqueColor(TechniqueType type) {
-    return switch (type) {
-      TechniqueType.superset => Colors.purple,
-      TechniqueType.triset => Colors.orange,
-      TechniqueType.giantset => Colors.red,
-      TechniqueType.dropset => Colors.blue,
-      TechniqueType.restPause => Colors.teal,
-      TechniqueType.cluster => Colors.indigo,
-      TechniqueType.normal => Colors.grey,
-    };
-  }
-
-  /// Get the icon for a technique type
-  IconData _getTechniqueIcon(TechniqueType type) {
-    return switch (type) {
-      TechniqueType.superset => LucideIcons.arrowRightLeft,
-      TechniqueType.triset => LucideIcons.triangle,
-      TechniqueType.giantset => LucideIcons.crown,
-      TechniqueType.dropset => LucideIcons.arrowDown,
-      TechniqueType.restPause => LucideIcons.pause,
-      TechniqueType.cluster => LucideIcons.boxes,
-      TechniqueType.normal => LucideIcons.dumbbell,
-    };
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(programWizardProvider);
@@ -3014,7 +2965,7 @@ class _ExerciseItem extends ConsumerWidget {
     final otherWorkouts = state.workouts.where((w) => w.id != workoutId).toList();
 
     // Check if this is a single-exercise technique (dropset, rest-pause, etc.)
-    final techniqueColor = _getTechniqueColor(exercise.techniqueType);
+    final techniqueColor = ExerciseTheme.getColor(exercise.techniqueType);
     final hasTechnique = exercise.techniqueType != TechniqueType.normal;
 
     return GestureDetector(
@@ -3057,7 +3008,7 @@ class _ExerciseItem extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      _getTechniqueIcon(exercise.techniqueType),
+                      ExerciseTheme.getIcon(exercise.techniqueType),
                       size: 14,
                       color: techniqueColor,
                     ),

@@ -41,6 +41,7 @@ import '../../features/help/presentation/pages/help_page.dart';
 import '../../features/billing/presentation/pages/billing_dashboard_page.dart';
 import '../../features/coach/presentation/pages/coach_dashboard_page.dart';
 import '../../features/active_workout/presentation/pages/active_workout_page.dart';
+import '../../features/shared_session/presentation/pages/shared_session_page.dart';
 import '../../features/legal/presentation/pages/about_page.dart';
 import '../../features/legal/presentation/pages/privacy_page.dart';
 import '../../features/legal/presentation/pages/terms_page.dart';
@@ -51,6 +52,7 @@ import '../../features/organization/presentation/pages/join_org_page.dart';
 import '../../features/trainer_home/presentation/pages/trainer_home_page.dart';
 import '../../features/nutritionist_home/presentation/pages/nutritionist_home_page.dart';
 import '../../features/gym_home/presentation/pages/gym_home_page.dart';
+import '../../features/auth/presentation/pages/invite_accept_page.dart';
 import '../../features/trainer_workout/presentation/pages/students_list_page.dart';
 import '../../features/trainer_workout/presentation/pages/student_workouts_page.dart';
 import '../../features/trainer_workout/presentation/pages/trainer_student_progress_page.dart';
@@ -331,6 +333,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'active-workout',
         builder: (context, state) => ActiveWorkoutPage(
           workoutId: state.pathParameters['workoutId'] ?? '',
+          sessionId: state.uri.queryParameters['sessionId'],
+        ),
+      ),
+
+      // Shared session (Co-training)
+      GoRoute(
+        path: '/sessions/:sessionId',
+        name: 'shared-session',
+        builder: (context, state) => SharedSessionPage(
+          sessionId: state.pathParameters['sessionId'] ?? '',
+          mode: state.uri.queryParameters['mode'] == 'trainer'
+              ? SessionMode.trainer
+              : SessionMode.student,
         ),
       ),
 
@@ -361,6 +376,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: RouteNames.joinOrg,
         name: 'join-org',
         builder: (context, state) => const JoinOrgPage(),
+      ),
+
+      // Invite accept route (deep link)
+      GoRoute(
+        path: '/invite/:token',
+        name: 'invite-accept',
+        builder: (context, state) => InviteAcceptPage(
+          token: state.pathParameters['token'] ?? '',
+        ),
       ),
 
       // Role-based home pages

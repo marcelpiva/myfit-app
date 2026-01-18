@@ -135,6 +135,13 @@ _ProgramExercise _$ProgramExerciseFromJson(Map<String, dynamic> json) =>
       restSeconds: (json['restSeconds'] as num).toInt(),
       notes: json['notes'] as String?,
       supersetWith: json['supersetWith'] as String?,
+      executionInstructions: json['executionInstructions'] as String?,
+      isometricSeconds: (json['isometricSeconds'] as num?)?.toInt(),
+      techniqueType:
+          $enumDecodeNullable(_$TechniqueTypeEnumMap, json['techniqueType']) ??
+          TechniqueType.normal,
+      exerciseGroupId: json['exerciseGroupId'] as String?,
+      exerciseGroupOrder: (json['exerciseGroupOrder'] as num?)?.toInt() ?? 0,
       exercise: json['exercise'] == null
           ? null
           : ProgramExerciseDetail.fromJson(
@@ -152,8 +159,23 @@ Map<String, dynamic> _$ProgramExerciseToJson(_ProgramExercise instance) =>
       'restSeconds': instance.restSeconds,
       'notes': instance.notes,
       'supersetWith': instance.supersetWith,
+      'executionInstructions': instance.executionInstructions,
+      'isometricSeconds': instance.isometricSeconds,
+      'techniqueType': _$TechniqueTypeEnumMap[instance.techniqueType]!,
+      'exerciseGroupId': instance.exerciseGroupId,
+      'exerciseGroupOrder': instance.exerciseGroupOrder,
       'exercise': instance.exercise,
     };
+
+const _$TechniqueTypeEnumMap = {
+  TechniqueType.normal: 'normal',
+  TechniqueType.superset: 'superset',
+  TechniqueType.dropset: 'dropset',
+  TechniqueType.triset: 'triset',
+  TechniqueType.giantset: 'giantset',
+  TechniqueType.restPause: 'rest_pause',
+  TechniqueType.cluster: 'cluster',
+};
 
 _ProgramExerciseDetail _$ProgramExerciseDetailFromJson(
   Map<String, dynamic> json,

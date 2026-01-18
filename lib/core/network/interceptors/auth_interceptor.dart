@@ -26,6 +26,7 @@ class AuthInterceptor extends Interceptor {
     ApiEndpoints.authRegister,
     ApiEndpoints.authRefresh,
     ApiEndpoints.health,
+    '/organizations/invite/preview/', // Public invite preview
   ];
 
   AuthInterceptor(this._dio);

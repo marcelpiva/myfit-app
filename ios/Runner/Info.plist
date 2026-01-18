@@ -3,7 +3,13 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<string>pt-BR</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>pt-BR</string>
+		<string>en</string>
+		<string>es</string>
+	</array>
 	<key>CFBundleDisplayName</key>
 	<string>My Fit</string>
 	<key>CFBundleExecutable</key>
@@ -69,5 +75,19 @@
 	<!-- Biometric authentication (Face ID) -->
 	<key>NSFaceIDUsageDescription</key>
 	<string>MyFit usa Face ID para um login rápido e seguro</string>
+	<!-- Deep linking URL schemes -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.myfit.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>myfit</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

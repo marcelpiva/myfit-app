@@ -263,10 +263,9 @@ class InvitesNotifier extends StateNotifier<InvitesState> {
   Future<void> sendInvite({
     required String email,
     required String role,
-    String? message,
   }) async {
     try {
-      final invite = await _service.sendInvite(orgId, email: email, role: role, message: message);
+      final invite = await _service.sendInvite(orgId, email: email, role: role);
       state = state.copyWith(invites: [invite, ...state.invites]);
     } on ApiException {
       rethrow;
