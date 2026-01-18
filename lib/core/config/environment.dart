@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 /// Environment configuration for MyFit app
 /// Manages different API base URLs for dev, staging, and production
 
@@ -46,9 +48,13 @@ class EnvironmentConfig {
       case Environment.production:
         return 'https://api.myfitplatform.com/api/v1';
       case Environment.staging:
-        return 'https://staging-api.myfitplatform.com/api/v1';
+        return 'https://api.myfitplatform.com/api/v1';
       case Environment.development:
-        return 'http://192.168.1.20:8000/api/v1';
+        // On web, use localhost to avoid CORS issues
+        // On mobile, use the local network IP
+        return kIsWeb
+            ? 'http://localhost:8000/api/v1'
+            : 'http://192.168.0.102:8000/api/v1';
     }
   }
 

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
@@ -37,8 +35,12 @@ class ErrorInterceptor extends Interceptor {
       return NetworkException.timeout();
     }
 
+    // Check for connection errors (works on both mobile and web)
     if (err.type == DioExceptionType.connectionError ||
-        err.error is SocketException) {
+        err.type == DioExceptionType.unknown ||
+        err.message?.contains('XMLHttpRequest') == true ||
+        err.message?.contains('Network') == true ||
+        err.message?.contains('CORS') == true) {
       return NetworkException.noConnection();
     }
 
