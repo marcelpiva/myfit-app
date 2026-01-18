@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -83,7 +83,7 @@ class _NutritionPageState extends ConsumerState<NutritionPage>
                           children: [
                             GestureDetector(
                               onTap: () {
-                                HapticFeedback.lightImpact();
+                                HapticUtils.lightImpact();
                                 _showDatePicker(context, isDark);
                               },
                               child: Container(
@@ -112,7 +112,7 @@ class _NutritionPageState extends ConsumerState<NutritionPage>
                             const SizedBox(width: 8),
                             GestureDetector(
                               onTap: () {
-                                HapticFeedback.lightImpact();
+                                HapticUtils.lightImpact();
                                 _showAddMealOptions(context, isDark);
                               },
                               child: Container(
@@ -145,7 +145,7 @@ class _NutritionPageState extends ConsumerState<NutritionPage>
                         final isToday = entry.key == 3;
                         return GestureDetector(
                           onTap: () {
-                            HapticFeedback.selectionClick();
+                            HapticUtils.selectionClick();
                             setState(() => _selectedDay = entry.key);
                           },
                           child: Container(
@@ -246,7 +246,7 @@ class _NutritionPageState extends ConsumerState<NutritionPage>
   }
 
   void _showDatePicker(BuildContext context, bool isDark) async {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     final picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -277,7 +277,7 @@ class _NutritionPageState extends ConsumerState<NutritionPage>
   }
 
   void _showAddMealOptions(BuildContext context, bool isDark) {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
@@ -308,7 +308,7 @@ class _NutritionPageState extends ConsumerState<NutritionPage>
                 'Pesquise na base de dados',
                 AppColors.primary,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   context.push('/nutrition/search');
                 },
@@ -322,7 +322,7 @@ class _NutritionPageState extends ConsumerState<NutritionPage>
                 'Adicione produto rapidamente',
                 AppColors.secondary,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   context.push('/nutrition/barcode');
                 },
@@ -336,7 +336,7 @@ class _NutritionPageState extends ConsumerState<NutritionPage>
                 'Repita uma refeicao anterior',
                 AppColors.accent,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   context.push('/nutrition/recent');
                 },
@@ -350,7 +350,7 @@ class _NutritionPageState extends ConsumerState<NutritionPage>
                 'Deixe a IA sugerir uma refeicao',
                 AppColors.info,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   context.push('/nutrition/ai-suggestion');
                 },
@@ -649,7 +649,7 @@ class _MealCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
       },
       child: Container(
         margin: const EdgeInsets.only(left: 24, right: 24, bottom: 12),

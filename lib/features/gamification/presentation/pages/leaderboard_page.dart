@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -34,7 +34,7 @@ class LeaderboardPage extends ConsumerWidget {
             padding: const EdgeInsets.all(8.0),
             child: GestureDetector(
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 context.pop();
               },
               child: Container(
@@ -54,7 +54,7 @@ class LeaderboardPage extends ConsumerWidget {
             indicatorColor: isDark ? AppColors.primaryDark : AppColors.primary,
             labelColor: isDark ? AppColors.primaryDark : AppColors.primary,
             unselectedLabelColor: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
-            onTap: (_) => HapticFeedback.selectionClick(),
+            onTap: (_) => HapticUtils.selectionClick(),
             tabs: const [
               Tab(text: 'Ranking'),
               Tab(text: 'Conquistas'),
@@ -326,7 +326,7 @@ class _RankingTab extends ConsumerWidget {
                     label: 'Semanal',
                     isSelected: period == LeaderboardPeriod.weekly,
                     onTap: () {
-                      HapticFeedback.selectionClick();
+                      HapticUtils.selectionClick();
                       ref.read(leaderboardPeriodProvider.notifier).state = LeaderboardPeriod.weekly;
                     },
                     isDark: isDark,
@@ -340,7 +340,7 @@ class _RankingTab extends ConsumerWidget {
                     label: 'Mensal',
                     isSelected: period == LeaderboardPeriod.monthly,
                     onTap: () {
-                      HapticFeedback.selectionClick();
+                      HapticUtils.selectionClick();
                       ref.read(leaderboardPeriodProvider.notifier).state = LeaderboardPeriod.monthly;
                     },
                     isDark: isDark,
@@ -354,7 +354,7 @@ class _RankingTab extends ConsumerWidget {
                     label: 'Geral',
                     isSelected: period == LeaderboardPeriod.allTime,
                     onTap: () {
-                      HapticFeedback.selectionClick();
+                      HapticUtils.selectionClick();
                       ref.read(leaderboardPeriodProvider.notifier).state = LeaderboardPeriod.allTime;
                     },
                     isDark: isDark,
@@ -444,7 +444,7 @@ class _RankingTab extends ConsumerWidget {
               delay: const Duration(milliseconds: 650),
               child: GestureDetector(
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  HapticUtils.selectionClick();
                   _showAchievementDetailsModal(context, leaderboard.currentUserEntry!.rank);
                 },
                 child: Container(
@@ -1052,7 +1052,7 @@ class _PodiumPlace extends StatelessWidget {
                         Expanded(
                           child: OutlinedButton.icon(
                             onPressed: () {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                               Navigator.of(context).pop();
                               // TODO: Navigate to full profile
                             },
@@ -1071,7 +1071,7 @@ class _PodiumPlace extends StatelessWidget {
                         Expanded(
                           child: FilledButton.icon(
                             onPressed: () {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                               Navigator.of(context).pop();
                               // TODO: Open message composer
                             },
@@ -1165,7 +1165,7 @@ class _PodiumPlace extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.selectionClick();
+        HapticUtils.selectionClick();
         _showPlayerProfileModal(context, entry);
       },
       child: Column(

@@ -1,13 +1,16 @@
 {
-    "name": "myfit_app",
-    "short_name": "myfit_app",
+    "name": "MyFit - Seu App de Treino",
+    "short_name": "MyFit",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#09090B",
+    "theme_color": "#7C3AED",
+    "description": "App de treino personalizado para atletas e personal trainers. Acompanhe seus treinos, nutrição e progresso.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
+    "categories": ["fitness", "health", "sports"],
+    "lang": "pt-BR",
+    "scope": "/",
     "icons": [
         {
             "src": "icons/Icon-192.png",

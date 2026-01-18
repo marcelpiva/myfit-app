@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -161,7 +161,7 @@ class _TrainerStudentProgressPageState
         children: [
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               context.pop();
             },
             child: Container(
@@ -211,7 +211,7 @@ class _TrainerStudentProgressPageState
           ),
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               _showStudentOptions(context, isDark);
             },
             child: Container(
@@ -256,7 +256,7 @@ class _TrainerStudentProgressPageState
           return Expanded(
             child: GestureDetector(
               onTap: () {
-                HapticFeedback.selectionClick();
+                HapticUtils.selectionClick();
                 setState(() => _selectedTab = entry.key);
               },
               child: Container(
@@ -308,7 +308,7 @@ class _TrainerStudentProgressPageState
               title: const Text('Definir Metas'),
               subtitle: const Text('Peso, medidas e objetivos'),
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(ctx);
                 _showSetGoalsDialog(context, isDark);
               },
@@ -318,7 +318,7 @@ class _TrainerStudentProgressPageState
               title: const Text('Adicionar Nota'),
               subtitle: const Text('Observações sobre o progresso'),
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(ctx);
                 _showAddNoteDialog(context, isDark);
               },
@@ -328,7 +328,7 @@ class _TrainerStudentProgressPageState
               title: const Text('Enviar Feedback'),
               subtitle: const Text('Mensagem sobre o progresso'),
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(ctx);
                 _showSendFeedbackDialog(context, isDark);
               },
@@ -338,7 +338,7 @@ class _TrainerStudentProgressPageState
               title: const Text('Exportar Relatório'),
               subtitle: const Text('PDF com histórico completo'),
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(ctx);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -409,14 +409,14 @@ class _TrainerStudentProgressPageState
         actions: [
           TextButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(ctx);
             },
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
             onPressed: () {
-              HapticFeedback.mediumImpact();
+              HapticUtils.mediumImpact();
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -467,14 +467,14 @@ class _TrainerStudentProgressPageState
         actions: [
           TextButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(ctx);
             },
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
             onPressed: () {
-              HapticFeedback.mediumImpact();
+              HapticUtils.mediumImpact();
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -540,14 +540,14 @@ class _TrainerStudentProgressPageState
         actions: [
           TextButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(ctx);
             },
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
             onPressed: () {
-              HapticFeedback.mediumImpact();
+              HapticUtils.mediumImpact();
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -758,7 +758,7 @@ class _WeightProgressTab extends StatelessWidget {
               ),
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  HapticUtils.selectionClick();
                   _showFullWeightHistory(context, isDark);
                 },
                 child: Text(
@@ -1210,7 +1210,7 @@ class _WeightProgressTab extends StatelessWidget {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(ctx);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -1235,7 +1235,7 @@ class _WeightProgressTab extends StatelessWidget {
                       const SizedBox(width: 8),
                       GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(ctx);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -1779,7 +1779,7 @@ class _PhotosProgressTab extends StatelessWidget {
   Widget _buildPhotoEntry(BuildContext context, bool isDark, ProgressPhoto photo) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.selectionClick();
+        HapticUtils.selectionClick();
         _showPhotoViewer(context, isDark, photo);
       },
       child: Container(
@@ -1917,7 +1917,7 @@ class _PhotosProgressTab extends StatelessWidget {
                   ),
                   GestureDetector(
                     onTap: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                     },
                     child: Container(
@@ -2141,7 +2141,7 @@ class _PhotosProgressTab extends StatelessWidget {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -2185,7 +2185,7 @@ class _PhotosProgressTab extends StatelessWidget {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(ctx);
                         _showDeleteConfirmation(context, isDark, photo);
                       },
@@ -2261,14 +2261,14 @@ class _PhotosProgressTab extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(ctx);
             },
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
             onPressed: () {
-              HapticFeedback.mediumImpact();
+              HapticUtils.mediumImpact();
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -2327,7 +2327,7 @@ class _TrainerNotesSection extends StatelessWidget {
               ),
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   // Add new note
                 },
                 child: Container(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -91,7 +91,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
       return;
     }
 
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     setState(() => _loading = true);
 
     final success = await ref.read(authProvider.notifier).register(
@@ -117,7 +117,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
   }
 
   void _showError(String message) {
-    HapticFeedback.heavyImpact();
+    HapticUtils.heavyImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message, style: const TextStyle(color: Colors.white)),
@@ -169,7 +169,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
                       // Back button
                       GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           context.go(RouteNames.welcome);
                         },
                         child: Container(
@@ -274,7 +274,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
                       AppCheckbox(
                         value: _acceptedTerms,
                         onChanged: (value) {
-                          HapticFeedback.selectionClick();
+                          HapticUtils.selectionClick();
                           setState(() => _acceptedTerms = value);
                         },
                         label: Text.rich(
@@ -380,7 +380,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
                       SocialButton.google(
                         label: 'Continuar com Google',
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: const Text('Login com Google em desenvolvimento'),
@@ -396,7 +396,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
                       SocialButton.apple(
                         label: 'Continuar com Apple',
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: const Text('Login com Apple em desenvolvimento'),
@@ -425,7 +425,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
                             ),
                             GestureDetector(
                               onTap: () {
-                                HapticFeedback.lightImpact();
+                                HapticUtils.lightImpact();
                                 context.go(RouteNames.login);
                               },
                               child: Text(

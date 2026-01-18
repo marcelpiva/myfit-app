@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -9,45 +9,28 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../core/domain/entities/user_role.dart';
 import '../../../../core/services/workout_service.dart';
 import '../../../../shared/presentation/components/role_bottom_navigation.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
-// Provider for trainer's own programs
-final myWorkoutsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+// Provider for all user's programs (both created and imported)
+final allProgramsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   final service = WorkoutService();
-  return service.getPrograms(templatesOnly: false);
+  final programs = await service.getPrograms(templatesOnly: false);
+  final currentUser = ref.read(currentUserProvider);
+  final userId = currentUser?.id;
+  if (userId == null) return [];
+  // Filter programs created by current user
+  return programs.where((p) {
+    final createdById = p['created_by_id'];
+    return createdById != null && createdById.toString() == userId;
+  }).toList();
 });
 
-// Provider for catalog templates (public templates from platform)
-final catalogProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
-  final service = WorkoutService();
-  return service.getCatalogTemplates();
-});
-
-/// Page showing trainer's workout programs and catalog
-class TrainerProgramsPage extends ConsumerStatefulWidget {
+/// Page showing trainer's workout programs
+class TrainerProgramsPage extends ConsumerWidget {
   const TrainerProgramsPage({super.key});
 
   @override
-  ConsumerState<TrainerProgramsPage> createState() => _TrainerProgramsPageState();
-}
-
-class _TrainerProgramsPageState extends ConsumerState<TrainerProgramsPage>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -62,33 +45,35 @@ class _TrainerProgramsPageState extends ConsumerState<TrainerProgramsPage>
           children: [
             // Header
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Treinos',
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Meus Programas',
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Crie e gerencie programas de treino',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: isDark
-                              ? AppColors.mutedForegroundDark
-                              : AppColors.mutedForeground,
+                        const SizedBox(height: 4),
+                        Text(
+                          'Crie e gerencie seus programas de treino',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: isDark
+                                ? AppColors.mutedForegroundDark
+                                : AppColors.mutedForeground,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   FilledButton.icon(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       context.push(RouteNames.programWizard);
                     },
                     icon: const Icon(LucideIcons.plus, size: 18),
@@ -104,55 +89,9 @@ class _TrainerProgramsPageState extends ConsumerState<TrainerProgramsPage>
               ),
             ),
 
-            // Tab Bar
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.cardDark : AppColors.muted.withAlpha(100),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                indicator: BoxDecoration(
-                  color: isDark ? AppColors.backgroundDark : AppColors.card,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(isDark ? 30 : 10),
-                      blurRadius: 4,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-                ),
-                indicatorSize: TabBarIndicatorSize.tab,
-                indicatorPadding: const EdgeInsets.all(4),
-                dividerColor: Colors.transparent,
-                labelColor: isDark ? AppColors.foregroundDark : AppColors.foreground,
-                unselectedLabelColor: isDark
-                    ? AppColors.mutedForegroundDark
-                    : AppColors.mutedForeground,
-                labelStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-                tabs: const [
-                  Tab(text: 'Meus Treinos'),
-                  Tab(text: 'Catalogo'),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Tab Content
+            // Programs List
             Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _MyWorkoutsList(),
-                  _CatalogList(),
-                ],
-              ),
+              child: _ProgramsList(),
             ),
           ],
         ),
@@ -161,53 +100,63 @@ class _TrainerProgramsPageState extends ConsumerState<TrainerProgramsPage>
   }
 }
 
-/// List of user's own workouts
-class _MyWorkoutsList extends ConsumerWidget {
+/// Unified list of all user's programs
+class _ProgramsList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final workoutsAsync = ref.watch(myWorkoutsProvider);
+    final programsAsync = ref.watch(allProgramsProvider);
 
-    return workoutsAsync.when(
+    return programsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) => _ErrorState(
-        onRetry: () => ref.invalidate(myWorkoutsProvider),
+        onRetry: () => ref.invalidate(allProgramsProvider),
       ),
       data: (programs) {
         if (programs.isEmpty) {
           return _EmptyState(
             icon: LucideIcons.dumbbell,
-            message: 'Nenhum treino criado',
+            message: 'Nenhum programa criado',
             subtitle: 'Crie seu primeiro programa de treino',
             actionLabel: 'Criar Programa',
             onAction: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               context.push(RouteNames.programWizard);
             },
           );
         }
 
         return RefreshIndicator(
-          onRefresh: () async => ref.invalidate(myWorkoutsProvider),
+          onRefresh: () async => ref.invalidate(allProgramsProvider),
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             itemCount: programs.length,
             itemBuilder: (context, index) {
               final program = programs[index];
-              return _ProgramCard(
+              final isImported = program['source_template_id'] != null;
+
+              return _UnifiedProgramCard(
                 program: program,
                 isDark: isDark,
-                showPublishBadge: program['is_public'] == true,
+                isImported: isImported,
+                showPublishBadge: program['is_public'] == true && !isImported,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   final programId = program['id'] as String?;
                   if (programId != null) {
-                    context.push('${RouteNames.programWizard}?edit=$programId');
+                    if (isImported) {
+                      // Show view-only detail for imported programs
+                      _showProgramDetail(context, ref, program);
+                    } else {
+                      // Edit own programs
+                      context.push('${RouteNames.programWizard}?edit=$programId');
+                    }
                   }
                 },
-                onDelete: () => _handleDelete(context, ref, program),
-                onPublish: () => _handlePublish(context, ref, program),
+                onDelete: () => _handleDelete(context, ref, program, isImported),
+                onPublish: isImported ? null : () => _handlePublish(context, ref, program),
+                onDuplicate: isImported ? () => _handleDuplicate(context, ref, program) : null,
               );
             },
           ),
@@ -216,20 +165,199 @@ class _MyWorkoutsList extends ConsumerWidget {
     );
   }
 
+  void _showProgramDetail(
+    BuildContext context,
+    WidgetRef ref,
+    Map<String, dynamic> program,
+  ) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final name = program['name'] as String? ?? 'Programa';
+    final description = program['description'] as String?;
+    final goal = program['goal'] as String? ?? '';
+    final difficulty = program['difficulty'] as String? ?? '';
+    final splitType = program['split_type'] as String? ?? '';
+    final workoutCount = program['workout_count'] as int? ?? 0;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Container(
+        height: MediaQuery.of(ctx).size.height * 0.6,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Handle
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Header
+            Row(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary.withAlpha(40),
+                        AppColors.secondary.withAlpha(30),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(LucideIcons.dumbbell, color: AppColors.primary, size: 28),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              name,
+                              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withAlpha(20),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(LucideIcons.download, size: 12, color: AppColors.primary),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Importado',
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Nao editavel - use como base para criar novo',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            // Info chips
+            Row(
+              children: [
+                _InfoChip(icon: LucideIcons.target, label: _getGoalDisplay(goal), isDark: isDark),
+                const SizedBox(width: 8),
+                _InfoChip(icon: LucideIcons.gauge, label: _getDifficultyDisplay(difficulty), isDark: isDark),
+                const SizedBox(width: 8),
+                _InfoChip(icon: LucideIcons.layoutGrid, label: _getSplitDisplay(splitType), isDark: isDark),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            Row(
+              children: [
+                Icon(LucideIcons.dumbbell, size: 16, color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground),
+                const SizedBox(width: 6),
+                Text(
+                  '$workoutCount treino${workoutCount != 1 ? 's' : ''}',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                  ),
+                ),
+              ],
+            ),
+
+            if (description != null && description.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Text(
+                'Descricao',
+                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                description,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                ),
+              ),
+            ],
+
+            const Spacer(),
+
+            // Action button
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _handleDuplicate(context, ref, program);
+                },
+                icon: const Icon(LucideIcons.copy),
+                label: const Text('Criar novo a partir deste'),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _handleDelete(
     BuildContext context,
     WidgetRef ref,
     Map<String, dynamic> program,
+    bool isImported,
   ) async {
     final programId = program['id'] as String?;
     final programName = program['name'] as String? ?? 'Programa';
     if (programId == null) return;
 
+    final title = isImported ? 'Remover Programa' : 'Excluir Programa';
+    final message = isImported
+        ? 'Deseja remover "$programName" da sua lista?'
+        : 'Deseja excluir "$programName"? Esta acao nao pode ser desfeita.';
+    final buttonLabel = isImported ? 'Remover' : 'Excluir';
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Excluir Programa'),
-        content: Text('Deseja excluir "$programName"? Esta acao nao pode ser desfeita.'),
+        title: Text(title),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -238,7 +366,7 @@ class _MyWorkoutsList extends ConsumerWidget {
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(backgroundColor: AppColors.destructive),
-            child: const Text('Excluir'),
+            child: Text(buttonLabel),
           ),
         ],
       ),
@@ -248,17 +376,16 @@ class _MyWorkoutsList extends ConsumerWidget {
       try {
         final service = WorkoutService();
         await service.deleteProgram(programId);
-        // ignore: unused_result
-        ref.refresh(myWorkoutsProvider);
+        ref.invalidate(allProgramsProvider);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Programa excluido com sucesso')),
+            SnackBar(content: Text('Programa ${isImported ? 'removido' : 'excluido'} com sucesso')),
           );
         }
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erro ao excluir: $e')),
+            SnackBar(content: Text('Erro: $e')),
           );
         }
       }
@@ -306,10 +433,7 @@ class _MyWorkoutsList extends ConsumerWidget {
           isTemplate: true,
           isPublic: !isPublic,
         );
-        // ignore: unused_result
-        ref.refresh(myWorkoutsProvider);
-        // ignore: unused_result
-        ref.refresh(catalogProvider);
+        ref.invalidate(allProgramsProvider);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Programa ${isPublic ? 'despublicado' : 'publicado'} com sucesso')),
@@ -324,98 +448,72 @@ class _MyWorkoutsList extends ConsumerWidget {
       }
     }
   }
-}
 
-/// List of catalog templates
-class _CatalogList extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final catalogAsync = ref.watch(catalogProvider);
-
-    return catalogAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => _ErrorState(
-        onRetry: () => ref.invalidate(catalogProvider),
-      ),
-      data: (templates) {
-        if (templates.isEmpty) {
-          return _EmptyState(
-            icon: LucideIcons.library,
-            message: 'Catalogo vazio',
-            subtitle: 'Nenhum template disponivel no momento',
-          );
-        }
-
-        return RefreshIndicator(
-          onRefresh: () async => ref.invalidate(catalogProvider),
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: templates.length,
-            itemBuilder: (context, index) {
-              final template = templates[index];
-              return _CatalogCard(
-                template: template,
-                isDark: isDark,
-                onImport: () => _handleImport(context, ref, template),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  Future<void> _handleImport(
+  Future<void> _handleDuplicate(
     BuildContext context,
     WidgetRef ref,
-    Map<String, dynamic> template,
+    Map<String, dynamic> program,
   ) async {
-    final templateId = template['id'] as String?;
-    final templateName = template['name'] as String? ?? 'Template';
-    if (templateId == null) return;
+    final programId = program['id'] as String?;
+    final programName = program['name'] as String? ?? 'Programa';
+    if (programId == null) return;
 
-    final confirmed = await showDialog<bool>(
+    // Show dialog to get new program name
+    final nameController = TextEditingController(text: '$programName (Cópia)');
+    final newName = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Importar Template'),
-        content: Text('Deseja importar "$templateName" para seus treinos? Uma copia editavel sera criada.'),
+        title: const Text('Duplicar Programa'),
+        content: TextField(
+          controller: nameController,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Nome do novo programa',
+            hintText: 'Digite o nome do programa',
+          ),
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
+            onPressed: () => Navigator.pop(ctx),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Importar'),
+            onPressed: () => Navigator.pop(ctx, nameController.text.trim()),
+            child: const Text('Duplicar'),
           ),
         ],
       ),
     );
 
-    if (confirmed == true) {
-      try {
-        final service = WorkoutService();
-        final newProgram = await service.duplicateProgram(templateId);
-        // ignore: unused_result
-        ref.refresh(myWorkoutsProvider);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Template importado com sucesso')),
-          );
-          // Navigate to edit the imported program
-          final newProgramId = newProgram['id'] as String?;
-          if (newProgramId != null) {
-            context.push('${RouteNames.programWizard}?edit=$newProgramId');
-          }
-        }
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erro ao importar: $e')),
-          );
-        }
+    if (newName == null || newName.isEmpty || !context.mounted) return;
+
+    try {
+      final service = WorkoutService();
+      final newProgram = await service.duplicateProgram(programId, newName: newName);
+      final newProgramId = newProgram['id'] as String?;
+
+      ref.invalidate(allProgramsProvider);
+
+      if (context.mounted && newProgramId != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Programa "$newName" duplicado com sucesso'),
+            action: SnackBarAction(
+              label: 'Editar',
+              onPressed: () {
+                context.push('${RouteNames.programWizard}?edit=$newProgramId');
+              },
+            ),
+          ),
+        );
+        // Navigate to edit the new program
+        context.push('${RouteNames.programWizard}?edit=$newProgramId');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao duplicar: $e')),
+        );
       }
     }
   }
@@ -513,21 +611,25 @@ class _ErrorState extends StatelessWidget {
   }
 }
 
-class _ProgramCard extends StatelessWidget {
+class _UnifiedProgramCard extends StatelessWidget {
   final Map<String, dynamic> program;
   final bool isDark;
+  final bool isImported;
   final bool showPublishBadge;
   final VoidCallback onTap;
   final VoidCallback onDelete;
-  final VoidCallback onPublish;
+  final VoidCallback? onPublish;
+  final VoidCallback? onDuplicate;
 
-  const _ProgramCard({
+  const _UnifiedProgramCard({
     required this.program,
     required this.isDark,
+    required this.isImported,
     required this.onTap,
     required this.onDelete,
-    required this.onPublish,
     this.showPublishBadge = false,
+    this.onPublish,
+    this.onDuplicate,
   });
 
   @override
@@ -568,7 +670,31 @@ class _ProgramCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (showPublishBadge)
+                    // Imported badge
+                    if (isImported)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withAlpha(isDark ? 30 : 20),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(LucideIcons.download, size: 12, color: AppColors.primary),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Importado',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    // Published badge (only for own programs)
+                    if (showPublishBadge && !isImported)
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
@@ -598,38 +724,86 @@ class _ProgramCard extends StatelessWidget {
                         color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                       ),
                       onSelected: (value) {
-                        if (value == 'edit') onTap();
-                        else if (value == 'delete') onDelete();
-                        else if (value == 'publish') onPublish();
+                        switch (value) {
+                          case 'view':
+                            onTap();
+                            break;
+                          case 'edit':
+                            onTap();
+                            break;
+                          case 'delete':
+                            onDelete();
+                            break;
+                          case 'publish':
+                            onPublish?.call();
+                            break;
+                          case 'duplicate':
+                            onDuplicate?.call();
+                            break;
+                        }
                       },
                       itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: 'edit',
-                          child: Row(
-                            children: [
-                              Icon(LucideIcons.pencil, size: 18),
-                              SizedBox(width: 8),
-                              Text('Editar'),
-                            ],
+                        if (isImported) ...[
+                          const PopupMenuItem(
+                            value: 'view',
+                            child: Row(
+                              children: [
+                                Icon(LucideIcons.eye, size: 18),
+                                SizedBox(width: 8),
+                                Text('Visualizar'),
+                              ],
+                            ),
                           ),
-                        ),
-                        PopupMenuItem(
-                          value: 'publish',
-                          child: Row(
-                            children: [
-                              Icon(showPublishBadge ? LucideIcons.eyeOff : LucideIcons.globe, size: 18),
-                              const SizedBox(width: 8),
-                              Text(showPublishBadge ? 'Despublicar' : 'Publicar no Catalogo'),
-                            ],
+                          const PopupMenuItem(
+                            value: 'duplicate',
+                            child: Row(
+                              children: [
+                                Icon(LucideIcons.copy, size: 18),
+                                SizedBox(width: 8),
+                                Text('Criar novo a partir deste'),
+                              ],
+                            ),
                           ),
-                        ),
+                        ] else ...[
+                          const PopupMenuItem(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                Icon(LucideIcons.pencil, size: 18),
+                                SizedBox(width: 8),
+                                Text('Editar'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'duplicate',
+                            child: Row(
+                              children: [
+                                Icon(LucideIcons.copy, size: 18),
+                                SizedBox(width: 8),
+                                Text('Criar novo a partir deste'),
+                              ],
+                            ),
+                          ),
+                          if (onPublish != null)
+                            PopupMenuItem(
+                              value: 'publish',
+                              child: Row(
+                                children: [
+                                  Icon(showPublishBadge ? LucideIcons.eyeOff : LucideIcons.globe, size: 18),
+                                  const SizedBox(width: 8),
+                                  Text(showPublishBadge ? 'Despublicar' : 'Publicar no Catalogo'),
+                                ],
+                              ),
+                            ),
+                        ],
                         PopupMenuItem(
                           value: 'delete',
                           child: Row(
                             children: [
                               Icon(LucideIcons.trash2, size: 18, color: AppColors.destructive),
                               const SizedBox(width: 8),
-                              Text('Excluir', style: TextStyle(color: AppColors.destructive)),
+                              Text(isImported ? 'Remover' : 'Excluir', style: TextStyle(color: AppColors.destructive)),
                             ],
                           ),
                         ),
@@ -666,126 +840,6 @@ class _ProgramCard extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CatalogCard extends StatelessWidget {
-  final Map<String, dynamic> template;
-  final bool isDark;
-  final VoidCallback onImport;
-
-  const _CatalogCard({
-    required this.template,
-    required this.isDark,
-    required this.onImport,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final name = template['name'] as String? ?? 'Template';
-    final goal = template['goal'] as String? ?? '';
-    final difficulty = template['difficulty'] as String? ?? '';
-    final splitType = template['split_type'] as String? ?? '';
-    final workoutCount = template['workout_count'] as int? ?? 0;
-    final creatorName = template['creator_name'] as String?;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Material(
-        color: isDark ? AppColors.cardDark : AppColors.card,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: isDark ? AppColors.borderDark : AppColors.border,
-            ),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          name,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        if (creatorName != null) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(
-                                LucideIcons.user,
-                                size: 12,
-                                color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'por $creatorName',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  FilledButton.icon(
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      onImport();
-                    },
-                    icon: const Icon(LucideIcons.download, size: 16),
-                    label: const Text('Importar'),
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      textStyle: const TextStyle(fontSize: 13),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  _InfoChip(icon: LucideIcons.target, label: _getGoalDisplay(goal), isDark: isDark),
-                  const SizedBox(width: 8),
-                  _InfoChip(icon: LucideIcons.gauge, label: _getDifficultyDisplay(difficulty), isDark: isDark),
-                  const SizedBox(width: 8),
-                  _InfoChip(icon: LucideIcons.layoutGrid, label: _getSplitDisplay(splitType), isDark: isDark),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(
-                    LucideIcons.dumbbell,
-                    size: 14,
-                    color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '$workoutCount treino${workoutCount != 1 ? 's' : ''}',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
-                    ),
-                  ),
-                ],
-              ),
-            ],
           ),
         ),
       ),

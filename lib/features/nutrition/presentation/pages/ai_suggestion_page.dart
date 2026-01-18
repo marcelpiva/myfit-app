@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -59,7 +59,7 @@ class _AISuggestionPageState extends ConsumerState<AISuggestionPage>
   }
 
   void _selectGoal(String goalId) {
-    HapticFeedback.selectionClick();
+    HapticUtils.selectionClick();
     setState(() {
       _selectedGoal = goalId;
       _suggestions = null;
@@ -67,7 +67,7 @@ class _AISuggestionPageState extends ConsumerState<AISuggestionPage>
   }
 
   void _toggleRestriction(String restrictionId) {
-    HapticFeedback.selectionClick();
+    HapticUtils.selectionClick();
     setState(() {
       if (_selectedRestrictions.contains(restrictionId)) {
         _selectedRestrictions.remove(restrictionId);
@@ -89,7 +89,7 @@ class _AISuggestionPageState extends ConsumerState<AISuggestionPage>
       return;
     }
 
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     setState(() {
       _isGenerating = true;
     });
@@ -115,7 +115,7 @@ class _AISuggestionPageState extends ConsumerState<AISuggestionPage>
   }
 
   void _addToPlan(Map<String, dynamic> suggestion) {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${suggestion['name']} adicionado ao plano', style: const TextStyle(color: Colors.white)),
@@ -143,7 +143,7 @@ class _AISuggestionPageState extends ConsumerState<AISuggestionPage>
                   children: [
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         context.pop();
                       },
                       child: Container(
@@ -457,7 +457,7 @@ class _AISuggestionPageState extends ConsumerState<AISuggestionPage>
               ),
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   setState(() {
                     _suggestions = null;
                   });

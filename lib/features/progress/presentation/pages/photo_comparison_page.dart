@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -78,7 +78,7 @@ class _PhotoComparisonPageState extends ConsumerState<PhotoComparisonPage>
   }
 
   void _swapPhotos() {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     setState(() {
       final temp = _beforeIndex;
       _beforeIndex = _afterIndex;
@@ -106,7 +106,7 @@ class _PhotoComparisonPageState extends ConsumerState<PhotoComparisonPage>
                     children: [
                       GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(context);
                         },
                         child: Container(
@@ -140,7 +140,7 @@ class _PhotoComparisonPageState extends ConsumerState<PhotoComparisonPage>
                       const Spacer(),
                       GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: const Text('Compartilhando comparacao...'),
@@ -235,7 +235,7 @@ class _PhotoComparisonPageState extends ConsumerState<PhotoComparisonPage>
           return Expanded(
             child: GestureDetector(
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 setState(() {
                   _selectedAngle = angle['value'] as String;
                   _beforeIndex = _currentPhotos.length - 1;
@@ -475,7 +475,7 @@ class _PhotoComparisonPageState extends ConsumerState<PhotoComparisonPage>
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(context);
               },
               icon: const Icon(LucideIcons.plus, size: 18),
@@ -648,7 +648,7 @@ class _PhotoComparisonPageState extends ConsumerState<PhotoComparisonPage>
             }),
             onChanged: (value) {
               if (value != null) {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 onChanged(value);
               }
             },

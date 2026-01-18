@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
+import '../../../../core/widgets/video_player_page.dart';
 import '../../../../shared/presentation/components/components.dart';
 import '../providers/workout_provider.dart';
 
@@ -97,7 +98,7 @@ class _WorkoutDetailPageState extends ConsumerState<WorkoutDetailPage>
                         children: [
                           GestureDetector(
                             onTap: () {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                               Navigator.pop(context);
                             },
                             child: Container(
@@ -118,7 +119,7 @@ class _WorkoutDetailPageState extends ConsumerState<WorkoutDetailPage>
                             children: [
                               GestureDetector(
                                 onTap: () {
-                                  HapticFeedback.lightImpact();
+                                  HapticUtils.lightImpact();
                                 },
                                 child: Container(
                                   width: 40,
@@ -137,7 +138,7 @@ class _WorkoutDetailPageState extends ConsumerState<WorkoutDetailPage>
                               const SizedBox(width: 8),
                               GestureDetector(
                                 onTap: () {
-                                  HapticFeedback.lightImpact();
+                                  HapticUtils.lightImpact();
                                 },
                                 child: Container(
                                   width: 40,
@@ -166,7 +167,7 @@ class _WorkoutDetailPageState extends ConsumerState<WorkoutDetailPage>
                           onTap: () {
                             final programId = detailState.workout?['program_id'];
                             if (programId != null) {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                               context.push('/programs/$programId');
                             }
                           },
@@ -309,7 +310,7 @@ class _WorkoutDetailPageState extends ConsumerState<WorkoutDetailPage>
                     label: 'Iniciar Treino',
                     icon: LucideIcons.play,
                     onPressed: () {
-                      HapticFeedback.mediumImpact();
+                      HapticUtils.mediumImpact();
                       context.push('/workouts/active/${widget.workoutId}');
                     },
                   ),
@@ -487,58 +488,67 @@ class _ExerciseCard extends StatelessWidget {
                 ),
               ],
               const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text('Video do exercicio em breve!'),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          color: isDark
-                              ? AppColors.mutedDark.withAlpha(150)
-                              : AppColors.muted.withAlpha(200),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              LucideIcons.playCircle,
-                              size: 18,
-                              color: isDark
-                                  ? AppColors.foregroundDark
-                                  : AppColors.foreground,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Ver Video',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: isDark
-                                    ? AppColors.foregroundDark
-                                    : AppColors.foreground,
+              // Video button - only show if video_url exists
+              // video_url can be at exercise['video_url'] or exercise['exercise']['video_url']
+              Builder(
+                builder: (context) {
+                  final videoUrl = exercise['video_url'] as String? ??
+                      (exercise['exercise'] as Map<String, dynamic>?)?['video_url'] as String?;
+                  if (videoUrl == null || videoUrl.isEmpty) return const SizedBox.shrink();
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            HapticUtils.lightImpact();
+                            Navigator.pop(ctx);
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => VideoPlayerPage(
+                                  videoUrl: videoUrl,
+                                  title: exercise['name'] as String? ??
+                                      (exercise['exercise'] as Map<String, dynamic>?)?['name'] as String?,
+                                ),
                               ),
-                            ),
-                          ],
+                            );
+                          },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: isDark
+                                ? AppColors.primaryDark.withAlpha(30)
+                                : AppColors.primary.withAlpha(30),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                LucideIcons.playCircle,
+                                size: 18,
+                                color: isDark
+                                    ? AppColors.primaryDark
+                                    : AppColors.primary,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Ver Video',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: isDark
+                                      ? AppColors.primaryDark
+                                      : AppColors.primary,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                );
+                },
               ),
             ],
           ),
@@ -592,7 +602,7 @@ class _ExerciseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         _showExerciseDetail(context);
       },
       child: Container(

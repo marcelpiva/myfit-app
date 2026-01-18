@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -252,7 +252,7 @@ class _AssignProgramSheetState extends ConsumerState<AssignProgramSheet> {
 
                           return GestureDetector(
                             onTap: () {
-                              HapticFeedback.selectionClick();
+                              HapticUtils.selectionClick();
                               setState(() {
                                 _selectedStudentId = studentId;
                                 _selectedStudentName = studentName;
@@ -416,7 +416,7 @@ class _DateField extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        HapticFeedback.selectionClick();
+        HapticUtils.selectionClick();
         onTap();
       },
       child: Container(

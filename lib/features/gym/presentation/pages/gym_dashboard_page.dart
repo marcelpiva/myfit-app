@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -68,7 +68,7 @@ class GymDashboardPage extends ConsumerWidget {
                 actions: [
                   IconButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                     },
                     icon: Badge(
                       label: const Text('3'),
@@ -77,7 +77,7 @@ class GymDashboardPage extends ConsumerWidget {
                   ),
                   IconButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                     },
                     icon: Icon(LucideIcons.settings),
                   ),
@@ -134,7 +134,7 @@ class GymDashboardPage extends ConsumerWidget {
                     FadeInUp(
                       delay: const Duration(milliseconds: 400),
                       child: _buildSectionHeader(theme, 'Professores', 'Ver todos', () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                       }),
                     ),
                     const SizedBox(height: 12),
@@ -149,7 +149,7 @@ class GymDashboardPage extends ConsumerWidget {
                     FadeInUp(
                       delay: const Duration(milliseconds: 500),
                       child: _buildSectionHeader(theme, 'Atividade Recente', 'Ver mais', () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                       }),
                     ),
                     const SizedBox(height: 12),
@@ -203,7 +203,7 @@ class GymDashboardPage extends ConsumerWidget {
         final stat = stats[index];
         return GestureDetector(
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
           },
           child: Container(
             padding: const EdgeInsets.all(16),
@@ -276,7 +276,7 @@ class GymDashboardPage extends ConsumerWidget {
     // Revenue data not yet available from API
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
       },
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -367,7 +367,7 @@ class GymDashboardPage extends ConsumerWidget {
             ),
             child: InkWell(
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
               },
               borderRadius: BorderRadius.circular(8),
               child: Container(
@@ -469,7 +469,7 @@ class GymDashboardPage extends ConsumerWidget {
 
           return GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
             },
             child: Container(
               width: 160,
@@ -570,7 +570,7 @@ class GymDashboardPage extends ConsumerWidget {
                 final isLast = activities.indexOf(activity) == activities.length - 1;
                 return GestureDetector(
                   onTap: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                   },
                   child: Container(
                     padding: const EdgeInsets.all(16),
@@ -752,7 +752,7 @@ class GymDashboardPage extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
             },
             style: TextButton.styleFrom(
               foregroundColor: AppColors.success,
@@ -762,7 +762,7 @@ class GymDashboardPage extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
             },
             style: TextButton.styleFrom(
               foregroundColor: AppColors.destructive,
@@ -816,7 +816,7 @@ class _PeriodSelectorState extends State<_PeriodSelector> {
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          HapticFeedback.lightImpact();
+          HapticUtils.lightImpact();
           setState(() => _selected = value);
         },
         child: Container(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -128,7 +128,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                       },
                       child: Container(
@@ -161,7 +161,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         _showPreview(context);
                       },
                       child: Container(
@@ -275,7 +275,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(context);
                   },
                   child: Container(
@@ -303,7 +303,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
                 flex: 2,
                 child: GestureDetector(
                   onTap: () {
-                    HapticFeedback.mediumImpact();
+                    HapticUtils.mediumImpact();
                     _savePlan();
                   },
                   child: Container(
@@ -554,7 +554,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      HapticFeedback.selectionClick();
+                      HapticUtils.selectionClick();
                       onChanged(value + (label == 'Calorias' ? 50 : 5));
                     },
                     child: Container(
@@ -570,7 +570,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
                   const SizedBox(height: 4),
                   GestureDetector(
                     onTap: () {
-                      HapticFeedback.selectionClick();
+                      HapticUtils.selectionClick();
                       onChanged(value - (label == 'Calorias' ? 50 : 5));
                     },
                     child: Container(
@@ -754,7 +754,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
         ),
         GestureDetector(
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             _showFoodLibrary(context);
           },
           child: Container(
@@ -861,7 +861,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
                 const SizedBox(width: 8),
                 GestureDetector(
                   onTap: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     _editMeal(meal);
                   },
                   child: Container(
@@ -879,7 +879,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
                 const SizedBox(width: 8),
                 GestureDetector(
                   onTap: () {
-                    HapticFeedback.mediumImpact();
+                    HapticUtils.mediumImpact();
                     _removeMeal(meal);
                   },
                   child: Container(
@@ -939,7 +939,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
           // Add food button
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               _addFoodToMeal(meal);
             },
             child: Container(
@@ -992,7 +992,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
   Widget _buildAddMealButton(ThemeData theme, bool isDark) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         _showAddMealSheet(context);
       },
       child: Container(
@@ -1024,14 +1024,14 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
   }
 
   void _showPreview(BuildContext context) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Preview do plano alimentar')),
     );
   }
 
   void _showFoodLibrary(BuildContext context) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1045,7 +1045,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
   }
 
   void _removeMeal(_MealPlan meal) {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     setState(() {
       _meals.removeWhere((m) => m.id == meal.id);
     });
@@ -1120,7 +1120,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
                 width: double.infinity,
                 child: GestureDetector(
                   onTap: () {
-                    HapticFeedback.mediumImpact();
+                    HapticUtils.mediumImpact();
                     if (nameController.text.isNotEmpty) {
                       setState(() {
                         _meals.add(_MealPlan(
@@ -1159,7 +1159,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
   }
 
   void _savePlan() {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Plano alimentar salvo com sucesso!')),
     );
@@ -1251,7 +1251,7 @@ class _FoodLibrarySheet extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(context);
                   },
                   child: Container(
@@ -1294,7 +1294,7 @@ class _FoodLibrarySheet extends StatelessWidget {
                 final category = _categories[index];
                 return GestureDetector(
                   onTap: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                   },
                   child: Container(
                     padding: const EdgeInsets.all(16),

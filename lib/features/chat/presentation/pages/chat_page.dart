@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -142,7 +142,7 @@ class _ChatPageState extends ConsumerState<ChatPage>
                   ),
                 ),
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  HapticUtils.selectionClick();
                   Navigator.pop(context);
                   _openConversationFromProvider(context, contact);
                 },
@@ -203,7 +203,7 @@ class _ChatPageState extends ConsumerState<ChatPage>
                       ),
                       GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           _showNewConversationModal();
                         },
                         child: Container(
@@ -229,7 +229,7 @@ class _ChatPageState extends ConsumerState<ChatPage>
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: GestureDetector(
                     onTap: () {
-                      HapticFeedback.selectionClick();
+                      HapticUtils.selectionClick();
                       _searchFocusNode.requestFocus();
                     },
                     child: Container(
@@ -367,7 +367,7 @@ class _ChatPageState extends ConsumerState<ChatPage>
                               conversation: conversation,
                               isDark: isDark,
                               onTap: () {
-                                HapticFeedback.selectionClick();
+                                HapticUtils.selectionClick();
                                 _openConversationFromProvider(context, conversation);
                               },
                             );
@@ -773,7 +773,7 @@ class _ConversationPageState extends ConsumerState<_ConversationPage> {
               icon: LucideIcons.archive,
               label: 'Arquivar conversa',
               onTap: () {
-                HapticFeedback.selectionClick();
+                HapticUtils.selectionClick();
                 Navigator.pop(context);
               },
             ),
@@ -783,7 +783,7 @@ class _ConversationPageState extends ConsumerState<_ConversationPage> {
               icon: LucideIcons.bellOff,
               label: 'Silenciar notificacoes',
               onTap: () {
-                HapticFeedback.selectionClick();
+                HapticUtils.selectionClick();
                 Navigator.pop(context);
               },
             ),
@@ -793,7 +793,7 @@ class _ConversationPageState extends ConsumerState<_ConversationPage> {
               icon: LucideIcons.ban,
               label: 'Bloquear',
               onTap: () {
-                HapticFeedback.selectionClick();
+                HapticUtils.selectionClick();
                 Navigator.pop(context);
               },
             ),
@@ -804,7 +804,7 @@ class _ConversationPageState extends ConsumerState<_ConversationPage> {
               label: 'Denunciar',
               isDestructive: true,
               onTap: () {
-                HapticFeedback.selectionClick();
+                HapticUtils.selectionClick();
                 Navigator.pop(context);
               },
             ),
@@ -848,7 +848,7 @@ class _ConversationPageState extends ConsumerState<_ConversationPage> {
               icon: LucideIcons.camera,
               label: 'Camera',
               onTap: () {
-                HapticFeedback.selectionClick();
+                HapticUtils.selectionClick();
                 Navigator.pop(context);
               },
             ),
@@ -858,7 +858,7 @@ class _ConversationPageState extends ConsumerState<_ConversationPage> {
               icon: LucideIcons.image,
               label: 'Galeria',
               onTap: () {
-                HapticFeedback.selectionClick();
+                HapticUtils.selectionClick();
                 Navigator.pop(context);
               },
             ),
@@ -868,7 +868,7 @@ class _ConversationPageState extends ConsumerState<_ConversationPage> {
               icon: LucideIcons.fileText,
               label: 'Documento',
               onTap: () {
-                HapticFeedback.selectionClick();
+                HapticUtils.selectionClick();
                 Navigator.pop(context);
               },
             ),
@@ -878,7 +878,7 @@ class _ConversationPageState extends ConsumerState<_ConversationPage> {
               icon: LucideIcons.mapPin,
               label: 'Localizacao',
               onTap: () {
-                HapticFeedback.selectionClick();
+                HapticUtils.selectionClick();
                 Navigator.pop(context);
               },
             ),
@@ -1001,7 +1001,7 @@ class _ConversationPageState extends ConsumerState<_ConversationPage> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                       },
                       child: Container(
@@ -1089,7 +1089,7 @@ class _ConversationPageState extends ConsumerState<_ConversationPage> {
 
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         _showVoiceCallSnackbar();
                       },
                       child: Container(
@@ -1113,7 +1113,7 @@ class _ConversationPageState extends ConsumerState<_ConversationPage> {
 
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         _showMoreOptionsModal();
                       },
                       child: Container(
@@ -1182,7 +1182,7 @@ class _ConversationPageState extends ConsumerState<_ConversationPage> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         _showAttachmentModal();
                       },
                       child: Container(
@@ -1238,7 +1238,7 @@ class _ConversationPageState extends ConsumerState<_ConversationPage> {
 
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.mediumImpact();
+                        HapticUtils.mediumImpact();
                         _sendMessage();
                       },
                       child: Container(
@@ -1280,7 +1280,7 @@ class _MessageBubble extends StatelessWidget {
     final isMe = message['isMe'] as bool;
 
     return GestureDetector(
-      onLongPress: () => HapticFeedback.mediumImpact(),
+      onLongPress: () => HapticUtils.mediumImpact(),
       child: Align(
         alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(

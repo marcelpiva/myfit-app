@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
@@ -50,7 +50,7 @@ class StepMethodSelection extends StatelessWidget {
             isDark: isDark,
             theme: theme,
             onTap: () {
-              HapticFeedback.selectionClick();
+              HapticUtils.selectionClick();
               onMethodSelected(CreationMethod.scratch);
             },
           ),
@@ -67,7 +67,7 @@ class StepMethodSelection extends StatelessWidget {
             isDark: isDark,
             theme: theme,
             onTap: () {
-              HapticFeedback.selectionClick();
+              HapticUtils.selectionClick();
               onMethodSelected(CreationMethod.ai);
             },
           ),
@@ -77,14 +77,14 @@ class StepMethodSelection extends StatelessWidget {
           _MethodCard(
             icon: LucideIcons.copy,
             iconColor: Colors.orange,
-            title: 'Usar Template',
+            title: 'A partir dos meus programas',
             description:
-                'Comece com um programa pronto e personalize conforme necessario.',
+                'Use um dos seus programas de treino como base para criar um novo.',
             isRecommended: false,
             isDark: isDark,
             theme: theme,
             onTap: () {
-              HapticFeedback.selectionClick();
+              HapticUtils.selectionClick();
               onMethodSelected(CreationMethod.template);
             },
           ),

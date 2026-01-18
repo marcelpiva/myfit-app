@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -80,7 +80,7 @@ class _WeightGoalPageState extends ConsumerState<WeightGoalPage>
       return;
     }
 
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Meta salva com sucesso!'),
@@ -134,7 +134,7 @@ class _WeightGoalPageState extends ConsumerState<WeightGoalPage>
                     children: [
                       GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(context);
                         },
                         child: Container(
@@ -544,7 +544,7 @@ class _WeightGoalPageState extends ConsumerState<WeightGoalPage>
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () {
-                  HapticFeedback.mediumImpact();
+                  HapticUtils.mediumImpact();
                   showDialog(
                     context: context,
                     builder: (ctx) => AlertDialog(

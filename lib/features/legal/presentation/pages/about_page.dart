@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -69,7 +69,7 @@ class _AboutPageState extends State<AboutPage>
                       children: [
                         GestureDetector(
                           onTap: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             context.pop();
                           },
                           child: Container(
@@ -324,7 +324,7 @@ class _AboutPageState extends State<AboutPage>
   Widget _buildSocialButton(bool isDark, IconData icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap();
       },
       child: Container(

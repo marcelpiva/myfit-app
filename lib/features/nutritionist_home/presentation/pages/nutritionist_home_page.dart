@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -137,7 +137,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
                         'Atividade Recente',
                         icon: LucideIcons.activity,
                         onSeeAll: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           _showAllActivitiesModal(context, isDark);
                         },
                       ),
@@ -328,7 +328,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
                   final activity = allActivities[index];
                   return GestureDetector(
                     onTap: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                       _showActivityDetailsModal(context, isDark, activity);
                     },
@@ -531,7 +531,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                     },
                     style: OutlinedButton.styleFrom(
@@ -551,7 +551,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                       context.push('/patients/${appointment.patientId}/diet-plan?name=${Uri.encodeComponent(appointment.patientName)}');
                     },
@@ -656,7 +656,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                 },
                 style: ElevatedButton.styleFrom(
@@ -772,7 +772,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                     },
                     style: OutlinedButton.styleFrom(
@@ -792,7 +792,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                       _handleAlertAction(context, isDark, alert);
                     },
@@ -986,7 +986,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -1411,7 +1411,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
   }) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap?.call();
       },
       child: Container(
@@ -1476,7 +1476,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
                 color: AppColors.primary,
                 isDark: isDark,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   context.push('/patients');
                 },
               ),
@@ -1490,7 +1490,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
                 color: AppColors.secondary,
                 isDark: isDark,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   // Show today's schedule - already on this page, scroll or show modal
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Consultas de hoje estao listadas abaixo')),
@@ -1511,7 +1511,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
                 color: AppColors.success,
                 isDark: isDark,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   context.push('/diet-plans');
                 },
               ),
@@ -1525,7 +1525,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
                 color: AppColors.warning,
                 isDark: isDark,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   context.push('/patients');
                 },
               ),
@@ -1614,7 +1614,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
         return Expanded(
           child: GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               _handleQuickAction(context, isDark, entry.key);
             },
             child: Container(
@@ -1704,7 +1704,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
 
         return GestureDetector(
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             _showAppointmentDetailsModal(context, isDark, appointment);
           },
           child: Container(
@@ -1862,7 +1862,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
 
         return GestureDetector(
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             _showActivityDetailsModal(context, isDark, activity);
           },
           child: Container(
@@ -1971,7 +1971,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
 
         return GestureDetector(
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             _showAlertDetailsModal(context, isDark, alert, alertColor);
           },
           child: Container(
@@ -2067,7 +2067,7 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap?.call();
       },
       child: Container(
@@ -2538,7 +2538,7 @@ class _ScheduleConsultationFormState extends State<_ScheduleConsultationForm> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       _confirmSchedule();
                     },
                     style: ElevatedButton.styleFrom(

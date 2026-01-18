@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -11,10 +11,12 @@ import '../providers/program_wizard_provider.dart';
 /// Step for AI-powered program generation questionnaire
 class StepAIQuestionnaire extends ConsumerStatefulWidget {
   final VoidCallback onComplete;
+  final VoidCallback? onCancel;
 
   const StepAIQuestionnaire({
     super.key,
     required this.onComplete,
+    this.onCancel,
   });
 
   @override
@@ -82,7 +84,7 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
 
   void _nextQuestion() {
     if (_currentQuestion < _questions.length - 1) {
-      HapticFeedback.selectionClick();
+      HapticUtils.selectionClick();
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -97,7 +99,7 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
 
   void _previousQuestion() {
     if (_currentQuestion > 0) {
-      HapticFeedback.selectionClick();
+      HapticUtils.selectionClick();
       _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -148,66 +150,121 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
     final isDark = theme.brightness == Brightness.dark;
 
     if (_isGenerating) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: AppColors.secondary.withAlpha(30),
-                borderRadius: BorderRadius.circular(40),
-              ),
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Gerando programa...',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'A IA esta selecionando os melhores exercicios',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: 24),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.destructive.withAlpha(20),
-                  borderRadius: BorderRadius.circular(8),
+      return Column(
+        children: [
+          // Header with close button (also in generating state)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    HapticUtils.lightImpact();
+                    setState(() {
+                      _isGenerating = false;
+                      _error = null;
+                    });
+                  },
+                  icon: const Icon(LucideIcons.x),
+                  tooltip: 'Cancelar',
                 ),
-                child: Text(
-                  _error!,
-                  style: TextStyle(color: AppColors.destructive),
-                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: AppColors.secondary.withAlpha(30),
+                      borderRadius: BorderRadius.circular(40),
+                    ),
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Gerando programa...',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'A IA esta selecionando os melhores exercicios',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  if (_error != null) ...[
+                    const SizedBox(height: 24),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 32),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.destructive.withAlpha(20),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        _error!,
+                        style: TextStyle(color: AppColors.destructive),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    FilledButton(
+                      onPressed: () {
+                        setState(() {
+                          _isGenerating = false;
+                          _error = null;
+                        });
+                      },
+                      child: const Text('Voltar'),
+                    ),
+                  ],
+                ],
               ),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () {
-                  setState(() {
-                    _isGenerating = false;
-                    _error = null;
-                  });
-                },
-                child: const Text('Voltar'),
-              ),
-            ],
-          ],
-        ),
+            ),
+          ),
+        ],
       );
     }
 
     return Column(
       children: [
+        // Header with close button
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Gerar com IA',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  HapticUtils.lightImpact();
+                  if (widget.onCancel != null) {
+                    widget.onCancel!();
+                  } else {
+                    Navigator.of(context).pop();
+                  }
+                },
+                icon: const Icon(LucideIcons.x),
+                tooltip: 'Fechar',
+              ),
+            ],
+          ),
+        ),
         // Progress indicator
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -352,7 +409,7 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
                 isDark: isDark,
                 theme: theme,
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  HapticUtils.selectionClick();
                   setState(() => _goal = goal);
                 },
               )),
@@ -409,7 +466,7 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
                 isDark: isDark,
                 theme: theme,
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  HapticUtils.selectionClick();
                   setState(() => _difficulty = diff);
                 },
               )),
@@ -454,7 +511,7 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
                 isDark: isDark,
                 theme: theme,
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  HapticUtils.selectionClick();
                   setState(() => _daysPerWeek = days);
                 },
               )),
@@ -494,7 +551,7 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
                 isDark: isDark,
                 theme: theme,
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  HapticUtils.selectionClick();
                   setState(() => _minutesPerSession = minutes);
                 },
               )),
@@ -533,7 +590,7 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
                 isDark: isDark,
                 theme: theme,
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  HapticUtils.selectionClick();
                   setState(() => _equipment = opt.$1);
                 },
               )),
@@ -566,7 +623,7 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
                 isDark: isDark,
                 theme: theme,
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  HapticUtils.selectionClick();
                   setState(() {
                     if (opt.$1 == 'none') {
                       _injuries.clear();
@@ -606,7 +663,7 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
                 isDark: isDark,
                 theme: theme,
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  HapticUtils.selectionClick();
                   setState(() => _preferences = opt.$1);
                 },
               )),
@@ -635,7 +692,7 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
                 isDark: isDark,
                 theme: theme,
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  HapticUtils.selectionClick();
                   setState(() => _durationWeeks = opt.$1);
                 },
               )),

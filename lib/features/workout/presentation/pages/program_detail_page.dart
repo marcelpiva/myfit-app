@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -273,7 +273,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
             children: [
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(context);
                 },
                 child: Container(
@@ -294,7 +294,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
                 children: [
                   GestureDetector(
                     onTap: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       _showOptionsMenu(context);
                     },
                     child: Container(
@@ -521,7 +521,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
 
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         final workoutId = workout?['id'] as String?;
         if (workoutId != null) {
           context.push('/workouts/$workoutId');
@@ -754,7 +754,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
         style: TextStyle(color: color),
       ),
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap();
       },
     );
@@ -908,7 +908,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
                 trailing: const Icon(LucideIcons.chevronRight),
                 onTap: workoutId != null
                     ? () {
-                        HapticFeedback.mediumImpact();
+                        HapticUtils.mediumImpact();
                         Navigator.pop(context);
                         context.push('/workouts/active/$workoutId');
                       }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -215,7 +217,7 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
                           const SizedBox(width: 8),
                           GestureDetector(
                             onTap: () {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                               _pasteCode();
                             },
                             child: Container(
@@ -321,7 +323,7 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
                       Center(
                         child: TextButton.icon(
                           onPressed: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             context.push('/qr-scanner');
                           },
                           icon: Icon(LucideIcons.scanLine, size: 18),
@@ -350,7 +352,7 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
         children: [
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               context.pop();
             },
             child: Container(
@@ -444,7 +446,7 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
         width: double.infinity,
         child: ElevatedButton(
           onPressed: _canJoin && !_isLoading ? () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             _joinOrganization();
           } : null,
           style: ElevatedButton.styleFrom(

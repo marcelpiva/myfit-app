@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -28,7 +28,7 @@ class _WorkoutFromScratchPageState extends ConsumerState<WorkoutFromScratchPage>
   }
 
   void _addExercise() {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -44,7 +44,7 @@ class _WorkoutFromScratchPageState extends ConsumerState<WorkoutFromScratchPage>
   }
 
   void _editExercise(int index) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -61,7 +61,7 @@ class _WorkoutFromScratchPageState extends ConsumerState<WorkoutFromScratchPage>
   }
 
   void _removeExercise(int index) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     setState(() {
       _exercises.removeAt(index);
     });
@@ -69,7 +69,7 @@ class _WorkoutFromScratchPageState extends ConsumerState<WorkoutFromScratchPage>
 
   void _saveWorkout() {
     if (_nameController.text.isEmpty) {
-      HapticFeedback.heavyImpact();
+      HapticUtils.heavyImpact();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Por favor, insira um nome para o treino', style: const TextStyle(color: Colors.white)),
@@ -80,7 +80,7 @@ class _WorkoutFromScratchPageState extends ConsumerState<WorkoutFromScratchPage>
     }
 
     if (_exercises.isEmpty) {
-      HapticFeedback.heavyImpact();
+      HapticUtils.heavyImpact();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Adicione pelo menos um exercicio ao treino', style: const TextStyle(color: Colors.white)),
@@ -90,7 +90,7 @@ class _WorkoutFromScratchPageState extends ConsumerState<WorkoutFromScratchPage>
       return;
     }
 
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Treino salvo com sucesso!', style: const TextStyle(color: Colors.white)),
@@ -184,7 +184,7 @@ class _WorkoutFromScratchPageState extends ConsumerState<WorkoutFromScratchPage>
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: _exercises.length,
                           onReorder: (oldIndex, newIndex) {
-                            HapticFeedback.selectionClick();
+                            HapticUtils.selectionClick();
                             setState(() {
                               if (newIndex > oldIndex) newIndex--;
                               final item = _exercises.removeAt(oldIndex);
@@ -228,7 +228,7 @@ class _WorkoutFromScratchPageState extends ConsumerState<WorkoutFromScratchPage>
         children: [
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               context.pop();
             },
             child: Container(
@@ -653,7 +653,7 @@ class _WorkoutFromScratchPageState extends ConsumerState<WorkoutFromScratchPage>
             Expanded(
               child: OutlinedButton(
                 onPressed: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(context);
                 },
                 style: OutlinedButton.styleFrom(
@@ -775,11 +775,11 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
 
   void _addExercise() {
     if (_nameController.text.isEmpty) {
-      HapticFeedback.heavyImpact();
+      HapticUtils.heavyImpact();
       return;
     }
 
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     widget.onAdd(_Exercise(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: _nameController.text,
@@ -828,7 +828,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(context);
                   },
                   child: Icon(
@@ -893,7 +893,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                     children: _suggestedExercises.map((exercise) {
                       return GestureDetector(
                         onTap: () {
-                          HapticFeedback.selectionClick();
+                          HapticUtils.selectionClick();
                           _nameController.text = exercise;
                         },
                         child: Container(
@@ -935,7 +935,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          HapticFeedback.selectionClick();
+                          HapticUtils.selectionClick();
                           if (_sets > 1) setState(() => _sets--);
                         },
                         child: Container(
@@ -967,7 +967,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                       const SizedBox(width: 16),
                       GestureDetector(
                         onTap: () {
-                          HapticFeedback.selectionClick();
+                          HapticUtils.selectionClick();
                           setState(() => _sets++);
                         },
                         child: Container(
@@ -1036,7 +1036,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                     inactiveColor: isDark ? AppColors.borderDark : AppColors.border,
                     label: '${_restSeconds}s',
                     onChanged: (value) {
-                      HapticFeedback.selectionClick();
+                      HapticUtils.selectionClick();
                       setState(() => _restSeconds = value.toInt());
                     },
                   ),
@@ -1117,11 +1117,11 @@ class _EditExerciseSheetState extends State<_EditExerciseSheet> {
 
   void _saveExercise() {
     if (_nameController.text.isEmpty) {
-      HapticFeedback.heavyImpact();
+      HapticUtils.heavyImpact();
       return;
     }
 
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     widget.onSave(widget.exercise.copyWith(
       name: _nameController.text,
       sets: _sets,
@@ -1212,7 +1212,7 @@ class _EditExerciseSheetState extends State<_EditExerciseSheet> {
               children: [
                 GestureDetector(
                   onTap: () {
-                    HapticFeedback.selectionClick();
+                    HapticUtils.selectionClick();
                     if (_sets > 1) setState(() => _sets--);
                   },
                   child: Container(
@@ -1244,7 +1244,7 @@ class _EditExerciseSheetState extends State<_EditExerciseSheet> {
                 const SizedBox(width: 16),
                 GestureDetector(
                   onTap: () {
-                    HapticFeedback.selectionClick();
+                    HapticUtils.selectionClick();
                     setState(() => _sets++);
                   },
                   child: Container(
@@ -1313,7 +1313,7 @@ class _EditExerciseSheetState extends State<_EditExerciseSheet> {
               inactiveColor: isDark ? AppColors.borderDark : AppColors.border,
               label: '${_restSeconds}s',
               onChanged: (value) {
-                HapticFeedback.selectionClick();
+                HapticUtils.selectionClick();
                 setState(() => _restSeconds = value.toInt());
               },
             ),

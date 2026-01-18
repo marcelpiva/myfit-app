@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -114,7 +114,7 @@ class _TrainerDashboardPageState extends ConsumerState<TrainerDashboardPage>
                       isDark,
                       'Alunos Recentes',
                       onSeeAll: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         context.push(RouteNames.students);
                       },
                     ),
@@ -205,7 +205,7 @@ class _TrainerDashboardPageState extends ConsumerState<TrainerDashboardPage>
   }) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
       },
       child: Container(
         width: 44,
@@ -379,7 +379,7 @@ class _TrainerDashboardPageState extends ConsumerState<TrainerDashboardPage>
         return Expanded(
           child: GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
             },
             child: Container(
               margin: EdgeInsets.only(
@@ -485,7 +485,7 @@ class _TrainerDashboardPageState extends ConsumerState<TrainerDashboardPage>
 
         return GestureDetector(
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             // Navigate based on action
             final action = alert['action'] as String?;
             if (action == 'view_students') {
@@ -591,7 +591,7 @@ class _TrainerDashboardPageState extends ConsumerState<TrainerDashboardPage>
 
           return GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               // Navigate to student detail
               context.push('${RouteNames.students}/${student.id}');
             },
@@ -748,7 +748,7 @@ class _TrainerDashboardPageState extends ConsumerState<TrainerDashboardPage>
 
         return GestureDetector(
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
           },
           child: Container(
             margin: EdgeInsets.only(bottom: index < schedule.length - 1 ? 8 : 0),
@@ -848,7 +848,7 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
       },
       child: Container(
         padding: const EdgeInsets.all(16),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -37,7 +37,7 @@ class CoachDashboardPage extends ConsumerWidget {
         actions: [
           IconButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               context.push('/settings');
             },
             icon: const Icon(LucideIcons.settings),
@@ -120,7 +120,7 @@ class CoachDashboardPage extends ConsumerWidget {
                   isDark: isDark,
                   trailing: TextButton.icon(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                     },
                     icon: const Icon(LucideIcons.externalLink, size: 14),
                     label: const Text('Abrir'),
@@ -408,7 +408,7 @@ class _ProgramCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
           },
           borderRadius: BorderRadius.circular(8),
           child: Padding(
@@ -499,7 +499,7 @@ class _CommunityCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
       },
       child: Container(
         decoration: BoxDecoration(
@@ -591,7 +591,7 @@ class _QuickActionsGrid extends StatelessWidget {
             color: isDark ? AppColors.primaryDark : AppColors.primary,
             isDark: isDark,
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
             },
           ),
         ),
@@ -603,7 +603,7 @@ class _QuickActionsGrid extends StatelessWidget {
             color: AppColors.destructive,
             isDark: isDark,
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
             },
           ),
         ),
@@ -615,7 +615,7 @@ class _QuickActionsGrid extends StatelessWidget {
             color: isDark ? AppColors.accentDark : AppColors.accent,
             isDark: isDark,
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
             },
           ),
         ),
@@ -698,7 +698,7 @@ class _ActivityTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
       },
       child: Container(
         decoration: BoxDecoration(

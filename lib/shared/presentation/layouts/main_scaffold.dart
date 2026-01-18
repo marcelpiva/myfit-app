@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../core/utils/haptic_utils.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -52,7 +52,7 @@ class MainScaffold extends StatelessWidget {
                   isSelected: isSelected,
                   isDark: isDark,
                   onTap: () {
-                    HapticFeedback.selectionClick();
+                    HapticUtils.selectionClick();
                     navigationShell.goBranch(
                       index,
                       initialLocation: index == navigationShell.currentIndex,

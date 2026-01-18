@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -179,7 +181,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  HapticFeedback.lightImpact();
+                                  HapticUtils.lightImpact();
                                   _showFullHistory(context, isDark);
                                 },
                                 child: Text(
@@ -232,7 +234,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
         children: [
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               context.pop();
             },
             child: Container(
@@ -280,7 +282,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
           // Help button
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               _showHelp(context, isDark);
             },
             child: Container(
@@ -318,7 +320,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
   ) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap();
       },
       child: Container(
@@ -411,12 +413,12 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
   // ============ CHECK-IN METHODS ============
 
   void _showQrScanner(BuildContext context, bool isDark) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     context.push(RouteNames.qrScanner);
   }
 
   void _showCodeInput(BuildContext context, bool isDark) {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     _codeController.clear();
 
     showModalBottomSheet(
@@ -506,7 +508,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
                     const SizedBox(width: 12),
                     GestureDetector(
                       onTap: () async {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         final data = await Clipboard.getData(Clipboard.kTextPlain);
                         if (data?.text != null) {
                           _codeController.text = data!.text!.trim().toUpperCase();
@@ -533,7 +535,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
                   width: double.infinity,
                   child: GestureDetector(
                     onTap: () {
-                      HapticFeedback.mediumImpact();
+                      HapticUtils.mediumImpact();
                       if (_codeController.text.trim().length >= 4) {
                         Navigator.pop(context);
                         _simulateCheckin(context, 'Codigo');
@@ -566,7 +568,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
   }
 
   void _showLocationCheckin(BuildContext context, bool isDark) {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
@@ -666,7 +668,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
                 width: double.infinity,
                 child: GestureDetector(
                   onTap: () {
-                    HapticFeedback.mediumImpact();
+                    HapticUtils.mediumImpact();
                     Navigator.pop(context);
                     _simulateCheckin(context, 'Localizacao');
                   },
@@ -701,7 +703,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
   }
 
   void _showRequestCheckin(BuildContext context, bool isDark) {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
@@ -751,13 +753,13 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
               ),
               const SizedBox(height: 24),
               _buildRequestOption(isDark, 'Personal Joao', 'Personal Trainer', LucideIcons.user, () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(context);
                 _simulateRequestSent(context, 'Personal Joao');
               }),
               const SizedBox(height: 12),
               _buildRequestOption(isDark, 'Academia FitPro', 'Academia', LucideIcons.building2, () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(context);
                 _simulateRequestSent(context, 'Academia FitPro');
               }),
@@ -849,12 +851,12 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
   }
 
   void _showFullHistory(BuildContext context, bool isDark) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     context.push(RouteNames.checkinHistory);
   }
 
   void _showHelp(BuildContext context, bool isDark) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
@@ -935,7 +937,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
   // ============ SIMULATION HELPERS ============
 
   void _simulateCheckin(BuildContext context, String method) {
-    HapticFeedback.heavyImpact();
+    HapticUtils.heavyImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -951,7 +953,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
   }
 
   void _simulateRequestSent(BuildContext context, String target) {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(

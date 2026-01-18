@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -163,7 +163,7 @@ Para dúvidas sobre privacidade:
                     children: [
                       GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           context.pop();
                         },
                         child: Container(
@@ -273,7 +273,7 @@ Para dúvidas sobre privacidade:
           ),
           initiallyExpanded: false,
           onExpansionChanged: (_) {
-            HapticFeedback.selectionClick();
+            HapticUtils.selectionClick();
           },
           children: [
             Container(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -52,7 +52,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
   }
 
   void _showLanguageSelector() {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showModalBottomSheet(
@@ -138,7 +138,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
   }
 
   void _showThemeSelector() {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final currentThemeMode = ref.read(themeModeProvider);
 
@@ -437,7 +437,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                     PrimaryButton(
                       label: l10n.getStartedFree,
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         context.go(RouteNames.register);
                       },
                     ),
@@ -449,7 +449,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                       label: l10n.alreadyHaveAccount,
                       fullWidth: true,
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         context.go(RouteNames.login);
                       },
                     ),
@@ -538,7 +538,7 @@ class _LanguageOption extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap();
       },
       child: Container(
@@ -592,7 +592,7 @@ class _ThemeOption extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap();
       },
       child: Container(

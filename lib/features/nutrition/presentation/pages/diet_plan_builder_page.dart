@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -128,7 +128,7 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
       return;
     }
 
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(widget.planId == null
@@ -208,7 +208,7 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
         children: [
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(context);
             },
             child: Container(
@@ -240,7 +240,7 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
           // Template toggle
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               setState(() => _isTemplate = !_isTemplate);
             },
             child: Container(
@@ -430,7 +430,7 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
             final isSelected = _selectedTags.contains(tag);
             return GestureDetector(
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 setState(() {
                   if (isSelected) {
                     _selectedTags.remove(tag);
@@ -502,7 +502,7 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
             ),
             GestureDetector(
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 _showAddMealDialog(isDark);
               },
               child: Container(
@@ -609,7 +609,7 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
             children: [
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   _showAddFoodDialog(index, isDark);
                 },
                 child: Container(
@@ -725,7 +725,7 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
           const SizedBox(width: 8),
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               setState(() {
                 (_meals[mealIndex]['foods'] as List).remove(food);
               });
@@ -1070,7 +1070,7 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
   ) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap();
       },
       child: Container(

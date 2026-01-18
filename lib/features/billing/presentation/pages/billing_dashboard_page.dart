@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -39,7 +39,7 @@ class BillingDashboardPage extends ConsumerWidget {
           padding: const EdgeInsets.all(8.0),
           child: GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               context.pop();
             },
             child: Container(
@@ -58,7 +58,7 @@ class BillingDashboardPage extends ConsumerWidget {
         actions: [
           IconButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               _showMonthPicker(context, ref);
             },
             icon: const Icon(LucideIcons.calendar),
@@ -140,7 +140,7 @@ class BillingDashboardPage extends ConsumerWidget {
                           count: null,
                           isSelected: statusFilter == null,
                           onTap: () {
-                            HapticFeedback.selectionClick();
+                            HapticUtils.selectionClick();
                             ref.read(billingStatusFilterProvider.notifier).state = null;
                           },
                           isDark: isDark,
@@ -155,7 +155,7 @@ class BillingDashboardPage extends ConsumerWidget {
                           count: summary.paidCount,
                           isSelected: statusFilter == PaymentStatus.paid,
                           onTap: () {
-                            HapticFeedback.selectionClick();
+                            HapticUtils.selectionClick();
                             ref.read(billingStatusFilterProvider.notifier).state = PaymentStatus.paid;
                           },
                           isDark: isDark,
@@ -171,7 +171,7 @@ class BillingDashboardPage extends ConsumerWidget {
                           count: summary.pendingCount,
                           isSelected: statusFilter == PaymentStatus.pending,
                           onTap: () {
-                            HapticFeedback.selectionClick();
+                            HapticUtils.selectionClick();
                             ref.read(billingStatusFilterProvider.notifier).state = PaymentStatus.pending;
                           },
                           isDark: isDark,
@@ -187,7 +187,7 @@ class BillingDashboardPage extends ConsumerWidget {
                           count: summary.overdueCount,
                           isSelected: statusFilter == PaymentStatus.overdue,
                           onTap: () {
-                            HapticFeedback.selectionClick();
+                            HapticUtils.selectionClick();
                             ref.read(billingStatusFilterProvider.notifier).state = PaymentStatus.overdue;
                           },
                           isDark: isDark,
@@ -299,7 +299,7 @@ class BillingDashboardPage extends ConsumerWidget {
 
                 return GestureDetector(
                   onTap: () {
-                    HapticFeedback.selectionClick();
+                    HapticUtils.selectionClick();
                     ref.read(billingMonthProvider.notifier).state = month;
                     Navigator.pop(context);
                   },
@@ -359,7 +359,7 @@ class _AlertsSection extends StatelessWidget {
   });
 
   void _showOverduePaymentsModal(BuildContext context) {
-    HapticFeedback.selectionClick();
+    HapticUtils.selectionClick();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -440,7 +440,7 @@ class _AlertsSection extends StatelessWidget {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.mediumImpact();
+                        HapticUtils.mediumImpact();
                         Navigator.pop(context);
                         final names = overduePayments.map((p) => p.studentName.split(' ').first).take(3).join(', ');
                         final suffix = overduePayments.length > 3 ? ' e mais ${overduePayments.length - 3}' : '';
@@ -486,7 +486,7 @@ class _AlertsSection extends StatelessWidget {
   }
 
   void _showUpcomingPaymentsModal(BuildContext context) {
-    HapticFeedback.selectionClick();
+    HapticUtils.selectionClick();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -567,7 +567,7 @@ class _AlertsSection extends StatelessWidget {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.mediumImpact();
+                        HapticUtils.mediumImpact();
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -611,7 +611,7 @@ class _AlertsSection extends StatelessWidget {
   }
 
   void _sendOverdueReminder(BuildContext context) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     final names = overduePayments.map((p) => p.studentName.split(' ').first).take(3).join(', ');
     final suffix = overduePayments.length > 3 ? ' e mais ${overduePayments.length - 3}' : '';
     ScaffoldMessenger.of(context).showSnackBar(
@@ -624,7 +624,7 @@ class _AlertsSection extends StatelessWidget {
   }
 
   void _scheduleUpcomingReminder(BuildContext context) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Lembrete agendado!'),
@@ -897,7 +897,7 @@ class _OverduePaymentItem extends StatelessWidget {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -944,7 +944,7 @@ class _OverduePaymentItem extends StatelessWidget {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    HapticFeedback.mediumImpact();
+                    HapticUtils.mediumImpact();
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -991,7 +991,7 @@ class _OverduePaymentItem extends StatelessWidget {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -1033,7 +1033,7 @@ class _OverduePaymentItem extends StatelessWidget {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -1224,7 +1224,7 @@ class _UpcomingPaymentItem extends StatelessWidget {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -1266,7 +1266,7 @@ class _UpcomingPaymentItem extends StatelessWidget {
               Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

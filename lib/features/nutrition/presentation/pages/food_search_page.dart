@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -62,7 +62,7 @@ class _FoodSearchPageState extends ConsumerState<FoodSearchPage>
   }
 
   void _addToMeal(Map<String, dynamic> food) {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${food['name']} adicionado a refeicao', style: const TextStyle(color: Colors.white)),
@@ -91,7 +91,7 @@ class _FoodSearchPageState extends ConsumerState<FoodSearchPage>
                   children: [
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         context.pop();
                       },
                       child: Container(
@@ -216,7 +216,7 @@ class _FoodSearchPageState extends ConsumerState<FoodSearchPage>
               ),
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   setState(() {
                     _recentSearches.clear();
                   });
@@ -236,7 +236,7 @@ class _FoodSearchPageState extends ConsumerState<FoodSearchPage>
                 search: search,
                 isDark: isDark,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   _searchController.text = search;
                   _onSearch(search);
                 },

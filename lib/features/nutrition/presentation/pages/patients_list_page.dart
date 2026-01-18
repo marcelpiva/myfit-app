@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -94,7 +94,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
 
   Future<void> _onRefresh() async {
     setState(() => _isRefreshing = true);
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
 
     final orgId = ref.read(activeContextProvider)?.membership.organization.id;
     if (orgId != null) {
@@ -216,7 +216,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
                                 children: [
                                   GestureDetector(
                                     onTap: () {
-                                      HapticFeedback.lightImpact();
+                                      HapticUtils.lightImpact();
                                       context.pop();
                                     },
                                     child: Container(
@@ -254,7 +254,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  HapticFeedback.lightImpact();
+                                  HapticUtils.lightImpact();
                                   // Navigate to add patient
                                 },
                                 child: Container(
@@ -340,7 +340,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
                                   GestureDetector(
                                     onTap: () {
                                       _searchController.clear();
-                                      HapticFeedback.selectionClick();
+                                      HapticUtils.selectionClick();
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.all(12),
@@ -370,7 +370,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
                                 final isSelected = entry.key == _selectedFilter;
                                 return GestureDetector(
                                   onTap: () {
-                                    HapticFeedback.selectionClick();
+                                    HapticUtils.selectionClick();
                                     setState(
                                         () => _selectedFilter = entry.key);
                                   },
@@ -474,7 +474,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
                                           patient.adherence),
                                       goalColor: _getGoalColor(patient.goal),
                                       onTap: () {
-                                        HapticFeedback.selectionClick();
+                                        HapticUtils.selectionClick();
                                         _showPatientDetail(
                                             context, isDark, patient.toMap());
                                       },
@@ -495,7 +495,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
         delay: const Duration(milliseconds: 500),
         child: FloatingActionButton.extended(
           onPressed: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             // Navigate to add new patient
           },
           backgroundColor: isDark ? AppColors.primaryDark : AppColors.primary,
@@ -607,7 +607,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
                           isDark: isDark,
                           icon: LucideIcons.messageCircle,
                           onTap: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             _showMessageComposeModal(context, isDark, patient);
                           },
                         ),
@@ -616,7 +616,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
                           isDark: isDark,
                           icon: LucideIcons.moreVertical,
                           onTap: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             _showPatientOptionsSheet(context, isDark, patient);
                           },
                         ),
@@ -669,7 +669,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(context);
                           context.push('/patients/${patient['id']}/diet-plan?name=${Uri.encodeComponent(patient['name'] as String)}');
                         },
@@ -702,7 +702,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(context);
                           _showNutritionProgressModal(context, isDark, patient);
                         },
@@ -771,7 +771,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
 
                   return GestureDetector(
                     onTap: () {
-                      HapticFeedback.selectionClick();
+                      HapticUtils.selectionClick();
                       _showActivityDetailsModal(
                         context,
                         isDark,
@@ -1480,7 +1480,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -1631,7 +1631,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
 
     return GestureDetector(
       onTap: () {
-        HapticFeedback.selectionClick();
+        HapticUtils.selectionClick();
         onTap();
       },
       child: Container(
@@ -1835,7 +1835,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
             const SizedBox(height: 20),
             GestureDetector(
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(context);
               },
               child: Container(
@@ -2204,7 +2204,7 @@ class _EmptyState extends StatelessWidget {
               const SizedBox(height: 24),
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   // Navigate to add patient
                 },
                 child: Container(

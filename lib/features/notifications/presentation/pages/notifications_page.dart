@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -52,7 +52,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage>
   }
 
   void _markAllAsRead() {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     ref.read(notificationsProvider.notifier).markAllAsRead();
   }
 
@@ -177,7 +177,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage>
                     children: [
                       GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(context);
                         },
                         child: Container(
@@ -384,7 +384,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage>
       },
       child: GestureDetector(
         onTap: () {
-          HapticFeedback.lightImpact();
+          HapticUtils.lightImpact();
           if (!notification.isRead) {
             _markAsRead(notification.id);
           }

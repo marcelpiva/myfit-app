@@ -1,19 +1,30 @@
 import 'dart:async';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/widgets/video_player_page.dart';
 import '../../../../shared/presentation/components/animations/fade_in_up.dart';
+import '../../../shared_session/domain/models/shared_session.dart';
+import '../../../shared_session/presentation/providers/shared_session_provider.dart';
+import '../../../shared_session/presentation/widgets/live_indicator.dart';
+import '../../../shared_session/presentation/widgets/session_chat.dart';
 import '../../../workout/presentation/providers/workout_provider.dart';
 
 /// Active workout session page - used when student is doing their workout
 class ActiveWorkoutPage extends ConsumerStatefulWidget {
   final String workoutId;
+  final String? sessionId; // For co-training mode
 
-  const ActiveWorkoutPage({super.key, required this.workoutId});
+  const ActiveWorkoutPage({
+    super.key,
+    required this.workoutId,
+    this.sessionId,
+  });
 
   @override
   ConsumerState<ActiveWorkoutPage> createState() => _ActiveWorkoutPageState();
@@ -38,6 +49,12 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
   final _weightController = TextEditingController();
   final _repsController = TextEditingController();
 
+  // Co-training state
+  bool _isChatOpen = false;
+  TrainerAdjustment? _pendingAdjustment;
+
+  bool get _isSharedSession => widget.sessionId != null;
+
   @override
   void initState() {
     super.initState();
@@ -52,6 +69,14 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         });
       }
     });
+
+    // Set session status to active if in co-training mode
+    if (_isSharedSession) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(sharedSessionProvider(widget.sessionId!).notifier)
+            .updateStatus(SessionStatus.active);
+      });
+    }
   }
 
   @override
@@ -116,7 +141,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
   }
 
   void _skipRest() {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     _restTimer?.cancel();
     setState(() {
       _isResting = false;
@@ -125,14 +150,25 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
   }
 
   void _completeSet(List<Map<String, dynamic>> exercises) {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     final exercise = _getCurrentExercise(exercises);
     final exerciseSets = _getExerciseSets(exercise);
     final exerciseRest = _getExerciseRest(exercise);
     final defaultWeight = _getExerciseWeight(exercise);
+    final exerciseId = exercise?['id'] as String? ?? exercise?['exercise_id'] as String? ?? '';
 
     final weight = double.tryParse(_weightController.text) ?? defaultWeight;
     final reps = int.tryParse(_repsController.text) ?? 10;
+
+    // Broadcast to shared session if in co-training mode
+    if (_isSharedSession) {
+      ref.read(sharedSessionProvider(widget.sessionId!).notifier).recordSet(
+        exerciseId: exerciseId,
+        setNumber: _currentSet,
+        reps: reps,
+        weight: weight,
+      );
+    }
 
     setState(() {
       _completedSets[_currentExerciseIndex].add(_SetData(
@@ -141,9 +177,10 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         weight: weight,
       ));
 
-      // Clear text fields
+      // Clear text fields and pending adjustment
       _weightController.clear();
       _repsController.clear();
+      _pendingAdjustment = null;
 
       if (_currentSet < exerciseSets) {
         _currentSet++;
@@ -163,7 +200,13 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
 
   void _showWorkoutComplete(int exerciseCount) {
     _stopwatch.stop();
-    HapticFeedback.heavyImpact();
+    HapticUtils.heavyImpact();
+
+    // Update shared session status if in co-training mode
+    if (_isSharedSession) {
+      ref.read(sharedSessionProvider(widget.sessionId!).notifier)
+          .updateStatus(SessionStatus.completed);
+    }
     showModalBottomSheet(
       context: context,
       isDismissible: false,
@@ -183,6 +226,14 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     final detailState = ref.watch(workoutDetailNotifierProvider(widget.workoutId));
     final exercises = detailState.exercises;
     final workoutName = detailState.name;
+
+    // Co-training state
+    SharedSessionState? sharedState;
+    if (_isSharedSession) {
+      sharedState = ref.watch(sharedSessionProvider(widget.sessionId!));
+      // Check for new adjustments
+      _checkForNewAdjustments(sharedState);
+    }
 
     // Initialize completed sets tracking when exercises are loaded
     if (exercises.isNotEmpty) {
@@ -286,7 +337,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         _showExitConfirmation(context);
                       },
                       child: Container(
@@ -327,12 +378,54 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
                         ],
                       ),
                     ),
-                    IconButton(
-                      onPressed: () {
-                        HapticFeedback.lightImpact();
-                      },
-                      icon: const Icon(LucideIcons.volumeX),
-                    ),
+                    // Co-training live indicator
+                    if (_isSharedSession)
+                      LiveIndicator(
+                        isConnected: sharedState?.isConnected ?? false,
+                        isShared: sharedState?.session?.isShared ?? false,
+                      ),
+                    // Chat button for co-training
+                    if (_isSharedSession)
+                      Stack(
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              HapticUtils.lightImpact();
+                              setState(() => _isChatOpen = !_isChatOpen);
+                            },
+                            icon: Icon(
+                              _isChatOpen ? LucideIcons.x : LucideIcons.messageCircle,
+                            ),
+                          ),
+                          if ((sharedState?.session?.messages.length ?? 0) > 0)
+                            Positioned(
+                              right: 8,
+                              top: 8,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: AppColors.destructive,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  '${sharedState?.session?.messages.length ?? 0}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    if (!_isSharedSession)
+                      IconButton(
+                        onPressed: () {
+                          HapticUtils.lightImpact();
+                        },
+                        icon: const Icon(LucideIcons.volumeX),
+                      ),
                   ],
                 ),
               ),
@@ -352,11 +445,118 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
             ),
 
             Expanded(
-              child: _isResting
-                  ? _buildRestScreen(theme, isDark, currentExercise, exerciseSets)
-                  : _buildExerciseScreen(theme, isDark, exercises, currentExercise),
+              child: Row(
+                children: [
+                  // Main workout content
+                  Expanded(
+                    child: _isResting
+                        ? _buildRestScreen(theme, isDark, currentExercise, exerciseSets)
+                        : _buildExerciseScreen(theme, isDark, exercises, currentExercise, sharedState),
+                  ),
+                  // Chat panel (side panel on larger screens)
+                  if (_isSharedSession && _isChatOpen && MediaQuery.of(context).size.width > 600)
+                    SizedBox(
+                      width: 320,
+                      child: SessionChat(
+                        sessionId: widget.sessionId!,
+                        messages: sharedState?.session?.messages ?? [],
+                        onClose: () => setState(() => _isChatOpen = false),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            // Chat panel (bottom sheet on smaller screens)
+            if (_isSharedSession && _isChatOpen && MediaQuery.of(context).size.width <= 600)
+              SizedBox(
+                height: 300,
+                child: SessionChat(
+                  sessionId: widget.sessionId!,
+                  messages: sharedState?.session?.messages ?? [],
+                  onClose: () => setState(() => _isChatOpen = false),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _checkForNewAdjustments(SharedSessionState? sharedState) {
+    if (sharedState?.session?.adjustments.isEmpty ?? true) return;
+    final latestAdjustment = sharedState!.session!.adjustments.last;
+    if (_pendingAdjustment?.id != latestAdjustment.id) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _pendingAdjustment = latestAdjustment;
+        });
+        _showAdjustmentNotification(latestAdjustment);
+      });
+    }
+  }
+
+  void _showAdjustmentNotification(TrainerAdjustment adjustment) {
+    final parts = <String>[];
+    if (adjustment.suggestedWeightKg != null) {
+      final sign = adjustment.suggestedWeightKg! > 0 ? '+' : '';
+      parts.add('$sign${adjustment.suggestedWeightKg}kg');
+    }
+    if (adjustment.suggestedReps != null) {
+      if (adjustment.suggestedReps == 99) {
+        parts.add('AMRAP');
+      } else {
+        final sign = adjustment.suggestedReps! > 0 ? '+' : '';
+        parts.add('$sign${adjustment.suggestedReps} reps');
+      }
+    }
+    if (adjustment.note != null) {
+      parts.add(adjustment.note!);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(LucideIcons.userCheck, color: AppColors.primary, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Ajuste do Personal',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(parts.join(' • ')),
+                ],
+              ),
             ),
           ],
+        ),
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 5),
+        action: SnackBarAction(
+          label: 'Aplicar',
+          onPressed: () {
+            // Apply the adjustment to the current inputs
+            if (adjustment.suggestedWeightKg != null) {
+              final currentWeight = double.tryParse(_weightController.text) ?? 0;
+              _weightController.text = (currentWeight + adjustment.suggestedWeightKg!).toString();
+            }
+            if (adjustment.suggestedReps != null && adjustment.suggestedReps != 99) {
+              final currentReps = int.tryParse(_repsController.text) ?? 10;
+              _repsController.text = (currentReps + adjustment.suggestedReps!).toString();
+            }
+          },
         ),
       ),
     );
@@ -367,11 +567,18 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     bool isDark,
     List<Map<String, dynamic>> exercises,
     Map<String, dynamic>? currentExercise,
+    SharedSessionState? sharedState,
   ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
+          // Trainer adjustment banner (if pending)
+          if (_isSharedSession && _pendingAdjustment != null)
+            FadeInUp(
+              child: _buildAdjustmentBanner(theme, _pendingAdjustment!),
+            ),
+
           // Exercise navigation
           FadeInUp(
             child: _buildExerciseNav(theme, exercises),
@@ -407,6 +614,98 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     );
   }
 
+  Widget _buildAdjustmentBanner(ThemeData theme, TrainerAdjustment adjustment) {
+    final parts = <String>[];
+    if (adjustment.suggestedWeightKg != null) {
+      final sign = adjustment.suggestedWeightKg! > 0 ? '+' : '';
+      parts.add('$sign${adjustment.suggestedWeightKg}kg');
+    }
+    if (adjustment.suggestedReps != null) {
+      if (adjustment.suggestedReps == 99) {
+        parts.add('AMRAP');
+      } else {
+        final sign = adjustment.suggestedReps! > 0 ? '+' : '';
+        parts.add('$sign${adjustment.suggestedReps} reps');
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(LucideIcons.userCheck, color: AppColors.primary, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Sugestao do Personal',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  parts.join(' • '),
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (adjustment.note != null)
+                  Text(
+                    adjustment.note!,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              // Apply the adjustment
+              if (adjustment.suggestedWeightKg != null) {
+                final currentWeight = double.tryParse(_weightController.text) ?? 0;
+                _weightController.text = (currentWeight + adjustment.suggestedWeightKg!).toString();
+              }
+              if (adjustment.suggestedReps != null && adjustment.suggestedReps != 99) {
+                final currentReps = int.tryParse(_repsController.text) ?? 10;
+                _repsController.text = (currentReps + adjustment.suggestedReps!).toString();
+              }
+              setState(() {
+                _pendingAdjustment = null;
+              });
+            },
+            child: const Text('Aplicar'),
+          ),
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _pendingAdjustment = null;
+              });
+            },
+            icon: const Icon(LucideIcons.x, size: 18),
+            visualDensity: VisualDensity.compact,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildExerciseNav(ThemeData theme, List<Map<String, dynamic>> exercises) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -414,7 +713,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         TextButton.icon(
           onPressed: _currentExerciseIndex > 0
               ? () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   setState(() {
                     _currentExerciseIndex--;
                     _currentSet = _completedSets[_currentExerciseIndex].length + 1;
@@ -438,7 +737,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         TextButton.icon(
           onPressed: _currentExerciseIndex < exercises.length - 1
               ? () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   setState(() {
                     _currentExerciseIndex++;
                     _currentSet = _completedSets[_currentExerciseIndex].length + 1;
@@ -469,6 +768,10 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     final reps = _getExerciseReps(exercise);
     final weight = _getExerciseWeight(exercise);
     final rest = _getExerciseRest(exercise);
+    // video_url and image_url can be at root level or nested in 'exercise'
+    final exerciseData = exercise?['exercise'] as Map<String, dynamic>?;
+    final videoUrl = exercise?['video_url'] as String? ?? exerciseData?['video_url'] as String?;
+    final imageUrl = exercise?['image_url'] as String? ?? exerciseData?['image_url'] as String?;
 
     return Container(
       width: double.infinity,
@@ -483,42 +786,101 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
       ),
       child: Column(
         children: [
-          // Video/Image placeholder
-          Container(
-            height: 200,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: isDark
-                  ? theme.colorScheme.surfaceContainerLow.withAlpha(150)
-                  : theme.colorScheme.surfaceContainerLow.withAlpha(200),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(8),
-                topRight: Radius.circular(8),
-              ),
-            ),
-            child: Center(
-              child: GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      LucideIcons.playCircle,
-                      size: 48,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Ver demonstração',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+          // Video/Image area
+          GestureDetector(
+            onTap: videoUrl != null && videoUrl.isNotEmpty
+                ? () {
+                    HapticUtils.lightImpact();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => VideoPlayerPage(
+                          videoUrl: videoUrl,
+                          title: name,
+                        ),
                       ),
-                    ),
-                  ],
+                    );
+                  }
+                : null,
+            child: Container(
+              height: 200,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? theme.colorScheme.surfaceContainerLow.withAlpha(150)
+                    : theme.colorScheme.surfaceContainerLow.withAlpha(200),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(8),
+                  topRight: Radius.circular(8),
                 ),
               ),
+              child: imageUrl != null && imageUrl.isNotEmpty
+                  ? Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(8),
+                            topRight: Radius.circular(8),
+                          ),
+                          child: CachedNetworkImage(
+                            imageUrl: imageUrl,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(
+                              color: theme.colorScheme.surfaceContainerLow,
+                              child: const Center(
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                            errorWidget: (_, __, ___) => Container(
+                              color: theme.colorScheme.surfaceContainerLow,
+                              child: Icon(
+                                LucideIcons.image,
+                                size: 48,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ),
+                        if (videoUrl != null && videoUrl.isNotEmpty)
+                          Center(
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withAlpha(150),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                LucideIcons.play,
+                                size: 32,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                      ],
+                    )
+                  : Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            videoUrl != null && videoUrl.isNotEmpty
+                                ? LucideIcons.playCircle
+                                : LucideIcons.image,
+                            size: 48,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            videoUrl != null && videoUrl.isNotEmpty
+                                ? 'Ver demonstração'
+                                : 'Sem imagem',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
             ),
           ),
           // Exercise info
@@ -655,7 +1017,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
             return Expanded(
               child: GestureDetector(
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  HapticUtils.selectionClick();
                 },
                 child: Container(
                   margin: EdgeInsets.only(right: index < exerciseSets - 1 ? 8 : 0),
@@ -883,7 +1245,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
             children: [
               OutlinedButton.icon(
                 onPressed: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   setState(() {
                     _restTimeRemaining += 30;
                   });
@@ -911,7 +1273,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
   }
 
   void _showExitConfirmation(BuildContext context) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -921,14 +1283,14 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         actions: [
           TextButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(context);
             },
             child: const Text('Continuar'),
           ),
           FilledButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(context);
               context.pop();
             },
@@ -1011,7 +1373,7 @@ class _WorkoutCompleteSheet extends StatelessWidget {
             width: double.infinity,
             child: FilledButton(
               onPressed: () {
-                HapticFeedback.mediumImpact();
+                HapticUtils.mediumImpact();
                 Navigator.pop(context);
                 context.pop();
               },

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -17,8 +17,6 @@ class StepProgramInfo extends ConsumerStatefulWidget {
 
 class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
   final _nameController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  bool _hasAttemptedSubmit = false;
 
   @override
   void initState() {
@@ -34,7 +32,6 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
   }
 
   String? _validateName(String? value) {
-    if (!_hasAttemptedSubmit) return null;
     if (value == null || value.trim().isEmpty) {
       return 'Informe um nome para o programa';
     }
@@ -105,14 +102,9 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
                   controller: _nameController,
                   onChanged: (value) {
                     notifier.setProgramName(value);
-                    if (_hasAttemptedSubmit) {
-                      setState(() {});
-                    }
                   },
                   validator: _validateName,
-                  autovalidateMode: _hasAttemptedSubmit
-                      ? AutovalidateMode.onUserInteraction
-                      : AutovalidateMode.disabled,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   decoration: InputDecoration(
                     hintText: 'Ex: Hipertrofia ABC',
                     prefixIcon: const Icon(LucideIcons.fileText),
@@ -168,7 +160,7 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
                 final isSelected = state.goal == item.$1;
                 return GestureDetector(
                   onTap: () {
-                    HapticFeedback.selectionClick();
+                    HapticUtils.selectionClick();
                     notifier.setGoal(item.$1);
                   },
                   child: Container(
@@ -238,7 +230,7 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
                     ),
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.selectionClick();
+                        HapticUtils.selectionClick();
                         notifier.setDifficulty(item.$1);
                       },
                       child: Container(
@@ -294,7 +286,7 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
                 final isSelected = state.durationWeeks == item.$1;
                 return GestureDetector(
                   onTap: () {
-                    HapticFeedback.selectionClick();
+                    HapticUtils.selectionClick();
                     notifier.setDurationWeeks(item.$1);
                   },
                   child: Container(
@@ -376,9 +368,6 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
 
   /// Trigger validation (called from parent when trying to proceed)
   bool validate() {
-    setState(() {
-      _hasAttemptedSubmit = true;
-    });
     return _nameController.text.trim().length >= 3;
   }
 }

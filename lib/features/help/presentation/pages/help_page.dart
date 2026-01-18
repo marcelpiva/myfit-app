@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -121,7 +121,7 @@ class _HelpPageState extends ConsumerState<HelpPage> {
                         ? IconButton(
                             icon: const Icon(LucideIcons.x, size: 18),
                             onPressed: () {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                               _searchController.clear();
                               setState(() => _searchQuery = '');
                             },
@@ -213,7 +213,7 @@ class _HelpPageState extends ConsumerState<HelpPage> {
         children: [
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               context.pop();
             },
             child: Container(
@@ -312,7 +312,7 @@ class _HelpPageState extends ConsumerState<HelpPage> {
   ) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap();
       },
       child: Container(
@@ -366,7 +366,7 @@ class _HelpPageState extends ConsumerState<HelpPage> {
       padding: const EdgeInsets.only(bottom: 8),
       child: GestureDetector(
         onTap: () {
-          HapticFeedback.selectionClick();
+          HapticUtils.selectionClick();
           setState(() {
             _expandedFaqIndex = isExpanded ? null : index;
           });
@@ -526,7 +526,7 @@ class _HelpPageState extends ConsumerState<HelpPage> {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     _sendEmail();
                   },
                   icon: const Icon(LucideIcons.mail, size: 18),
@@ -545,7 +545,7 @@ class _HelpPageState extends ConsumerState<HelpPage> {
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     _openChat();
                   },
                   icon: const Icon(LucideIcons.messageCircle, size: 18),

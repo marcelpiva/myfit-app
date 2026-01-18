@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -220,7 +220,7 @@ class _GymReportsPageState extends ConsumerState<GymReportsPage>
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    HapticFeedback.lightImpact();
+                                    HapticUtils.lightImpact();
                                     context.pop();
                                   },
                                   child: Container(
@@ -254,7 +254,7 @@ class _GymReportsPageState extends ConsumerState<GymReportsPage>
                             ),
                             GestureDetector(
                               onTap: () {
-                                HapticFeedback.lightImpact();
+                                HapticUtils.lightImpact();
                                 _showExportOptions(context, isDark);
                               },
                               child: Container(
@@ -384,7 +384,7 @@ class _GymReportsPageState extends ConsumerState<GymReportsPage>
                           ),
                           TextButton(
                             onPressed: () {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                             },
                             child: const Text('Ver todas'),
                           ),
@@ -466,7 +466,7 @@ class _GymReportsPageState extends ConsumerState<GymReportsPage>
         final stat = stats[index];
         return GestureDetector(
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
           },
           child: Container(
             padding: const EdgeInsets.all(16),
@@ -937,7 +937,7 @@ class _GymReportsPageState extends ConsumerState<GymReportsPage>
 
           return GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
             },
             child: Container(
               padding: const EdgeInsets.all(16),
@@ -1018,7 +1018,7 @@ class _GymReportsPageState extends ConsumerState<GymReportsPage>
   }
 
   void _showExportOptions(BuildContext context, bool isDark) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
@@ -1095,7 +1095,7 @@ class _GymReportsPageState extends ConsumerState<GymReportsPage>
               // Cancel button
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(context);
                 },
                 child: Container(
@@ -1138,7 +1138,7 @@ class _GymReportsPageState extends ConsumerState<GymReportsPage>
   ) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1244,7 +1244,7 @@ class _PeriodSelector extends StatelessWidget {
           return Expanded(
             child: GestureDetector(
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 onChanged(index);
               },
               child: Container(

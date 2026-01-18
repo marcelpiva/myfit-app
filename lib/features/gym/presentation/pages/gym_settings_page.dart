@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -38,7 +38,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
   };
 
   void _toggleSection(String section) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     setState(() {
       if (_expandedSections.contains(section)) {
         _expandedSections.remove(section);
@@ -86,7 +86,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             context.pop();
                           },
                           child: Container(
@@ -256,7 +256,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                             subtitle: 'Permitir check-in via QR Code',
                             value: _checkInSettings['qrCodeEnabled'] as bool,
                             onChanged: (val) {
-                              HapticFeedback.selectionClick();
+                              HapticUtils.selectionClick();
                               setState(() => _checkInSettings['qrCodeEnabled'] = val);
                             },
                           ),
@@ -278,7 +278,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                             subtitle: 'Receber alerta quando aluno entrar',
                             value: _checkInSettings['notifyOnCheckIn'] as bool,
                             onChanged: (val) {
-                              HapticFeedback.selectionClick();
+                              HapticUtils.selectionClick();
                               setState(() => _checkInSettings['notifyOnCheckIn'] = val);
                             },
                           ),
@@ -291,7 +291,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                             subtitle: 'Receber alerta quando aluno sair',
                             value: _checkInSettings['notifyOnCheckOut'] as bool,
                             onChanged: (val) {
-                              HapticFeedback.selectionClick();
+                              HapticUtils.selectionClick();
                               setState(() => _checkInSettings['notifyOnCheckOut'] = val);
                             },
                             showDivider: false,
@@ -584,7 +584,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
       children: [
         InkWell(
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             onTap();
           },
           child: Padding(
@@ -761,7 +761,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                       },
                       style: OutlinedButton.styleFrom(
@@ -775,7 +775,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        HapticFeedback.mediumImpact();
+                        HapticUtils.mediumImpact();
                         Navigator.pop(context);
                         _showSuccessSnackBar(context, '$field atualizado com sucesso');
                       },
@@ -825,7 +825,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                 LucideIcons.camera,
                 'Tirar Foto',
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(context);
                   _showSuccessSnackBar(context, 'Funcionalidade em desenvolvimento');
                 },
@@ -836,7 +836,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                 LucideIcons.image,
                 'Escolher da Galeria',
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(context);
                   _showSuccessSnackBar(context, 'Funcionalidade em desenvolvimento');
                 },
@@ -885,7 +885,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    HapticFeedback.mediumImpact();
+                    HapticUtils.mediumImpact();
                     Navigator.pop(context);
                     _showSuccessSnackBar(context, 'Horarios atualizados');
                   },
@@ -995,7 +995,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                 final isSelected = _checkInSettings['timeLimit'] == minutes;
                 return InkWell(
                   onTap: () {
-                    HapticFeedback.selectionClick();
+                    HapticUtils.selectionClick();
                     setState(() => _checkInSettings['timeLimit'] = minutes);
                     Navigator.pop(context);
                   },
@@ -1094,7 +1094,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                       },
                       style: OutlinedButton.styleFrom(
@@ -1108,7 +1108,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        HapticFeedback.mediumImpact();
+                        HapticUtils.mediumImpact();
                         Navigator.pop(context);
                         _showSuccessSnackBar(context, 'Convite enviado');
                       },
@@ -1175,7 +1175,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
   Widget _buildExportOption(BuildContext context, bool isDark, String format, IconData icon) {
     return InkWell(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         Navigator.pop(context);
         _showSuccessSnackBar(context, 'Exportando dados em $format...');
       },
@@ -1253,7 +1253,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(context);
                     _showSuccessSnackBar(context, 'Funcionalidade em desenvolvimento');
                   },
@@ -1339,7 +1339,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    HapticFeedback.mediumImpact();
+                    HapticUtils.mediumImpact();
                     Navigator.pop(context);
                     _showSuccessSnackBar(context, 'Backup iniciado');
                   },
@@ -1446,7 +1446,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                       },
                       style: OutlinedButton.styleFrom(
@@ -1461,7 +1461,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                     child: ElevatedButton(
                       onPressed: () {
                         if (confirmController.text.toUpperCase() == 'EXCLUIR') {
-                          HapticFeedback.heavyImpact();
+                          HapticUtils.heavyImpact();
                           Navigator.pop(context);
                           context.go('/');
                         }
@@ -1544,13 +1544,13 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
 
   // 1. Navigate to Staff Page (rota existente)
   void _navigateToStaff(BuildContext context) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     context.push('/staff');
   }
 
   // 2. Navigate to Plans - Modal com lista de planos
   void _navigateToPlans(BuildContext context) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -1725,7 +1725,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                             ),
                             IconButton(
                               onPressed: () {
-                                HapticFeedback.lightImpact();
+                                HapticUtils.lightImpact();
                                 Navigator.pop(context);
                                 _showSuccessSnackBar(context, 'Editando ${plan['name']}...');
                               },
@@ -1748,7 +1748,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    HapticFeedback.mediumImpact();
+                    HapticUtils.mediumImpact();
                     Navigator.pop(context);
                     _showSuccessSnackBar(context, 'Criar novo plano...');
                   },
@@ -1771,7 +1771,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
 
   // 3. Navigate to Pricing - Modal de configuracao de precos
   void _navigateToPricing(BuildContext context) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -1901,7 +1901,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                         Divider(height: 1, color: isDark ? AppColors.borderDark : AppColors.border),
                         ...items.map((item) => InkWell(
                           onTap: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             // Aqui poderia abrir um dialog para editar o preco
                           },
                           child: Padding(
@@ -1947,7 +1947,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    HapticFeedback.mediumImpact();
+                    HapticUtils.mediumImpact();
                     Navigator.pop(context);
                     _showSuccessSnackBar(context, 'Precos atualizados com sucesso');
                   },
@@ -1970,7 +1970,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
 
   // 4. Navigate to Promotions - Modal de promocoes ativas
   void _navigateToPromotions(BuildContext context) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -2165,7 +2165,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                               children: [
                                 IconButton(
                                   onPressed: () {
-                                    HapticFeedback.lightImpact();
+                                    HapticUtils.lightImpact();
                                   },
                                   icon: Icon(LucideIcons.edit, size: 18, color: AppColors.primary),
                                   padding: EdgeInsets.zero,
@@ -2174,7 +2174,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                                 const SizedBox(width: 12),
                                 IconButton(
                                   onPressed: () {
-                                    HapticFeedback.lightImpact();
+                                    HapticUtils.lightImpact();
                                   },
                                   icon: Icon(LucideIcons.trash2, size: 18, color: AppColors.destructive),
                                   padding: EdgeInsets.zero,
@@ -2197,7 +2197,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    HapticFeedback.mediumImpact();
+                    HapticUtils.mediumImpact();
                     Navigator.pop(context);
                     _showSuccessSnackBar(context, 'Criar nova promocao...');
                   },
@@ -2236,7 +2236,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
 
   // 5. Navigate to Permissions - Modal de permissoes de funcionarios
   void _navigateToPermissions(BuildContext context) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -2435,7 +2435,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                                   Switch(
                                     value: isEnabled,
                                     onChanged: (val) {
-                                      HapticFeedback.selectionClick();
+                                      HapticUtils.selectionClick();
                                       setModalState(() {
                                         permissions[entry.key] = val;
                                       });
@@ -2461,7 +2461,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      HapticFeedback.mediumImpact();
+                      HapticUtils.mediumImpact();
                       Navigator.pop(context);
                       _showSuccessSnackBar(context, 'Permissoes salvas com sucesso');
                     },
@@ -2485,7 +2485,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
 
   // 6. Navigate to Alerts - Modal de configuracao de alertas
   void _navigateToAlerts(BuildContext context) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -2636,7 +2636,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                           Switch(
                             value: isEnabled,
                             onChanged: (val) {
-                              HapticFeedback.selectionClick();
+                              HapticUtils.selectionClick();
                               setModalState(() {
                                 alertSettings[key] = val;
                               });
@@ -2658,7 +2658,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      HapticFeedback.mediumImpact();
+                      HapticUtils.mediumImpact();
                       Navigator.pop(context);
                       _showSuccessSnackBar(context, 'Alertas configurados com sucesso');
                     },
@@ -2682,7 +2682,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
 
   // 7. Navigate to Reminders - Modal de lembretes automaticos
   void _navigateToReminders(BuildContext context) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -2915,7 +2915,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                               children: [
                                 IconButton(
                                   onPressed: () {
-                                    HapticFeedback.lightImpact();
+                                    HapticUtils.lightImpact();
                                   },
                                   icon: Icon(LucideIcons.edit, size: 18, color: AppColors.primary),
                                   padding: EdgeInsets.zero,
@@ -2924,7 +2924,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                                 const SizedBox(width: 12),
                                 IconButton(
                                   onPressed: () {
-                                    HapticFeedback.lightImpact();
+                                    HapticUtils.lightImpact();
                                   },
                                   icon: Icon(LucideIcons.trash2, size: 18, color: AppColors.destructive),
                                   padding: EdgeInsets.zero,
@@ -2947,7 +2947,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    HapticFeedback.mediumImpact();
+                    HapticUtils.mediumImpact();
                     Navigator.pop(context);
                     _showSuccessSnackBar(context, 'Criar novo lembrete...');
                   },
@@ -2970,7 +2970,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
 
   // 8. Navigate to Email Templates - Modal de templates de email
   void _navigateToEmailTemplates(BuildContext context) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -3121,7 +3121,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                     ),
                     child: InkWell(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                         _showSuccessSnackBar(context, 'Editando template ${template['name']}...');
                       },
@@ -3223,7 +3223,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    HapticFeedback.mediumImpact();
+                    HapticUtils.mediumImpact();
                     Navigator.pop(context);
                     _showSuccessSnackBar(context, 'Criar novo template...');
                   },
@@ -3246,7 +3246,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
 
   // 9. Navigate to Connected Apps - Modal de integracoes
   void _navigateToConnectedApps(BuildContext context) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -3481,7 +3481,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                           if (isConnected)
                             OutlinedButton(
                               onPressed: () {
-                                HapticFeedback.lightImpact();
+                                HapticUtils.lightImpact();
                                 setModalState(() {
                                   connectedApps[index]['connected'] = false;
                                 });
@@ -3498,7 +3498,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                           else
                             ElevatedButton(
                               onPressed: () {
-                                HapticFeedback.mediumImpact();
+                                HapticUtils.mediumImpact();
                                 setModalState(() {
                                   connectedApps[index]['connected'] = true;
                                   connectedApps[index]['lastSync'] = '14/01/2026 ${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}';

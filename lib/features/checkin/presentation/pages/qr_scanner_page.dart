@@ -1,12 +1,13 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/utils/haptic_utils.dart';
 
-/// QR Scanner Page - temporarily disabled due to iOS 26.3 beta compatibility
+/// QR Scanner Page - shows unavailable message on web platform
 class QrScannerPage extends ConsumerWidget {
   const QrScannerPage({super.key});
 
@@ -26,7 +27,7 @@ class QrScannerPage extends ConsumerWidget {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       context.pop();
                     },
                     child: Container(
@@ -84,7 +85,9 @@ class QrScannerPage extends ConsumerWidget {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'O scanner de QR Code está temporariamente indisponível nesta versão beta do iOS.',
+                        kIsWeb
+                            ? 'O scanner de QR Code não está disponível na versão web. Por favor, use o aplicativo mobile para esta funcionalidade.'
+                            : 'O scanner de QR Code está temporariamente indisponível nesta versão beta do iOS.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 14,

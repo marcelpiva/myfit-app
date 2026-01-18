@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -15,7 +15,7 @@ class PaymentsPage extends ConsumerWidget {
   // MODAL: Help FAQ (Botao 1)
   // ==========================================================================
   void _showHelpModal(BuildContext context, ThemeData theme, bool isDark) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
 
     final faqs = [
       {
@@ -188,7 +188,7 @@ class PaymentsPage extends ConsumerWidget {
   // MODAL: Subscription Details (Botao 2)
   // ==========================================================================
   void _showSubscriptionDetails(BuildContext context, ThemeData theme, bool isDark) {
-    HapticFeedback.selectionClick();
+    HapticUtils.selectionClick();
 
     showModalBottomSheet(
       context: context,
@@ -367,7 +367,7 @@ class PaymentsPage extends ConsumerWidget {
   // MODAL: Manage Subscription (Botao 3)
   // ==========================================================================
   void _showManageSubscription(BuildContext context, ThemeData theme, bool isDark) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
 
     showModalBottomSheet(
       context: context,
@@ -597,7 +597,7 @@ class PaymentsPage extends ConsumerWidget {
   // DIALOG: Cancel Subscription (Botao 4)
   // ==========================================================================
   void _showCancelConfirmation(BuildContext context, ThemeData theme, bool isDark) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
 
     showDialog(
       context: context,
@@ -678,7 +678,7 @@ class PaymentsPage extends ConsumerWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              HapticFeedback.heavyImpact();
+              HapticUtils.heavyImpact();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: const Text('Assinatura cancelada. Acesso ate 15/02/2025.'),
@@ -715,7 +715,7 @@ class PaymentsPage extends ConsumerWidget {
   // MODAL: Edit Payment Method (Botao 5)
   // ==========================================================================
   void _showEditPaymentMethod(BuildContext context, ThemeData theme, bool isDark, Map<String, dynamic> method) {
-    HapticFeedback.selectionClick();
+    HapticUtils.selectionClick();
 
     showModalBottomSheet(
       context: context,
@@ -870,7 +870,7 @@ class PaymentsPage extends ConsumerWidget {
   // MENU: Payment Method Options (Botao 6)
   // ==========================================================================
   void _showPaymentMethodOptions(BuildContext context, ThemeData theme, bool isDark, Map<String, dynamic> method, Offset tapPosition) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
 
     final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
 
@@ -959,7 +959,7 @@ class PaymentsPage extends ConsumerWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              HapticFeedback.mediumImpact();
+              HapticUtils.mediumImpact();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: const Text('Metodo de pagamento removido!'),
@@ -983,7 +983,7 @@ class PaymentsPage extends ConsumerWidget {
   // MODAL: Add Payment Method (Botao 7)
   // ==========================================================================
   void _showAddPaymentMethod(BuildContext context, ThemeData theme, bool isDark) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
 
     showModalBottomSheet(
       context: context,
@@ -1228,7 +1228,7 @@ class PaymentsPage extends ConsumerWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    HapticFeedback.mediumImpact();
+                    HapticUtils.mediumImpact();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: const Text('Cartao adicionado com sucesso!'),
@@ -1291,7 +1291,7 @@ class PaymentsPage extends ConsumerWidget {
   // MODAL: Transaction Details (Botao 8)
   // ==========================================================================
   void _showTransactionDetails(BuildContext context, ThemeData theme, bool isDark, Map<String, dynamic> transaction) {
-    HapticFeedback.selectionClick();
+    HapticUtils.selectionClick();
 
     showModalBottomSheet(
       context: context,
@@ -1436,7 +1436,7 @@ class PaymentsPage extends ConsumerWidget {
   // MODAL: Plan Details (Botao 9)
   // ==========================================================================
   void _showPlanDetails(BuildContext context, ThemeData theme, bool isDark, Map<String, dynamic> plan) {
-    HapticFeedback.selectionClick();
+    HapticUtils.selectionClick();
 
     final isRecommended = plan['recommended'] as bool;
 
@@ -1650,7 +1650,7 @@ class PaymentsPage extends ConsumerWidget {
   // DIALOG: Subscribe Confirmation (Botao 10)
   // ==========================================================================
   void _showSubscribeConfirmation(BuildContext context, ThemeData theme, bool isDark, Map<String, dynamic> plan) {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
 
     showDialog(
       context: context,
@@ -1745,7 +1745,7 @@ class PaymentsPage extends ConsumerWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              HapticFeedback.mediumImpact();
+              HapticUtils.mediumImpact();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Assinatura do plano ${plan['name']} realizada com sucesso!', style: const TextStyle(color: Colors.white)),
@@ -1799,7 +1799,7 @@ class PaymentsPage extends ConsumerWidget {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         context.pop();
                       },
                       child: Container(

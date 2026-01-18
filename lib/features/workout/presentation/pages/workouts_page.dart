@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -82,7 +82,7 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage>
                           ),
                           GestureDetector(
                             onTap: () {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                               _showCreateWorkoutOptions(context, isDark);
                             },
                             child: Container(
@@ -163,7 +163,7 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage>
                             final isSelected = entry.key == _selectedFilter;
                             return GestureDetector(
                               onTap: () {
-                                HapticFeedback.selectionClick();
+                                HapticUtils.selectionClick();
                                 setState(() => _selectedFilter = entry.key);
                               },
                               child: Container(
@@ -209,7 +209,7 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage>
                   child: _WorkoutsList(
                     isDark: isDark,
                     onWorkoutTap: (workout) {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       context.push('/workouts/${workout['id']}');
                     },
                   ),
@@ -224,7 +224,7 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage>
 
   void _showCreateWorkoutOptions(BuildContext context, bool isDark) {
     // Navigate directly to program wizard which handles method selection
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     context.push(RouteNames.programWizard);
   }
 }
@@ -557,7 +557,7 @@ class _WorkoutsList extends ConsumerWidget {
                 program: program,
                 isDark: isDark,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   context.push('/programs/${program['id']}');
                 },
               )),

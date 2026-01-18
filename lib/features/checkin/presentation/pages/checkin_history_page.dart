@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -133,7 +133,7 @@ class _CheckinHistoryPageState extends ConsumerState<CheckinHistoryPage> {
         children: [
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               context.pop();
             },
             child: Container(
@@ -181,7 +181,7 @@ class _CheckinHistoryPageState extends ConsumerState<CheckinHistoryPage> {
           // Calendar filter
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               _showDateRangePicker(context, isDark);
             },
             child: Container(
@@ -233,7 +233,7 @@ class _CheckinHistoryPageState extends ConsumerState<CheckinHistoryPage> {
             padding: const EdgeInsets.only(right: 8),
             child: GestureDetector(
               onTap: () {
-                HapticFeedback.selectionClick();
+                HapticUtils.selectionClick();
                 setState(() => _selectedFilter = filter['id'] as String);
               },
               child: Container(
@@ -435,7 +435,7 @@ class _CheckinHistoryPageState extends ConsumerState<CheckinHistoryPage> {
 
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
       },
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -629,7 +629,7 @@ class _CheckinHistoryPageState extends ConsumerState<CheckinHistoryPage> {
   }
 
   Future<void> _showDateRangePicker(BuildContext context, bool isDark) async {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     final now = DateTime.now();
     final picked = await showDateRangePicker(
       context: context,

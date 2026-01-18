@@ -1,9 +1,11 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Service for biometric authentication (Face ID / Touch ID)
+/// Note: Biometric authentication is not available on web platform
 class BiometricService {
   final LocalAuthentication _localAuth = LocalAuthentication();
 
@@ -12,7 +14,9 @@ class BiometricService {
   static const _enabledKey = 'biometric_enabled';
 
   /// Check if device supports biometric authentication
+  /// Always returns false on web platform
   Future<bool> isDeviceSupported() async {
+    if (kIsWeb) return false;
     try {
       return await _localAuth.isDeviceSupported();
     } catch (e) {
@@ -21,7 +25,9 @@ class BiometricService {
   }
 
   /// Check if biometrics are enrolled on device
+  /// Always returns false on web platform
   Future<bool> canCheckBiometrics() async {
+    if (kIsWeb) return false;
     try {
       return await _localAuth.canCheckBiometrics;
     } catch (e) {
@@ -37,7 +43,9 @@ class BiometricService {
   }
 
   /// Get available biometric types
+  /// Returns empty list on web platform
   Future<List<BiometricType>> getAvailableBiometrics() async {
+    if (kIsWeb) return [];
     try {
       return await _localAuth.getAvailableBiometrics();
     } catch (e) {
@@ -52,9 +60,11 @@ class BiometricService {
   }
 
   /// Authenticate using biometrics
+  /// Always returns false on web platform
   Future<bool> authenticate({
     String reason = 'Autentique para continuar',
   }) async {
+    if (kIsWeb) return false;
     try {
       return await _localAuth.authenticate(
         localizedReason: reason,

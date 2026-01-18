@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -173,7 +173,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
   }
 
   void _goToPreviousWeek() {
-    HapticFeedback.selectionClick();
+    HapticUtils.selectionClick();
     setState(() {
       _weekStart = _weekStart.subtract(const Duration(days: 7));
       _selectedDate = _weekStart;
@@ -181,7 +181,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
   }
 
   void _goToNextWeek() {
-    HapticFeedback.selectionClick();
+    HapticUtils.selectionClick();
     setState(() {
       _weekStart = _weekStart.add(const Duration(days: 7));
       _selectedDate = _weekStart;
@@ -189,7 +189,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
   }
 
   void _goToToday() {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     setState(() {
       _selectedDate = DateTime.now();
       _weekStart = _getWeekStart(DateTime.now());
@@ -247,7 +247,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                         onNextWeek: _goToNextWeek,
                         onGoToToday: _goToToday,
                         onBack: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           context.pop();
                         },
                       ),
@@ -273,7 +273,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                             isDark: isDark,
                             sessionsCount: _getSessionsForDay(day, allSessions).length,
                             onTap: () {
-                              HapticFeedback.selectionClick();
+                              HapticUtils.selectionClick();
                               setState(() => _selectedDate = day);
                             },
                           );
@@ -327,7 +327,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                                     getStatusLabel: _getStatusLabel,
                                     getStatusIcon: _getStatusIcon,
                                     onTap: () {
-                                      HapticFeedback.selectionClick();
+                                      HapticUtils.selectionClick();
                                       _showSessionDetail(context, isDark, session);
                                     },
                                   ),
@@ -346,7 +346,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
         delay: const Duration(milliseconds: 400),
         child: FloatingActionButton.extended(
           onPressed: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             _showCreateSessionSheet(context, isDark, students);
           },
           backgroundColor: isDark ? AppColors.primaryDark : AppColors.primary,
@@ -509,7 +509,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(context);
                           _showMessageModal(context, isDark, session);
                         },
@@ -541,7 +541,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                     const SizedBox(width: 12),
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                         _showEditSessionSheet(context, isDark, session);
                       },
@@ -568,7 +568,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                     const SizedBox(width: 8),
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                         _showCancelConfirmModal(context, isDark, session);
                       },
@@ -725,7 +725,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                   'Escolha um aluno para agendar',
                   AppColors.primary,
                   () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(ctx);
                     _showSelectStudentModal(context, isDark, studentList);
                   },
@@ -741,7 +741,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                   'Criar sessoes que se repetem',
                   AppColors.secondary,
                   () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(ctx);
                     _showRecurringSessionModal(context, isDark, studentList);
                   },
@@ -757,7 +757,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                   'Agendar para multiplos alunos',
                   AppColors.accent,
                   () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(ctx);
                     _showGroupSessionModal(context, isDark, studentList);
                   },
@@ -854,7 +854,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
 
                     return GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(ctx);
                         _showTimePickerForStudent(context, isDark, student);
                       },
@@ -1008,7 +1008,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                   const SizedBox(height: 24),
                   GestureDetector(
                     onTap: () async {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       final time = await showTimePicker(
                         context: context,
                         initialTime: selectedTime,
@@ -1067,7 +1067,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                     height: 52,
                     child: ElevatedButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -1220,7 +1220,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                         final isSelected = selectedFrequency == entry.key;
                         return GestureDetector(
                           onTap: () {
-                            HapticFeedback.selectionClick();
+                            HapticUtils.selectionClick();
                             setModalState(() => selectedFrequency = entry.key);
                           },
                           child: Container(
@@ -1281,7 +1281,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                           final isSelected = selectedWeekdays.contains(entry.key);
                           return GestureDetector(
                             onTap: () {
-                              HapticFeedback.selectionClick();
+                              HapticUtils.selectionClick();
                               setModalState(() {
                                 if (isSelected) {
                                   selectedWeekdays.remove(entry.key);
@@ -1346,7 +1346,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                     const SizedBox(height: 12),
                     GestureDetector(
                       onTap: () async {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         final time = await showTimePicker(
                           context: context,
                           initialTime: selectedTime,
@@ -1422,7 +1422,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                         final isSelected = selectedDuration == duration;
                         return GestureDetector(
                           onTap: () {
-                            HapticFeedback.selectionClick();
+                            HapticUtils.selectionClick();
                             setModalState(() => selectedDuration = duration);
                           },
                           child: Container(
@@ -1480,7 +1480,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                     const SizedBox(height: 12),
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         showModalBottomSheet(
                           context: context,
                           backgroundColor:
@@ -1533,7 +1533,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                                           ),
                                           title: Text(student['name'] as String),
                                           onTap: () {
-                                            HapticFeedback.lightImpact();
+                                            HapticUtils.lightImpact();
                                             Navigator.pop(innerCtx);
                                             setModalState(
                                                 () => selectedStudent = student);
@@ -1655,7 +1655,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                       child: ElevatedButton(
                         onPressed: selectedStudent != null
                             ? () {
-                                HapticFeedback.lightImpact();
+                                HapticUtils.lightImpact();
                                 Navigator.pop(ctx);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
@@ -1856,7 +1856,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
 
                           return GestureDetector(
                             onTap: () {
-                              HapticFeedback.selectionClick();
+                              HapticUtils.selectionClick();
                               setModalState(() {
                                 if (isSelected) {
                                   selectedStudentIds.remove(student['id']);
@@ -1966,7 +1966,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                     const SizedBox(height: 12),
                     GestureDetector(
                       onTap: () async {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         final time = await showTimePicker(
                           context: context,
                           initialTime: selectedTime,
@@ -2042,7 +2042,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                         final isSelected = selectedDuration == duration;
                         return GestureDetector(
                           onTap: () {
-                            HapticFeedback.selectionClick();
+                            HapticUtils.selectionClick();
                             setModalState(() => selectedDuration = duration);
                           },
                           child: Container(
@@ -2102,7 +2102,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                       children: [
                         GestureDetector(
                           onTap: () {
-                            HapticFeedback.selectionClick();
+                            HapticUtils.selectionClick();
                             if (maxCapacity > 2) {
                               setModalState(() => maxCapacity--);
                             }
@@ -2141,7 +2141,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                         const SizedBox(width: 16),
                         GestureDetector(
                           onTap: () {
-                            HapticFeedback.selectionClick();
+                            HapticUtils.selectionClick();
                             if (maxCapacity < 50) {
                               setModalState(() => maxCapacity++);
                             }
@@ -2178,7 +2178,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                       child: ElevatedButton(
                         onPressed: selectedStudentIds.isNotEmpty
                             ? () {
-                                HapticFeedback.lightImpact();
+                                HapticUtils.lightImpact();
                                 Navigator.pop(ctx);
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
@@ -2327,7 +2327,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                   children: quickMessages.map((message) {
                     return GestureDetector(
                       onTap: () {
-                        HapticFeedback.selectionClick();
+                        HapticUtils.selectionClick();
                         setModalState(() {
                           messageController.text = message;
                         });
@@ -2403,7 +2403,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                   height: 52,
                   child: ElevatedButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -2550,7 +2550,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                   // New time selector
                   GestureDetector(
                     onTap: () async {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       final time = await showTimePicker(
                         context: context,
                         initialTime: selectedTime,
@@ -2613,7 +2613,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                     height: 52,
                     child: ElevatedButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -2733,7 +2733,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                     const SizedBox(height: 12),
                     GestureDetector(
                       onTap: () async {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         final date = await showDatePicker(
                           context: context,
                           initialDate: selectedDate,
@@ -2807,7 +2807,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                     const SizedBox(height: 12),
                     GestureDetector(
                       onTap: () async {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         final time = await showTimePicker(
                           context: context,
                           initialTime: selectedTime,
@@ -2870,7 +2870,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                       height: 52,
                       child: ElevatedButton(
                         onPressed: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(ctx);
                           final dateStr =
                               DateFormat('d/MM', 'pt_BR').format(selectedDate);
@@ -3058,7 +3058,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                     height: 52,
                     child: OutlinedButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(ctx);
                       },
                       style: OutlinedButton.styleFrom(
@@ -3088,7 +3088,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                     height: 52,
                     child: ElevatedButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -3222,7 +3222,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                 leading: const Icon(LucideIcons.clock),
                 title: const Text('Alterar Horario'),
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   _showChangeTimeModal(context, isDark, session);
                 },
@@ -3231,7 +3231,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                 leading: const Icon(LucideIcons.calendar),
                 title: const Text('Reagendar'),
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   _showRescheduleModal(context, isDark, session);
                 },
@@ -3240,7 +3240,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                 leading: const Icon(LucideIcons.checkCircle),
                 title: const Text('Marcar como Confirmado'),
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -3257,7 +3257,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                   style: TextStyle(color: AppColors.destructive),
                 ),
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   _showCancelConfirmModal(context, isDark, session);
                 },
@@ -3933,7 +3933,7 @@ class _EmptyState extends StatelessWidget {
               const SizedBox(height: 24),
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   // Navigate to create session
                 },
                 child: Container(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -481,7 +481,7 @@ class _WorkoutTemplatesPageState extends ConsumerState<WorkoutTemplatesPage> {
   }
 
   void _selectCategory(String categoryId) {
-    HapticFeedback.selectionClick();
+    HapticUtils.selectionClick();
     setState(() {
       _selectedCategory = categoryId;
       _selectedTemplate = null;
@@ -489,7 +489,7 @@ class _WorkoutTemplatesPageState extends ConsumerState<WorkoutTemplatesPage> {
   }
 
   void _selectTemplate(_WorkoutTemplate template) {
-    HapticFeedback.selectionClick();
+    HapticUtils.selectionClick();
     setState(() {
       _selectedTemplate = template;
     });
@@ -500,7 +500,7 @@ class _WorkoutTemplatesPageState extends ConsumerState<WorkoutTemplatesPage> {
   Future<void> _useTemplate() async {
     if (_selectedTemplate == null || _isCreating) return;
 
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     setState(() {
       _isCreating = true;
     });
@@ -585,7 +585,7 @@ class _WorkoutTemplatesPageState extends ConsumerState<WorkoutTemplatesPage> {
   }
 
   void _goBack() {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     if (_selectedTemplate != null) {
       setState(() {
         _selectedTemplate = null;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -87,7 +87,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         context.pop();
                       },
                       child: Container(
@@ -112,7 +112,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
                     ),
                     TextButton.icon(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         _showAIWizardModal(context);
                       },
                       icon: Icon(LucideIcons.sparkles, size: 18, color: AppColors.primary),
@@ -120,7 +120,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
                     ),
                     TextButton.icon(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         _showPreview(context);
                       },
                       icon: Icon(LucideIcons.eye, size: 18),
@@ -205,7 +205,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: state.exercises.length,
                           onReorder: (oldIndex, newIndex) {
-                            HapticFeedback.selectionClick();
+                            HapticUtils.selectionClick();
                             ref.read(workoutBuilderProvider.notifier)
                                 .reorderExercises(oldIndex, newIndex);
                           },
@@ -257,7 +257,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
               Expanded(
                 child: OutlinedButton(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(context);
                   },
                   style: OutlinedButton.styleFrom(
@@ -400,7 +400,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
                   ],
                   onChanged: (value) {
                     if (value != null) {
-                      HapticFeedback.selectionClick();
+                      HapticUtils.selectionClick();
                       ref.read(workoutBuilderProvider.notifier).setDifficulty(value);
                     }
                   },
@@ -475,7 +475,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
         ),
         TextButton.icon(
           onPressed: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             _showExerciseLibrary(context);
           },
           icon: Icon(LucideIcons.library, size: 16),
@@ -604,7 +604,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
                 ),
                 IconButton(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     _editExercise(exercise);
                   },
                   icon: Icon(LucideIcons.pencil, size: 18),
@@ -612,7 +612,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
                 ),
                 IconButton(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     ref.read(workoutBuilderProvider.notifier).removeExercise(exercise.id);
                   },
                   icon: Icon(LucideIcons.trash2, size: 18, color: AppColors.destructive),
@@ -676,7 +676,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
   Widget _buildAddExerciseButton(ThemeData theme, bool isDark) {
     return InkWell(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         _showExerciseLibrary(context);
       },
       borderRadius: BorderRadius.circular(8),
@@ -709,7 +709,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
   }
 
   void _showPreview(BuildContext context) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     final state = ref.read(workoutBuilderProvider);
 
     if (state.exercises.isEmpty) {
@@ -738,7 +738,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
   }
 
   void _showAIWizardModal(BuildContext context) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -758,7 +758,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
   }
 
   void _showExerciseLibrary(BuildContext context) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -776,7 +776,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
   }
 
   void _editExercise(WorkoutBuilderExercise exercise) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -792,7 +792,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
   }
 
   Future<void> _saveWorkout() async {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     final workoutId = await ref.read(workoutBuilderProvider.notifier).saveWorkout();
     if (workoutId != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -874,7 +874,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<_ExerciseLibrarySheet> {
                   children: [
                     IconButton(
                       onPressed: () async {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         final result = await context.push('/workouts/exercises/new');
                         if (result == true) {
                           // Exercise was created, list will auto-refresh
@@ -885,7 +885,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<_ExerciseLibrarySheet> {
                     ),
                     IconButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                       },
                       icon: Icon(LucideIcons.x),
@@ -1017,7 +1017,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<_ExerciseLibrarySheet> {
                       subtitle: Text(exercise.muscleGroupName),
                       trailing: Icon(LucideIcons.plus, color: AppColors.primary),
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         widget.onExerciseSelected(exercise);
                       },
                     );
@@ -1121,7 +1121,7 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
               children: [
                 IconButton(
                   onPressed: () {
-                    HapticFeedback.selectionClick();
+                    HapticUtils.selectionClick();
                     if (_sets > 1) setState(() => _sets--);
                   },
                   icon: Icon(LucideIcons.minus),
@@ -1142,7 +1142,7 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
                 const SizedBox(width: 16),
                 IconButton(
                   onPressed: () {
-                    HapticFeedback.selectionClick();
+                    HapticUtils.selectionClick();
                     setState(() => _sets++);
                   },
                   icon: Icon(LucideIcons.plus),
@@ -1175,7 +1175,7 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
               divisions: 10,
               label: '${_rest}s',
               onChanged: (value) {
-                HapticFeedback.selectionClick();
+                HapticUtils.selectionClick();
                 setState(() => _rest = value.toInt());
               },
             ),
@@ -1203,7 +1203,7 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
               width: double.infinity,
               child: FilledButton(
                 onPressed: () {
-                  HapticFeedback.mediumImpact();
+                  HapticUtils.mediumImpact();
                   widget.onSave(widget.exercise.copyWith(
                     sets: _sets,
                     reps: _reps,
@@ -1302,7 +1302,7 @@ class _WorkoutPreviewSheet extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(context);
                   },
                   icon: Icon(LucideIcons.x),
@@ -1500,7 +1500,7 @@ class _WorkoutPreviewSheet extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                       },
                       icon: Icon(LucideIcons.pencil, size: 16),
@@ -1669,7 +1669,7 @@ class _AIWizardSheetState extends ConsumerState<_AIWizardSheet> {
                 ),
                 IconButton(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(context);
                   },
                   icon: Icon(LucideIcons.x),
@@ -1699,7 +1699,7 @@ class _AIWizardSheetState extends ConsumerState<_AIWizardSheet> {
                       final isSelected = _selectedGoal == goal.$1;
                       return GestureDetector(
                         onTap: () {
-                          HapticFeedback.selectionClick();
+                          HapticUtils.selectionClick();
                           setState(() => _selectedGoal = goal.$1);
                         },
                         child: Container(
@@ -1760,7 +1760,7 @@ class _AIWizardSheetState extends ConsumerState<_AIWizardSheet> {
                         label: Text(group.$2),
                         selected: isSelected,
                         onSelected: (_) {
-                          HapticFeedback.selectionClick();
+                          HapticUtils.selectionClick();
                           setState(() {
                             _selectedMuscleGroup = isSelected ? null : group.$1;
                           });
@@ -1808,7 +1808,7 @@ class _AIWizardSheetState extends ConsumerState<_AIWizardSheet> {
                         ),
                         TextButton(
                           onPressed: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             setState(() {
                               if (_selectedExercises.length == _suggestedExercises.length) {
                                 _selectedExercises.clear();
@@ -1830,7 +1830,7 @@ class _AIWizardSheetState extends ConsumerState<_AIWizardSheet> {
                       final isSelected = _selectedExercises.contains(exercise);
                       return GestureDetector(
                         onTap: () {
-                          HapticFeedback.selectionClick();
+                          HapticUtils.selectionClick();
                           setState(() {
                             if (isSelected) {
                               _selectedExercises.remove(exercise);
@@ -1920,7 +1920,7 @@ class _AIWizardSheetState extends ConsumerState<_AIWizardSheet> {
                 ),
                 child: FilledButton.icon(
                   onPressed: () {
-                    HapticFeedback.mediumImpact();
+                    HapticUtils.mediumImpact();
                     widget.onExercisesSelected(_selectedExercises.toList());
                   },
                   icon: Icon(LucideIcons.plus, size: 18),

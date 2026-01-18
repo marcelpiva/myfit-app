@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -107,7 +107,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                             children: [
                               GestureDetector(
                                 onTap: () {
-                                  HapticFeedback.lightImpact();
+                                  HapticUtils.lightImpact();
                                   _showInviteSheet(context, isDark);
                                 },
                                 child: Container(
@@ -189,7 +189,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                             final isSelected = entry.key == _selectedFilter;
                             return GestureDetector(
                               onTap: () {
-                                HapticFeedback.selectionClick();
+                                HapticUtils.selectionClick();
                                 setState(() => _selectedFilter = entry.key);
                               },
                               child: Container(
@@ -367,7 +367,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                             student: studentMap,
                             isDark: isDark,
                             onTap: () {
-                              HapticFeedback.selectionClick();
+                              HapticUtils.selectionClick();
                               _showStudentDetail(context, isDark, studentMap);
                             },
                           );
@@ -387,7 +387,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
   Widget _buildMiniStat(bool isDark, String value, String label, {Color? color}) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.selectionClick();
+        HapticUtils.selectionClick();
         _showDetailedStatsModal(context, isDark, label, value);
       },
       child: Column(
@@ -539,7 +539,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                       children: [
                         GestureDetector(
                           onTap: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             Navigator.pop(context);
                             _showMessageComposeModal(context, isDark, student);
                           },
@@ -562,7 +562,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                         const SizedBox(width: 8),
                         GestureDetector(
                           onTap: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             Navigator.pop(context);
                             _showStudentOptionsSheet(context, isDark, student);
                           },
@@ -619,7 +619,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(context);
                           _showEditWorkoutModal(context, isDark, student);
                         },
@@ -651,7 +651,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(context);
                           _showEditDietModal(context, isDark, student);
                         },
@@ -718,7 +718,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
 
                   return GestureDetector(
                     onTap: () {
-                      HapticFeedback.selectionClick();
+                      HapticUtils.selectionClick();
                       _showActivityDetailModal(context, isDark, title, subtitle, time, icon, color);
                     },
                     child: Container(
@@ -966,7 +966,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                 'WhatsApp',
                 AppColors.success,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -985,7 +985,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                 'Email',
                 AppColors.primary,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -1004,7 +1004,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                 'Copiar Link',
                 AppColors.secondary,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Clipboard.setData(const ClipboardData(text: 'https://myfit.app/invite/MYFIT-JP2024'));
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -1134,7 +1134,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                 const SizedBox(height: 16),
                 GestureDetector(
                   onTap: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -1209,12 +1209,12 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
               ),
               const SizedBox(height: 20),
               _buildOptionItem(context, isDark, LucideIcons.dumbbell, 'Ver treinos', AppColors.primary, () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(context);
                 _showEditWorkoutModal(context, isDark, student);
               }),
               _buildOptionItem(context, isDark, LucideIcons.trendingUp, 'Ver progresso', AppColors.success, () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -1226,7 +1226,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                 );
               }),
               _buildOptionItem(context, isDark, LucideIcons.pencil, 'Editar', AppColors.secondary, () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -1238,7 +1238,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                 );
               }),
               _buildOptionItem(context, isDark, LucideIcons.trash2, 'Remover', AppColors.destructive, () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(context);
                 _showRemoveConfirmation(context, isDark, student);
               }),
@@ -1345,7 +1345,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                       },
                       child: Container(
@@ -1371,7 +1371,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -1448,7 +1448,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
               const SizedBox(height: 16),
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -1604,7 +1604,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
               const SizedBox(height: 16),
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -2252,7 +2252,7 @@ class _AddStudentSheetState extends State<_AddStudentSheet> with SingleTickerPro
                           const SizedBox(height: 16),
                           GestureDetector(
                             onTap: () {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                               Clipboard.setData(ClipboardData(text: _inviteCode ?? ''));
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
@@ -2293,7 +2293,7 @@ class _AddStudentSheetState extends State<_AddStudentSheet> with SingleTickerPro
                               Expanded(
                                 child: OutlinedButton.icon(
                                   onPressed: () {
-                                    HapticFeedback.lightImpact();
+                                    HapticUtils.lightImpact();
                                     // TODO: Share functionality
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
@@ -2316,7 +2316,7 @@ class _AddStudentSheetState extends State<_AddStudentSheet> with SingleTickerPro
                               Expanded(
                                 child: ElevatedButton.icon(
                                   onPressed: () {
-                                    HapticFeedback.lightImpact();
+                                    HapticUtils.lightImpact();
                                     Clipboard.setData(ClipboardData(text: 'https://myfit.app/invite/${_inviteCode ?? ''}'));
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(

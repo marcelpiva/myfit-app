@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -143,7 +143,7 @@ class _ExerciseFormPageState extends ConsumerState<ExerciseFormPage> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         context.pop();
                       },
                       child: Container(
@@ -247,7 +247,7 @@ class _ExerciseFormPageState extends ConsumerState<ExerciseFormPage> {
                               label: Text(item.$2),
                               selected: isSelected,
                               onSelected: (_) {
-                                HapticFeedback.selectionClick();
+                                HapticUtils.selectionClick();
                                 setState(() => _selectedMuscleGroup = item.$1);
                               },
                               selectedColor: AppColors.primary.withAlpha(50),
@@ -272,7 +272,7 @@ class _ExerciseFormPageState extends ConsumerState<ExerciseFormPage> {
                               label: Text(item.$2),
                               selected: isSelected,
                               onSelected: (_) {
-                                HapticFeedback.selectionClick();
+                                HapticUtils.selectionClick();
                                 setState(() => _selectedEquipment = item.$1);
                               },
                               selectedColor: AppColors.secondary.withAlpha(50),
@@ -298,7 +298,7 @@ class _ExerciseFormPageState extends ConsumerState<ExerciseFormPage> {
                                 ),
                                 child: GestureDetector(
                                   onTap: () {
-                                    HapticFeedback.selectionClick();
+                                    HapticUtils.selectionClick();
                                     setState(
                                         () => _selectedDifficulty = item.$1);
                                   },
@@ -415,7 +415,7 @@ class _ExerciseFormPageState extends ConsumerState<ExerciseFormPage> {
               Expanded(
                 child: OutlinedButton(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     context.pop();
                   },
                   style: OutlinedButton.styleFrom(

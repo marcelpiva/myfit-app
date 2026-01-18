@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -78,7 +78,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
                   padding: const EdgeInsets.only(left: 8),
                   child: GestureDetector(
                     onTap: () {
-                      HapticFeedback.selectionClick();
+                      HapticUtils.selectionClick();
                       notifier.addWorkout();
                     },
                     child: Container(
@@ -117,11 +117,11 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
                 padding: EdgeInsets.only(right: index < state.workouts.length - 1 ? 8 : 0),
                 child: GestureDetector(
                   onTap: () {
-                    HapticFeedback.selectionClick();
+                    HapticUtils.selectionClick();
                     setState(() => _selectedWorkoutIndex = index);
                   },
                   onLongPress: () {
-                          HapticFeedback.mediumImpact();
+                          HapticUtils.mediumImpact();
                           _showWorkoutOptionsSheet(context, workout, notifier, index, state.workouts.length);
                         },
                   child: Container(
@@ -795,7 +795,7 @@ class _WorkoutConfigCard extends ConsumerWidget {
               Expanded(
                 child: FilledButton.icon(
                   onPressed: () async {
-                    HapticFeedback.mediumImpact();
+                    HapticUtils.mediumImpact();
                     final result = await notifier.suggestExercisesForWorkout(workout.id);
                     if (!context.mounted) return;
 
@@ -1176,18 +1176,32 @@ class _ExerciseGroupCard extends ConsumerWidget {
                     ],
                   ),
                 ),
-                // Instructions button if group has instructions
-                if (groupInstructions.isNotEmpty)
-                  IconButton(
-                    icon: Icon(
-                      LucideIcons.fileText,
-                      size: 18,
-                      color: techniqueColor,
-                    ),
-                    tooltip: 'Ver instrucoes',
-                    onPressed: () => _showGroupInstructions(context, groupInstructions),
-                    visualDensity: VisualDensity.compact,
+                // Add exercise to group button
+                IconButton(
+                  icon: Icon(
+                    LucideIcons.plus,
+                    size: 18,
+                    color: techniqueColor,
                   ),
+                  tooltip: 'Adicionar exercicio ao grupo',
+                  onPressed: () => _showAddExerciseToGroup(context, ref, techniqueColor),
+                  visualDensity: VisualDensity.compact,
+                ),
+                // Edit group instructions button
+                IconButton(
+                  icon: Icon(
+                    LucideIcons.fileText,
+                    size: 18,
+                    color: groupInstructions.isNotEmpty
+                        ? techniqueColor
+                        : theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                  ),
+                  tooltip: groupInstructions.isNotEmpty
+                      ? 'Editar instrucoes'
+                      : 'Adicionar instrucoes',
+                  onPressed: () => _showEditGroupInstructions(context, ref, groupInstructions),
+                  visualDensity: VisualDensity.compact,
+                ),
                 // Disband group button
                 IconButton(
                   icon: Icon(
@@ -1197,7 +1211,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
                   ),
                   tooltip: 'Desfazer grupo',
                   onPressed: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     notifier.disbandExerciseGroup(workoutId, groupId);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -1210,6 +1224,17 @@ class _ExerciseGroupCard extends ConsumerWidget {
                       ),
                     );
                   },
+                  visualDensity: VisualDensity.compact,
+                ),
+                // Delete entire group button
+                IconButton(
+                  icon: Icon(
+                    LucideIcons.trash2,
+                    size: 18,
+                    color: Colors.red.withValues(alpha: 0.7),
+                  ),
+                  tooltip: 'Excluir grupo',
+                  onPressed: () => _showDeleteGroupConfirmation(context, ref, techniqueType),
                   visualDensity: VisualDensity.compact,
                 ),
               ],
@@ -1226,6 +1251,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
                   exercise: exercise,
                   workoutId: workoutId,
                   orderInGroup: index,
+                  totalInGroup: exercises.length,
                   techniqueColor: techniqueColor,
                   isDark: isDark,
                   theme: theme,
@@ -1239,22 +1265,329 @@ class _ExerciseGroupCard extends ConsumerWidget {
     );
   }
 
-  void _showGroupInstructions(BuildContext context, String instructions) {
+  void _showAddExerciseToGroup(
+      BuildContext context, WidgetRef ref, Color techniqueColor) {
+    HapticUtils.selectionClick();
+
+    // Get exercises already in this group
+    final groupExerciseIds =
+        exercises.map((e) => e.exerciseId).toSet();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) {
+          final service = WorkoutService();
+
+          return FutureBuilder<List<Map<String, dynamic>>>(
+            future: service.getExercises(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (snapshot.hasError || !snapshot.hasData) {
+                return Center(
+                  child: Text(
+                    'Erro ao carregar exercicios',
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                );
+              }
+
+              final allExercises = snapshot.data!;
+              // Filter out exercises already in the group
+              final availableExercises = allExercises
+                  .where((e) => !groupExerciseIds.contains(e['id']?.toString()))
+                  .toList();
+
+              return Column(
+                children: [
+                  // Header
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: theme.dividerColor.withValues(alpha: 0.3),
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(LucideIcons.plus, color: techniqueColor, size: 22),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Adicionar ao Grupo',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                'Selecione um exercicio para adicionar',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurface
+                                      .withValues(alpha: 0.6),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(LucideIcons.x),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Exercise list
+                  Expanded(
+                    child: availableExercises.isEmpty
+                        ? Center(
+                            child: Text(
+                              'Todos os exercicios ja estao no grupo',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.6),
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            controller: scrollController,
+                            padding: const EdgeInsets.all(16),
+                            itemCount: availableExercises.length,
+                            itemBuilder: (context, index) {
+                              final exerciseData = availableExercises[index];
+                              final exerciseName =
+                                  exerciseData['name']?.toString() ?? '';
+                              final muscleGroup =
+                                  exerciseData['muscle_group']?.toString() ??
+                                      exerciseData['muscleGroup']?.toString() ??
+                                      '';
+                              // Convert to Exercise model for the provider
+                              final exercise = Exercise(
+                                id: exerciseData['id']?.toString() ?? '',
+                                name: exerciseName,
+                                muscleGroup: muscleGroup.toMuscleGroup(),
+                                description: exerciseData['description']?.toString(),
+                                instructions: exerciseData['instructions']?.toString(),
+                                imageUrl: exerciseData['image_url']?.toString() ??
+                                    exerciseData['imageUrl']?.toString(),
+                              );
+
+                              return Card(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                child: ListTile(
+                                  leading: Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: techniqueColor.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(
+                                      LucideIcons.dumbbell,
+                                      color: techniqueColor,
+                                    ),
+                                  ),
+                                  title: Text(
+                                    exerciseName,
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    muscleGroup,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.colorScheme.onSurface
+                                          .withValues(alpha: 0.6),
+                                    ),
+                                  ),
+                                  onTap: () {
+                                    HapticUtils.selectionClick();
+                                    Navigator.pop(context);
+                                    ref
+                                        .read(programWizardProvider.notifier)
+                                        .addExerciseToGroup(
+                                          workoutId: workoutId,
+                                          groupId: groupId,
+                                          exercise: exercise,
+                                        );
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            '$exerciseName adicionado ao grupo'),
+                                        behavior: SnackBarBehavior.floating,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        duration: const Duration(seconds: 2),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  void _showEditGroupInstructions(
+      BuildContext context, WidgetRef ref, String currentInstructions) {
+    HapticUtils.selectionClick();
+
+    final controller = TextEditingController(text: currentInstructions);
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: Row(
           children: [
             Icon(LucideIcons.fileText, color: AppColors.primary, size: 20),
             const SizedBox(width: 8),
-            const Text('Instrucoes do Grupo'),
+            const Expanded(
+              child: Text('Instrucoes do Grupo'),
+            ),
           ],
         ),
-        content: Text(instructions),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Estas instrucoes serao aplicadas a todos os exercicios do grupo.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                maxLines: 4,
+                decoration: InputDecoration(
+                  hintText: 'Ex: Execute sem descanso entre os exercicios...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                ),
+              ),
+            ],
+          ),
+        ),
         actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
           FilledButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Fechar'),
+            onPressed: () {
+              Navigator.pop(ctx);
+              ref.read(programWizardProvider.notifier).updateGroupInstructions(
+                    workoutId: workoutId,
+                    groupId: groupId,
+                    instructions: controller.text.trim(),
+                  );
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Instrucoes atualizadas'),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+            child: const Text('Salvar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteGroupConfirmation(
+      BuildContext context, WidgetRef ref, TechniqueType techniqueType) {
+    HapticUtils.mediumImpact();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(LucideIcons.alertTriangle, color: Colors.red, size: 22),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Text('Excluir Grupo'),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Tem certeza que deseja excluir este ${techniqueType.displayName}?',
+              style: theme.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Todos os ${exercises.length} exercicios serao removidos do treino.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              ref.read(programWizardProvider.notifier).deleteExerciseGroup(
+                    workoutId,
+                    groupId,
+                  );
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${techniqueType.displayName} excluido'),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+            child: const Text('Excluir'),
           ),
         ],
       ),
@@ -1263,10 +1596,12 @@ class _ExerciseGroupCard extends ConsumerWidget {
 }
 
 /// Simplified exercise item for display within a group (no technique chip, aligned)
+/// Now with full editing capabilities
 class _GroupedExerciseItem extends ConsumerWidget {
   final WizardExercise exercise;
   final String workoutId;
   final int orderInGroup;
+  final int totalInGroup;
   final Color techniqueColor;
   final bool isDark;
   final ThemeData theme;
@@ -1276,93 +1611,611 @@ class _GroupedExerciseItem extends ConsumerWidget {
     required this.exercise,
     required this.workoutId,
     required this.orderInGroup,
+    required this.totalInGroup,
     required this.techniqueColor,
     required this.isDark,
     required this.theme,
     required this.isLast,
   });
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(programWizardProvider.notifier);
+  void _showExerciseDetails(BuildContext context) async {
+    final service = WorkoutService();
 
-    return Container(
-      margin: EdgeInsets.only(bottom: isLast ? 0 : 6),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: isDark
-            ? theme.colorScheme.surfaceContainerLow.withAlpha(80)
-            : theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      child: Row(
-        children: [
-          // Order number with technique color
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: techniqueColor,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Center(
-              child: Text(
-                '${orderInGroup + 1}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
+      builder: (ctx) => FutureBuilder<Map<String, dynamic>?>(
+        future: service.getExercise(exercise.exerciseId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const SizedBox(
+              height: 200,
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          final exerciseData = snapshot.data;
+          if (exerciseData == null) {
+            return const SizedBox(
+              height: 200,
+              child: Center(child: Text('Exercicio nao encontrado')),
+            );
+          }
+
+          final name = exerciseData['name'] as String? ?? '';
+          final description = exerciseData['description'] as String? ?? '';
+          final instructions = exerciseData['instructions'] as String? ?? '';
+          final imageUrl = exerciseData['image_url'] as String?;
+          final muscleGroup = exerciseData['muscle_group'] as String? ?? '';
+
+          return DraggableScrollableSheet(
+            initialChildSize: 0.7,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            expand: false,
+            builder: (context, scrollController) => SingleChildScrollView(
+              controller: scrollController,
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle bar
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.borderDark : AppColors.border,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Title
+                  Text(
+                    name,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (muscleGroup.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withAlpha(20),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        muscleGroup,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+
+                  if (description.isNotEmpty) ...[
+                    Text('Descricao', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 8),
+                    Text(description, style: theme.textTheme.bodyMedium),
+                    const SizedBox(height: 16),
+                  ],
+
+                  if (instructions.isNotEmpty) ...[
+                    Text('Instrucoes', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 8),
+                    Text(instructions, style: theme.textTheme.bodyMedium),
+                    const SizedBox(height: 16),
+                  ],
+
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Fechar'),
+                    ),
+                  ),
+                ],
               ),
             ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showEditGroupedExerciseDialog(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(programWizardProvider.notifier);
+    int sets = exercise.sets;
+    String reps = exercise.reps;
+    int restSeconds = exercise.restSeconds;
+    String executionInstructions = exercise.executionInstructions;
+    int? isometricSeconds = exercise.isometricSeconds;
+
+    final repsController = TextEditingController(text: reps);
+    final instructionsController = TextEditingController(text: executionInstructions);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) => Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
           ),
-          const SizedBox(width: 10),
-          // Exercise name
-          Expanded(
+          child: SingleChildScrollView(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  exercise.name,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
+                // Header with group indicator
+                Row(
+                  children: [
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: techniqueColor,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${orderInGroup + 1}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        exercise.name,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      icon: const Icon(LucideIcons.x),
+                    ),
+                  ],
+                ),
+                // Group indicator chip
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  margin: const EdgeInsets.only(top: 8),
+                  decoration: BoxDecoration(
+                    color: techniqueColor.withAlpha(20),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    '${exercise.techniqueType.displayName} - Exercicio ${orderInGroup + 1}/$totalInGroup',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: techniqueColor,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
+                const SizedBox(height: 12),
+
+                // View Details Button
+                OutlinedButton.icon(
+                  onPressed: () => _showExerciseDetails(context),
+                  icon: const Icon(LucideIcons.info, size: 18),
+                  label: const Text('Ver Detalhes do Exercicio'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 44),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 16),
+
+                // Sets
+                Text('Series', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                const SizedBox(height: 8),
+                Row(
                   children: [
-                    _MiniChip(label: '${exercise.sets}x${exercise.reps}', isDark: isDark),
-                    if (exercise.restSeconds > 0)
-                      _MiniChip(label: '${exercise.restSeconds}s', isDark: isDark),
-                    // Compact isometric display
-                    if (exercise.isometricSeconds != null && exercise.isometricSeconds! > 0)
-                      _MiniChip(
-                        label: '${exercise.isometricSeconds}s',
-                        icon: LucideIcons.timer,
-                        isDark: isDark,
-                        isHighlighted: true,
+                    IconButton.filled(
+                      onPressed: sets > 1 ? () => setState(() => sets--) : null,
+                      icon: Icon(LucideIcons.minus, size: 18, color: isDark ? Colors.white : Colors.black87),
+                      style: IconButton.styleFrom(
+                        backgroundColor: isDark ? AppColors.mutedDark : AppColors.muted,
                       ),
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          '$sets',
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton.filled(
+                      onPressed: sets < 10 ? () => setState(() => sets++) : null,
+                      icon: const Icon(LucideIcons.plus, size: 18, color: Colors.white),
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                      ),
+                    ),
                   ],
+                ),
+                const SizedBox(height: 16),
+
+                // Reps
+                Text('Repeticoes', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: repsController,
+                  decoration: InputDecoration(
+                    hintText: 'Ex: 10-12 ou 15',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onChanged: (value) => reps = value,
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: ['8-10', '10-12', '12-15', '15', '20'].map((r) {
+                    final isSelected = reps == r;
+                    return ChoiceChip(
+                      label: Text(
+                        r,
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : null,
+                        ),
+                      ),
+                      selected: isSelected,
+                      selectedColor: AppColors.primary,
+                      onSelected: (_) {
+                        setState(() {
+                          reps = r;
+                          repsController.text = r;
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+
+                // Rest (with note about group behavior)
+                Text('Descanso (segundos)', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                if (!isLast) ...[
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: techniqueColor.withAlpha(15),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(LucideIcons.info, size: 12, color: techniqueColor),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Exercicios no meio do grupo tem descanso 0',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: techniqueColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    IconButton.filled(
+                      onPressed: restSeconds > 0 && isLast ? () => setState(() => restSeconds -= 15) : null,
+                      icon: Icon(LucideIcons.minus, size: 18, color: isDark ? Colors.white : Colors.black87),
+                      style: IconButton.styleFrom(
+                        backgroundColor: isDark ? AppColors.mutedDark : AppColors.muted,
+                      ),
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          isLast ? '${restSeconds}s' : '0s (grupo)',
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: isLast ? null : theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton.filled(
+                      onPressed: restSeconds < 300 && isLast ? () => setState(() => restSeconds += 15) : null,
+                      icon: const Icon(LucideIcons.plus, size: 18, color: Colors.white),
+                      style: IconButton.styleFrom(
+                        backgroundColor: isLast ? AppColors.primary : AppColors.primary.withValues(alpha: 0.3),
+                      ),
+                    ),
+                  ],
+                ),
+                if (isLast) ...[
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: [30, 45, 60, 90, 120].map((sec) {
+                      final isSelected = restSeconds == sec;
+                      return ChoiceChip(
+                        label: Text(
+                          '${sec}s',
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : null,
+                          ),
+                        ),
+                        selected: isSelected,
+                        selectedColor: AppColors.primary,
+                        onSelected: (_) => setState(() => restSeconds = sec),
+                      );
+                    }).toList(),
+                  ),
+                ],
+                const SizedBox(height: 16),
+
+                // Isometric Hold
+                Text('Isometria (hold)', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                const SizedBox(height: 4),
+                Text(
+                  'Tempo de pausa estatica durante o movimento',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    IconButton.filled(
+                      onPressed: isometricSeconds != null && isometricSeconds! > 0
+                          ? () => setState(() {
+                                isometricSeconds = isometricSeconds! - 1;
+                                if (isometricSeconds == 0) isometricSeconds = null;
+                              })
+                          : null,
+                      icon: Icon(LucideIcons.minus, size: 18, color: isDark ? Colors.white : Colors.black87),
+                      style: IconButton.styleFrom(
+                        backgroundColor: isDark ? AppColors.mutedDark : AppColors.muted,
+                      ),
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          isometricSeconds != null ? '${isometricSeconds}s' : 'Nenhuma',
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: isometricSeconds != null ? AppColors.primary : theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton.filled(
+                      onPressed: (isometricSeconds ?? 0) < 60
+                          ? () => setState(() => isometricSeconds = (isometricSeconds ?? 0) + 1)
+                          : null,
+                      icon: const Icon(LucideIcons.plus, size: 18, color: Colors.white),
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: [0, 5, 10, 15, 30].map((sec) {
+                    final isSelected = (isometricSeconds ?? 0) == sec;
+                    return ChoiceChip(
+                      label: Text(
+                        sec == 0 ? 'Nenhuma' : '${sec}s',
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : null,
+                        ),
+                      ),
+                      selected: isSelected,
+                      selectedColor: AppColors.primary,
+                      onSelected: (_) => setState(() => isometricSeconds = sec == 0 ? null : sec),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+
+                // Execution Instructions
+                Text('Instrucoes de Execucao', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                const SizedBox(height: 4),
+                Text(
+                  'Orientacoes especificas para este exercicio',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: instructionsController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    hintText: 'Ex: Manter cotovelos a 45 graus...',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onChanged: (value) => executionInstructions = value,
+                ),
+
+                const SizedBox(height: 24),
+
+                // Save button
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () {
+                      final updated = exercise.copyWith(
+                        sets: sets,
+                        reps: reps.isEmpty ? '10-12' : reps,
+                        restSeconds: isLast ? restSeconds : 0, // Force 0 for non-last
+                        executionInstructions: executionInstructions,
+                        isometricSeconds: isometricSeconds,
+                        // Keep existing group fields
+                        techniqueType: exercise.techniqueType,
+                        exerciseGroupId: exercise.exerciseGroupId,
+                        exerciseGroupOrder: exercise.exerciseGroupOrder,
+                      );
+                      notifier.updateExercise(workoutId, exercise.id, updated);
+                      Navigator.pop(ctx);
+                      HapticUtils.lightImpact();
+                    },
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text('Salvar'),
+                  ),
                 ),
               ],
             ),
           ),
-          // Delete button
-          IconButton(
-            icon: Icon(
-              LucideIcons.trash2,
-              size: 16,
-              color: Colors.red.withValues(alpha: 0.6),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(programWizardProvider.notifier);
+
+    return GestureDetector(
+      onTap: () {
+        HapticUtils.selectionClick();
+        _showEditGroupedExerciseDialog(context, ref);
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: isLast ? 0 : 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: isDark
+              ? theme.colorScheme.surfaceContainerLow.withAlpha(80)
+              : theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            // Order number with technique color
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: techniqueColor,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Center(
+                child: Text(
+                  '${orderInGroup + 1}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ),
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              notifier.removeExerciseFromWorkout(workoutId, exercise.id);
-            },
-            visualDensity: VisualDensity.compact,
-          ),
-        ],
+            const SizedBox(width: 10),
+            // Exercise name
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    exercise.name,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: [
+                      _MiniChip(label: '${exercise.sets}x${exercise.reps}', isDark: isDark),
+                      if (exercise.restSeconds > 0)
+                        _MiniChip(label: '${exercise.restSeconds}s', isDark: isDark)
+                      else
+                        _MiniChip(
+                          label: 'sem descanso',
+                          isDark: isDark,
+                          isHighlighted: true,
+                          highlightColor: techniqueColor,
+                        ),
+                      // Compact isometric display
+                      if (exercise.isometricSeconds != null && exercise.isometricSeconds! > 0)
+                        _MiniChip(
+                          label: '${exercise.isometricSeconds}s',
+                          icon: LucideIcons.timer,
+                          isDark: isDark,
+                          isHighlighted: true,
+                        ),
+                      // Instructions indicator
+                      if (exercise.executionInstructions.isNotEmpty)
+                        _MiniChip(
+                          label: '',
+                          icon: LucideIcons.fileText,
+                          isDark: isDark,
+                          isHighlighted: true,
+                          highlightColor: techniqueColor,
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // Info button
+            IconButton(
+              icon: Icon(
+                LucideIcons.info,
+                size: 16,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+              ),
+              onPressed: () => _showExerciseDetails(context),
+              visualDensity: VisualDensity.compact,
+              tooltip: 'Ver detalhes',
+            ),
+            // Delete button
+            IconButton(
+              icon: Icon(
+                LucideIcons.trash2,
+                size: 16,
+                color: Colors.red.withValues(alpha: 0.6),
+              ),
+              onPressed: () {
+                HapticUtils.lightImpact();
+                notifier.removeExerciseFromWorkout(workoutId, exercise.id);
+              },
+              visualDensity: VisualDensity.compact,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1497,7 +2350,7 @@ class _ExerciseItem extends ConsumerWidget {
                   if (videoUrl != null && videoUrl.isNotEmpty) ...[
                     OutlinedButton.icon(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => VideoPlayerPage(
@@ -2002,7 +2855,7 @@ class _ExerciseItem extends ConsumerWidget {
                       );
                       notifier.updateExercise(workoutId, exercise.id, updated);
                       Navigator.pop(ctx);
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                     },
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -2166,7 +3019,7 @@ class _ExerciseItem extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        HapticFeedback.selectionClick();
+        HapticUtils.selectionClick();
         _showEditExerciseDialog(context, ref);
       },
       child: Container(
@@ -2282,7 +3135,7 @@ class _ExerciseItem extends ConsumerWidget {
                       ),
                       tooltip: 'Copiar para outro treino',
                       onSelected: (targetWorkoutId) {
-                        HapticFeedback.selectionClick();
+                        HapticUtils.selectionClick();
                         notifier.copyExerciseToWorkout(workoutId, exercise.id, targetWorkoutId);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -2332,7 +3185,7 @@ class _ExerciseItem extends ConsumerWidget {
                       color: Colors.red.withValues(alpha: 0.7),
                     ),
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       notifier.removeExerciseFromWorkout(workoutId, exercise.id);
                     },
                   ),
@@ -2675,7 +3528,7 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
                       isDark: isDark,
                       theme: theme,
                       onAdd: () {
-                        HapticFeedback.selectionClick();
+                        HapticUtils.selectionClick();
                         notifier.addExerciseToWorkout(widget.workoutId, ex);
                         Navigator.pop(context);
                       },
@@ -2809,7 +3662,7 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
                       const SizedBox(height: 20),
                       OutlinedButton.icon(
                         onPressed: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) => VideoPlayerPage(

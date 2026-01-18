@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -8,6 +8,9 @@ import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/domain/entities/entities.dart';
 import '../../../../core/providers/context_provider.dart';
+import '../../../../core/services/organization_service.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../trainer_workout/presentation/providers/trainer_students_provider.dart';
 
 class OrgSelectorPage extends ConsumerStatefulWidget {
   const OrgSelectorPage({super.key});
@@ -18,10 +21,40 @@ class OrgSelectorPage extends ConsumerStatefulWidget {
 
 class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
   void _selectMembership(OrganizationMembership membership) {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     final activeContext = ActiveContext(membership: membership);
     ref.read(activeContextProvider.notifier).state = activeContext;
     context.go(activeContext.homeRoute);
+  }
+
+  bool _isAccepting = false;
+
+  Future<void> _acceptInvite(PendingInvite invite) async {
+    if (_isAccepting) return;
+    setState(() => _isAccepting = true);
+
+    try {
+      final service = OrganizationService();
+      await service.acceptInvite(invite.token ?? '');
+
+      // Refresh memberships and invites
+      ref.invalidate(membershipsProvider);
+      ref.invalidate(pendingInvitesForUserProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Convite aceito com sucesso!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao aceitar convite: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isAccepting = false);
+    }
   }
 
   @override
@@ -29,6 +62,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final groupedMemberships = ref.watch(groupedMembershipsProvider);
+    final pendingInvitesAsync = ref.watch(pendingInvitesForUserProvider);
     final studentMemberships = groupedMemberships['student'] ?? [];
     final trainerMemberships = groupedMemberships['trainer'] ?? [];
     final nutritionistMemberships = groupedMemberships['nutritionist'] ?? [];
@@ -40,6 +74,9 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
       ...studentMemberships,
     ];
 
+    final pendingInvites = pendingInvitesAsync.valueOrNull ?? [];
+    final hasContent = allMemberships.isNotEmpty || pendingInvites.isNotEmpty;
+
     return Scaffold(
       backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
       body: SafeArea(
@@ -47,9 +84,9 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
           children: [
             _buildHeader(context, isDark),
             Expanded(
-              child: allMemberships.isEmpty
-                  ? _buildEmptyState(context, isDark)
-                  : _buildProfileList(context, isDark, allMemberships),
+              child: hasContent
+                  ? _buildContentList(context, isDark, allMemberships, pendingInvites)
+                  : _buildEmptyState(context, isDark),
             ),
           ],
         ),
@@ -57,7 +94,130 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
     );
   }
 
+  Widget _buildContentList(
+    BuildContext context,
+    bool isDark,
+    List<OrganizationMembership> memberships,
+    List<PendingInvite> pendingInvites,
+  ) {
+    return Column(
+      children: [
+        const SizedBox(height: 24),
+        // Pending Invites Section
+        if (pendingInvites.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Icon(
+                  LucideIcons.mail,
+                  size: 18,
+                  color: AppColors.warning,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Convites Pendentes',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.warning.withAlpha(20),
+                  ),
+                  child: Text(
+                    '${pendingInvites.length}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.warning,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...pendingInvites.map((invite) => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _PendingInviteCard(
+              invite: invite,
+              isDark: isDark,
+              isAccepting: _isAccepting,
+              onAccept: () => _acceptInvite(invite),
+            ),
+          )),
+          const SizedBox(height: 20),
+        ],
+        // Memberships Section
+        if (memberships.isNotEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Text(
+                  'Seus Perfis',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.primary.withAlpha(20),
+                  ),
+                  child: Text(
+                    '${memberships.length}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: memberships.length,
+              itemBuilder: (context, index) {
+                final membership = memberships[index];
+                return _ProfileCard(
+                  membership: membership,
+                  isDark: isDark,
+                  onTap: () => _selectMembership(membership),
+                );
+              },
+            ),
+          ),
+        ] else ...[
+          const Spacer(),
+        ],
+        _buildBottomActions(context, isDark),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
   Widget _buildHeader(BuildContext context, bool isDark) {
+    final user = ref.watch(currentUserProvider);
+    final userName = user?.name ?? 'Usuario';
+    final initials = userName.isNotEmpty
+        ? userName.split(' ').take(2).map((n) => n.isNotEmpty ? n[0].toUpperCase() : '').join()
+        : 'U';
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Row(
@@ -71,7 +231,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
             ),
             child: Center(
               child: Text(
-                'JO',
+                initials,
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
@@ -86,7 +246,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Ola, Joao!',
+                  'Ola, ${userName.split(' ').first}!',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -106,9 +266,12 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
             ),
           ),
           GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              context.go(RouteNames.welcome);
+            onTap: () async {
+              HapticUtils.lightImpact();
+              await ref.read(authProvider.notifier).logout();
+              if (context.mounted) {
+                context.go(RouteNames.welcome);
+              }
             },
             child: Container(
               width: 40,
@@ -205,7 +368,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
               label: 'Criar',
               isDark: isDark,
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 context.push(RouteNames.createOrg);
               },
             ),
@@ -218,7 +381,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
               isDark: isDark,
               isPrimary: true,
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 context.push(RouteNames.joinOrg);
               },
             ),
@@ -285,7 +448,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
           isDark: isDark,
           isPrimary: true,
           onTap: () {
-            HapticFeedback.mediumImpact();
+            HapticUtils.mediumImpact();
             context.push(RouteNames.createOrg);
           },
         ),
@@ -297,7 +460,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
           isDark: isDark,
           isPrimary: false,
           onTap: () {
-            HapticFeedback.mediumImpact();
+            HapticUtils.mediumImpact();
             context.push(RouteNames.joinOrg);
           },
         ),
@@ -654,6 +817,119 @@ class _EmptyActionCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PendingInviteCard extends StatelessWidget {
+  final PendingInvite invite;
+  final bool isDark;
+  final bool isAccepting;
+  final VoidCallback onAccept;
+
+  const _PendingInviteCard({
+    required this.invite,
+    required this.isDark,
+    required this.isAccepting,
+    required this.onAccept,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: isDark ? AppColors.cardDark : AppColors.card,
+        border: Border.all(
+          color: AppColors.warning.withAlpha(50),
+          width: 2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.warning.withAlpha(20),
+                ),
+                child: Icon(
+                  LucideIcons.mail,
+                  size: 22,
+                  color: AppColors.warning,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      invite.organizationName ?? 'Organizacao',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: isDark
+                            ? AppColors.foregroundDark
+                            : AppColors.foreground,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Convite como ${invite.role}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark
+                            ? AppColors.mutedForegroundDark
+                            : AppColors.mutedForeground,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: isAccepting ? null : onAccept,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: isAccepting
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation(Colors.white),
+                      ),
+                    )
+                  : const Text(
+                      'Aceitar Convite',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }

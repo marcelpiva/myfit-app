@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -92,7 +92,7 @@ class _SmartCheckinPageState extends ConsumerState<SmartCheckinPage>
         children: [
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               context.pop();
             },
             child: Container(
@@ -152,7 +152,7 @@ class _SmartCheckinPageState extends ConsumerState<SmartCheckinPage>
           if (checkInContext.hasPendingConfirmations)
             GestureDetector(
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 _showPendingConfirmations(context, isDark, checkInContext);
               },
               child: Container(
@@ -223,7 +223,7 @@ class _SmartCheckinPageState extends ConsumerState<SmartCheckinPage>
         unselectedLabelColor: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
         labelStyle: const TextStyle(fontWeight: FontWeight.w600),
         onTap: (index) {
-          HapticFeedback.selectionClick();
+          HapticUtils.selectionClick();
         },
         tabs: const [
           Tab(
@@ -252,7 +252,7 @@ class _SmartCheckinPageState extends ConsumerState<SmartCheckinPage>
   }
 
   void _showPendingConfirmations(BuildContext context, bool isDark, CheckInContext checkInContext) {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
@@ -357,7 +357,7 @@ class _SmartCheckinPageState extends ConsumerState<SmartCheckinPage>
                           Expanded(
                             child: GestureDetector(
                               onTap: () {
-                                HapticFeedback.lightImpact();
+                                HapticUtils.lightImpact();
                                 Navigator.pop(context);
                                 // Rejeitar
                               },
@@ -383,7 +383,7 @@ class _SmartCheckinPageState extends ConsumerState<SmartCheckinPage>
                           Expanded(
                             child: GestureDetector(
                               onTap: () {
-                                HapticFeedback.mediumImpact();
+                                HapticUtils.mediumImpact();
                                 Navigator.pop(context);
                                 // Confirmar
                               },
@@ -590,7 +590,7 @@ class _StudentCheckinView extends ConsumerWidget {
             width: double.infinity,
             child: GestureDetector(
               onTap: () {
-                HapticFeedback.mediumImpact();
+                HapticUtils.mediumImpact();
                 _startSessionCheckin(context, session);
               },
               child: Container(
@@ -622,7 +622,7 @@ class _StudentCheckinView extends ConsumerWidget {
   }
 
   void _startSessionCheckin(BuildContext context, ScheduledSession session) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
@@ -677,7 +677,7 @@ class _StudentCheckinView extends ConsumerWidget {
   }) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap();
       },
       child: Container(
@@ -777,7 +777,7 @@ class _StudentCheckinView extends ConsumerWidget {
   }
 
   void _doQuickCheckin(BuildContext context, CheckInType type) {
-    HapticFeedback.heavyImpact();
+    HapticUtils.heavyImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -793,7 +793,7 @@ class _StudentCheckinView extends ConsumerWidget {
   }
 
   void _selectTrainerForSession(BuildContext context, bool isDark) {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
@@ -829,7 +829,7 @@ class _StudentCheckinView extends ConsumerWidget {
   Widget _buildTrainerOption(BuildContext context, bool isDark, String name, String role, bool isAvailable) {
     return GestureDetector(
       onTap: isAvailable ? () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -930,7 +930,7 @@ class _StudentCheckinView extends ConsumerWidget {
           final spotsLeft = (cls.classCapacity ?? 0) - (cls.classEnrolled ?? 0);
           return GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
             },
             child: Container(
               margin: const EdgeInsets.only(bottom: 8),
@@ -996,7 +996,7 @@ class _StudentCheckinView extends ConsumerWidget {
                   ),
                   GestureDetector(
                     onTap: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -1044,7 +1044,7 @@ class _StudentCheckinView extends ConsumerWidget {
                 LucideIcons.scanLine,
                 'QR Code',
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   context.push(RouteNames.qrScanner);
                 },
               ),
@@ -1057,7 +1057,7 @@ class _StudentCheckinView extends ConsumerWidget {
                 LucideIcons.hash,
                 'Codigo',
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                 },
               ),
             ),
@@ -1069,7 +1069,7 @@ class _StudentCheckinView extends ConsumerWidget {
                 LucideIcons.history,
                 'Historico',
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   context.push(RouteNames.checkinHistory);
                 },
               ),
@@ -1206,7 +1206,7 @@ class _TrainerCheckinView extends ConsumerWidget {
                   ),
                   GestureDetector(
                     onTap: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                     },
                     child: Text('Ver', style: TextStyle(color: AppColors.warning, fontWeight: FontWeight.w500)),
                   ),
@@ -1236,7 +1236,7 @@ class _TrainerCheckinView extends ConsumerWidget {
             ),
             GestureDetector(
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
               },
               child: Row(
                 children: [
@@ -1288,7 +1288,7 @@ class _TrainerCheckinView extends ConsumerWidget {
 
             return GestureDetector(
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
               },
               child: Container(
                 margin: const EdgeInsets.only(bottom: 12),
@@ -1351,7 +1351,7 @@ class _TrainerCheckinView extends ConsumerWidget {
                     ),
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.mediumImpact();
+                        HapticUtils.mediumImpact();
                         // Iniciar sessao
                       },
                       child: Container(
@@ -1402,7 +1402,7 @@ class _TrainerCheckinView extends ConsumerWidget {
                 'Para alunos escanearem',
                 AppColors.primary,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   context.push(RouteNames.qrGenerator);
                 },
               ),
@@ -1417,7 +1417,7 @@ class _TrainerCheckinView extends ConsumerWidget {
                 'Registrar manualmente',
                 AppColors.secondary,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                 },
               ),
             ),
@@ -1511,7 +1511,7 @@ class _TrainerCheckinView extends ConsumerWidget {
         ...trainerContext.students.map((student) {
           return GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
             },
             child: Container(
               margin: const EdgeInsets.only(bottom: 8),
@@ -1756,7 +1756,7 @@ class _SessionCheckinSheet extends StatelessWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -1781,7 +1781,7 @@ class _SessionCheckinSheet extends StatelessWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      HapticFeedback.heavyImpact();
+                      HapticUtils.heavyImpact();
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

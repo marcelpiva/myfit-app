@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -8,10 +10,10 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
 import '../../../../core/domain/entities/user_role.dart';
 import '../../../../core/providers/context_provider.dart';
-import '../../../../core/services/organization_service.dart';
 import '../../../../shared/presentation/components/animations/fade_in_up.dart';
 import '../../../../shared/presentation/components/role_bottom_navigation.dart';
 import '../providers/trainer_students_provider.dart';
+import '../widgets/invite_student_sheet.dart' show showInviteStudentSheet;
 
 /// Students List Page for Personal Trainers
 /// Displays a searchable, filterable list of students with stats and actions
@@ -87,7 +89,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
 
   Future<void> _onRefresh() async {
     setState(() => _isRefreshing = true);
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
 
     // Get current org ID
     final orgId = ref.read(activeContextProvider)?.organization.id;
@@ -207,7 +209,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
     }
     final link = 'myfit://invite/$token';
     Clipboard.setData(ClipboardData(text: link));
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -306,7 +308,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                                 children: [
                                   GestureDetector(
                                     onTap: () {
-                                      HapticFeedback.lightImpact();
+                                      HapticUtils.lightImpact();
                                       context.pop();
                                     },
                                     child: Container(
@@ -344,8 +346,15 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  HapticFeedback.lightImpact();
-                                  _showAddStudentSheet(context, isDark);
+                                  HapticUtils.lightImpact();
+                                  showInviteStudentSheet(
+                                    context,
+                                    ref: ref,
+                                    isDark: isDark,
+                                    onSuccess: () {
+                                      ref.read(pendingInvitesNotifierProvider(orgId).notifier).loadInvites();
+                                    },
+                                  );
                                 },
                                 child: Container(
                                   width: 44,
@@ -432,7 +441,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                                   GestureDetector(
                                     onTap: () {
                                       _searchController.clear();
-                                      HapticFeedback.selectionClick();
+                                      HapticUtils.selectionClick();
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.all(12),
@@ -462,7 +471,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                                 final isSelected = entry.key == _selectedFilter;
                                 return GestureDetector(
                                   onTap: () {
-                                    HapticFeedback.selectionClick();
+                                    HapticUtils.selectionClick();
                                     setState(
                                         () => _selectedFilter = entry.key);
                                   },
@@ -547,7 +556,14 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                                     ? _EmptyState(
                                         isDark: isDark,
                                         searchQuery: _searchQuery,
-                                        onAddStudent: () => _showAddStudentSheet(context, isDark),
+                                        onAddStudent: () => showInviteStudentSheet(
+                                          context,
+                                          ref: ref,
+                                          isDark: isDark,
+                                          onSuccess: () {
+                                            ref.read(pendingInvitesNotifierProvider(orgId).notifier).loadInvites();
+                                          },
+                                        ),
                                       )
                                     : RefreshIndicator(
                                         onRefresh: _onRefresh,
@@ -577,7 +593,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                                                   frequencyColor: _getFrequencyColor(
                                                       student.adherencePercent / 100),
                                                   onTap: () {
-                                                    HapticFeedback.selectionClick();
+                                                    HapticUtils.selectionClick();
                                                     _showStudentDetailSheet(
                                                         context, isDark, student);
                                                   },
@@ -598,8 +614,15 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
         delay: const Duration(milliseconds: 500),
         child: FloatingActionButton.extended(
           onPressed: () {
-            HapticFeedback.lightImpact();
-            _showAddStudentSheet(context, isDark);
+            HapticUtils.lightImpact();
+            showInviteStudentSheet(
+              context,
+              ref: ref,
+              isDark: isDark,
+              onSuccess: () {
+                ref.read(pendingInvitesNotifierProvider(orgId).notifier).loadInvites();
+              },
+            );
           },
           backgroundColor: isDark ? AppColors.primaryDark : AppColors.primary,
           icon: const Icon(LucideIcons.userPlus, color: Colors.white),
@@ -846,10 +869,10 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(context);
                           // Navigate to student workouts
-                          context.push('/trainer/students/${student.id}/workouts');
+                          context.push('/students/${student.id}/workouts?name=${Uri.encodeComponent(student.name)}');
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -878,10 +901,10 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(context);
                           // Navigate to student progress
-                          context.push('/trainer/students/${student.id}/progress');
+                          context.push('/students/${student.id}/progress?name=${Uri.encodeComponent(student.name)}');
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -1077,7 +1100,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                           isDark: isDark,
                           icon: LucideIcons.messageCircle,
                           onTap: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             Navigator.pop(context);
                             _showMessageComposeSheet(
                               this.context,
@@ -1091,7 +1114,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                           isDark: isDark,
                           icon: LucideIcons.moreVertical,
                           onTap: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             Navigator.pop(context);
                             _showStudentOptionsSheet(
                               this.context,
@@ -1149,7 +1172,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(context);
                           final studentId = student['id'] as String;
                           final studentName = student['name'] as String;
@@ -1184,7 +1207,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(context);
                           final studentId = student['id'] as String;
                           final studentName = student['name'] as String;
@@ -1309,301 +1332,6 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
           icon,
           size: 18,
           color: isDark ? AppColors.foregroundDark : AppColors.foreground,
-        ),
-      ),
-    );
-  }
-
-  void _showAddStudentSheet(BuildContext context, bool isDark) {
-    final nameController = TextEditingController();
-    final emailController = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      isScrollControlled: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: 24,
-          right: 24,
-          top: 24,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Handle
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.borderDark : AppColors.border,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            Text(
-              'Adicionar Novo Aluno',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: isDark ? AppColors.foregroundDark : AppColors.foreground,
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            Text(
-              'Envie um convite para seu aluno se juntar ao MyFit',
-              style: TextStyle(
-                fontSize: 14,
-                color: isDark
-                    ? AppColors.mutedForegroundDark
-                    : AppColors.mutedForeground,
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Nome
-            Text(
-              'Nome do aluno',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: isDark ? AppColors.foregroundDark : AppColors.foreground,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              decoration: BoxDecoration(
-                color: isDark
-                    ? AppColors.mutedDark.withAlpha(100)
-                    : AppColors.muted.withAlpha(100),
-                border: Border.all(
-                  color: isDark ? AppColors.borderDark : AppColors.border,
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  hintText: 'Ex: Maria Silva',
-                  hintStyle: TextStyle(
-                    color: isDark
-                        ? AppColors.mutedForegroundDark
-                        : AppColors.mutedForeground,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                ),
-                style: TextStyle(
-                  color: isDark
-                      ? AppColors.foregroundDark
-                      : AppColors.foreground,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Email
-            Text(
-              'Email do aluno',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: isDark ? AppColors.foregroundDark : AppColors.foreground,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              decoration: BoxDecoration(
-                color: isDark
-                    ? AppColors.mutedDark.withAlpha(100)
-                    : AppColors.muted.withAlpha(100),
-                border: Border.all(
-                  color: isDark ? AppColors.borderDark : AppColors.border,
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: TextField(
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  hintText: 'aluno@email.com',
-                  hintStyle: TextStyle(
-                    color: isDark
-                        ? AppColors.mutedForegroundDark
-                        : AppColors.mutedForeground,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                ),
-                style: TextStyle(
-                  color: isDark
-                      ? AppColors.foregroundDark
-                      : AppColors.foreground,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Action buttons
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      Navigator.pop(ctx);
-                    },
-                    child: Container(
-                      height: 52,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color:
-                              isDark ? AppColors.borderDark : AppColors.border,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Cancelar',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: isDark
-                                ? AppColors.foregroundDark
-                                : AppColors.foreground,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () async {
-                      // Validate email
-                      final email = emailController.text.trim();
-                      if (email.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text('Por favor, informe o email do aluno'),
-                            backgroundColor: AppColors.warning,
-                          ),
-                        );
-                        return;
-                      }
-
-                      // Simple email validation
-                      if (!email.contains('@') || !email.contains('.')) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text('Por favor, informe um email válido'),
-                            backgroundColor: AppColors.warning,
-                          ),
-                        );
-                        return;
-                      }
-
-                      HapticFeedback.lightImpact();
-
-                      // Get org ID
-                      final orgId = ref.read(activeContextProvider)?.organization.id;
-                      if (orgId == null) {
-                        Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text('Erro: organização não encontrada'),
-                            backgroundColor: AppColors.destructive,
-                          ),
-                        );
-                        return;
-                      }
-
-                      // Send invite via API
-                      try {
-                        final orgService = OrganizationService();
-                        await orgService.sendInvite(
-                          orgId,
-                          email: email,
-                          role: 'student', // Use 'student' role for API
-                        );
-
-                        // Refresh invites list
-                        await ref.read(pendingInvitesNotifierProvider(orgId).notifier).loadInvites();
-
-                        Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Row(
-                              children: [
-                                const Icon(LucideIcons.mail, color: Colors.white, size: 18),
-                                const SizedBox(width: 12),
-                                Text('Convite enviado para $email'),
-                              ],
-                            ),
-                            backgroundColor: AppColors.success,
-                          ),
-                        );
-                      } catch (e) {
-                        Navigator.pop(ctx);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Erro ao enviar convite: ${e.toString()}',
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            backgroundColor: AppColors.destructive,
-                          ),
-                        );
-                      }
-                    },
-                    child: Container(
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(LucideIcons.send, size: 18, color: Colors.white),
-                          SizedBox(width: 8),
-                          Text(
-                            'Enviar Convite',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
         ),
       ),
     );
@@ -1741,7 +1469,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
               children: quickMessages.map((message) {
                 return GestureDetector(
                   onTap: () {
-                    HapticFeedback.selectionClick();
+                    HapticUtils.selectionClick();
                     messageController.text = message;
                   },
                   child: Container(
@@ -1822,7 +1550,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                     },
                     child: Container(
@@ -1853,7 +1581,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -1957,7 +1685,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
               icon: LucideIcons.dumbbell,
               label: 'Ver treinos do aluno',
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(ctx);
                 context.push(
                     '/students/$studentId/workouts?name=${Uri.encodeComponent(studentName)}');
@@ -1969,7 +1697,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
               icon: LucideIcons.lineChart,
               label: 'Ver progresso',
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(ctx);
                 context.push(
                     '/students/$studentId/progress?name=${Uri.encodeComponent(studentName)}');
@@ -1981,7 +1709,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
               icon: LucideIcons.calendarPlus,
               label: 'Agendar sessao',
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(ctx);
                 _showScheduleSessionSheet(context, isDark, student);
               },
@@ -1992,7 +1720,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
               icon: LucideIcons.stickyNote,
               label: 'Adicionar nota',
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(ctx);
                 _showAddNoteSheet(context, isDark, student);
               },
@@ -2006,7 +1734,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
               label: 'Remover aluno',
               isDestructive: true,
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(ctx);
                 _showRemoveStudentDialog(context, isDark, student);
               },
@@ -2264,7 +1992,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(ctx);
                       },
                       child: Container(
@@ -2296,7 +2024,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(this.context).showSnackBar(
                           SnackBar(
@@ -2482,7 +2210,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                     },
                     child: Container(
@@ -2513,7 +2241,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                       ScaffoldMessenger.of(this.context).showSnackBar(
                         SnackBar(
@@ -2613,7 +2341,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
         actions: [
           TextButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(ctx);
             },
             child: Text(
@@ -2625,7 +2353,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
           ),
           TextButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -2898,7 +2626,7 @@ class _InviteActionButton extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap();
       },
       child: Container(
@@ -3446,7 +3174,7 @@ class _EmptyState extends StatelessWidget {
               const SizedBox(height: 24),
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   onAddStudent?.call();
                 },
                 child: Container(

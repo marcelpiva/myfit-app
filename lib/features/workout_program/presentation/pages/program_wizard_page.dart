@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../trainer_workout/presentation/pages/trainer_programs_page.dart';
 import '../providers/program_wizard_provider.dart';
 import '../widgets/step_ai_questionnaire.dart';
+import '../widgets/step_diet_configuration.dart';
 import '../widgets/step_method_selection.dart';
 import '../widgets/step_program_info.dart';
 import '../widgets/step_review.dart';
 import '../widgets/step_split_selection.dart';
+import '../widgets/step_student_assignment.dart';
 import '../widgets/step_workouts_config.dart';
 import '../widgets/template_browser_sheet.dart';
 
@@ -65,9 +67,59 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
 
   void _nextStep() {
     final state = ref.read(programWizardProvider);
+
+    // Validate current step before proceeding
+    final validationError = _validateCurrentStep(state);
+    if (validationError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(validationError),
+          backgroundColor: Colors.red.shade700,
+        ),
+      );
+      return;
+    }
+
     if (state.currentStep < state.totalSteps - 1) {
       _goToStep(state.currentStep + 1);
     }
+  }
+
+  String? _validateCurrentStep(ProgramWizardState state) {
+    switch (state.currentStep) {
+      case 0: // Method selection
+        if (state.method == null) {
+          return 'Selecione um metodo de criacao';
+        }
+        break;
+      case 1: // Program info
+        if (state.programName.trim().isEmpty) {
+          return 'Informe o nome do programa';
+        }
+        if (state.programName.trim().length < 3) {
+          return 'O nome deve ter pelo menos 3 caracteres';
+        }
+        break;
+      case 2: // Split selection
+        // Split has a default value, always valid
+        break;
+      case 3: // Workouts config
+        if (state.workouts.isEmpty) {
+          return 'Adicione pelo menos um treino';
+        }
+        final emptyWorkout = state.workouts.where((w) => w.exercises.isEmpty).firstOrNull;
+        if (emptyWorkout != null) {
+          return 'O treino "${emptyWorkout.name}" precisa de pelo menos um exercicio';
+        }
+        break;
+      case 4: // Diet (optional)
+        // Diet is optional, always valid
+        break;
+      case 5: // Review
+        // Review step, always valid
+        break;
+    }
+    return null;
   }
 
   void _previousStep() {
@@ -77,38 +129,49 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
 
     if (state.currentStep > firstStep) {
       _goToStep(state.currentStep - 1);
-    } else if (state.isEditing) {
-      // In edit mode, just navigate back without confirmation
-      Navigator.of(context).pop();
     } else {
-      _showExitConfirmation();
+      // Just navigate back without confirmation
+      ref.read(programWizardProvider.notifier).reset();
+      Navigator.of(context).pop();
     }
   }
 
-  void _showExitConfirmation() {
-    final pageContext = context; // Store page context
-    showDialog(
+  Future<void> _confirmClose() async {
+    final state = ref.read(programWizardProvider);
+
+    // If no changes made (still on step 0 or no name entered), just close
+    if (state.currentStep == 0 && state.programName.isEmpty) {
+      ref.read(programWizardProvider.notifier).reset();
+      Navigator.of(context).pop();
+      return;
+    }
+
+    // Show confirmation dialog
+    final shouldClose = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Sair do Wizard?'),
-        content: const Text(
-            'Todas as informacoes nao salvas serao perdidas. Deseja continuar?'),
+      builder: (ctx) => AlertDialog(
+        title: const Text('Descartar programa?'),
+        content: const Text('As alteracoes nao salvas serao perdidas.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
+            onPressed: () => Navigator.pop(ctx, false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
-            onPressed: () {
-              Navigator.pop(dialogContext); // Close dialog
-              ref.read(programWizardProvider.notifier).reset();
-              pageContext.pop(); // Use page context for navigation
-            },
-            child: const Text('Sair'),
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.destructive,
+            ),
+            child: const Text('Descartar'),
           ),
         ],
       ),
     );
+
+    if (shouldClose == true && mounted) {
+      ref.read(programWizardProvider.notifier).reset();
+      Navigator.of(context).pop();
+    }
   }
 
   void _showTemplateBrowser() {
@@ -135,8 +198,8 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      isDismissible: false,
-      enableDrag: false,
+      isDismissible: true,
+      enableDrag: true,
       backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -148,21 +211,40 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
             Navigator.pop(sheetContext);
             _nextStep();
           },
+          onCancel: () {
+            Navigator.pop(sheetContext);
+          },
         ),
       ),
     );
   }
 
   Future<void> _createProgram() async {
+    final state = ref.read(programWizardProvider);
     final notifier = ref.read(programWizardProvider.notifier);
     final navigator = Navigator.of(context);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
+    // Validate all required fields before creating
+    final validationError = _validateAllSteps(state);
+    if (validationError != null) {
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(validationError),
+          backgroundColor: Colors.red.shade700,
+        ),
+      );
+      return;
+    }
+
     final programId = await notifier.createProgram();
 
     if (programId != null && mounted) {
+      // Invalidate the programs list to refresh it
+      ref.invalidate(allProgramsProvider);
+
       scaffoldMessenger.showSnackBar(
-        const SnackBar(content: Text('Programa criado com sucesso!')),
+        SnackBar(content: Text(state.isEditing ? 'Programa atualizado com sucesso!' : 'Programa criado com sucesso!')),
       );
       // Navigate back to previous screen
       if (mounted) {
@@ -176,6 +258,26 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
         );
       }
     }
+  }
+
+  String? _validateAllSteps(ProgramWizardState state) {
+    // Validate program name
+    if (state.programName.trim().isEmpty) {
+      return 'O nome do programa e obrigatorio';
+    }
+    if (state.programName.trim().length < 3) {
+      return 'O nome do programa deve ter pelo menos 3 caracteres';
+    }
+    // Validate workouts
+    if (state.workouts.isEmpty) {
+      return 'Adicione pelo menos um treino ao programa';
+    }
+    for (final workout in state.workouts) {
+      if (workout.exercises.isEmpty) {
+        return 'O treino "${workout.name}" precisa de pelo menos um exercicio';
+      }
+    }
+    return null;
   }
 
   @override
@@ -208,7 +310,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         _previousStep();
                       },
                       child: Container(
@@ -224,9 +326,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
-                          state.currentStep == 0
-                              ? LucideIcons.x
-                              : LucideIcons.arrowLeft,
+                          LucideIcons.arrowLeft,
                           size: 20,
                           color: isDark
                               ? AppColors.foregroundDark
@@ -240,7 +340,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Criar Programa',
+                            state.isEditing ? 'Editar Programa' : 'Criar Programa',
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
@@ -253,6 +353,33 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                    // Close button
+                    GestureDetector(
+                      onTap: () {
+                        HapticUtils.lightImpact();
+                        _confirmClose();
+                      },
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: (isDark ? AppColors.cardDark : AppColors.card)
+                              .withAlpha(isDark ? 150 : 200),
+                          border: Border.all(
+                            color:
+                                isDark ? AppColors.borderDark : AppColors.border,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          LucideIcons.x,
+                          size: 20,
+                          color: isDark
+                              ? AppColors.foregroundDark
+                              : AppColors.foreground,
+                        ),
                       ),
                     ),
                   ],
@@ -269,7 +396,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
                   final isCurrent = index == state.currentStep;
                   return Expanded(
                     child: Container(
-                      margin: EdgeInsets.only(right: index < 4 ? 4 : 0),
+                      margin: EdgeInsets.only(right: index < state.totalSteps - 1 ? 4 : 0),
                       height: 4,
                       decoration: BoxDecoration(
                         color: isActive
@@ -307,6 +434,8 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
                   const StepProgramInfo(),
                   const StepSplitSelection(),
                   const StepWorkoutsConfig(),
+                  const StepDietConfiguration(),
+                  const StepStudentAssignment(),
                   const StepReview(),
                 ],
               ),
@@ -333,7 +462,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       _previousStep();
                     },
                     style: OutlinedButton.styleFrom(
@@ -349,7 +478,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
               Expanded(
                 flex: 2,
                 child: FilledButton.icon(
-                  onPressed: state.isLoading
+                  onPressed: state.isLoading || !state.isCurrentStepValid
                       ? null
                       : (state.isLastStep ? _createProgram : _nextStep),
                   icon: state.isLoading
@@ -362,7 +491,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
                           state.isLastStep ? LucideIcons.check : LucideIcons.arrowRight,
                           size: 18,
                         ),
-                  label: Text(state.isLastStep ? 'Criar Programa' : 'Continuar'),
+                  label: Text(state.isLastStep ? (state.isEditing ? 'Salvar Alteracoes' : 'Criar Programa') : 'Continuar'),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -381,15 +510,19 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
   String _getStepTitle(int step) {
     switch (step) {
       case 0:
-        return 'Passo 1 de 5 - Metodo de Criacao';
+        return 'Passo 1 de 7 - Metodo de Criacao';
       case 1:
-        return 'Passo 2 de 5 - Informacoes do Programa';
+        return 'Passo 2 de 7 - Informacoes do Programa';
       case 2:
-        return 'Passo 3 de 5 - Divisao de Treino';
+        return 'Passo 3 de 7 - Divisao de Treino';
       case 3:
-        return 'Passo 4 de 5 - Configurar Treinos';
+        return 'Passo 4 de 7 - Configurar Treinos';
       case 4:
-        return 'Passo 5 de 5 - Revisao Final';
+        return 'Passo 5 de 7 - Dieta (Opcional)';
+      case 5:
+        return 'Passo 6 de 7 - Atribuir a Aluno';
+      case 6:
+        return 'Passo 7 de 7 - Revisao Final';
       default:
         return '';
     }

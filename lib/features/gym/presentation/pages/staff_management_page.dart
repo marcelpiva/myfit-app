@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -90,7 +90,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
       staff.where((s) => s['status'] == 'active').length;
 
   Future<void> _onRefresh() async {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     await ref.read(membersNotifierProvider(_orgId).notifier).loadMembers();
   }
 
@@ -110,7 +110,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          HapticFeedback.lightImpact();
+          HapticUtils.lightImpact();
           _showInviteStaffSheet(context, isDark);
         },
         backgroundColor: AppColors.primary,
@@ -154,7 +154,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    HapticFeedback.lightImpact();
+                                    HapticUtils.lightImpact();
                                     context.pop();
                                   },
                                   child: Container(
@@ -190,7 +190,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    HapticFeedback.lightImpact();
+                                    HapticUtils.lightImpact();
                                   },
                                   child: Container(
                                     width: 44,
@@ -298,7 +298,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
                               final isSelected = entry.key == _selectedFilter;
                               return GestureDetector(
                                 onTap: () {
-                                  HapticFeedback.lightImpact();
+                                  HapticUtils.lightImpact();
                                   setState(() => _selectedFilter = entry.key);
                                 },
                                 child: Container(
@@ -429,7 +429,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
                                     staff: staff,
                                     isDark: isDark,
                                     onTap: () {
-                                      HapticFeedback.lightImpact();
+                                      HapticUtils.lightImpact();
                                       _showStaffDetail(context, isDark, staff);
                                     },
                                   ),
@@ -562,7 +562,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
   }
 
   void _showInviteStaffSheet(BuildContext context, bool isDark) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     int selectedRole = 0; // 0 = Trainer, 1 = Recepcao
     showModalBottomSheet(
       context: context,
@@ -680,7 +680,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
                       isSelected: selectedRole == 0,
                       isDark: isDark,
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         setModalState(() => selectedRole = 0);
                       },
                     ),
@@ -693,7 +693,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
                       isSelected: selectedRole == 1,
                       isDark: isDark,
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         setModalState(() => selectedRole = 1);
                       },
                     ),
@@ -709,7 +709,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                       },
                       child: Container(
@@ -751,7 +751,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -799,7 +799,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
 
   void _showStaffDetail(
       BuildContext context, bool isDark, Map<String, dynamic> staff) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
@@ -973,7 +973,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                         },
                         child: Container(
                           height: 52,
@@ -1011,7 +1011,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                         },
                         child: Container(
                           height: 52,

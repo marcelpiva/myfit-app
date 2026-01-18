@@ -1,5 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -9,9 +10,13 @@ import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/domain/entities/user_role.dart';
 import '../../../../core/providers/context_provider.dart';
+import '../../../../core/services/trainer_service.dart';
 import '../../../../shared/presentation/components/animations/fade_in_up.dart';
 import '../../../../shared/presentation/components/role_bottom_navigation.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../trainer_workout/presentation/widgets/invite_student_sheet.dart' show showInviteStudentSheet;
 import '../providers/trainer_home_provider.dart';
+import '../widgets/students_now_section.dart';
 
 /// Trainer/Coach Dashboard Home Page
 /// Shows overview of students, workouts, revenue, and alerts
@@ -62,11 +67,11 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
 
     // Get org context and dashboard state
     final activeContext = ref.watch(activeContextProvider);
+    final currentUser = ref.watch(currentUserProvider);
     final orgId = activeContext?.membership.organization.id;
     final dashboardState = orgId != null
         ? ref.watch(trainerDashboardNotifierProvider(orgId))
         : const TrainerDashboardState();
-    final userName = activeContext?.membership.organization.name ?? 'Trainer';
 
     // Build schedule, activities, and alerts from provider data
     final schedule = _buildScheduleFromData(dashboardState.todaySchedule);
@@ -100,7 +105,10 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
                 children: [
                   // 1. Header with greeting and profile avatar
                   FadeInUp(
-                    child: _HeaderSection(isDark: isDark),
+                    child: _HeaderSection(
+                      isDark: isDark,
+                      userName: currentUser?.name ?? 'Trainer',
+                    ),
                   ),
 
                   const SizedBox(height: 24),
@@ -115,6 +123,29 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
                       activeWorkouts: dashboardState.pendingWorkouts,
                       todayCheckins: dashboardState.todaySessions,
                       isLoading: dashboardState.isLoading,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 2.5. Students Now (Co-training)
+                  FadeInUp(
+                    delay: const Duration(milliseconds: 150),
+                    child: _SectionHeader(
+                      title: 'Alunos Agora',
+                      icon: LucideIcons.radio,
+                      isDark: isDark,
+                      badge: null,
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  FadeInUp(
+                    delay: const Duration(milliseconds: 175),
+                    child: StudentsNowSection(
+                      isDark: isDark,
+                      organizationId: orgId,
                     ),
                   ),
 
@@ -136,23 +167,26 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
                     delay: const Duration(milliseconds: 250),
                     child: _QuickActionsSection(
                       isDark: isDark,
-                      onNovoAluno: () {
-                        HapticFeedback.lightImpact();
-                        context.push(RouteNames.students);
+                      onConvidarAluno: () {
+                        debugPrint('🟢 onConvidarAluno callback triggered!');
+                        HapticUtils.lightImpact();
+                        showInviteStudentSheet(
+                          context,
+                          ref: ref,
+                          isDark: isDark,
+                        );
                       },
-                      onCriarTreino: () {
-                        HapticFeedback.lightImpact();
+                      onNovoProgramy: () {
+                        HapticUtils.lightImpact();
                         context.push(RouteNames.programWizard);
                       },
                       onVerCatalogo: () {
-                        HapticFeedback.lightImpact();
-                        // Navigate to program wizard which has template browser
-                        context.push(RouteNames.programWizard);
+                        HapticUtils.lightImpact();
+                        context.push(RouteNames.marketplace);
                       },
-                      onEnviarMensagem: () {
-                        HapticFeedback.lightImpact();
-                        // Use trainer-specific chat route outside shell
-                        context.push('/trainer-chat');
+                      onAgendarSessao: () {
+                        HapticUtils.lightImpact();
+                        _showScheduleSessionSheet(context, isDark);
                       },
                     ),
                   ),
@@ -168,7 +202,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
                       isDark: isDark,
                       trailing: TextButton(
                         onPressed: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           context.push(RouteNames.schedule);
                         },
                         child: Text(
@@ -218,7 +252,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
                       isDark: isDark,
                       trailing: TextButton(
                         onPressed: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           _showAllActivitiesModal(context, isDark, activities);
                         },
                         child: Text(
@@ -305,13 +339,278 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
       ),
     );
   }
+
+  void _showScheduleSessionSheet(BuildContext context, bool isDark) {
+    Map<String, dynamic>? selectedStudent;
+    DateTime selectedDate = DateTime.now().add(const Duration(days: 1));
+    TimeOfDay selectedTime = const TimeOfDay(hour: 9, minute: 0);
+    List<Map<String, dynamic>> students = [];
+    bool isLoading = true;
+    String? error;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      isScrollControlled: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) {
+          // Load students on first build
+          if (isLoading && students.isEmpty && error == null) {
+            TrainerService().getStudents(status: 'active').then((result) {
+              setModalState(() {
+                students = result;
+                isLoading = false;
+              });
+            }).catchError((e) {
+              setModalState(() {
+                error = e.toString();
+                isLoading = false;
+              });
+            });
+          }
+
+          return Padding(
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 24,
+              top: 24,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Handle
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.borderDark : AppColors.border,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                Text(
+                  'Agendar Sessao',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                if (isLoading)
+                  const Center(child: CircularProgressIndicator())
+                else if (error != null)
+                  Center(
+                    child: Text(
+                      'Erro ao carregar alunos: $error',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  )
+                else if (students.isEmpty)
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        'Voce ainda nao tem alunos. Convide alunos primeiro.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                        ),
+                      ),
+                    ),
+                  )
+                else ...[
+                  // Student selector
+                  Text(
+                    'Aluno',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.mutedDark.withAlpha(100) : AppColors.muted.withAlpha(100),
+                      border: Border.all(color: isDark ? AppColors.borderDark : AppColors.border),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<Map<String, dynamic>>(
+                        value: selectedStudent,
+                        hint: const Text('Selecione um aluno'),
+                        isExpanded: true,
+                        items: students.map<DropdownMenuItem<Map<String, dynamic>>>((student) {
+                          return DropdownMenuItem<Map<String, dynamic>>(
+                            value: student,
+                            child: Text(student['name'] as String? ?? 'Aluno'),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setModalState(() => selectedStudent = value);
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Date picker
+                  Text(
+                    'Data',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () async {
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                      );
+                      if (date != null) {
+                        setModalState(() => selectedDate = date);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.mutedDark.withAlpha(100) : AppColors.muted.withAlpha(100),
+                        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.border),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            LucideIcons.calendar,
+                            size: 18,
+                            color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            DateFormat('dd/MM/yyyy').format(selectedDate),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Time picker
+                  Text(
+                    'Horario',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () async {
+                      final time = await showTimePicker(
+                        context: context,
+                        initialTime: selectedTime,
+                      );
+                      if (time != null) {
+                        setModalState(() => selectedTime = time);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.mutedDark.withAlpha(100) : AppColors.muted.withAlpha(100),
+                        border: Border.all(color: isDark ? AppColors.borderDark : AppColors.border),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            LucideIcons.clock,
+                            size: 18,
+                            color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            selectedTime.format(context),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Schedule button
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: selectedStudent == null
+                          ? null
+                          : () {
+                              // TODO: Integrate with schedule service to create the session
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Sessao agendada com ${selectedStudent!['name']} para ${DateFormat('dd/MM').format(selectedDate)} as ${selectedTime.format(context)}',
+                                  ),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                            },
+                      icon: const Icon(LucideIcons.calendarPlus, size: 18),
+                      label: const Text('Agendar Sessao'),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
 }
 
 // Header Section Widget
 class _HeaderSection extends StatelessWidget {
   final bool isDark;
+  final String userName;
 
-  const _HeaderSection({required this.isDark});
+  const _HeaderSection({required this.isDark, required this.userName});
+
+  String _getInitials(String name) {
+    final parts = name.trim().split(' ');
+    if (parts.isEmpty) return 'U';
+    if (parts.length == 1) return parts[0].substring(0, 1).toUpperCase();
+    return '${parts[0][0]}${parts[parts.length - 1][0]}'.toUpperCase();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -349,10 +648,10 @@ class _HeaderSection extends StatelessWidget {
               ),
             ],
           ),
-          child: const Center(
+          child: Center(
             child: Text(
-              'RT',
-              style: TextStyle(
+              _getInitials(userName),
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
@@ -379,7 +678,7 @@ class _HeaderSection extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                'Roberto Trainer',
+                userName,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
@@ -393,7 +692,7 @@ class _HeaderSection extends StatelessWidget {
         // Switch Profile Button
         GestureDetector(
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             context.go(RouteNames.orgSelector);
           },
           child: Container(
@@ -420,7 +719,7 @@ class _HeaderSection extends StatelessWidget {
         // Notification Bell
         GestureDetector(
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             context.push(RouteNames.notifications);
           },
           child: Container(
@@ -496,7 +795,7 @@ class _StatsSection extends StatelessWidget {
                 color: AppColors.primary,
                 isDark: isDark,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   context.push('/students');
                 },
               ),
@@ -510,7 +809,7 @@ class _StatsSection extends StatelessWidget {
                 color: AppColors.secondary,
                 isDark: isDark,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   context.push(RouteNames.programWizard);
                 },
               ),
@@ -528,7 +827,7 @@ class _StatsSection extends StatelessWidget {
                 color: AppColors.success,
                 isDark: isDark,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   context.push('/checkin/history');
                 },
               ),
@@ -542,7 +841,7 @@ class _StatsSection extends StatelessWidget {
                 color: AppColors.accent,
                 isDark: isDark,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   context.push('/billing');
                 },
               ),
@@ -576,7 +875,7 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap ?? () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
       },
       child: Container(
         width: double.infinity,
@@ -704,17 +1003,17 @@ class _SectionHeader extends StatelessWidget {
 // Quick Actions Section Widget
 class _QuickActionsSection extends StatelessWidget {
   final bool isDark;
-  final VoidCallback onNovoAluno;
-  final VoidCallback onCriarTreino;
-  final VoidCallback onEnviarMensagem;
+  final VoidCallback onConvidarAluno;
+  final VoidCallback onNovoProgramy;
   final VoidCallback onVerCatalogo;
+  final VoidCallback onAgendarSessao;
 
   const _QuickActionsSection({
     required this.isDark,
-    required this.onNovoAluno,
-    required this.onCriarTreino,
-    required this.onEnviarMensagem,
+    required this.onConvidarAluno,
+    required this.onNovoProgramy,
     required this.onVerCatalogo,
+    required this.onAgendarSessao,
   });
 
   @override
@@ -724,27 +1023,27 @@ class _QuickActionsSection extends StatelessWidget {
         Expanded(
           child: _QuickActionButton(
             icon: LucideIcons.userPlus,
-            label: 'Novo Aluno',
+            label: 'Convidar',
             color: isDark ? AppColors.primaryDark : AppColors.primary,
             isDark: isDark,
-            onTap: onNovoAluno,
+            onTap: onConvidarAluno,
           ),
         ),
         const SizedBox(width: 8),
         Expanded(
           child: _QuickActionButton(
-            icon: LucideIcons.dumbbell,
-            label: 'Criar Treino',
+            icon: LucideIcons.filePlus,
+            label: 'Programa',
             color: isDark ? AppColors.secondaryDark : AppColors.secondary,
             isDark: isDark,
-            onTap: onCriarTreino,
+            onTap: onNovoProgramy,
           ),
         ),
         const SizedBox(width: 8),
         Expanded(
           child: _QuickActionButton(
             icon: LucideIcons.layoutTemplate,
-            label: 'Catalogo',
+            label: 'Catálogo',
             color: AppColors.success,
             isDark: isDark,
             onTap: onVerCatalogo,
@@ -753,11 +1052,11 @@ class _QuickActionsSection extends StatelessWidget {
         const SizedBox(width: 8),
         Expanded(
           child: _QuickActionButton(
-            icon: LucideIcons.messageCircle,
-            label: 'Mensagem',
+            icon: LucideIcons.calendarPlus,
+            label: 'Agendar',
             color: isDark ? AppColors.accentDark : AppColors.accent,
             isDark: isDark,
-            onTap: onEnviarMensagem,
+            onTap: onAgendarSessao,
           ),
         ),
       ],
@@ -842,7 +1141,7 @@ class _ScheduleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         _showSessionDetailsModal(context, session, isDark);
       },
       child: Container(
@@ -977,7 +1276,7 @@ class _ActivityTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         _showActivityDetailsModal(context, activity, isDark);
       },
       child: Container(
@@ -1057,7 +1356,7 @@ class _AlertCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         _showAlertDetailsModal(context, alert, isDark);
       },
       child: Container(
@@ -1507,7 +1806,7 @@ void _showSessionDetailsModal(
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(ctx);
                   },
                   icon: const Icon(LucideIcons.messageCircle),
@@ -1518,7 +1817,7 @@ void _showSessionDetailsModal(
               Expanded(
                 child: FilledButton.icon(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(ctx);
                   },
                   icon: const Icon(LucideIcons.play),
@@ -1626,7 +1925,7 @@ void _showActivityDetailsModal(
             width: double.infinity,
             child: FilledButton.icon(
               onPressed: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 Navigator.pop(ctx);
               },
               icon: const Icon(LucideIcons.externalLink),
@@ -1770,7 +2069,7 @@ void _showAlertDetailsModal(
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(ctx);
                   },
                   icon: const Icon(LucideIcons.x),
@@ -1781,7 +2080,7 @@ void _showAlertDetailsModal(
               Expanded(
                 child: FilledButton.icon(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(ctx);
                   },
                   icon: Icon(actionIcon),

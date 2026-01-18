@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -113,7 +113,7 @@ class _MealLogPageState extends ConsumerState<MealLogPage>
       return;
     }
 
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Refeicao registrada com sucesso!'),
@@ -198,7 +198,7 @@ class _MealLogPageState extends ConsumerState<MealLogPage>
         children: [
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(context);
             },
             child: Container(
@@ -244,7 +244,7 @@ class _MealLogPageState extends ConsumerState<MealLogPage>
 
           return GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               setState(() => _selectedMealType = type['id'] as String);
             },
             child: AnimatedContainer(
@@ -548,7 +548,7 @@ class _MealLogPageState extends ConsumerState<MealLogPage>
           const SizedBox(width: 8),
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               setState(() => _selectedFoods.removeAt(index));
             },
             child: Container(
@@ -638,7 +638,7 @@ class _MealLogPageState extends ConsumerState<MealLogPage>
   Widget _buildAddOption(String label, IconData icon, VoidCallback onTap, bool isDark) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap();
       },
       child: Container(
@@ -696,7 +696,7 @@ class _MealLogPageState extends ConsumerState<MealLogPage>
   Widget _buildRecentFoodItem(Map<String, dynamic> food, bool isDark) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         setState(() {
           _selectedFoods.add({...food});
         });

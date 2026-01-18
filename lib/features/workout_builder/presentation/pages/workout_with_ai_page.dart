@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -97,7 +97,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
 
   void _generateWorkout() async {
     if (!_canGenerate) {
-      HapticFeedback.heavyImpact();
+      HapticUtils.heavyImpact();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Preencha todas as opcoes para gerar o treino', style: const TextStyle(color: Colors.white)),
@@ -107,7 +107,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
       return;
     }
 
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     setState(() {
       _isGenerating = true;
     });
@@ -207,7 +207,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
   Future<void> _saveWorkout() async {
     if (_generatedWorkout == null || _isSaving) return;
 
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     setState(() {
       _isSaving = true;
     });
@@ -284,7 +284,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
   }
 
   void _resetGeneration() {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     setState(() {
       _generatedWorkout = null;
     });
@@ -334,7 +334,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
         children: [
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               context.pop();
             },
             child: Container(
@@ -504,7 +504,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
         final isSelected = _selectedGoal == goal.id;
         return GestureDetector(
           onTap: () {
-            HapticFeedback.selectionClick();
+            HapticUtils.selectionClick();
             setState(() {
               _selectedGoal = goal.id;
             });
@@ -593,7 +593,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
         final isSelected = _selectedMuscleGroups.contains(muscle.id);
         return GestureDetector(
           onTap: () {
-            HapticFeedback.selectionClick();
+            HapticUtils.selectionClick();
             setState(() {
               if (isSelected) {
                 _selectedMuscleGroups.remove(muscle.id);
@@ -659,7 +659,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
         return Expanded(
           child: GestureDetector(
             onTap: () {
-              HapticFeedback.selectionClick();
+              HapticUtils.selectionClick();
               setState(() {
                 _selectedDuration = duration;
               });
@@ -722,7 +722,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
         final isSelected = _selectedEquipment == equipment.id;
         return GestureDetector(
           onTap: () {
-            HapticFeedback.selectionClick();
+            HapticUtils.selectionClick();
             setState(() {
               _selectedEquipment = equipment.id;
             });
@@ -1023,7 +1023,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       final workout = _generatedWorkout!;
                       context.push(
                         '/workouts/from-scratch',

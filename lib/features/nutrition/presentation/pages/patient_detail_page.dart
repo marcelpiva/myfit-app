@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -123,7 +123,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
         children: [
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(context);
             },
             child: Container(
@@ -154,7 +154,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
           ),
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               _showActionsMenu(isDark);
             },
             child: Container(
@@ -300,7 +300,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
   Widget _buildQuickAction(IconData icon, VoidCallback onTap, bool isDark) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap();
       },
       child: Container(
@@ -334,7 +334,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
           return Expanded(
             child: GestureDetector(
               onTap: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 setState(() => _selectedTab = index);
               },
               child: AnimatedContainer(
@@ -893,7 +893,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
   Widget _buildPlanAction(String label, IconData icon, VoidCallback onTap, bool isDark) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap();
       },
       child: Container(
@@ -962,7 +962,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
               GestureDetector(
                 onTap: () async {
                   if (_noteController.text.isNotEmpty) {
-                    HapticFeedback.mediumImpact();
+                    HapticUtils.mediumImpact();
                     final notifier = ref.read(patientDietPlanNotifierProvider(widget.patientId).notifier);
                     final success = await notifier.addNote(_noteController.text, category: 'observacao');
                     if (success && mounted) {
@@ -1123,7 +1123,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
   Widget _buildMenuOption(String label, IconData icon, VoidCallback onTap, bool isDark, {bool isDestructive = false}) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap();
       },
       child: Container(

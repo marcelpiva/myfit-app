@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -10,6 +7,8 @@ import '../../../../config/l10n/generated/app_localizations.dart';
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/providers/biometric_provider.dart';
+import '../../../../core/utils/haptic_utils.dart';
+import '../../../../core/utils/platform_utils.dart';
 import '../../../../shared/presentation/components/components.dart';
 import '../providers/auth_provider.dart';
 
@@ -74,7 +73,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
       return;
     }
 
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     setState(() => _loading = true);
 
     final success = await ref.read(authProvider.notifier).login(
@@ -143,7 +142,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
   }
 
   void _showError(String message) {
-    HapticFeedback.heavyImpact();
+    HapticUtils.heavyImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message, style: const TextStyle(color: Colors.white)),
@@ -157,7 +156,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
   Future<void> _loginWithBiometric() async {
     final service = ref.read(biometricServiceProvider);
 
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
 
     final authenticated = await service.authenticate(
       reason: 'Autentique para entrar no MyFit',
@@ -251,7 +250,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                       // Back button
                       GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           context.go(RouteNames.welcome);
                         },
                         child: Container(
@@ -342,7 +341,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                               alignment: Alignment.centerRight,
                               child: GestureDetector(
                                 onTap: () {
-                                  HapticFeedback.lightImpact();
+                                  HapticUtils.lightImpact();
                                   context.push(RouteNames.forgotPassword);
                                 },
                                 child: Text(
@@ -399,7 +398,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                                         ),
                                       ),
                                       icon: Icon(
-                                        Platform.isIOS
+                                        PlatformUtils.isIOS
                                             ? LucideIcons.scanFace
                                             : LucideIcons.fingerprint,
                                         color: AppColors.primary,
@@ -467,7 +466,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                       SocialButton.google(
                         label: l10n.continueWithGoogle,
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: const Text('Login com Google em desenvolvimento'),
@@ -483,7 +482,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                       SocialButton.apple(
                         label: l10n.continueWithApple,
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: const Text('Login com Apple em desenvolvimento'),
@@ -513,7 +512,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                             const SizedBox(width: 4),
                             GestureDetector(
                               onTap: () {
-                                HapticFeedback.lightImpact();
+                                HapticUtils.lightImpact();
                                 context.go(RouteNames.register);
                               },
                               child: Text(

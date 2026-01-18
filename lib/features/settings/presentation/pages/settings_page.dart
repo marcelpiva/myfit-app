@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:path_provider/path_provider.dart';
-import 'dart:io';
 
 import '../../../../app/app.dart';
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
 import '../../../../core/providers/biometric_provider.dart';
+import '../../../../core/utils/haptic_utils.dart';
+import '../../../../core/utils/platform_utils.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -73,7 +73,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                       children: [
                         GestureDetector(
                           onTap: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             context.pop();
                           },
                           child: Container(
@@ -150,7 +150,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             'Receba notificacoes no seu dispositivo',
                             _pushNotifications,
                             (val) {
-                              HapticFeedback.selectionClick();
+                              HapticUtils.selectionClick();
                               setState(() => _pushNotifications = val);
                             },
                           ),
@@ -163,7 +163,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             'Receba atualizacoes por e-mail',
                             _emailNotifications,
                             (val) {
-                              HapticFeedback.selectionClick();
+                              HapticUtils.selectionClick();
                               setState(() => _emailNotifications = val);
                             },
                           ),
@@ -176,7 +176,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             'Lembrar de fazer os treinos',
                             _workoutReminders,
                             (val) {
-                              HapticFeedback.selectionClick();
+                              HapticUtils.selectionClick();
                               setState(() => _workoutReminders = val);
                             },
                           ),
@@ -189,7 +189,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             'Lembrar das refeicoes do dia',
                             _nutritionReminders,
                             (val) {
-                              HapticFeedback.selectionClick();
+                              HapticUtils.selectionClick();
                               setState(() => _nutritionReminders = val);
                             },
                           ),
@@ -247,7 +247,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                       return _buildToggleTile(
                                         context,
                                         isDark,
-                                        Platform.isIOS ? LucideIcons.scanFace : LucideIcons.fingerprint,
+                                        PlatformUtils.isIOS ? LucideIcons.scanFace : LucideIcons.fingerprint,
                                         'Autenticacao Biometrica',
                                         labelText,
                                         enabled,
@@ -283,7 +283,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             'Alterar Senha',
                             null,
                             () {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                               _showChangePasswordDialog(context, isDark);
                             },
                           ),
@@ -295,7 +295,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             'Sessoes Ativas',
                             '2 dispositivos',
                             () {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                               _showActiveSessionsDialog(context, isDark);
                             },
                           ),
@@ -330,7 +330,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             'Exportar Dados',
                             null,
                             () {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                               _showExportDataDialog(context, isDark);
                             },
                           ),
@@ -343,7 +343,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             _isClearing ? 'Limpando...' : _cacheSize,
                             () {
                               if (!_isClearing) {
-                                HapticFeedback.lightImpact();
+                                HapticUtils.lightImpact();
                                 _clearCache(context, isDark);
                               }
                             },
@@ -379,7 +379,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             'Sobre o App',
                             null,
                             () {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                               context.push(RouteNames.about);
                             },
                           ),
@@ -391,7 +391,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             'Termos de Uso',
                             null,
                             () {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                               context.push(RouteNames.terms);
                             },
                           ),
@@ -403,7 +403,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             'Politica de Privacidade',
                             null,
                             () {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                               context.push(RouteNames.privacy);
                             },
                           ),
@@ -434,7 +434,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                         'Excluir Conta',
                         null,
                         () {
-                          HapticFeedback.mediumImpact();
+                          HapticUtils.mediumImpact();
                           _showDeleteAccountDialog(context, isDark);
                         },
                         isDestructive: true,
@@ -498,7 +498,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         _showThemeSelector(context, isDark, themeMode);
       },
       child: Padding(
@@ -642,7 +642,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
   ) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.mediumImpact();
+        HapticUtils.mediumImpact();
         ref.read(themeModeProvider.notifier).state = mode;
         Navigator.pop(context);
       },
@@ -764,7 +764,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
           ),
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               _showLanguageSelector(context, isDark);
             },
             child: Container(
@@ -863,7 +863,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
     return InkWell(
       onTap: () {
-        HapticFeedback.selectionClick();
+        HapticUtils.selectionClick();
         ref.read(localeProvider.notifier).state = Locale(code);
         Navigator.pop(context);
       },
@@ -937,7 +937,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
           _isClearing = false;
         });
 
-        HapticFeedback.mediumImpact();
+        HapticUtils.mediumImpact();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Cache limpo com sucesso'),
@@ -1000,7 +1000,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                       },
                       style: OutlinedButton.styleFrom(
@@ -1014,7 +1014,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        HapticFeedback.mediumImpact();
+                        HapticUtils.mediumImpact();
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -1101,7 +1101,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    HapticFeedback.mediumImpact();
+                    HapticUtils.mediumImpact();
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -1227,7 +1227,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                       },
                       style: OutlinedButton.styleFrom(
@@ -1241,7 +1241,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        HapticFeedback.mediumImpact();
+                        HapticUtils.mediumImpact();
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -1374,7 +1374,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                       },
                       style: OutlinedButton.styleFrom(
@@ -1389,7 +1389,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     child: ElevatedButton(
                       onPressed: () {
                         if (confirmController.text.toUpperCase() == 'EXCLUIR') {
-                          HapticFeedback.heavyImpact();
+                          HapticUtils.heavyImpact();
                           Navigator.pop(context);
                           context.go(RouteNames.welcome);
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -1650,7 +1650,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
   Future<void> _toggleBiometric(BuildContext context, WidgetRef ref, bool enable) async {
     final service = ref.read(biometricServiceProvider);
-    HapticFeedback.selectionClick();
+    HapticUtils.selectionClick();
 
     if (enable) {
       // Show dialog to enter credentials
@@ -1722,7 +1722,7 @@ class _BiometricSetupDialogState extends State<_BiometricSetupDialog> {
             Row(
               children: [
                 Icon(
-                  Platform.isIOS ? LucideIcons.scanFace : LucideIcons.fingerprint,
+                  PlatformUtils.isIOS ? LucideIcons.scanFace : LucideIcons.fingerprint,
                   size: 24,
                   color: AppColors.primary,
                 ),
@@ -1796,7 +1796,7 @@ class _BiometricSetupDialogState extends State<_BiometricSetupDialog> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(context);
                     },
                     style: OutlinedButton.styleFrom(
@@ -1824,7 +1824,7 @@ class _BiometricSetupDialogState extends State<_BiometricSetupDialog> {
                         return;
                       }
 
-                      HapticFeedback.mediumImpact();
+                      HapticUtils.mediumImpact();
                       Navigator.pop(context, (email: email, password: password));
                     },
                     style: ElevatedButton.styleFrom(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -51,7 +51,8 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
     });
 
     try {
-      final templates = await _workoutService.getPrograms(templatesOnly: true);
+      // Get only user's own programs (not public templates from others)
+      final templates = await _workoutService.getPrograms(templatesOnly: false);
       setState(() {
         _templates = templates;
         _isLoading = false;
@@ -189,13 +190,13 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Escolher Template',
+                            'Meus Programas',
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
-                            'Selecione um programa pronto para personalizar',
+                            'Selecione um programa como base',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
@@ -216,7 +217,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
                 TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Buscar templates...',
+                    hintText: 'Buscar programas...',
                     prefixIcon: const Icon(LucideIcons.search, size: 20),
                     filled: true,
                     fillColor: isDark
@@ -272,7 +273,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
                         const SizedBox(width: 8),
                         GestureDetector(
                           onTap: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             setState(() {
                               _selectedGoal = null;
                               _selectedDifficulty = null;
@@ -331,7 +332,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
                                 template: _filteredTemplates[index],
                                 isDark: isDark,
                                 onTap: () async {
-                                  HapticFeedback.selectionClick();
+                                  HapticUtils.selectionClick();
                                   await _selectTemplate(_filteredTemplates[index]);
                                 },
                               );
@@ -354,7 +355,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
 
     return GestureDetector(
       onTap: () {
-        HapticFeedback.selectionClick();
+        HapticUtils.selectionClick();
         onTap();
       },
       child: Container(
@@ -483,7 +484,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Erro ao carregar templates',
+              'Erro ao carregar programas',
               style: theme.textTheme.bodyLarge,
             ),
             if (_error != null) ...[
@@ -533,8 +534,8 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
             const SizedBox(height: 16),
             Text(
               noTemplatesExist
-                  ? 'Nenhum template disponivel'
-                  : 'Nenhum template encontrado',
+                  ? 'Nenhum programa disponivel'
+                  : 'Nenhum programa encontrado',
               style: theme.textTheme.bodyLarge?.copyWith(
                 fontWeight: FontWeight.w500,
               ),
@@ -542,7 +543,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
             const SizedBox(height: 8),
             Text(
               noTemplatesExist
-                  ? 'Ainda nao ha templates cadastrados no sistema'
+                  ? 'Voce ainda nao criou nenhum programa'
                   : 'Tente ajustar os filtros de busca',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
@@ -563,7 +564,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
             ] else if (hasFilters) ...[
               OutlinedButton.icon(
                 onPressed: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   setState(() {
                     _selectedGoal = null;
                     _selectedDifficulty = null;
@@ -678,7 +679,7 @@ class _FilterSheet extends StatelessWidget {
                   ? Icon(LucideIcons.check, color: AppColors.primary)
                   : null,
               onTap: () {
-                HapticFeedback.selectionClick();
+                HapticUtils.selectionClick();
                 onSelected(isSelected ? null : option.$1);
               },
             );

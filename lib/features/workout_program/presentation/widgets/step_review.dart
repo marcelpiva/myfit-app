@@ -260,42 +260,120 @@ class StepReview extends ConsumerWidget {
             );
           }),
 
-          // Template option
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? theme.colorScheme.surfaceContainerLow.withAlpha(150)
-                  : theme.colorScheme.surfaceContainerLow.withAlpha(200),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: theme.colorScheme.outline.withValues(alpha: 0.2),
+          // Diet Summary (if included)
+          if (state.includeDiet) ...[
+            const SizedBox(height: 24),
+            Text(
+              'Plano Alimentar',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
               ),
             ),
-            child: Row(
-              children: [
-                Icon(
-                  LucideIcons.bookmark,
-                  size: 20,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? theme.colorScheme.surfaceContainerLow.withAlpha(150)
+                    : theme.colorScheme.surfaceContainerLow.withAlpha(200),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.success.withAlpha(50),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Salvar como template',
-                    style: theme.textTheme.bodyMedium,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withAlpha(30),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          LucideIcons.utensils,
+                          size: 20,
+                          color: AppColors.success,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              state.dietType?.displayName ?? 'Dieta configurada',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            if (state.mealsPerDay != null)
+                              Text(
+                                '${state.mealsPerDay} refeicoes por dia',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        LucideIcons.checkCircle2,
+                        size: 20,
+                        color: AppColors.success,
+                      ),
+                    ],
                   ),
-                ),
-                Switch(
-                  value: state.isTemplate,
-                  onChanged: (value) {
-                    ref.read(programWizardProvider.notifier).setIsTemplate(value);
-                  },
-                ),
-              ],
+                  if (state.dailyCalories != null || state.proteinGrams != null) ...[
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        if (state.dailyCalories != null)
+                          _DietStat(
+                            value: '${state.dailyCalories}',
+                            label: 'kcal',
+                            theme: theme,
+                          ),
+                        if (state.proteinGrams != null)
+                          _DietStat(
+                            value: '${state.proteinGrams}g',
+                            label: 'Proteina',
+                            theme: theme,
+                          ),
+                        if (state.carbsGrams != null)
+                          _DietStat(
+                            value: '${state.carbsGrams}g',
+                            label: 'Carbs',
+                            theme: theme,
+                          ),
+                        if (state.fatGrams != null)
+                          _DietStat(
+                            value: '${state.fatGrams}g',
+                            label: 'Gordura',
+                            theme: theme,
+                          ),
+                      ],
+                    ),
+                  ],
+                  if (state.dietNotes != null && state.dietNotes!.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      state.dietNotes!,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ),
+          ],
           const SizedBox(height: 100),
         ],
       ),
@@ -377,6 +455,39 @@ class _StatItem extends StatelessWidget {
           value,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DietStat extends StatelessWidget {
+  final String value;
+  final String label;
+  final ThemeData theme;
+
+  const _DietStat({
+    required this.value,
+    required this.label,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: AppColors.success,
           ),
         ),
         Text(

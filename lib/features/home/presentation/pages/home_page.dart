@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -113,7 +113,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                       isDark,
                       'Treino de Hoje',
                       onSeeAll: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         context.go(RouteNames.workouts);
                       },
                     ),
@@ -139,7 +139,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                       isDark,
                       'Explorar Treinos',
                       onSeeAll: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         context.push('/workouts/templates');
                       },
                     ),
@@ -231,7 +231,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
         // Switch Profile
         GestureDetector(
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             context.go(RouteNames.orgSelector);
           },
           child: Container(
@@ -257,7 +257,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
         // Notifications
         GestureDetector(
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             context.push(RouteNames.notifications);
           },
           child: Container(
@@ -301,7 +301,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
         // Settings
         GestureDetector(
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             context.push(RouteNames.settings);
           },
           child: Container(
@@ -449,7 +449,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
   Widget _buildTodayWorkout(BuildContext context, bool isDark) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.mediumImpact();
+        HapticUtils.mediumImpact();
         context.push('/workouts/1');
       },
       child: Container(
@@ -586,37 +586,37 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
   Widget _buildQuickActions(BuildContext context, bool isDark) {
     final actionsRow1 = [
       (LucideIcons.play, 'Iniciar\nTreino', AppColors.primary, () {
-        HapticFeedback.mediumImpact();
+        HapticUtils.mediumImpact();
         _showStartWorkoutOptions(context, isDark);
       }),
       (LucideIcons.mapPin, 'Check-in', AppColors.secondary, () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         context.push(RouteNames.checkin);
       }),
       (LucideIcons.trophy, 'Ranking', AppColors.accent, () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         context.push(RouteNames.leaderboard);
       }),
       (LucideIcons.messageCircle, 'Chat', AppColors.success, () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         context.go(RouteNames.chat);
       }),
     ];
     final actionsRow2 = [
       (LucideIcons.utensils, 'Ver\nDieta', AppColors.primary, () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         context.go(RouteNames.nutrition);
       }),
       (LucideIcons.camera, 'Foto\nProgresso', AppColors.secondary, () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         context.push(RouteNames.progress);
       }),
       (LucideIcons.sparkles, 'AI\nWizard', AppColors.accent, () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         context.push(RouteNames.programWizard);
       }),
       (LucideIcons.creditCard, 'Cobranças', AppColors.success, () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         context.push(RouteNames.billing);
       }),
     ];
@@ -705,7 +705,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
           final (id, name, description, icon, color) = categories[index];
           return GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               context.push('/workouts/templates?category=$id');
             },
             child: Container(
@@ -869,7 +869,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
               // Treino do dia (se houver)
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.mediumImpact();
+                  HapticUtils.mediumImpact();
                   Navigator.pop(ctx);
                   context.push('/workouts'); // Navigate to workouts list
                 },
@@ -953,7 +953,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                 'Selecione um dos seus treinos',
                 AppColors.secondary,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   context.go(RouteNames.workouts);
                 },
@@ -967,7 +967,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                 'Comece sem um plano definido',
                 AppColors.accent,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   context.push('/workouts'); // Navigate to workouts list
                 },
@@ -981,7 +981,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                 'Deixe a IA criar um treino rápido',
                 AppColors.info,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   context.push(RouteNames.programWizard);
                 },

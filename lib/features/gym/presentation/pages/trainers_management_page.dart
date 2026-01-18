@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -50,7 +50,7 @@ class _TrainersManagementPageState
   static const String _orgId = 'default';
 
   Future<void> _onRefresh() async {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     await ref.read(membersNotifierProvider(_orgId).notifier).loadMembers();
   }
 
@@ -98,7 +98,7 @@ class _TrainersManagementPageState
                             children: [
                               GestureDetector(
                                 onTap: () {
-                                  HapticFeedback.lightImpact();
+                                  HapticUtils.lightImpact();
                                   _showInviteTrainerSheet(context, isDark);
                                 },
                                 child: Container(
@@ -178,7 +178,7 @@ class _TrainersManagementPageState
                             final isSelected = entry.key == _selectedFilter;
                             return GestureDetector(
                               onTap: () {
-                                HapticFeedback.lightImpact();
+                                HapticUtils.lightImpact();
                                 setState(() => _selectedFilter = entry.key);
                               },
                               child: Container(
@@ -293,7 +293,7 @@ class _TrainersManagementPageState
                                         trainer: trainer,
                                         isDark: isDark,
                                         onTap: () {
-                                          HapticFeedback.lightImpact();
+                                          HapticUtils.lightImpact();
                                           _showTrainerDetail(context, isDark, trainer);
                                         },
                                       );
@@ -424,7 +424,7 @@ class _TrainersManagementPageState
   }
 
   void _showInviteTrainerSheet(BuildContext context, bool isDark) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
@@ -539,7 +539,7 @@ class _TrainersManagementPageState
                       isSelected: true,
                       isDark: isDark,
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                       },
                     ),
                   ),
@@ -551,7 +551,7 @@ class _TrainersManagementPageState
                       isSelected: false,
                       isDark: isDark,
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                       },
                     ),
                   ),
@@ -595,7 +595,7 @@ class _TrainersManagementPageState
               // Invite Code
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                 },
                 child: Container(
                   padding: const EdgeInsets.all(16),
@@ -636,7 +636,7 @@ class _TrainersManagementPageState
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                       },
                       child: Container(
@@ -678,7 +678,7 @@ class _TrainersManagementPageState
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -725,7 +725,7 @@ class _TrainersManagementPageState
 
   void _showTrainerDetail(
       BuildContext context, bool isDark, Map<String, dynamic> trainer) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
@@ -838,7 +838,7 @@ class _TrainersManagementPageState
                       children: [
                         GestureDetector(
                           onTap: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                           },
                           child: Container(
                             width: 44,
@@ -859,7 +859,7 @@ class _TrainersManagementPageState
                         const SizedBox(width: 8),
                         GestureDetector(
                           onTap: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                           },
                           child: Container(
                             width: 44,
@@ -1013,7 +1013,7 @@ class _TrainersManagementPageState
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                         },
                         child: Container(
                           height: 52,
@@ -1047,7 +1047,7 @@ class _TrainersManagementPageState
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                         },
                         child: Container(
                           height: 52,
@@ -1112,7 +1112,7 @@ class _TrainersManagementPageState
   Widget _buildContactRow(bool isDark, IconData icon, String value) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
       },
       child: Row(
         children: [

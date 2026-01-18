@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -41,7 +41,7 @@ class _RecentMealsPageState extends ConsumerState<RecentMealsPage>
   }
 
   void _repeatMeal(Map<String, dynamic> meal) {
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${meal['name']} adicionado ao diario', style: const TextStyle(color: Colors.white)),
@@ -100,7 +100,7 @@ class _RecentMealsPageState extends ConsumerState<RecentMealsPage>
                   children: [
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         context.pop();
                       },
                       child: Container(

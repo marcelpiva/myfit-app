@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -65,7 +65,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                       children: [
                         GestureDetector(
                           onTap: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             context.pop();
                           },
                           child: Container(
@@ -89,7 +89,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                         const Spacer(),
                         GestureDetector(
                           onTap: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                           },
                           child: Container(
                             width: 40,
@@ -149,7 +149,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                               bottom: 0,
                               child: GestureDetector(
                                 onTap: () {
-                                  HapticFeedback.lightImpact();
+                                  HapticUtils.lightImpact();
                                 },
                                 child: Container(
                                   width: 32,
@@ -289,13 +289,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                         const SizedBox(height: 12),
                         _buildMenuCard(context, isDark, [
                           _MenuItem(LucideIcons.user, 'Informacoes Pessoais', () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                           }),
                           _MenuItem(LucideIcons.lock, 'Alterar Senha', () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                           }),
                           _MenuItem(LucideIcons.bell, 'Notificacoes', () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                           }),
                         ]),
 
@@ -305,13 +305,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                         const SizedBox(height: 12),
                         _buildMenuCard(context, isDark, [
                           _MenuItem(LucideIcons.globe, 'Idioma', () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                           }, trailing: 'Portugues'),
                           _MenuItem(LucideIcons.moon, 'Tema', () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                           }, trailing: 'Sistema'),
                           _MenuItem(LucideIcons.ruler, 'Unidades', () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                           }, trailing: 'Metrico'),
                         ]),
 
@@ -321,19 +321,19 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                         const SizedBox(height: 12),
                         _buildMenuCard(context, isDark, [
                           _MenuItem(LucideIcons.helpCircle, 'Central de Ajuda', () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             context.push(RouteNames.help);
                           }),
                           _MenuItem(LucideIcons.messageSquare, 'Contato', () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             context.push(RouteNames.help);
                           }),
                           _MenuItem(LucideIcons.fileText, 'Termos de Uso', () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             context.push(RouteNames.terms);
                           }),
                           _MenuItem(LucideIcons.shield, 'Privacidade', () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             context.push(RouteNames.privacy);
                           }),
                         ]),
@@ -346,7 +346,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                           icon: LucideIcons.logOut,
                           fullWidth: true,
                           onPressed: () {
-                            HapticFeedback.mediumImpact();
+                            HapticUtils.mediumImpact();
                             context.go(RouteNames.welcome);
                           },
                         ),

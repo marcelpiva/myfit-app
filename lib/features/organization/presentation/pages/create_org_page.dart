@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -75,7 +75,7 @@ class _CreateOrgPageState extends ConsumerState<CreateOrgPage>
 
   void _nextStep() {
     if (!_canContinue) return;
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     if (_currentStep < _totalSteps - 1) {
       setState(() => _currentStep++);
     } else {
@@ -84,7 +84,7 @@ class _CreateOrgPageState extends ConsumerState<CreateOrgPage>
   }
 
   void _previousStep() {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     if (_currentStep > 0) {
       setState(() => _currentStep--);
     } else {
@@ -153,7 +153,7 @@ class _CreateOrgPageState extends ConsumerState<CreateOrgPage>
   }
 
   void _showImagePickerOptions(bool isDark) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
@@ -215,7 +215,7 @@ class _CreateOrgPageState extends ConsumerState<CreateOrgPage>
   ) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         Navigator.pop(context);
         onTap();
       },
@@ -293,7 +293,7 @@ class _CreateOrgPageState extends ConsumerState<CreateOrgPage>
         elevation: 0,
         leading: IconButton(
           onPressed: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             context.pop();
           },
           icon: Icon(
@@ -441,7 +441,7 @@ class _CreateOrgPageState extends ConsumerState<CreateOrgPage>
               padding: const EdgeInsets.only(bottom: 12),
               child: GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   setState(() => _selectedType = orgType);
                 },
                 child: Container(
@@ -942,7 +942,7 @@ class _CreateOrgPageState extends ConsumerState<CreateOrgPage>
   Widget _buildEditButton(bool isDark, String label, String value, VoidCallback onTap) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap();
       },
       child: Container(

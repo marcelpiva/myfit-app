@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -114,7 +114,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage>
         children: [
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               context.pop();
             },
             child: Container(
@@ -285,7 +285,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage>
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _isLoading ? null : () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 _sendResetEmail();
               },
               style: ElevatedButton.styleFrom(
@@ -313,7 +313,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage>
           Center(
             child: TextButton(
               onPressed: () {
-                HapticFeedback.lightImpact();
+                HapticUtils.lightImpact();
                 context.pop();
               },
               child: Text(
@@ -435,7 +435,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage>
         // Resend button
         TextButton.icon(
           onPressed: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             setState(() => _emailSent = false);
           },
           icon: const Icon(LucideIcons.refreshCw, size: 18),
@@ -449,7 +449,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage>
           width: double.infinity,
           child: ElevatedButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               context.pop();
             },
             style: ElevatedButton.styleFrom(

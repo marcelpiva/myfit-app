@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -150,7 +150,7 @@ class _PatientDietPlanPageState extends ConsumerState<PatientDietPlanPage>
         children: [
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               context.pop();
             },
             child: Container(
@@ -200,7 +200,7 @@ class _PatientDietPlanPageState extends ConsumerState<PatientDietPlanPage>
           ),
           GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               _showActionsMenu(context, isDark);
             },
             child: Container(
@@ -245,7 +245,7 @@ class _PatientDietPlanPageState extends ConsumerState<PatientDietPlanPage>
           return Expanded(
             child: GestureDetector(
               onTap: () {
-                HapticFeedback.selectionClick();
+                HapticUtils.selectionClick();
                 setState(() => _selectedTab = entry.key);
               },
               child: Container(
@@ -337,7 +337,7 @@ class _PatientDietPlanPageState extends ConsumerState<PatientDietPlanPage>
                 subtitle: 'Modificar refeicoes e metas',
                 color: AppColors.primary,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   context.push('/nutrition/builder?planId=1&studentId=${widget.patientId}');
                 },
@@ -351,7 +351,7 @@ class _PatientDietPlanPageState extends ConsumerState<PatientDietPlanPage>
                 subtitle: 'Criar copia como template',
                 color: AppColors.secondary,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -370,7 +370,7 @@ class _PatientDietPlanPageState extends ConsumerState<PatientDietPlanPage>
                 subtitle: 'Notificar paciente sobre o plano',
                 color: AppColors.info,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   _showSendConfirmationDialog(context, isDark);
                 },
@@ -384,7 +384,7 @@ class _PatientDietPlanPageState extends ConsumerState<PatientDietPlanPage>
                 subtitle: 'Gerar documento para impressao',
                 color: AppColors.accent,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   _showExportingDialog(context, isDark);
                 },
@@ -565,14 +565,14 @@ class _PatientDietPlanPageState extends ConsumerState<PatientDietPlanPage>
         actions: [
           TextButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(ctx);
             },
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
             onPressed: () {
-              HapticFeedback.mediumImpact();
+              HapticUtils.mediumImpact();
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -1187,7 +1187,7 @@ class _HistoryTab extends StatelessWidget {
 
   Widget _buildPreviousPlanCard(bool isDark, PreviousPlan plan) {
     return GestureDetector(
-      onTap: () => HapticFeedback.selectionClick(),
+      onTap: () => HapticUtils.selectionClick(),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
@@ -1347,7 +1347,7 @@ class _NotesTab extends StatelessWidget {
               ),
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   _showAddNoteDialog(context, isDark);
                 },
                 child: Container(
@@ -1440,14 +1440,14 @@ class _NotesTab extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(ctx);
             },
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
             onPressed: () async {
-              HapticFeedback.mediumImpact();
+              HapticUtils.mediumImpact();
               if (textController.text.isEmpty) return;
 
               Navigator.pop(ctx);

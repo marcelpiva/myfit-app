@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -83,7 +83,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
                         ),
                         GestureDetector(
                           onTap: () {
-                            HapticFeedback.lightImpact();
+                            HapticUtils.lightImpact();
                             _showAddProgressOptions(context, isDark);
                           },
                           child: Container(
@@ -124,7 +124,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
                           return Expanded(
                             child: GestureDetector(
                               onTap: () {
-                                HapticFeedback.selectionClick();
+                                HapticUtils.selectionClick();
                                 setState(() => _selectedTab = entry.key);
                               },
                               child: Container(
@@ -192,7 +192,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
                           ),
                           GestureDetector(
                             onTap: () {
-                              HapticFeedback.selectionClick();
+                              HapticUtils.selectionClick();
                               _showAllWeightEntriesModal(context, isDark);
                             },
                             child: Text(
@@ -259,7 +259,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
                 'Adicione seu peso atual',
                 AppColors.primary,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   context.push('/progress/weight');
                 },
@@ -273,7 +273,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
                 'Atualize suas medidas corporais',
                 AppColors.secondary,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   context.push(RouteNames.measurements);
                 },
@@ -287,7 +287,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
                 'Registre seu progresso visual',
                 AppColors.accent,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   _showAddPhotoDialog(context, isDark);
                 },
@@ -405,14 +405,14 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
         actions: [
           TextButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(ctx);
             },
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
             onPressed: () {
-              HapticFeedback.mediumImpact();
+              HapticUtils.mediumImpact();
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -470,14 +470,14 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
         actions: [
           TextButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(ctx);
             },
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
             onPressed: () {
-              HapticFeedback.mediumImpact();
+              HapticUtils.mediumImpact();
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -536,7 +536,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -576,7 +576,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -746,7 +746,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
                   final entry = entries[index];
                   return GestureDetector(
                     onTap: () {
-                      HapticFeedback.selectionClick();
+                      HapticUtils.selectionClick();
                       Navigator.pop(ctx);
                       _showWeightEntryDetailsModal(context, isDark, entry);
                     },
@@ -1000,7 +1000,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -1037,7 +1037,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -1361,7 +1361,7 @@ class _EntryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.selectionClick();
+        HapticUtils.selectionClick();
         _showEntryDetailsModal(context, isDark, entry);
       },
       child: Container(
@@ -1613,7 +1613,7 @@ class _EntryCard extends StatelessWidget {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -1650,7 +1650,7 @@ class _EntryCard extends StatelessWidget {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -1999,7 +1999,7 @@ class _MeasurementsTab extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () {
-        HapticFeedback.selectionClick();
+        HapticUtils.selectionClick();
         _showMeasurementHistoryModal(context, isDark, label, value, unit, change);
       },
       child: Container(
@@ -2268,7 +2268,7 @@ class _MeasurementsTab extends ConsumerWidget {
               padding: const EdgeInsets.all(24),
               child: GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -2485,7 +2485,7 @@ class _PhotosTab extends ConsumerWidget {
   Widget _buildPhotoEntry(BuildContext context, bool isDark, Map<String, dynamic> photo) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.selectionClick();
+        HapticUtils.selectionClick();
         _showPhotoViewerModal(context, isDark, photo);
       },
       child: Container(
@@ -2713,7 +2713,7 @@ class _PhotosTab extends ConsumerWidget {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -2750,7 +2750,7 @@ class _PhotosTab extends ConsumerWidget {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(

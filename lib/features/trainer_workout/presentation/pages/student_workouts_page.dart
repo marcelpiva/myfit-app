@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -103,7 +103,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          HapticFeedback.lightImpact();
+          HapticUtils.lightImpact();
           _createNewWorkout(context, isDark);
         },
         backgroundColor: AppColors.primary,
@@ -125,7 +125,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
             children: [
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   context.pop();
                 },
                 child: Container(
@@ -158,7 +158,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                 ),
                 child: Center(
                   child: Text(
-                    progress.studentName[0].toUpperCase(),
+                    progress.studentName.isNotEmpty ? progress.studentName[0].toUpperCase() : '?',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
@@ -212,7 +212,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
               // More options
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   _showStudentOptions(context, isDark);
                 },
                 child: Container(
@@ -315,7 +315,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
         unselectedLabelColor: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
         labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
         onTap: (_) {
-          HapticFeedback.selectionClick();
+          HapticUtils.selectionClick();
         },
         tabs: [
           Tab(
@@ -430,7 +430,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                     program: entry.value,
                     isDark: isDark,
                     onTap: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       context.push('/programs/${entry.value['id']}');
                     },
                   ),
@@ -563,7 +563,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
         if (suggestions.length > 2)
           TextButton.icon(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               _showAllSuggestions(context, isDark, suggestions);
             },
             icon: const Icon(LucideIcons.chevronDown, size: 16),
@@ -807,7 +807,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                 'Acompanhe a evolucao do aluno',
                 AppColors.primary,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   context.push('/students/${widget.studentId}/progress?name=${Uri.encodeComponent(widget.studentName ?? '')}');
                 },
@@ -821,7 +821,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                 'Comunique-se com o aluno',
                 AppColors.info,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   _showSendMessageModal(context, isDark);
                 },
@@ -835,7 +835,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                 'Marque uma sessao de treino',
                 AppColors.success,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   _showScheduleSessionModal(context, isDark);
                 },
@@ -849,7 +849,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                 'Adicione observacoes importantes',
                 AppColors.warning,
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   _showStudentNotesModal(context, isDark);
                 },
@@ -1036,7 +1036,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   if (messageController.text.isNotEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -1246,7 +1246,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(this.context).showSnackBar(
                       SnackBar(
@@ -1386,7 +1386,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   if (notesController.text.isNotEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -1421,12 +1421,12 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
 
   void _createNewWorkout(BuildContext context, bool isDark) {
     // Navigate directly to program wizard with studentId
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     context.push('${RouteNames.programWizard}?studentId=${widget.studentId}');
   }
 
   void _openWorkout(BuildContext context, TrainerWorkout workout) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     // Navigate to workout detail
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -1437,12 +1437,12 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
   }
 
   void _editWorkout(BuildContext context, TrainerWorkout workout) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     // Navigate to workout builder
   }
 
   void _evolveWorkout(BuildContext context, bool isDark, TrainerWorkout workout) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
@@ -1511,7 +1511,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                 'Sugestão Automática',
                 'IA sugere progressão baseada no histórico',
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   _applyAIEvolution(workout);
                 },
@@ -1524,7 +1524,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                 'Aumentar Carga',
                 '+2.5kg em todos os exercícios',
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   _applyWeightIncrease(workout);
                 },
@@ -1537,7 +1537,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                 'Aumentar Volume',
                 '+1 série em exercícios compostos',
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   _applyVolumeIncrease(workout);
                 },
@@ -1550,7 +1550,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                 'Editar Manualmente',
                 'Fazer ajustes personalizados',
                 () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   _editWorkout(context, workout);
                 },
@@ -1672,7 +1672,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
   }
 
   void _pauseWorkout(String workoutId) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     ref.read(trainerWorkoutsNotifierProvider.notifier).pauseWorkout(workoutId);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -1683,7 +1683,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
   }
 
   void _activateWorkout(String workoutId) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     ref.read(trainerWorkoutsNotifierProvider.notifier).activateWorkout(workoutId);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -1694,7 +1694,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
   }
 
   void _duplicateWorkout(TrainerWorkout workout) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     ref.read(trainerWorkoutsNotifierProvider.notifier).duplicateWorkout(workout.id);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -1705,7 +1705,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
   }
 
   void _deleteWorkout(BuildContext context, bool isDark, TrainerWorkout workout) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1726,14 +1726,14 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
         actions: [
           TextButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(ctx);
             },
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(ctx);
               ref.read(trainerWorkoutsNotifierProvider.notifier).deleteWorkout(workout.id);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -1756,7 +1756,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
   }
 
   void _applySuggestion(AISuggestion suggestion) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     ref.read(studentProgressNotifierProvider(widget.studentId).notifier).applySuggestion(suggestion.id);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -1773,7 +1773,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
   }
 
   void _dismissSuggestion(BuildContext context, bool isDark, AISuggestion suggestion) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1814,7 +1814,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
   Widget _buildDismissOption(BuildContext context, String text, VoidCallback onTap) {
     return InkWell(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         Navigator.pop(context);
         onTap();
       },
@@ -1872,12 +1872,12 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
               child: AISuggestionCard(
                 suggestion: s,
                 onApply: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   _applySuggestion(s);
                 },
                 onDismiss: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   Navigator.pop(ctx);
                   _dismissSuggestion(context, isDark, s);
                 },

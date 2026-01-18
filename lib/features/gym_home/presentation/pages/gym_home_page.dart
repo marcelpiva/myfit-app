@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -130,7 +130,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
                             isDark,
                             'Receita Mensal',
                             onSeeAll: () {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                               context.push('/gym-reports');
                             },
                           ),
@@ -156,7 +156,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
                             isDark,
                             'Check-ins Recentes',
                             onSeeAll: () {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                               context.push('/checkin');
                             },
                           ),
@@ -182,7 +182,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
                             isDark,
                             'Equipe de Professores',
                             onSeeAll: () {
-                              HapticFeedback.lightImpact();
+                              HapticUtils.lightImpact();
                               context.push(RouteNames.staff);
                             },
                           ),
@@ -284,7 +284,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
           isDark,
           LucideIcons.repeat,
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             context.go(RouteNames.orgSelector);
           },
         ),
@@ -295,7 +295,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
           LucideIcons.bell,
           badge: 5,
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             context.push(RouteNames.notifications);
           },
         ),
@@ -305,7 +305,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
           isDark,
           LucideIcons.settings,
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             context.push(RouteNames.settings);
           },
         ),
@@ -321,7 +321,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
     VoidCallback? onTap,
   }) {
     return GestureDetector(
-      onTap: onTap ?? () => HapticFeedback.lightImpact(),
+      onTap: onTap ?? () => HapticUtils.lightImpact(),
       child: Container(
         width: 44,
         height: 44,
@@ -386,7 +386,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
                 color: AppColors.primary,
                 isDark: isDark,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   context.push('/members');
                 },
               ),
@@ -402,7 +402,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
                 color: AppColors.secondary,
                 isDark: isDark,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   context.push('/staff');
                 },
               ),
@@ -422,7 +422,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
                 color: AppColors.accent,
                 isDark: isDark,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   context.push('/checkin/history');
                 },
               ),
@@ -438,7 +438,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
                 color: AppColors.success,
                 isDark: isDark,
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   context.push('/gym-reports');
                 },
               ),
@@ -518,7 +518,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
         return Expanded(
           child: GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               switch (entry.key) {
                 case 0:
                   context.push(RouteNames.members);
@@ -772,7 +772,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
           final isLast = entry.key == checkins.length - 1;
           return GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               _showCheckinDetailsModal(context, isDark, name, initials, time, activity);
             },
             child: Container(
@@ -912,7 +912,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
           final rating = (trainer['rating'] as num?)?.toDouble() ?? 0.0;
           return GestureDetector(
             onTap: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               _showTrainerProfileModal(context, isDark, name, initials, specialty, students, rating);
             },
             child: Container(
@@ -1046,7 +1046,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
         final (title, description, icon, color, count) = alert;
         return GestureDetector(
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             _showAlertDetailsModal(context, isDark, title, description, icon, color, count);
           },
           child: Container(
@@ -1208,7 +1208,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                     },
                     icon: const Icon(LucideIcons.user, size: 18),
@@ -1225,7 +1225,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                     },
                     icon: const Icon(LucideIcons.logOut, size: 18),
@@ -1349,7 +1349,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                     },
                     icon: const Icon(LucideIcons.messageCircle, size: 18),
@@ -1366,7 +1366,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                       context.push(RouteNames.staff);
                     },
@@ -1464,7 +1464,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                     },
                     style: OutlinedButton.styleFrom(
@@ -1480,7 +1480,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
                 Expanded(
                   child: FilledButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticUtils.lightImpact();
                       Navigator.pop(ctx);
                       context.push(RouteNames.members);
                     },

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -101,7 +101,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
       .length;
 
   Future<void> _onRefresh() async {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     await ref.read(membersNotifierProvider(_orgId).notifier).loadMembers();
   }
 
@@ -120,7 +120,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          HapticFeedback.lightImpact();
+          HapticUtils.lightImpact();
           _showAddMemberSheet(context, isDark);
         },
         backgroundColor: AppColors.primary,
@@ -164,7 +164,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    HapticFeedback.lightImpact();
+                                    HapticUtils.lightImpact();
                                     context.pop();
                                   },
                                   child: Container(
@@ -200,7 +200,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    HapticFeedback.lightImpact();
+                                    HapticUtils.lightImpact();
                                     _showFilterSheet(context, isDark);
                                   },
                                   child: Container(
@@ -309,7 +309,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                               final isSelected = entry.key == _selectedFilter;
                               return GestureDetector(
                                 onTap: () {
-                                  HapticFeedback.lightImpact();
+                                  HapticUtils.lightImpact();
                                   setState(() => _selectedFilter = entry.key);
                                 },
                                 child: Container(
@@ -440,11 +440,11 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                                     member: member,
                                     isDark: isDark,
                                     onTap: () {
-                                      HapticFeedback.lightImpact();
+                                      HapticUtils.lightImpact();
                                       _showMemberDetail(context, isDark, member);
                                     },
                                     onMessage: () {
-                                      HapticFeedback.lightImpact();
+                                      HapticUtils.lightImpact();
                                       _showMessageSheet(context, isDark, member);
                                     },
                                   ),
@@ -577,7 +577,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
   }
 
   void _showAddMemberSheet(BuildContext context, bool isDark) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
@@ -732,7 +732,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                       isSelected: true,
                       isDark: isDark,
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         _showPlanConfirmationModal(
                           context: context,
                           isDark: isDark,
@@ -758,7 +758,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                       isSelected: false,
                       isDark: isDark,
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         _showPlanConfirmationModal(
                           context: context,
                           isDark: isDark,
@@ -785,7 +785,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                       isSelected: false,
                       isDark: isDark,
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         _showPlanConfirmationModal(
                           context: context,
                           isDark: isDark,
@@ -816,7 +816,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                       },
                       child: Container(
@@ -858,7 +858,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -905,7 +905,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
 
   void _showMemberDetail(
       BuildContext context, bool isDark, Map<String, dynamic> member) {
-    HapticFeedback.lightImpact();
+    HapticUtils.lightImpact();
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
@@ -1144,7 +1144,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(context);
                           _showMessageSheet(context, isDark, member);
                         },
@@ -1184,7 +1184,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(context);
                           _showEditMemberSheet(context, isDark, member);
                         },
@@ -1455,7 +1455,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
               // Clear filters button
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   setState(() {
                     _selectedFilter = 0;
                     _searchController.clear();
@@ -1683,7 +1683,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(context);
                       },
                       child: Container(
@@ -1725,7 +1725,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         if (messageController.text.trim().isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -1955,7 +1955,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                         isSelected: selectedPlan == 'Mensal',
                         isDark: isDark,
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           setModalState(() => selectedPlan = 'Mensal');
                         },
                       ),
@@ -1968,7 +1968,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                         isSelected: selectedPlan == 'Trimestral',
                         isDark: isDark,
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           setModalState(() => selectedPlan = 'Trimestral');
                         },
                       ),
@@ -1981,7 +1981,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                         isSelected: selectedPlan == 'Anual',
                         isDark: isDark,
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           setModalState(() => selectedPlan = 'Anual');
                         },
                       ),
@@ -1997,7 +1997,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(context);
                         },
                         child: Container(
@@ -2039,7 +2039,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           if (nameController.text.trim().isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -2302,7 +2302,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.lightImpact();
+                        HapticUtils.lightImpact();
                         Navigator.pop(modalContext);
                       },
                       child: Container(
@@ -2344,7 +2344,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        HapticFeedback.mediumImpact();
+                        HapticUtils.mediumImpact();
                         Navigator.pop(modalContext);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -2722,7 +2722,7 @@ class _FilterChip extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap();
       },
       child: Container(
@@ -2783,7 +2783,7 @@ class _QuickMessageChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        HapticFeedback.lightImpact();
+        HapticUtils.lightImpact();
         onTap();
       },
       child: Container(

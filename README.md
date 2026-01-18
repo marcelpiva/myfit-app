@@ -1,19 +1,31 @@
 # MyFit App
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](../CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](./CHANGELOG.md)
 [![Flutter](https://img.shields.io/badge/Flutter-3.10+-02569B.svg?logo=flutter)](https://flutter.dev)
+[![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20Android%20%7C%20Web-lightgrey.svg)](https://flutter.dev/multi-platform)
 
-Flutter mobile application for the MyFit platform.
+Aplicativo Flutter multiplataforma para a plataforma MyFit.
 
 ## Features
 
-- User authentication with biometrics
+- User authentication with biometrics (iOS/Android)
 - Workout plan management
 - Nutrition tracking
 - Progress photos and measurements
 - Real-time chat
-- Check-in via QR Code
+- Check-in via QR Code (iOS/Android)
 - Gamification system
+- **PWA Support** - Installable web app
+
+## Platforms
+
+| Platform | Status | Notes |
+|----------|--------|-------|
+| iOS | ✅ | Full features |
+| Android | ✅ | Full features |
+| Web (PWA) | ✅ | Some features unavailable* |
+
+*Web limitations: biometric auth, QR/barcode scanner, haptic feedback
 
 ## Tech Stack
 
@@ -30,7 +42,7 @@ Flutter mobile application for the MyFit platform.
 
 - Flutter SDK 3.10+
 - Dart 3.x
-- iOS 12+ / Android 5.0+
+- iOS 12+ / Android 5.0+ / Modern browsers (Chrome, Safari, Edge)
 
 ### Installation
 
@@ -77,6 +89,10 @@ flutter build appbundle --release
 
 # iOS
 flutter build ios --release
+
+# Web (PWA)
+flutter build web --release
+# Output: build/web/
 ```
 
 ## Testing

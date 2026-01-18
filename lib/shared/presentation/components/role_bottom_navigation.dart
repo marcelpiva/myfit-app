@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../core/utils/haptic_utils.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../config/theme/app_colors.dart';
@@ -46,7 +46,7 @@ class RoleBottomNavigation extends StatelessWidget {
                 isSelected: isSelected,
                 isDark: isDark,
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  HapticUtils.selectionClick();
                   context.go(destination.route);
                 },
               );

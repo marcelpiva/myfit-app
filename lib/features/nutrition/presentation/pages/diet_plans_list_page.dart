@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -91,7 +91,7 @@ class _DietPlansListPageState extends ConsumerState<DietPlansListPage>
 
   Future<void> _onRefresh() async {
     setState(() => _isRefreshing = true);
-    HapticFeedback.mediumImpact();
+    HapticUtils.mediumImpact();
 
     await ref.read(dietPlansProvider.notifier).loadPlans();
 
@@ -171,7 +171,7 @@ class _DietPlansListPageState extends ConsumerState<DietPlansListPage>
                                 children: [
                                   GestureDetector(
                                     onTap: () {
-                                      HapticFeedback.lightImpact();
+                                      HapticUtils.lightImpact();
                                       context.pop();
                                     },
                                     child: Container(
@@ -209,7 +209,7 @@ class _DietPlansListPageState extends ConsumerState<DietPlansListPage>
                               ),
                               GestureDetector(
                                 onTap: () {
-                                  HapticFeedback.lightImpact();
+                                  HapticUtils.lightImpact();
                                   // Navigate to create plan
                                 },
                                 child: Container(
@@ -298,7 +298,7 @@ class _DietPlansListPageState extends ConsumerState<DietPlansListPage>
                                   GestureDetector(
                                     onTap: () {
                                       _searchController.clear();
-                                      HapticFeedback.selectionClick();
+                                      HapticUtils.selectionClick();
                                     },
                                     child: Padding(
                                       padding: const EdgeInsets.all(12),
@@ -328,7 +328,7 @@ class _DietPlansListPageState extends ConsumerState<DietPlansListPage>
                                 final isSelected = entry.key == _selectedFilter;
                                 return GestureDetector(
                                   onTap: () {
-                                    HapticFeedback.selectionClick();
+                                    HapticUtils.selectionClick();
                                     setState(
                                         () => _selectedFilter = entry.key);
                                   },
@@ -454,19 +454,19 @@ class _DietPlansListPageState extends ConsumerState<DietPlansListPage>
                                               isDark: isDark,
                                               getTagColor: _getTagColor,
                                               onTap: () {
-                                                HapticFeedback.selectionClick();
+                                                HapticUtils.selectionClick();
                                                 _showPlanDetail(context, isDark, planMap);
                                               },
                                               onEdit: () {
-                                                HapticFeedback.lightImpact();
+                                                HapticUtils.lightImpact();
                                                 context.push('/nutrition/builder?planId=${plan.id}');
                                               },
                                               onDuplicate: () {
-                                                HapticFeedback.lightImpact();
+                                                HapticUtils.lightImpact();
                                                 _showDuplicateConfirmation(context, isDark, planMap);
                                               },
                                               onDelete: () {
-                                                HapticFeedback.lightImpact();
+                                                HapticUtils.lightImpact();
                                                 _showDeleteConfirmation(context, isDark, planMap);
                                               },
                                             ),
@@ -486,7 +486,7 @@ class _DietPlansListPageState extends ConsumerState<DietPlansListPage>
         delay: const Duration(milliseconds: 500),
         child: FloatingActionButton.extended(
           onPressed: () {
-            HapticFeedback.lightImpact();
+            HapticUtils.lightImpact();
             // Navigate to create new plan
           },
           backgroundColor: isDark ? AppColors.primaryDark : AppColors.primary,
@@ -677,7 +677,7 @@ class _DietPlansListPageState extends ConsumerState<DietPlansListPage>
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(context);
                           context.push('/nutrition/builder?planId=${plan['id']}');
                         },
@@ -710,7 +710,7 @@ class _DietPlansListPageState extends ConsumerState<DietPlansListPage>
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          HapticFeedback.lightImpact();
+                          HapticUtils.lightImpact();
                           Navigator.pop(context);
                           _showDuplicateConfirmation(context, isDark, plan);
                         },
@@ -758,7 +758,7 @@ class _DietPlansListPageState extends ConsumerState<DietPlansListPage>
                 // Assign to patient button
                 GestureDetector(
                   onTap: () {
-                    HapticFeedback.lightImpact();
+                    HapticUtils.lightImpact();
                     // Show patient selector
                   },
                   child: Container(
@@ -830,7 +830,7 @@ class _DietPlansListPageState extends ConsumerState<DietPlansListPage>
           ),
           TextButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(context);
               // Duplicate plan
               ScaffoldMessenger.of(context).showSnackBar(
@@ -888,7 +888,7 @@ class _DietPlansListPageState extends ConsumerState<DietPlansListPage>
           ),
           TextButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticUtils.lightImpact();
               Navigator.pop(context);
               // Delete plan
               ScaffoldMessenger.of(context).showSnackBar(
@@ -1477,7 +1477,7 @@ class _EmptyState extends StatelessWidget {
               const SizedBox(height: 24),
               GestureDetector(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticUtils.lightImpact();
                   // Navigate to create plan
                 },
                 child: Container(
