@@ -26,6 +26,12 @@ sealed class WizardExercise with _$WizardExercise {
     @Default('10-12') String reps,
     @Default(60) int restSeconds,
     @Default('') String notes,
+    // Advanced technique fields
+    @Default('') String executionInstructions,
+    int? isometricSeconds,
+    @Default(TechniqueType.normal) TechniqueType techniqueType,
+    String? exerciseGroupId,
+    @Default(0) int exerciseGroupOrder,
   }) = _WizardExercise;
 }
 
@@ -41,6 +47,65 @@ sealed class WizardWorkout with _$WizardWorkout {
     @Default(0) int order,
     int? dayOfWeek,
   }) = _WizardWorkout;
+}
+
+/// Diet type enum
+enum DietType {
+  cutting,
+  bulking,
+  maintenance,
+}
+
+extension DietTypeExtension on DietType {
+  String get displayName {
+    switch (this) {
+      case DietType.cutting:
+        return 'Cutting (Definicao)';
+      case DietType.bulking:
+        return 'Bulking (Massa)';
+      case DietType.maintenance:
+        return 'Manutencao';
+    }
+  }
+
+  String get description {
+    switch (this) {
+      case DietType.cutting:
+        return 'Deficit calorico para perda de gordura';
+      case DietType.bulking:
+        return 'Superavit calorico para ganho de massa';
+      case DietType.maintenance:
+        return 'Calorias para manter o peso atual';
+    }
+  }
+
+  String toApiValue() {
+    switch (this) {
+      case DietType.cutting:
+        return 'cutting';
+      case DietType.bulking:
+        return 'bulking';
+      case DietType.maintenance:
+        return 'maintenance';
+    }
+  }
+}
+
+/// Extension to parse DietType from string
+extension DietTypeParsing on String? {
+  DietType? toDietType() {
+    if (this == null) return null;
+    switch (this!.toLowerCase()) {
+      case 'cutting':
+        return DietType.cutting;
+      case 'bulking':
+        return DietType.bulking;
+      case 'maintenance':
+        return DietType.maintenance;
+      default:
+        return null;
+    }
+  }
 }
 
 /// Program wizard state
@@ -63,6 +128,15 @@ sealed class ProgramWizardState with _$ProgramWizardState {
     String? templateId,
     String? studentId,
     String? editingProgramId,
+    // Diet fields
+    @Default(false) bool includeDiet,
+    DietType? dietType,
+    int? dailyCalories,
+    int? proteinGrams,
+    int? carbsGrams,
+    int? fatGrams,
+    int? mealsPerDay,
+    String? dietNotes,
   }) = _ProgramWizardState;
 
   /// Check if we're in edit mode
@@ -74,21 +148,25 @@ sealed class ProgramWizardState with _$ProgramWizardState {
       case 0:
         return method != null;
       case 1:
-        return programName.isNotEmpty;
+        return programName.trim().length >= 3;
       case 2:
         return true; // Split is always selected with default
       case 3:
         return workouts.isNotEmpty &&
             workouts.every((w) => w.exercises.isNotEmpty);
       case 4:
+        return true; // Diet step is optional
+      case 5:
+        return true; // Student assignment is optional
+      case 6:
         return true; // Review step
       default:
         return false;
     }
   }
 
-  /// Total step count
-  int get totalSteps => 5;
+  /// Total step count (0-Method, 1-Info, 2-Split, 3-Workouts, 4-Diet, 5-Student, 6-Review)
+  int get totalSteps => 7;
 
   /// Check if we're on the last step
   bool get isLastStep => currentStep == totalSteps - 1;
@@ -162,6 +240,51 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
     state = state.copyWith(studentId: studentId);
   }
 
+  // Diet configuration methods
+  void setIncludeDiet(bool include) {
+    state = state.copyWith(includeDiet: include);
+    if (!include) {
+      // Reset diet fields when not including diet
+      state = state.copyWith(
+        dietType: null,
+        dailyCalories: null,
+        proteinGrams: null,
+        carbsGrams: null,
+        fatGrams: null,
+        mealsPerDay: null,
+        dietNotes: null,
+      );
+    }
+  }
+
+  void setDietType(DietType? type) {
+    state = state.copyWith(dietType: type);
+  }
+
+  void setDailyCalories(int? calories) {
+    state = state.copyWith(dailyCalories: calories);
+  }
+
+  void setProteinGrams(int? grams) {
+    state = state.copyWith(proteinGrams: grams);
+  }
+
+  void setCarbsGrams(int? grams) {
+    state = state.copyWith(carbsGrams: grams);
+  }
+
+  void setFatGrams(int? grams) {
+    state = state.copyWith(fatGrams: grams);
+  }
+
+  void setMealsPerDay(int? meals) {
+    state = state.copyWith(mealsPerDay: meals);
+  }
+
+  void setDietNotes(String? notes) {
+    state = state.copyWith(dietNotes: notes);
+  }
+
   /// Load data from a template to clone
   void loadFromTemplate(Map<String, dynamic> template) {
     try {
@@ -207,6 +330,12 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
             reps: (exMap['reps'] ?? '10-12').toString(),
             restSeconds: exMap['rest_seconds'] as int? ?? 60,
             notes: exMap['notes'] as String? ?? '',
+            // Advanced technique fields
+            executionInstructions: exMap['execution_instructions'] as String? ?? '',
+            isometricSeconds: exMap['isometric_seconds'] as int?,
+            techniqueType: (exMap['technique_type'] as String?)?.toTechniqueType() ?? TechniqueType.normal,
+            exerciseGroupId: exMap['exercise_group_id'] as String?,
+            exerciseGroupOrder: exMap['exercise_group_order'] as int? ?? 0,
           ));
         }
 
@@ -319,6 +448,16 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
       final isTemplate = program['is_template'] as bool? ?? false;
       final programWorkouts = (program['program_workouts'] as List<dynamic>?) ?? [];
 
+      // Parse diet data
+      final includeDiet = program['include_diet'] as bool? ?? false;
+      final dietTypeStr = program['diet_type'] as String?;
+      final dailyCalories = program['daily_calories'] as int?;
+      final proteinGrams = program['protein_grams'] as int?;
+      final carbsGrams = program['carbs_grams'] as int?;
+      final fatGrams = program['fat_grams'] as int?;
+      final mealsPerDay = program['meals_per_day'] as int?;
+      final dietNotes = program['diet_notes'] as String?;
+
       // Convert to wizard workouts
       final workouts = programWorkouts.map((pw) {
         final pwMap = pw as Map<String, dynamic>;
@@ -339,6 +478,12 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
             reps: exMap['reps'] as String? ?? '10-12',
             restSeconds: exMap['rest_seconds'] as int? ?? 60,
             notes: exMap['notes'] as String? ?? '',
+            // Advanced technique fields
+            executionInstructions: exMap['execution_instructions'] as String? ?? '',
+            isometricSeconds: exMap['isometric_seconds'] as int?,
+            techniqueType: (exMap['technique_type'] as String?)?.toTechniqueType() ?? TechniqueType.normal,
+            exerciseGroupId: exMap['exercise_group_id'] as String?,
+            exerciseGroupOrder: exMap['exercise_group_order'] as int? ?? 0,
           );
         }).toList();
 
@@ -363,6 +508,16 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
         durationWeeks: durationWeeks,
         isTemplate: isTemplate,
         workouts: workouts,
+        // Diet data
+        includeDiet: includeDiet,
+        dietType: dietTypeStr.toDietType(),
+        dailyCalories: dailyCalories,
+        proteinGrams: proteinGrams,
+        carbsGrams: carbsGrams,
+        fatGrams: fatGrams,
+        mealsPerDay: mealsPerDay,
+        dietNotes: dietNotes,
+        // Navigation
         method: CreationMethod.scratch,
         currentStep: 1, // Skip method selection in edit mode
         isLoading: false,
@@ -661,11 +816,72 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
     final workouts = state.workouts.map((w) {
       if (w.id == workoutId) {
         final exercises = List<WizardExercise>.from(w.exercises);
-        if (newIndex > oldIndex) {
-          newIndex -= 1;
+
+        // Check if the item being moved is part of a group
+        final movingItem = exercises[oldIndex];
+        final groupId = movingItem.exerciseGroupId;
+
+        if (groupId != null) {
+          // Find all exercises in the same group
+          final groupExercises = exercises
+              .where((e) => e.exerciseGroupId == groupId)
+              .toList()
+            ..sort((a, b) => a.exerciseGroupOrder.compareTo(b.exerciseGroupOrder));
+
+          // Find the indices of the group
+          final groupStartIndex = exercises.indexWhere((e) => e.exerciseGroupId == groupId);
+          final groupEndIndex = groupStartIndex + groupExercises.length - 1;
+
+          // If trying to move within the group, just reorder within group
+          if (oldIndex >= groupStartIndex && oldIndex <= groupEndIndex &&
+              newIndex >= groupStartIndex && newIndex <= groupEndIndex + 1) {
+            // Reorder within the group
+            var adjustedNewIndex = newIndex;
+            if (adjustedNewIndex > oldIndex) {
+              adjustedNewIndex -= 1;
+            }
+            final relativeOldIndex = oldIndex - groupStartIndex;
+            final relativeNewIndex = (adjustedNewIndex - groupStartIndex).clamp(0, groupExercises.length - 1);
+
+            // Update group order
+            final item = groupExercises.removeAt(relativeOldIndex);
+            groupExercises.insert(relativeNewIndex, item);
+
+            // Update exerciseGroupOrder for all items in group
+            for (var i = 0; i < groupExercises.length; i++) {
+              groupExercises[i] = groupExercises[i].copyWith(exerciseGroupOrder: i);
+            }
+
+            // Rebuild exercises list
+            final newExercises = <WizardExercise>[];
+            for (final e in exercises) {
+              if (e.exerciseGroupId == groupId) {
+                continue; // Skip group items, we'll add them later
+              }
+              if (newExercises.length == groupStartIndex) {
+                newExercises.addAll(groupExercises);
+              }
+              newExercises.add(e);
+            }
+            if (newExercises.length == groupStartIndex) {
+              newExercises.addAll(groupExercises);
+            }
+
+            return w.copyWith(exercises: newExercises);
+          } else {
+            // Moving group as a whole - not supported in current implementation
+            // Just do normal reorder for now (will move entire group when dragging leader)
+            // In the UI, groups are rendered as single items, so this handles that case
+          }
+        }
+
+        // Normal reorder for ungrouped exercises or whole groups
+        var adjustedNewIndex = newIndex;
+        if (adjustedNewIndex > oldIndex) {
+          adjustedNewIndex -= 1;
         }
         final item = exercises.removeAt(oldIndex);
-        exercises.insert(newIndex, item);
+        exercises.insert(adjustedNewIndex, item);
         return w.copyWith(exercises: exercises);
       }
       return w;
@@ -704,6 +920,189 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
       return w;
     }).toList();
     state = state.copyWith(workouts: workouts);
+  }
+
+  /// Add a technique-based exercise group to a workout.
+  /// This method creates multiple WizardExercise entries with a shared groupId,
+  /// properly configured for the selected technique.
+  void addTechniqueGroup({
+    required String workoutId,
+    required TechniqueType technique,
+    required List<Exercise> exercises,
+    int? dropCount,
+    int? restBetweenDrops,
+    int? pauseDuration,
+    int? miniSetCount,
+    String? executionInstructions,
+  }) {
+    // Generate unique group ID for multi-exercise techniques
+    final groupId = techniqueRequiresGrouping(technique)
+        ? 'group_${DateTime.now().millisecondsSinceEpoch}'
+        : null;
+
+    // Build execution instructions from technique config
+    String instructions = executionInstructions ?? '';
+    if (technique == TechniqueType.dropset && dropCount != null) {
+      final dropInfo = '$dropCount drops${restBetweenDrops != null && restBetweenDrops > 0 ? ', ${restBetweenDrops}s descanso' : ', sem descanso'}';
+      instructions = instructions.isEmpty ? dropInfo : '$instructions\n$dropInfo';
+    } else if (technique == TechniqueType.restPause && pauseDuration != null) {
+      final pauseInfo = 'Pausa de ${pauseDuration}s entre mini-falhas';
+      instructions = instructions.isEmpty ? pauseInfo : '$instructions\n$pauseInfo';
+    } else if (technique == TechniqueType.cluster && miniSetCount != null) {
+      final clusterInfo = '$miniSetCount mini-sets com ${pauseDuration ?? 10}s de pausa';
+      instructions = instructions.isEmpty ? clusterInfo : '$instructions\n$clusterInfo';
+    }
+
+    // Create WizardExercise entries
+    final wizardExercises = exercises.asMap().entries.map((entry) {
+      final index = entry.key;
+      final exercise = entry.value;
+      final timestamp = DateTime.now().millisecondsSinceEpoch + index;
+
+      return WizardExercise(
+        id: timestamp.toString(),
+        exerciseId: exercise.id,
+        name: exercise.name,
+        muscleGroup: exercise.muscleGroupName,
+        techniqueType: technique,
+        exerciseGroupId: groupId,
+        exerciseGroupOrder: index,
+        executionInstructions: instructions,
+        // For supersets/trisets, rest only after the last exercise
+        restSeconds: groupId != null && index < exercises.length - 1 ? 0 : 60,
+      );
+    }).toList();
+
+    // Add all exercises to the workout
+    final workouts = state.workouts.map((w) {
+      if (w.id == workoutId) {
+        return w.copyWith(
+          exercises: [...w.exercises, ...wizardExercises],
+        );
+      }
+      return w;
+    }).toList();
+
+    state = state.copyWith(workouts: workouts);
+  }
+
+  /// Add a single exercise with a technique (for drop set, rest-pause, cluster)
+  void addSingleTechniqueExercise({
+    required String workoutId,
+    required TechniqueType technique,
+    required Exercise exercise,
+    int? dropCount,
+    int? restBetweenDrops,
+    int? pauseDuration,
+    int? miniSetCount,
+    String? executionInstructions,
+  }) {
+    addTechniqueGroup(
+      workoutId: workoutId,
+      technique: technique,
+      exercises: [exercise],
+      dropCount: dropCount,
+      restBetweenDrops: restBetweenDrops,
+      pauseDuration: pauseDuration,
+      miniSetCount: miniSetCount,
+      executionInstructions: executionInstructions,
+    );
+  }
+
+  /// Create an exercise group for techniques like superset, triset, etc.
+  /// Returns the group ID if successful
+  String? createExerciseGroup({
+    required String workoutId,
+    required List<String> exerciseIds,
+    required TechniqueType techniqueType,
+  }) {
+    if (exerciseIds.length < 2) return null;
+
+    // Generate a unique group ID
+    final groupId = 'group_${DateTime.now().millisecondsSinceEpoch}';
+
+    final workouts = state.workouts.map((w) {
+      if (w.id == workoutId) {
+        int groupOrder = 0;
+        final exercises = w.exercises.map((e) {
+          if (exerciseIds.contains(e.id)) {
+            final updated = e.copyWith(
+              exerciseGroupId: groupId,
+              exerciseGroupOrder: groupOrder++,
+              techniqueType: techniqueType,
+            );
+            return updated;
+          }
+          return e;
+        }).toList();
+        return w.copyWith(exercises: exercises);
+      }
+      return w;
+    }).toList();
+
+    state = state.copyWith(workouts: workouts);
+    return groupId;
+  }
+
+  /// Remove an exercise from its group
+  void removeFromExerciseGroup(String workoutId, String exerciseId) {
+    final workouts = state.workouts.map((w) {
+      if (w.id == workoutId) {
+        final exercises = w.exercises.map((e) {
+          if (e.id == exerciseId) {
+            return e.copyWith(
+              exerciseGroupId: null,
+              exerciseGroupOrder: 0,
+              techniqueType: TechniqueType.normal,
+            );
+          }
+          return e;
+        }).toList();
+        return w.copyWith(exercises: exercises);
+      }
+      return w;
+    }).toList();
+    state = state.copyWith(workouts: workouts);
+  }
+
+  /// Disband an entire exercise group
+  void disbandExerciseGroup(String workoutId, String groupId) {
+    final workouts = state.workouts.map((w) {
+      if (w.id == workoutId) {
+        final exercises = w.exercises.map((e) {
+          if (e.exerciseGroupId == groupId) {
+            return e.copyWith(
+              exerciseGroupId: null,
+              exerciseGroupOrder: 0,
+              techniqueType: TechniqueType.normal,
+            );
+          }
+          return e;
+        }).toList();
+        return w.copyWith(exercises: exercises);
+      }
+      return w;
+    }).toList();
+    state = state.copyWith(workouts: workouts);
+  }
+
+  /// Get all exercises in a group within a workout
+  List<WizardExercise> getExercisesInGroup(String workoutId, String groupId) {
+    final workout = state.workouts.firstWhere(
+      (w) => w.id == workoutId,
+      orElse: () => const WizardWorkout(id: '', label: '', name: ''),
+    );
+    return workout.exercises
+        .where((e) => e.exerciseGroupId == groupId)
+        .toList()
+      ..sort((a, b) => a.exerciseGroupOrder.compareTo(b.exerciseGroupOrder));
+  }
+
+  /// Check if a technique type requires grouping
+  static bool techniqueRequiresGrouping(TechniqueType type) {
+    return type == TechniqueType.superset ||
+        type == TechniqueType.triset ||
+        type == TechniqueType.giantset;
   }
 
   // AI Integration
@@ -802,6 +1201,12 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
               'reps': e.reps,
               'rest_seconds': e.restSeconds,
               'notes': e.notes,
+              // Advanced technique fields
+              'execution_instructions': e.executionInstructions.isNotEmpty ? e.executionInstructions : null,
+              'isometric_seconds': e.isometricSeconds,
+              'technique_type': e.techniqueType.toApiValue(),
+              'exercise_group_id': e.exerciseGroupId,
+              'exercise_group_order': e.exerciseGroupOrder,
             };
           }).toList(),
         };
@@ -820,6 +1225,15 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
           splitType: state.splitType.toApiValue(),
           durationWeeks: state.durationWeeks,
           isTemplate: state.isTemplate,
+          // Diet fields
+          includeDiet: state.includeDiet,
+          dietType: state.dietType?.toApiValue(),
+          dailyCalories: state.dailyCalories,
+          proteinGrams: state.proteinGrams,
+          carbsGrams: state.carbsGrams,
+          fatGrams: state.fatGrams,
+          mealsPerDay: state.mealsPerDay,
+          dietNotes: state.dietNotes,
         );
         programId = state.editingProgramId;
       } else {
@@ -832,6 +1246,15 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
           durationWeeks: state.durationWeeks,
           isTemplate: state.isTemplate,
           workouts: workoutsData,
+          // Diet fields
+          includeDiet: state.includeDiet,
+          dietType: state.dietType?.toApiValue(),
+          dailyCalories: state.dailyCalories,
+          proteinGrams: state.proteinGrams,
+          carbsGrams: state.carbsGrams,
+          fatGrams: state.fatGrams,
+          mealsPerDay: state.mealsPerDay,
+          dietNotes: state.dietNotes,
         );
       }
 
