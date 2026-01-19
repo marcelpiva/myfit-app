@@ -211,6 +211,16 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
     }
   }
 
+  /// Cancel any loading operation and reset the loading state
+  void cancelLoading() {
+    state = state.copyWith(isLoading: false, error: null);
+  }
+
+  /// Restore workouts to a previous state (used for undo after cancellation)
+  void restoreWorkouts(List<WizardWorkout> previousWorkouts) {
+    state = state.copyWith(workouts: previousWorkouts, isLoading: false);
+  }
+
   // Step 1: Method selection
   void selectMethod(CreationMethod method) {
     state = state.copyWith(method: method);
@@ -1614,10 +1624,17 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
 
   // AI Integration
   /// Returns a map with 'success' (bool), 'message' (String), and 'count' (int)
-  Future<Map<String, dynamic>> suggestExercisesForWorkout(String workoutId) async {
+  Future<Map<String, dynamic>> suggestExercisesForWorkout(
+    String workoutId, {
+    List<String>? allowedTechniques,
+    List<String>? muscleGroups,
+  }) async {
     final workout = state.workouts.firstWhere((w) => w.id == workoutId);
 
-    if (workout.muscleGroups.isEmpty) {
+    // Use passed muscle groups or fallback to workout's muscle groups
+    final effectiveMuscleGroups = muscleGroups ?? workout.muscleGroups;
+
+    if (effectiveMuscleGroups.isEmpty) {
       return {
         'success': false,
         'message': 'Selecione pelo menos um grupo muscular antes de sugerir exercícios',
@@ -1634,9 +1651,13 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
       final existingIds = workout.exercises.map((e) => e.exerciseId).toList();
       final existingNames = workout.exercises.map((e) => e.name).toList();
 
+      // Determine if advanced techniques are allowed based on selection
+      final hasAdvancedTechniques = allowedTechniques != null &&
+          allowedTechniques.any((t) => t != 'normal');
+
       // Call the API to get suggestions with workout context
       final response = await workoutService.suggestExercises(
-        muscleGroups: workout.muscleGroups,
+        muscleGroups: effectiveMuscleGroups,
         goal: state.goal.toApiValue(),
         difficulty: state.difficulty.toApiValue(),
         count: 6,
@@ -1649,7 +1670,8 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
         planSplitType: state.splitType.toApiValue(),
         existingExercises: existingNames.isNotEmpty ? existingNames : null,
         existingExerciseCount: workout.exercises.length,
-        allowAdvancedTechniques: state.difficulty != PlanDifficulty.beginner,
+        allowAdvancedTechniques: hasAdvancedTechniques,
+        allowedTechniques: allowedTechniques,
       );
 
       final suggestions = (response['suggestions'] as List<dynamic>?) ?? [];

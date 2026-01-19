@@ -234,8 +234,8 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
                 child: Row(
                   children: [
                     Container(
-                      width: 36,
-                      height: 36,
+                      constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withAlpha(30),
                         borderRadius: BorderRadius.circular(8),
@@ -247,6 +247,8 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
                             fontWeight: FontWeight.bold,
                             color: AppColors.primary,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ),
@@ -622,6 +624,8 @@ class _WorkoutConfigCard extends ConsumerStatefulWidget {
 
 class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
   bool _isSuggestingAI = false;
+  bool _cancelRequested = false;
+  List<WizardWorkout>? _workoutsBeforeAI;
 
   // Getters for easy access to widget properties in methods
   WizardWorkout get workout => widget.workout;
@@ -659,8 +663,8 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
               child: Row(
                 children: [
                   Container(
-                    width: 40,
-                    height: 40,
+                    constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withAlpha(30),
                       borderRadius: BorderRadius.circular(8),
@@ -672,6 +676,8 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),
@@ -767,47 +773,44 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
               const SizedBox(width: 12),
               Expanded(
                 child: FilledButton.icon(
-                  onPressed: _isSuggestingAI
-                      ? null
-                      : () async {
-                          HapticUtils.mediumImpact();
-                          setState(() {
-                            _isSuggestingAI = true;
-                          });
+                  onPressed: () {
+                    if (_isSuggestingAI) {
+                      // Cancel the request and restore previous state
+                      HapticUtils.lightImpact();
+                      setState(() {
+                        _cancelRequested = true;
+                        _isSuggestingAI = false;
+                      });
+                      // Restore workouts to before AI suggestion
+                      if (_workoutsBeforeAI != null) {
+                        notifier.restoreWorkouts(_workoutsBeforeAI!);
+                        _workoutsBeforeAI = null;
+                      } else {
+                        notifier.cancelLoading();
+                      }
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Row(
+                            children: [
+                              Icon(LucideIcons.xCircle, color: Colors.white, size: 20),
+                              SizedBox(width: 12),
+                              Expanded(child: Text('Geração cancelada')),
+                            ],
+                          ),
+                          backgroundColor: AppColors.mutedForeground,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                      return;
+                    }
 
-                          final result = await notifier.suggestExercisesForWorkout(workout.id);
-
-                          if (!context.mounted) return;
-
-                          setState(() {
-                            _isSuggestingAI = false;
-                          });
-
-                          final success = result['success'] as bool? ?? false;
-                          final message = result['message'] as String? ?? '';
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Row(
-                                children: [
-                                  Icon(
-                                    success ? LucideIcons.checkCircle : LucideIcons.alertCircle,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(child: Text(message)),
-                                ],
-                              ),
-                              backgroundColor: success ? AppColors.success : AppColors.destructive,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              duration: Duration(seconds: success ? 2 : 4),
-                            ),
-                          );
-                        },
+                    HapticUtils.selectionClick();
+                    _showAITechniqueSelectionModal(context, ref, notifier);
+                  },
                   icon: _isSuggestingAI
                       ? const SizedBox(
                           width: 18,
@@ -818,16 +821,119 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
                           ),
                         )
                       : const Icon(LucideIcons.sparkles, size: 18),
-                  label: Text(_isSuggestingAI ? 'Gerando...' : 'Sugerir IA'),
+                  label: Text(_isSuggestingAI ? 'Cancelar' : 'Sugerir IA'),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    backgroundColor: _isSuggestingAI ? AppColors.secondary : null,
+                    backgroundColor: _isSuggestingAI ? AppColors.destructive.withAlpha(200) : null,
                   ),
                 ),
               ),
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  /// Show AI technique selection modal
+  void _showAITechniqueSelectionModal(
+    BuildContext context,
+    WidgetRef ref,
+    PlanWizardNotifier notifier,
+  ) {
+    final state = ref.read(planWizardProvider);
+    final difficulty = state.difficulty;
+
+    // Pre-select techniques based on difficulty level
+    final Set<TechniqueType> initialTechniques = {TechniqueType.normal};
+    if (difficulty == PlanDifficulty.intermediate) {
+      initialTechniques.addAll([TechniqueType.biset, TechniqueType.superset]);
+    } else if (difficulty == PlanDifficulty.advanced) {
+      initialTechniques.addAll([
+        TechniqueType.biset,
+        TechniqueType.superset,
+        TechniqueType.triset,
+        TechniqueType.dropset,
+        TechniqueType.restPause,
+      ]);
+    }
+
+    // Get muscle groups from the workout
+    final workoutMuscleGroups = workout.muscleGroups;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => _AITechniqueSelectionSheet(
+        initialTechniques: initialTechniques,
+        workoutMuscleGroups: workoutMuscleGroups,
+        difficulty: difficulty,
+        isDark: isDark,
+        theme: theme,
+        onConfirm: (selectedTechniques, selectedMuscleGroups) async {
+          Navigator.pop(ctx);
+
+          // Save current workouts state before AI suggestion
+          _workoutsBeforeAI = List.from(state.workouts);
+
+          setState(() {
+            _isSuggestingAI = true;
+            _cancelRequested = false;
+          });
+
+          HapticUtils.mediumImpact();
+
+          final result = await notifier.suggestExercisesForWorkout(
+            workout.id,
+            allowedTechniques: selectedTechniques.map((t) => t.toApiValue()).toList(),
+            muscleGroups: selectedMuscleGroups,
+          );
+
+          if (!context.mounted) return;
+
+          // Check if cancelled while waiting
+          if (_cancelRequested) {
+            setState(() {
+              _cancelRequested = false;
+            });
+            _workoutsBeforeAI = null;
+            return;
+          }
+
+          setState(() {
+            _isSuggestingAI = false;
+          });
+          _workoutsBeforeAI = null;
+
+          final success = result['success'] as bool? ?? false;
+          final message = result['message'] as String? ?? '';
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(
+                    success ? LucideIcons.checkCircle : LucideIcons.alertCircle,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(child: Text(message)),
+                ],
+              ),
+              backgroundColor: success ? AppColors.success : AppColors.destructive,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              duration: Duration(seconds: success ? 2 : 4),
+            ),
+          );
+        },
       ),
     );
   }
@@ -1337,7 +1443,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
         children: [
           // Group header
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: techniqueColor.withValues(alpha: 0.15),
               borderRadius: const BorderRadius.only(
@@ -1367,18 +1473,18 @@ class _ExerciseGroupCard extends ConsumerWidget {
                   behavior: HitTestBehavior.opaque,
                   onTap: () => _showAddExerciseToGroup(context, ref, techniqueColor),
                   child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Icon(LucideIcons.plus, size: 20, color: techniqueColor),
+                    padding: const EdgeInsets.all(6),
+                    child: Icon(LucideIcons.plus, size: 16, color: techniqueColor),
                   ),
                 ),
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () => _showEditGroupInstructions(context, ref, groupInstructions),
                   child: Padding(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(6),
                     child: Icon(
                       LucideIcons.fileText,
-                      size: 20,
+                      size: 16,
                       color: groupInstructions.isNotEmpty
                           ? techniqueColor
                           : theme.colorScheme.onSurface.withValues(alpha: 0.4),
@@ -1424,10 +1530,10 @@ class _ExerciseGroupCard extends ConsumerWidget {
                     );
                   },
                   child: Padding(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(6),
                     child: Icon(
                       LucideIcons.unlink,
-                      size: 20,
+                      size: 16,
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
@@ -1436,10 +1542,10 @@ class _ExerciseGroupCard extends ConsumerWidget {
                   behavior: HitTestBehavior.opaque,
                   onTap: () => _showDeleteGroupConfirmation(context, ref, techniqueType),
                   child: Padding(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(6),
                     child: Icon(
                       LucideIcons.trash2,
-                      size: 20,
+                      size: 16,
                       color: Colors.red.withValues(alpha: 0.6),
                     ),
                   ),
@@ -1555,6 +1661,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
               const SizedBox(height: 16),
               TextField(
                 controller: controller,
+                autofocus: true,
                 maxLines: 4,
                 decoration: InputDecoration(
                   hintText: 'Ex: Execute sem descanso entre os exercícios...',
@@ -2364,8 +2471,31 @@ class _GroupedExerciseItem extends ConsumerWidget {
                 color: Colors.red.withValues(alpha: 0.6),
               ),
               onPressed: () {
-                HapticUtils.lightImpact();
-                notifier.removeExerciseFromWorkout(workoutId, exercise.id);
+                HapticUtils.selectionClick();
+                showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Remover Exercício'),
+                    content: Text('Deseja remover "${exercise.name}" do treino?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text('Cancelar'),
+                      ),
+                      FilledButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          HapticUtils.lightImpact();
+                          notifier.removeExerciseFromWorkout(workoutId, exercise.id);
+                        },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        child: const Text('Remover'),
+                      ),
+                    ],
+                  ),
+                );
               },
               visualDensity: VisualDensity.compact,
             ),
@@ -3641,7 +3771,7 @@ class _ExerciseItem extends ConsumerWidget {
           children: [
             // Header for all exercises
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: hasTechnique
                     ? techniqueColor.withValues(alpha: 0.15)
@@ -3675,24 +3805,26 @@ class _ExerciseItem extends ConsumerWidget {
                   const Spacer(),
                   // Link button (only for simple exercises - no technique and no group)
                   if (exercise.exerciseGroupId == null && !hasTechnique)
-                    IconButton(
-                      onPressed: () {
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
                         HapticUtils.selectionClick();
                         _showTechniqueSelectionDialog(context, ref);
                       },
-                      icon: Icon(
-                        LucideIcons.link2,
-                        size: 20,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(
+                          LucideIcons.link2,
+                          size: 16,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        ),
                       ),
-                      padding: const EdgeInsets.all(8),
-                      constraints: const BoxConstraints(),
-                      splashRadius: 20,
                     ),
                   // Unlink button (only for technique exercises)
                   if (hasTechnique)
-                    IconButton(
-                      onPressed: () {
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
                         HapticUtils.selectionClick();
                         showDialog(
                           context: context,
@@ -3719,67 +3851,87 @@ class _ExerciseItem extends ConsumerWidget {
                           ),
                         );
                       },
-                      icon: Icon(
-                        LucideIcons.unlink,
-                        size: 20,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(
+                          LucideIcons.unlink,
+                          size: 16,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        ),
                       ),
-                      padding: const EdgeInsets.all(8),
-                      constraints: const BoxConstraints(),
-                      splashRadius: 20,
                     ),
                   // Info button - show exercise details
-                  IconButton(
-                    onPressed: () {
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
                       HapticUtils.selectionClick();
                       _showExerciseDetails(context, exercise.exerciseId);
                     },
-                    icon: Icon(
-                      LucideIcons.info,
-                      size: 20,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Icon(
+                        LucideIcons.info,
+                        size: 16,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                      ),
                     ),
-                    padding: const EdgeInsets.all(8),
-                    constraints: const BoxConstraints(),
-                    splashRadius: 20,
                   ),
                   // Instructions button - edit execution instructions
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        HapticUtils.selectionClick();
-                        _showInstructionsDialog(context, ref);
-                      },
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        alignment: Alignment.center,
-                        child: Icon(
-                          LucideIcons.fileText,
-                          size: 20,
-                          color: exercise.executionInstructions.isNotEmpty
-                              ? (hasTechnique ? techniqueColor : AppColors.primary)
-                              : theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                        ),
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      HapticUtils.selectionClick();
+                      _showInstructionsDialog(context, ref);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Icon(
+                        LucideIcons.fileText,
+                        size: 16,
+                        color: exercise.executionInstructions.isNotEmpty
+                            ? (hasTechnique ? techniqueColor : AppColors.primary)
+                            : theme.colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                     ),
                   ),
                   // Delete button (for all exercises)
-                  IconButton(
-                    onPressed: () {
-                      HapticUtils.lightImpact();
-                      notifier.removeExerciseFromWorkout(workoutId, exercise.id);
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      HapticUtils.selectionClick();
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('Remover Exercício'),
+                          content: Text('Deseja remover "${exercise.name}" do treino?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text('Cancelar'),
+                            ),
+                            FilledButton(
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                HapticUtils.lightImpact();
+                                notifier.removeExerciseFromWorkout(workoutId, exercise.id);
+                              },
+                              style: FilledButton.styleFrom(
+                                backgroundColor: Colors.red,
+                              ),
+                              child: const Text('Remover'),
+                            ),
+                          ],
+                        ),
+                      );
                     },
-                    icon: Icon(
-                      LucideIcons.trash2,
-                      size: 20,
-                      color: Colors.red.withValues(alpha: 0.6),
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Icon(
+                        LucideIcons.trash2,
+                        size: 16,
+                        color: Colors.red.withValues(alpha: 0.6),
+                      ),
                     ),
-                    padding: const EdgeInsets.all(8),
-                    constraints: const BoxConstraints(),
-                    splashRadius: 20,
                   ),
                 ],
               ),
@@ -5104,6 +5256,415 @@ class _AddToGroupExercisePickerState extends ConsumerState<_AddToGroupExercisePi
             ),
         ],
       ),
+    );
+  }
+}
+
+/// Sheet for selecting which techniques and muscle groups AI should consider
+class _AITechniqueSelectionSheet extends StatefulWidget {
+  final Set<TechniqueType> initialTechniques;
+  final List<String> workoutMuscleGroups;
+  final PlanDifficulty difficulty;
+  final bool isDark;
+  final ThemeData theme;
+  final void Function(Set<TechniqueType> selectedTechniques, List<String> selectedMuscleGroups) onConfirm;
+
+  const _AITechniqueSelectionSheet({
+    required this.initialTechniques,
+    required this.workoutMuscleGroups,
+    required this.difficulty,
+    required this.isDark,
+    required this.theme,
+    required this.onConfirm,
+  });
+
+  @override
+  State<_AITechniqueSelectionSheet> createState() => _AITechniqueSelectionSheetState();
+}
+
+class _AITechniqueSelectionSheetState extends State<_AITechniqueSelectionSheet> {
+  late Set<TechniqueType> _selectedTechniques;
+  late Set<String> _selectedMuscleGroups;
+
+  // Group techniques by category
+  static const _simpleCategory = [TechniqueType.normal];
+  static const _multiExerciseCategory = [
+    TechniqueType.biset,
+    TechniqueType.superset,
+    TechniqueType.triset,
+    TechniqueType.giantset,
+  ];
+  static const _singleExerciseCategory = [
+    TechniqueType.dropset,
+    TechniqueType.restPause,
+    TechniqueType.cluster,
+  ];
+
+  bool get _hasMuscleGroupsFromWorkout => widget.workoutMuscleGroups.isNotEmpty;
+  bool get _canConfirm => _selectedTechniques.isNotEmpty && _selectedMuscleGroups.isNotEmpty;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedTechniques = Set.from(widget.initialTechniques);
+    // Pre-select muscle groups from the workout, or empty if none
+    _selectedMuscleGroups = Set.from(widget.workoutMuscleGroups);
+  }
+
+  String _getDifficultyLabel() {
+    switch (widget.difficulty) {
+      case PlanDifficulty.beginner:
+        return 'Iniciante';
+      case PlanDifficulty.intermediate:
+        return 'Intermediário';
+      case PlanDifficulty.advanced:
+        return 'Avançado';
+    }
+  }
+
+  String _getDifficultyHint() {
+    switch (widget.difficulty) {
+      case PlanDifficulty.beginner:
+        return 'Recomendamos apenas exercícios simples';
+      case PlanDifficulty.intermediate:
+        return 'Recomendamos Bi-Set e Superset';
+      case PlanDifficulty.advanced:
+        return 'Todas as técnicas são recomendadas';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 8,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+
+              // Header
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          AppColors.primary,
+                          AppColors.primary.withAlpha(180),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(LucideIcons.sparkles, color: Colors.white, size: 22),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Configurar Sugestão IA',
+                          style: widget.theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Icon(
+                              LucideIcons.user,
+                              size: 12,
+                              color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Nível: ${_getDifficultyLabel()}',
+                              style: widget.theme.textTheme.bodySmall?.copyWith(
+                                color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(LucideIcons.x),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 8),
+
+              // Hint based on difficulty
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withAlpha(20),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(LucideIcons.lightbulb, size: 16, color: AppColors.primary),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _getDifficultyHint(),
+                        style: widget.theme.textTheme.bodySmall?.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Muscle Groups Section
+              _buildMuscleGroupsSection(),
+
+              const SizedBox(height: 20),
+
+              // Simple exercises
+              _buildCategorySection(
+                'Exercícios Simples',
+                'Execução tradicional',
+                _simpleCategory,
+                LucideIcons.dumbbell,
+              ),
+
+              const SizedBox(height: 16),
+
+              // Multi-exercise techniques
+              _buildCategorySection(
+                'Técnicas com Múltiplos Exercícios',
+                'Combinam 2 ou mais exercícios',
+                _multiExerciseCategory,
+                LucideIcons.link,
+              ),
+
+              const SizedBox(height: 16),
+
+              // Single-exercise techniques
+              _buildCategorySection(
+                'Técnicas de Intensidade',
+                'Aplicadas a um único exercício',
+                _singleExerciseCategory,
+                LucideIcons.zap,
+              ),
+
+              const SizedBox(height: 24),
+
+              // Confirm button
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _canConfirm
+                      ? () => widget.onConfirm(_selectedTechniques, _selectedMuscleGroups.toList())
+                      : null,
+                  icon: const Icon(LucideIcons.sparkles, size: 18),
+                  label: Text(_selectedMuscleGroups.isEmpty
+                      ? 'Selecione ao menos 1 grupo muscular'
+                      : 'Gerar Exercícios'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMuscleGroupsSection() {
+    final showAllGroups = !_hasMuscleGroupsFromWorkout;
+    final groups = showAllGroups
+        ? MuscleGroup.values
+        : widget.workoutMuscleGroups.map((g) => g.toMuscleGroup()).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              LucideIcons.target,
+              size: 16,
+              color: _selectedMuscleGroups.isEmpty
+                  ? AppColors.destructive
+                  : widget.theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Grupos Musculares',
+              style: widget.theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: _selectedMuscleGroups.isEmpty ? AppColors.destructive : null,
+              ),
+            ),
+            if (_selectedMuscleGroups.isEmpty) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.destructive.withAlpha(20),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'Obrigatório',
+                  style: widget.theme.textTheme.labelSmall?.copyWith(
+                    color: AppColors.destructive,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 2),
+        Text(
+          showAllGroups
+              ? 'Selecione os grupos para sugerir exercícios'
+              : 'Grupos do treino (desmarque se necessário)',
+          style: widget.theme.textTheme.bodySmall?.copyWith(
+            color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.5),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: groups.map((group) {
+            final isSelected = _selectedMuscleGroups.contains(group.name);
+
+            return FilterChip(
+              label: Text(group.displayName),
+              selected: isSelected,
+              onSelected: (selected) {
+                HapticUtils.selectionClick();
+                setState(() {
+                  if (selected) {
+                    _selectedMuscleGroups.add(group.name);
+                  } else {
+                    // Always allow at least deselecting (validation happens on confirm)
+                    _selectedMuscleGroups.remove(group.name);
+                  }
+                });
+              },
+              selectedColor: AppColors.secondary.withAlpha(40),
+              checkmarkColor: AppColors.secondary,
+              labelStyle: TextStyle(
+                color: isSelected
+                    ? AppColors.secondary
+                    : widget.theme.colorScheme.onSurface,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategorySection(
+    String title,
+    String subtitle,
+    List<TechniqueType> techniques,
+    IconData icon,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.7)),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: widget.theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Text(
+          subtitle,
+          style: widget.theme.textTheme.bodySmall?.copyWith(
+            color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.5),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: techniques.map((technique) {
+            final isSelected = _selectedTechniques.contains(technique);
+            final techniqueColor = ExerciseTheme.getColor(technique);
+
+            return FilterChip(
+              label: Text(technique.displayName),
+              selected: isSelected,
+              onSelected: (selected) {
+                HapticUtils.selectionClick();
+                setState(() {
+                  if (selected) {
+                    _selectedTechniques.add(technique);
+                  } else {
+                    // Don't allow deselecting all techniques
+                    if (_selectedTechniques.length > 1) {
+                      _selectedTechniques.remove(technique);
+                    }
+                  }
+                });
+              },
+              selectedColor: techniqueColor.withAlpha(40),
+              checkmarkColor: techniqueColor,
+              avatar: isSelected
+                  ? null
+                  : Icon(
+                      ExerciseTheme.getIcon(technique),
+                      size: 16,
+                      color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+              labelStyle: TextStyle(
+                color: isSelected
+                    ? techniqueColor
+                    : widget.theme.colorScheme.onSurface,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }

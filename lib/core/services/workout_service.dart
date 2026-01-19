@@ -894,6 +894,7 @@ class WorkoutService {
     List<String>? existingExercises,
     int existingExerciseCount = 0,
     bool allowAdvancedTechniques = true,
+    List<String>? allowedTechniques,
   }) async {
     try {
       final data = <String, dynamic>{
@@ -905,6 +906,9 @@ class WorkoutService {
       };
       if (excludeExerciseIds != null && excludeExerciseIds.isNotEmpty) {
         data['exclude_exercise_ids'] = excludeExerciseIds;
+      }
+      if (allowedTechniques != null && allowedTechniques.isNotEmpty) {
+        data['allowed_techniques'] = allowedTechniques;
       }
 
       // Build context if any context parameter is provided
