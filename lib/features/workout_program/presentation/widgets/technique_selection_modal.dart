@@ -141,8 +141,8 @@ class _TechniqueSelectionModalState extends State<TechniqueSelectionModal> {
     // Group techniques: Multi-exercise vs Single-exercise
     // Filter out Super-Set if no antagonist pairs are available
     final multiExerciseTechniques = [
-      TechniqueType.biset,    // 2 exercises, same area
       if (hasAntagonists) TechniqueType.superset, // 2 exercises, opposite groups
+      TechniqueType.biset,    // 2 exercises, same area
       TechniqueType.triset,   // 3 exercises
       TechniqueType.giantset, // 4+ exercises
     ];

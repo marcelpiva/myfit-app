@@ -70,19 +70,28 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
 
   String get _displayName => widget.technique.displayName;
 
-  /// Check if a muscle group would create antagonist pairing with current selection
-  /// Blocked for Bi-Set, Tri-Set, and Giant Set (only Super-Set allows antagonists)
+  /// Check if a muscle group is blocked based on technique type
+  /// - Super-Set: blocks SAME group, only allows antagonist
+  /// - Bi-Set/Tri-Set/Giant Set: blocks ANTAGONIST groups, only allows same area
   bool _isBlockedMuscleGroup(MuscleGroup group) {
-    // Only Super-Set allows antagonist muscles
-    // Bi-Set, Tri-Set, and Giant Set require same area muscles
-    if (widget.technique == TechniqueType.superset) {
-      return false; // Super-Set allows all combinations
-    }
-
     // If no exercises selected yet, nothing is blocked
     if (_selectedExercises.isEmpty) return false;
 
-    // Check if this group is antagonist to any already selected exercise
+    final firstSelected = _selectedExercises.first;
+
+    if (widget.technique == TechniqueType.superset) {
+      // Super-Set: ONLY allow antagonist muscle group
+      // Block everything that is NOT the antagonist
+      final antagonist = firstSelected.muscleGroup.antagonist;
+      if (antagonist == null) {
+        // First exercise has no antagonist, block all others
+        return true;
+      }
+      // Only allow the antagonist group
+      return group != antagonist;
+    }
+
+    // Bi-Set, Tri-Set, Giant Set: block antagonist muscles, allow same area
     for (final selected in _selectedExercises) {
       if (MuscleGroupTechniqueDetector.isSuperSet(selected.muscleGroup, group)) {
         return true;
@@ -96,6 +105,15 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
     if (_selectedExercises.isEmpty) return {};
 
     final blocked = <MuscleGroup>{};
+    final firstSelected = _selectedExercises.first;
+
+    if (widget.technique == TechniqueType.superset) {
+      // For Super-Set: show which groups are allowed (the antagonist)
+      // We don't show blocked, we show what's required
+      return {};
+    }
+
+    // For Bi-Set/Tri-Set/Giant Set: show blocked antagonist groups
     for (final selected in _selectedExercises) {
       final antagonist = selected.muscleGroup.antagonist;
       if (antagonist != null) {
@@ -103,6 +121,13 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
       }
     }
     return blocked;
+  }
+
+  /// Get the required muscle group for Super-Set (the antagonist)
+  MuscleGroup? get _requiredMuscleGroupForSuperset {
+    if (widget.technique != TechniqueType.superset) return null;
+    if (_selectedExercises.isEmpty) return null;
+    return _selectedExercises.first.muscleGroup.antagonist;
   }
 
   String get _selectionHint {
@@ -469,11 +494,12 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
                         if (isBlocked) {
                           // Show validation message for blocked muscle group
                           HapticUtils.vibrate();
+                          final message = widget.technique == TechniqueType.superset
+                              ? 'Para Super-Set, selecione um exercicio de ${_requiredMuscleGroupForSuperset?.displayName ?? "grupo oposto"}.'
+                              : '${exercise.muscleGroup.displayName} e grupo antagonico.\nUse Super-Set para combinar grupos opostos.';
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(
-                                '${exercise.muscleGroup.displayName} e grupo antagonico.\nUse Super-Set para combinar grupos opostos.',
-                              ),
+                              content: Text(message),
                               backgroundColor: Colors.orange,
                               behavior: SnackBarBehavior.floating,
                               duration: const Duration(seconds: 3),
@@ -497,7 +523,40 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
             ),
           ),
 
-          // Info banner when muscle groups are blocked
+          // Info banner for Super-Set (required muscle group)
+          if (_requiredMuscleGroupForSuperset != null)
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Colors.green.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    LucideIcons.arrowRightLeft,
+                    color: Colors.green,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Selecione um exercicio de ${_requiredMuscleGroupForSuperset!.displayName}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.green.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          // Info banner when muscle groups are blocked (Bi-Set/Tri-Set/Giant Set)
           if (_blockedMuscleGroups.isNotEmpty)
             Container(
               margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),

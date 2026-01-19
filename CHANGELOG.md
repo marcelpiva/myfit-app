@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-01-19
+
+### Added
+- **Muscle Group Validation for Techniques**
+  - Super-Set now requires antagonist muscle groups (blocks same group)
+  - Bi-Set/Tri-Set/Giant Set block antagonist muscles (only allow same area)
+  - Visual indicators for blocked exercises (orange border, ban icon, 50% opacity)
+  - Info banner shows required muscle group for Super-Set
+  - Info banner shows blocked antagonist groups for Bi-Set/Tri-Set/Giant Set
+  - Validation snackbars when tapping blocked exercises
+
+### Changed
+- Reordered technique selection menu: Superset → Biset → Triset → Giantset
+- Super-Set option only appears when workout has antagonist muscle pairs
+
 ## [1.2.0] - 2026-01-18
 
 ### Added
