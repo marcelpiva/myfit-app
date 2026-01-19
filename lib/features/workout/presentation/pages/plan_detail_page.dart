@@ -7,18 +7,18 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
 import '../providers/workout_provider.dart';
-import '../widgets/assign_program_sheet.dart';
+import '../widgets/assign_plan_sheet.dart';
 
-class ProgramDetailPage extends ConsumerStatefulWidget {
-  final String programId;
+class PlanDetailPage extends ConsumerStatefulWidget {
+  final String planId;
 
-  const ProgramDetailPage({super.key, required this.programId});
+  const PlanDetailPage({super.key, required this.planId});
 
   @override
-  ConsumerState<ProgramDetailPage> createState() => _ProgramDetailPageState();
+  ConsumerState<PlanDetailPage> createState() => _PlanDetailPageState();
 }
 
-class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
+class _PlanDetailPageState extends ConsumerState<PlanDetailPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
@@ -46,10 +46,10 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final detailState = ref.watch(programDetailNotifierProvider(widget.programId));
-    final program = detailState.program;
+    final detailState = ref.watch(planDetailNotifierProvider(widget.planId));
+    final plan = detailState.plan;
 
-    final workouts = (program?['program_workouts'] as List<dynamic>?) ?? [];
+    final workouts = (plan?['plan_workouts'] as List<dynamic>?) ?? [];
     final hasWorkouts = workouts.isNotEmpty;
 
     return Scaffold(
@@ -71,15 +71,15 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
                 ? const Center(child: CircularProgressIndicator())
                 : detailState.error != null
                     ? _buildError(theme, detailState.error!)
-                    : program == null
+                    : plan == null
                         ? _buildNotFound(theme)
-                        : _buildContent(context, theme, isDark, program),
+                        : _buildContent(context, theme, isDark, plan),
           ),
         ),
       ),
-      floatingActionButton: hasWorkouts && !detailState.isLoading && program != null
+      floatingActionButton: hasWorkouts && !detailState.isLoading && plan != null
           ? FloatingActionButton.extended(
-              onPressed: () => _showStartWorkoutSheet(context, program),
+              onPressed: () => _showStartWorkoutSheet(context, plan),
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               icon: const Icon(LucideIcons.play, size: 20),
@@ -110,7 +110,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () => ref
-                  .read(programDetailNotifierProvider(widget.programId).notifier)
+                  .read(planDetailNotifierProvider(widget.planId).notifier)
                   .refresh(),
               icon: const Icon(LucideIcons.refreshCw, size: 18),
               label: const Text('Tentar novamente'),
@@ -154,15 +154,15 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
     BuildContext context,
     ThemeData theme,
     bool isDark,
-    Map<String, dynamic> program,
+    Map<String, dynamic> plan,
   ) {
-    final name = program['name'] as String? ?? 'Plano';
-    final goal = program['goal'] as String? ?? '';
-    final difficulty = program['difficulty'] as String? ?? '';
-    final splitType = program['split_type'] as String? ?? '';
-    final description = program['description'] as String?;
-    final durationWeeks = program['duration_weeks'] as int?;
-    final workouts = (program['program_workouts'] as List<dynamic>?) ?? [];
+    final name = plan['name'] as String? ?? 'Plano';
+    final goal = plan['goal'] as String? ?? '';
+    final difficulty = plan['difficulty'] as String? ?? '';
+    final splitType = plan['split_type'] as String? ?? '';
+    final description = plan['description'] as String?;
+    final durationWeeks = plan['duration_weeks'] as int?;
+    final workouts = (plan['plan_workouts'] as List<dynamic>?) ?? [];
 
     return Column(
       children: [
@@ -318,7 +318,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
 
           const SizedBox(height: 24),
 
-          // Program icon
+          // Plan icon
           Container(
             width: 48,
             height: 48,
@@ -507,10 +507,10 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
     BuildContext context,
     ThemeData theme,
     bool isDark,
-    Map<String, dynamic> programWorkout,
+    Map<String, dynamic> planWorkout,
   ) {
-    final label = programWorkout['label'] as String? ?? '';
-    final workout = programWorkout['workout'] as Map<String, dynamic>?;
+    final label = planWorkout['label'] as String? ?? '';
+    final workout = planWorkout['workout'] as Map<String, dynamic>?;
     final workoutName = workout?['name'] as String? ?? 'Treino $label';
     final exercises = (workout?['exercises'] as List<dynamic>?) ?? [];
     final estimatedDuration = workout?['estimated_duration_min'] as int? ?? 0;
@@ -698,7 +698,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
               'Editar Plano',
               () {
                 Navigator.pop(context);
-                context.push('/programs/wizard?edit=${widget.programId}');
+                context.push('/plans/wizard?edit=${widget.planId}');
               },
             ),
             _buildMenuItem(
@@ -707,7 +707,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
               'Duplicar Plano',
               () {
                 Navigator.pop(context);
-                _duplicateProgram();
+                _duplicatePlan();
               },
             ),
             _buildMenuItem(
@@ -760,9 +760,9 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
     );
   }
 
-  Future<void> _duplicateProgram() async {
+  Future<void> _duplicatePlan() async {
     try {
-      await ref.read(programsNotifierProvider.notifier).duplicateProgram(widget.programId);
+      await ref.read(plansNotifierProvider.notifier).duplicatePlan(widget.planId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -790,24 +790,24 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
   }
 
   void _showAssignSheet() {
-    final detailState = ref.read(programDetailNotifierProvider(widget.programId));
-    final programName = detailState.program?['name'] as String? ?? 'Plano';
+    final detailState = ref.read(planDetailNotifierProvider(widget.planId));
+    final planName = detailState.plan?['name'] as String? ?? 'Plano';
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => AssignProgramSheet(
-        programId: widget.programId,
-        programName: programName,
+      builder: (context) => AssignPlanSheet(
+        planId: widget.planId,
+        planName: planName,
       ),
     );
   }
 
-  void _showStartWorkoutSheet(BuildContext context, Map<String, dynamic> program) {
+  void _showStartWorkoutSheet(BuildContext context, Map<String, dynamic> plan) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final workouts = (program['program_workouts'] as List<dynamic>?) ?? [];
+    final workouts = (plan['plan_workouts'] as List<dynamic>?) ?? [];
 
     showModalBottomSheet(
       context: context,
@@ -940,7 +940,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              _deleteProgram();
+              _deletePlan();
             },
             style: TextButton.styleFrom(
               foregroundColor: theme.colorScheme.error,
@@ -952,9 +952,9 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
     );
   }
 
-  Future<void> _deleteProgram() async {
+  Future<void> _deletePlan() async {
     try {
-      await ref.read(programsNotifierProvider.notifier).deleteProgram(widget.programId);
+      await ref.read(plansNotifierProvider.notifier).deletePlan(widget.planId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -233,7 +233,7 @@ void main() {
         expect(remainingExercise.techniqueType, TechniqueType.normal);
       });
 
-      test('should update technique type when triset becomes superset', () {
+      test('should update technique type when triset becomes biset', () {
         // Arrange
         final triset = ExerciseGroupFixtures.triset(groupId: 'group-1');
         setupWorkoutWithExercises(triset);
@@ -241,12 +241,12 @@ void main() {
         // Act
         notifier.removeFromExerciseGroup('workout-1', triset[0].id);
 
-        // Assert - remaining 2 exercises should now be superset
+        // Assert - remaining 2 exercises should now be biset (default for 2 exercises when coming from triset)
         final exercises = getExercises();
         final remainingGroupExercises = exercises.where((e) => e.exerciseGroupId == 'group-1').toList();
 
         expect(remainingGroupExercises.length, 2);
-        expect(remainingGroupExercises.every((e) => e.techniqueType == TechniqueType.superset), isTrue);
+        expect(remainingGroupExercises.every((e) => e.techniqueType == TechniqueType.biset), isTrue);
       });
 
       test('should update technique type when giantset becomes triset', () {
@@ -547,7 +547,7 @@ void main() {
         expect(groupExercises[2].restSeconds, greaterThan(0));
       });
 
-      test('should inherit execution instructions from group', () {
+      test('should not inherit execution instructions from group (kept on leader only)', () {
         // Arrange
         final superset = ExerciseGroupFixtures.superset(groupId: 'group-1');
         // Update instructions on group
@@ -566,11 +566,11 @@ void main() {
           exercise: newExercise,
         );
 
-        // Assert
+        // Assert - execution instructions are NOT copied (they stay on leader only)
         final exercises = getExercises();
         final newGroupExercise = exercises.firstWhere((e) => e.name == 'Novo Exercício');
 
-        expect(newGroupExercise.executionInstructions, 'Instruções do grupo');
+        expect(newGroupExercise.executionInstructions, '');
       });
 
       test('should insert new exercise after last group exercise', () {
@@ -630,7 +630,7 @@ void main() {
     // ============================================
 
     group('updateGroupInstructions', () {
-      test('should update instructions for all exercises in group', () {
+      test('should update groupInstructions for all exercises in group', () {
         // Arrange
         final superset = ExerciseGroupFixtures.superset(groupId: 'group-1');
         setupWorkoutWithExercises(superset);
@@ -646,7 +646,7 @@ void main() {
         final exercises = getExercises();
         final groupExercises = exercises.where((e) => e.exerciseGroupId == 'group-1').toList();
 
-        expect(groupExercises.every((e) => e.executionInstructions == 'Novas instruções do grupo'), isTrue);
+        expect(groupExercises.every((e) => e.groupInstructions == 'Novas instruções do grupo'), isTrue);
       });
 
       test('should not affect exercises outside the group', () {
@@ -672,11 +672,11 @@ void main() {
         expect(normalEx.executionInstructions, 'Instruções originais');
       });
 
-      test('should clear instructions when empty string is provided', () {
+      test('should clear groupInstructions when empty string is provided', () {
         // Arrange
         final superset = ExerciseGroupFixtures.superset(groupId: 'group-1');
         setupWorkoutWithExercises(superset.map((e) =>
-          e.copyWith(executionInstructions: 'Instruções antigas')).toList());
+          e.copyWith(groupInstructions: 'Instruções antigas')).toList());
 
         // Act
         notifier.updateGroupInstructions(
@@ -689,7 +689,7 @@ void main() {
         final exercises = getExercises();
         final groupExercises = exercises.where((e) => e.exerciseGroupId == 'group-1').toList();
 
-        expect(groupExercises.every((e) => e.executionInstructions.isEmpty), isTrue);
+        expect(groupExercises.every((e) => e.groupInstructions.isEmpty), isTrue);
       });
 
       test('should handle non-existent group gracefully', () {

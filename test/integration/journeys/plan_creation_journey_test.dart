@@ -5,7 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:myfit_app/core/services/workout_service.dart';
 import 'package:myfit_app/features/trainer_workout/presentation/providers/trainer_workout_provider.dart';
 
-import '../../helpers/fixtures/program_fixtures.dart';
+import '../../helpers/fixtures/plan_fixtures.dart';
 import '../../helpers/mock_services.dart';
 import '../test_app.dart';
 
@@ -158,7 +158,7 @@ void main() {
 
         await tester.pumpTestApp(
           _MockProgramReviewStep(
-            programData: ProgramFixtures.abcSplit(),
+            programData: PlanFixtures.abcSplit(),
             onConfirm: () async {
               await mockWorkoutService.createPlan(
                 name: 'Programa ABC',
@@ -195,7 +195,7 @@ void main() {
 
     group('Scenario 2: Create from template', () {
       testWidgets('should show existing programs list', (tester) async {
-        final templates = ProgramFixtures.apiResponseList(count: 3);
+        final templates = PlanFixtures.apiResponseList(count: 3);
 
         when(() => mockWorkoutService.getPlans(templatesOnly: true))
             .thenAnswer((_) async => templates);
@@ -213,7 +213,7 @@ void main() {
       });
 
       testWidgets('should duplicate selected template', (tester) async {
-        final template = ProgramFixtures.abcSplit();
+        final template = PlanFixtures.abcSplit();
         final duplicate = {
           ...template,
           'id': 'program-copy',
@@ -286,7 +286,7 @@ void main() {
       });
 
       testWidgets('should generate program with AI', (tester) async {
-        final aiResponse = ProgramFixtures.aiGenerationResponse();
+        final aiResponse = PlanFixtures.aiGenerationResponse();
 
         when(() => mockWorkoutService.generatePlanWithAI(
               goal: any(named: 'goal'),
@@ -336,7 +336,7 @@ void main() {
       });
 
       testWidgets('should show generated program for review', (tester) async {
-        final aiProgram = ProgramFixtures.aiGenerated();
+        final aiProgram = PlanFixtures.aiGenerated();
 
         await tester.pumpTestApp(
           _MockAIReviewStep(program: aiProgram),

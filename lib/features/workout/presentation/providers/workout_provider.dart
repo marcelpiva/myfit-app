@@ -433,44 +433,44 @@ final isWorkoutDetailLoadingProvider =
   return ref.watch(workoutDetailNotifierProvider(workoutId)).isLoading;
 });
 
-// ==================== Workout Programs ====================
+// ==================== Training Plans ====================
 
-class ProgramsState {
-  final List<Map<String, dynamic>> programs;
+class PlansState {
+  final List<Map<String, dynamic>> plans;
   final bool isLoading;
   final String? error;
 
-  const ProgramsState({
-    this.programs = const [],
+  const PlansState({
+    this.plans = const [],
     this.isLoading = false,
     this.error,
   });
 
-  ProgramsState copyWith({
-    List<Map<String, dynamic>>? programs,
+  PlansState copyWith({
+    List<Map<String, dynamic>>? plans,
     bool? isLoading,
     String? error,
   }) {
-    return ProgramsState(
-      programs: programs ?? this.programs,
+    return PlansState(
+      plans: plans ?? this.plans,
       isLoading: isLoading ?? this.isLoading,
       error: error,
     );
   }
 }
 
-class ProgramsNotifier extends StateNotifier<ProgramsState> {
+class PlansNotifier extends StateNotifier<PlansState> {
   final WorkoutService _service;
 
-  ProgramsNotifier(this._service) : super(const ProgramsState()) {
-    loadPrograms();
+  PlansNotifier(this._service) : super(const PlansState()) {
+    loadPlans();
   }
 
-  Future<void> loadPrograms() async {
+  Future<void> loadPlans() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final programs = await _service.getPlans();
-      state = state.copyWith(programs: programs, isLoading: false);
+      final plans = await _service.getPlans();
+      state = state.copyWith(plans: plans, isLoading: false);
     } on ApiException catch (e) {
       state = state.copyWith(isLoading: false, error: e.message);
     } catch (e, stackTrace) {
@@ -480,81 +480,81 @@ class ProgramsNotifier extends StateNotifier<ProgramsState> {
     }
   }
 
-  Future<void> deleteProgram(String programId) async {
+  Future<void> deletePlan(String planId) async {
     try {
-      await _service.deletePlan(programId);
+      await _service.deletePlan(planId);
       state = state.copyWith(
-        programs: state.programs.where((p) => p['id'] != programId).toList(),
+        plans: state.plans.where((p) => p['id'] != planId).toList(),
       );
     } on ApiException catch (e) {
       throw e;
     }
   }
 
-  Future<void> duplicateProgram(String programId) async {
+  Future<void> duplicatePlan(String planId) async {
     try {
-      final program = await _service.duplicatePlan(programId);
-      state = state.copyWith(programs: [program, ...state.programs]);
+      final plan = await _service.duplicatePlan(planId);
+      state = state.copyWith(plans: [plan, ...state.plans]);
     } on ApiException catch (e) {
       throw e;
     }
   }
 
-  void refresh() => loadPrograms();
+  void refresh() => loadPlans();
 }
 
-final programsNotifierProvider = StateNotifierProvider<ProgramsNotifier, ProgramsState>((ref) {
+final plansNotifierProvider = StateNotifierProvider<PlansNotifier, PlansState>((ref) {
   final service = ref.watch(workoutServiceProvider);
-  return ProgramsNotifier(service);
+  return PlansNotifier(service);
 });
 
-final programsProvider = Provider<List<Map<String, dynamic>>>((ref) {
-  return ref.watch(programsNotifierProvider).programs;
+final plansProvider = Provider<List<Map<String, dynamic>>>((ref) {
+  return ref.watch(plansNotifierProvider).plans;
 });
 
-final isProgramsLoadingProvider = Provider<bool>((ref) {
-  return ref.watch(programsNotifierProvider).isLoading;
+final isPlansLoadingProvider = Provider<bool>((ref) {
+  return ref.watch(plansNotifierProvider).isLoading;
 });
 
-// ==================== Program Detail ====================
+// ==================== Plan Detail ====================
 
-class ProgramDetailState {
-  final Map<String, dynamic>? program;
+class PlanDetailState {
+  final Map<String, dynamic>? plan;
   final bool isLoading;
   final String? error;
 
-  const ProgramDetailState({
-    this.program,
+  const PlanDetailState({
+    this.plan,
     this.isLoading = false,
     this.error,
   });
 
-  ProgramDetailState copyWith({
-    Map<String, dynamic>? program,
+  PlanDetailState copyWith({
+    Map<String, dynamic>? plan,
     bool? isLoading,
     String? error,
   }) {
-    return ProgramDetailState(
-      program: program ?? this.program,
+    return PlanDetailState(
+      plan: plan ?? this.plan,
       isLoading: isLoading ?? this.isLoading,
       error: error,
     );
   }
 }
 
-class ProgramDetailNotifier extends StateNotifier<ProgramDetailState> {
+class PlanDetailNotifier extends StateNotifier<PlanDetailState> {
   final WorkoutService _service;
-  final String programId;
+  final String planId;
 
-  ProgramDetailNotifier(this._service, this.programId) : super(const ProgramDetailState()) {
+  PlanDetailNotifier(this._service, this.planId) : super(const PlanDetailState()) {
     loadDetail();
   }
 
   Future<void> loadDetail() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final program = await _service.getPlan(programId);
-      state = state.copyWith(program: program, isLoading: false);
+      final plan = await _service.getPlan(planId);
+      state = state.copyWith(plan: plan, isLoading: false);
     } on ApiException catch (e) {
       state = state.copyWith(isLoading: false, error: e.message);
     } catch (e) {
@@ -565,7 +565,7 @@ class ProgramDetailNotifier extends StateNotifier<ProgramDetailState> {
   void refresh() => loadDetail();
 }
 
-final programDetailNotifierProvider = StateNotifierProvider.family<ProgramDetailNotifier, ProgramDetailState, String>((ref, programId) {
+final planDetailNotifierProvider = StateNotifierProvider.family<PlanDetailNotifier, PlanDetailState, String>((ref, planId) {
   final service = ref.watch(workoutServiceProvider);
-  return ProgramDetailNotifier(service, programId);
+  return PlanDetailNotifier(service, planId);
 });

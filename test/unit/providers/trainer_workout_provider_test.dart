@@ -617,7 +617,7 @@ void main() {
     });
   });
 
-  group('StudentProgramsNotifier', () {
+  group('StudentPlansNotifier', () {
     ProviderContainer createTestContainer() {
       return createContainer(
         overrides: [
@@ -640,13 +640,13 @@ void main() {
       // Wait for loading to complete
       await waitForProviderState(
         container,
-        studentProgramsNotifierProvider('student-1'),
+        studentPlansNotifierProvider('student-1'),
         (state) => !state.isLoading,
       );
 
-      final state = container.read(studentProgramsNotifierProvider('student-1'));
+      final state = container.read(studentPlansNotifierProvider('student-1'));
 
-      expect(state.programs.length, 2);
+      expect(state.plans.length, 2);
       expect(state.isLoading, false);
     });
 
@@ -659,11 +659,11 @@ void main() {
       // Wait for loading to complete
       await waitForProviderState(
         container,
-        studentProgramsNotifierProvider('student-1'),
+        studentPlansNotifierProvider('student-1'),
         (state) => !state.isLoading,
       );
 
-      final state = container.read(studentProgramsNotifierProvider('student-1'));
+      final state = container.read(studentPlansNotifierProvider('student-1'));
 
       expect(state.error, 'Error');
     });

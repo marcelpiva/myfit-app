@@ -6,7 +6,7 @@ import 'package:myfit_app/core/services/workout_service.dart';
 import 'package:myfit_app/features/trainer_workout/presentation/providers/trainer_students_provider.dart';
 import 'package:myfit_app/features/trainer_workout/presentation/providers/trainer_workout_provider.dart';
 
-import '../../helpers/fixtures/program_fixtures.dart';
+import '../../helpers/fixtures/plan_fixtures.dart';
 import '../../helpers/fixtures/student_fixtures.dart';
 import '../../helpers/mock_services.dart';
 import '../test_app.dart';
@@ -35,7 +35,7 @@ void main() {
   group('Workout Assignment Journey', () {
     group('Scenario 1: Assign program to student', () {
       testWidgets('should show programs list', (tester) async {
-        final programs = ProgramFixtures.apiResponseList(count: 3);
+        final programs = PlanFixtures.apiResponseList(count: 3);
 
         when(() => mockWorkoutService.getPlans())
             .thenAnswer((_) async => programs);
@@ -53,7 +53,7 @@ void main() {
       });
 
       testWidgets('should show assign button on program detail', (tester) async {
-        final program = ProgramFixtures.abcSplit();
+        final program = PlanFixtures.abcSplit();
 
         await tester.pumpTestApp(
           _MockProgramDetailPage(program: program),
@@ -99,10 +99,10 @@ void main() {
       });
 
       testWidgets('should create assignment successfully', (tester) async {
-        final assignment = ProgramFixtures.assignmentApiResponse();
+        final assignment = PlanFixtures.assignmentApiResponse();
 
         when(() => mockWorkoutService.createPlanAssignment(
-              planId: any(named: 'programId'),
+              planId: any(named: 'planId'),
               studentId: any(named: 'studentId'),
               startDate: any(named: 'startDate'),
             )).thenAnswer((_) async => assignment);
@@ -167,7 +167,7 @@ void main() {
 
     group('Scenario 2: Publish program to catalog', () {
       testWidgets('should show publish option for own programs', (tester) async {
-        final program = ProgramFixtures.abcSplit();
+        final program = PlanFixtures.abcSplit();
 
         await tester.pumpTestApp(
           _MockOwnProgramPage(
@@ -238,7 +238,7 @@ void main() {
 
     group('Scenario 3: Import from catalog', () {
       testWidgets('should show catalog templates', (tester) async {
-        final templates = ProgramFixtures.catalogResponseList(count: 5);
+        final templates = PlanFixtures.catalogResponseList(count: 5);
 
         await tester.pumpTestApp(
           _MockCatalogPage(templates: templates),
@@ -255,7 +255,7 @@ void main() {
       });
 
       testWidgets('should filter catalog by goal', (tester) async {
-        final templates = ProgramFixtures.catalogResponseList(count: 10);
+        final templates = PlanFixtures.catalogResponseList(count: 10);
 
         await tester.pumpTestApp(
           _MockCatalogFilterPage(templates: templates),
@@ -277,7 +277,7 @@ void main() {
       });
 
       testWidgets('should import template to my programs', (tester) async {
-        final template = ProgramFixtures.catalogTemplate();
+        final template = PlanFixtures.catalogTemplate();
         final imported = {
           ...template,
           'id': 'my-program-1',

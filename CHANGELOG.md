@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-01-19
+
+### Changed
+- **Completed "Programa" → "Plano de Treino" refactor** - Final wave of terminology updates
+  - Renamed provider classes: `ProgramsNotifier` → `PlansNotifier`, `ProgramDetailNotifier` → `PlanDetailNotifier`
+  - Renamed provider classes: `StudentProgramsNotifier` → `StudentPlansNotifier`
+  - Updated `workouts_page.dart`: Renamed `_ProgramCard` → `_PlanCard`, `_ProgramBadge` → `_PlanBadge`
+  - Updated `student_workouts_page.dart`: Renamed `_StudentProgramCard` → `_StudentPlanCard`
+  - Updated `marketplace_page.dart`: Renamed `_CompactProgramCard` → `_CompactPlanCard`, `_ProgramDetailSheet` → `_PlanDetailSheet`
+  - Updated `trainer_plans_page.dart`: Renamed `_ProgramsList` → `_PlansList`, `_UnifiedProgramCard` → `_UnifiedPlanCard`
+  - Updated callback in `trainer_home_page.dart`: `onNovoProgramy` → `onNovoPlano`
+  - Renamed files: `program_detail_page.dart` → `plan_detail_page.dart`, `assign_program_sheet.dart` → `assign_plan_sheet.dart`
+  - Renamed test fixtures: `program_fixtures.dart` → `plan_fixtures.dart`, `ProgramFixtures` → `PlanFixtures`
+  - Renamed test file: `program_creation_journey_test.dart` → `plan_creation_journey_test.dart`
+  - Deleted obsolete files: `program_detail_page.dart`, `assign_program_sheet.dart`
+
+- **Updated Quick Action Labels** in trainer home page
+  - "Convidar" → "Convidar Aluno"
+  - "Plano" → "Criar Plano"
+  - "Catálogo" → "Ver Catálogo"
+  - "Agendar" → "Agendar Sessão"
+
 ## [1.3.0] - 2026-01-19
 
 ### Changed

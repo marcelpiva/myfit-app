@@ -176,7 +176,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
                           isDark: isDark,
                         );
                       },
-                      onNovoProgramy: () {
+                      onNovoPlano: () {
                         HapticUtils.lightImpact();
                         context.push(RouteNames.planWizard);
                       },
@@ -1004,14 +1004,14 @@ class _SectionHeader extends StatelessWidget {
 class _QuickActionsSection extends StatelessWidget {
   final bool isDark;
   final VoidCallback onConvidarAluno;
-  final VoidCallback onNovoProgramy;
+  final VoidCallback onNovoPlano;
   final VoidCallback onVerCatalogo;
   final VoidCallback onAgendarSessao;
 
   const _QuickActionsSection({
     required this.isDark,
     required this.onConvidarAluno,
-    required this.onNovoProgramy,
+    required this.onNovoPlano,
     required this.onVerCatalogo,
     required this.onAgendarSessao,
   });
@@ -1023,7 +1023,7 @@ class _QuickActionsSection extends StatelessWidget {
         Expanded(
           child: _QuickActionButton(
             icon: LucideIcons.userPlus,
-            label: 'Convidar',
+            label: 'Convidar\nAluno',
             color: isDark ? AppColors.primaryDark : AppColors.primary,
             isDark: isDark,
             onTap: onConvidarAluno,
@@ -1033,17 +1033,17 @@ class _QuickActionsSection extends StatelessWidget {
         Expanded(
           child: _QuickActionButton(
             icon: LucideIcons.filePlus,
-            label: 'Plano',
+            label: 'Criar\nPlano',
             color: isDark ? AppColors.secondaryDark : AppColors.secondary,
             isDark: isDark,
-            onTap: onNovoProgramy,
+            onTap: onNovoPlano,
           ),
         ),
         const SizedBox(width: 8),
         Expanded(
           child: _QuickActionButton(
             icon: LucideIcons.layoutTemplate,
-            label: 'Catálogo',
+            label: 'Ver\nCatálogo',
             color: AppColors.success,
             isDark: isDark,
             onTap: onVerCatalogo,
@@ -1053,7 +1053,7 @@ class _QuickActionsSection extends StatelessWidget {
         Expanded(
           child: _QuickActionButton(
             icon: LucideIcons.calendarPlus,
-            label: 'Agendar',
+            label: 'Agendar\nSessão',
             color: isDark ? AppColors.accentDark : AppColors.accent,
             isDark: isDark,
             onTap: onAgendarSessao,

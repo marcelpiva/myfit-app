@@ -24,7 +24,7 @@ import '../../features/progress/presentation/pages/photo_comparison_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/workout/presentation/pages/workout_detail_page.dart';
 import '../../features/workout/presentation/pages/workouts_page.dart';
-import '../../features/workout/presentation/pages/program_detail_page.dart';
+import '../../features/workout/presentation/pages/plan_detail_page.dart';
 import '../../features/training_plan/presentation/pages/plan_wizard_page.dart';
 import '../../features/workout_builder/presentation/pages/workout_from_scratch_page.dart';
 import '../../features/workout_builder/presentation/pages/workout_with_ai_page.dart';
@@ -244,9 +244,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RouteNames.planDetail,
-        name: 'program-detail',
-        builder: (context, state) => ProgramDetailPage(
-          programId: state.pathParameters['programId'] ?? '',
+        name: 'plan-detail',
+        builder: (context, state) => PlanDetailPage(
+          planId: state.pathParameters['planId'] ?? '',
         ),
       ),
       GoRoute(
@@ -445,7 +445,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RouteNames.trainerPlans,
-        name: 'trainer-programs',
+        name: 'trainer-plans',
         builder: (context, state) => const TrainerPlansPage(),
       ),
 

@@ -440,11 +440,11 @@ class _WorkoutsList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final workoutsState = ref.watch(workoutsNotifierProvider);
-    final programsState = ref.watch(programsNotifierProvider);
+    final plansState = ref.watch(plansNotifierProvider);
 
-    final isLoading = workoutsState.isLoading || programsState.isLoading;
-    final hasError = workoutsState.error != null || programsState.error != null;
-    final errorMsg = workoutsState.error ?? programsState.error;
+    final isLoading = workoutsState.isLoading || plansState.isLoading;
+    final hasError = workoutsState.error != null || plansState.error != null;
+    final errorMsg = workoutsState.error ?? plansState.error;
 
     if (isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -465,7 +465,7 @@ class _WorkoutsList extends ConsumerWidget {
             GestureDetector(
               onTap: () {
                 ref.read(workoutsNotifierProvider.notifier).refresh();
-                ref.read(programsNotifierProvider.notifier).refresh();
+                ref.read(plansNotifierProvider.notifier).refresh();
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -484,10 +484,10 @@ class _WorkoutsList extends ConsumerWidget {
       );
     }
 
-    final programs = programsState.programs;
+    final plans = plansState.plans;
     final workouts = workoutsState.workouts;
 
-    if (programs.isEmpty && workouts.isEmpty) {
+    if (plans.isEmpty && workouts.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -522,8 +522,8 @@ class _WorkoutsList extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       children: [
-        // Programs section
-        if (programs.isNotEmpty) ...[
+        // Plans section
+        if (plans.isNotEmpty) ...[
           Padding(
             padding: const EdgeInsets.only(bottom: 12, top: 8),
             child: Row(
@@ -544,7 +544,7 @@ class _WorkoutsList extends ConsumerWidget {
                 ),
                 const Spacer(),
                 Text(
-                  '${programs.length}',
+                  '${plans.length}',
                   style: TextStyle(
                     fontSize: 14,
                     color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -553,12 +553,12 @@ class _WorkoutsList extends ConsumerWidget {
               ],
             ),
           ),
-          ...programs.map((program) => _ProgramCard(
-                program: program,
+          ...plans.map((plan) => _PlanCard(
+                plan: plan,
                 isDark: isDark,
                 onTap: () {
                   HapticUtils.lightImpact();
-                  context.push('/programs/${program['id']}');
+                  context.push('/plans/${plan['id']}');
                 },
               )),
           const SizedBox(height: 24),
@@ -621,14 +621,14 @@ class _WorkoutsList extends ConsumerWidget {
   }
 }
 
-// Program Card Widget
-class _ProgramCard extends StatelessWidget {
-  final Map<String, dynamic> program;
+// Plan Card Widget
+class _PlanCard extends StatelessWidget {
+  final Map<String, dynamic> plan;
   final bool isDark;
   final VoidCallback onTap;
 
-  const _ProgramCard({
-    required this.program,
+  const _PlanCard({
+    required this.plan,
     required this.isDark,
     required this.onTap,
   });
@@ -665,12 +665,12 @@ class _ProgramCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = program['name'] as String? ?? 'Plano';
-    final goal = program['goal'] as String?;
-    final difficulty = program['difficulty'] as String?;
-    final splitType = program['split_type'] as String?;
-    final workoutsCount = (program['workouts'] as List?)?.length ?? 0;
-    final durationWeeks = program['duration_weeks'] as int?;
+    final name = plan['name'] as String? ?? 'Plano';
+    final goal = plan['goal'] as String?;
+    final difficulty = plan['difficulty'] as String?;
+    final splitType = plan['split_type'] as String?;
+    final workoutsCount = (plan['workouts'] as List?)?.length ?? 0;
+    final durationWeeks = plan['duration_weeks'] as int?;
 
     return GestureDetector(
       onTap: onTap,
@@ -745,25 +745,25 @@ class _ProgramCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _ProgramBadge(
+                _PlanBadge(
                   label: '$workoutsCount treinos',
                   icon: LucideIcons.dumbbell,
                   isDark: isDark,
                 ),
                 if (splitType != null)
-                  _ProgramBadge(
+                  _PlanBadge(
                     label: splitType.toUpperCase(),
                     icon: LucideIcons.layoutGrid,
                     isDark: isDark,
                   ),
                 if (difficulty != null)
-                  _ProgramBadge(
+                  _PlanBadge(
                     label: _getDifficultyLabel(difficulty),
                     icon: LucideIcons.gauge,
                     isDark: isDark,
                   ),
                 if (durationWeeks != null)
-                  _ProgramBadge(
+                  _PlanBadge(
                     label: '$durationWeeks semanas',
                     icon: LucideIcons.calendar,
                     isDark: isDark,
@@ -777,12 +777,12 @@ class _ProgramCard extends StatelessWidget {
   }
 }
 
-class _ProgramBadge extends StatelessWidget {
+class _PlanBadge extends StatelessWidget {
   final String label;
   final IconData icon;
   final bool isDark;
 
-  const _ProgramBadge({
+  const _PlanBadge({
     required this.label,
     required this.icon,
     required this.isDark,

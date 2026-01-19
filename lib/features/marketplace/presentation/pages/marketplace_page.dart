@@ -9,18 +9,18 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../core/services/workout_service.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
-// Provider for catalog templates (public programs from other users and system)
-final catalogProgramsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+// Provider for catalog templates (public plans from other users and system)
+final catalogPlansProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   final service = WorkoutService();
   return service.getCatalogTemplates();
 });
 
-// Provider for imported template IDs (source_template_id from user's programs)
+// Provider for imported template IDs (source_template_id from user's plans)
 final importedTemplateIdsProvider = FutureProvider.autoDispose<Set<String>>((ref) async {
   final service = WorkoutService();
-  final programs = await service.getPlans(templatesOnly: false);
-  // Extract source_template_id from programs that were imported
-  final importedIds = programs
+  final plans = await service.getPlans(templatesOnly: false);
+  // Extract source_template_id from plans that were imported
+  final importedIds = plans
       .where((p) => p['source_template_id'] != null)
       .map((p) => p['source_template_id'] as String)
       .toSet();
@@ -48,8 +48,8 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     super.dispose();
   }
 
-  List<Map<String, dynamic>> _filterPrograms(List<Map<String, dynamic>> programs) {
-    var filtered = programs;
+  List<Map<String, dynamic>> _filterPlans(List<Map<String, dynamic>> plans) {
+    var filtered = plans;
 
     // Filter by search
     if (_searchQuery.isNotEmpty) {
@@ -78,7 +78,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final catalogAsync = ref.watch(catalogProgramsProvider);
+    final catalogAsync = ref.watch(catalogPlansProvider);
 
     return Scaffold(
       body: Container(
@@ -226,27 +226,27 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                 child: catalogAsync.when(
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (error, stack) => _buildErrorState(error.toString(), isDark),
-                  data: (programs) {
-                    final filtered = _filterPrograms(programs);
+                  data: (plans) {
+                    final filtered = _filterPlans(plans);
 
                     if (filtered.isEmpty) {
-                      return _buildEmptyState(isDark, programs.isEmpty);
+                      return _buildEmptyState(isDark, plans.isEmpty);
                     }
 
                     return RefreshIndicator(
                       onRefresh: () async {
-                        ref.invalidate(catalogProgramsProvider);
+                        ref.invalidate(catalogPlansProvider);
                         ref.invalidate(importedTemplateIdsProvider);
                       },
                       child: ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         itemCount: filtered.length,
                         itemBuilder: (context, index) {
-                          final program = filtered[index];
-                          return _CompactProgramCard(
-                            program: program,
+                          final plan = filtered[index];
+                          return _CompactPlanCard(
+                            plan: plan,
                             isDark: isDark,
-                            onTap: () => _showProgramDetail(context, program),
+                            onTap: () => _showPlanDetail(context, plan),
                           );
                         },
                       ),
@@ -419,7 +419,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     );
   }
 
-  Widget _buildEmptyState(bool isDark, bool noPrograms) {
+  Widget _buildEmptyState(bool isDark, bool noPlans) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -427,13 +427,13 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              noPrograms ? LucideIcons.clipboardList : LucideIcons.search,
+              noPlans ? LucideIcons.clipboardList : LucideIcons.search,
               size: 64,
               color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
             ),
             const SizedBox(height: 16),
             Text(
-              noPrograms ? 'Nenhum plano disponível' : 'Nenhum plano encontrado',
+              noPlans ? 'Nenhum plano disponível' : 'Nenhum plano encontrado',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -442,7 +442,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             ),
             const SizedBox(height: 8),
             Text(
-              noPrograms
+              noPlans
                   ? 'Ainda não há planos no catálogo'
                   : 'Tente ajustar os filtros de busca',
               textAlign: TextAlign.center,
@@ -489,7 +489,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () => ref.invalidate(catalogProgramsProvider),
+              onPressed: () => ref.invalidate(catalogPlansProvider),
               icon: const Icon(LucideIcons.refreshCw, size: 16),
               label: const Text('Tentar novamente'),
             ),
@@ -499,7 +499,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     );
   }
 
-  void _showProgramDetail(BuildContext context, Map<String, dynamic> program) {
+  void _showPlanDetail(BuildContext context, Map<String, dynamic> plan) {
     HapticUtils.lightImpact();
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -511,24 +511,24 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => _ProgramDetailSheet(
-        program: program,
+      builder: (ctx) => _PlanDetailSheet(
+        plan: plan,
         onImport: () {
           Navigator.pop(ctx);
-          _importProgram(context, program);
+          _importPlan(context, plan);
         },
       ),
     );
   }
 
-  Future<void> _importProgram(BuildContext context, Map<String, dynamic> program) async {
-    final programId = program['id'] as String?;
-    final programName = program['name'] as String? ?? 'Plano';
-    final hasDiet = program['has_diet'] as bool? ?? false;
-    final createdById = program['created_by_id'] as String?;
-    if (programId == null) return;
+  Future<void> _importPlan(BuildContext context, Map<String, dynamic> plan) async {
+    final planId = plan['id'] as String?;
+    final planName = plan['name'] as String? ?? 'Plano';
+    final hasDiet = plan['has_diet'] as bool? ?? false;
+    final createdById = plan['created_by_id'] as String?;
+    if (planId == null) return;
 
-    // Prevent importing own programs
+    // Prevent importing own plans
     final currentUser = ref.read(currentUserProvider);
     if (currentUser != null && createdById == currentUser.id) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -540,7 +540,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       return;
     }
 
-    final nameController = TextEditingController(text: programName);
+    final nameController = TextEditingController(text: planName);
     final newName = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -549,7 +549,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Deseja adicionar "$programName" aos seus templates?'),
+            Text('Deseja adicionar "$planName" aos seus templates?'),
             const SizedBox(height: 16),
             TextField(
               controller: nameController,
@@ -615,21 +615,21 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     if (newName != null && newName.isNotEmpty && context.mounted) {
       try {
         final service = WorkoutService();
-        // Duplicate the program from catalog (tracks source_template_id)
-        final newProgram = await service.duplicatePlan(
-          programId,
+        // Duplicate the plan from catalog (tracks source_template_id)
+        final newPlan = await service.duplicatePlan(
+          planId,
           newName: newName,
           fromCatalog: true,
         );
-        final newProgramId = newProgram['id'] as String?;
+        final newPlanId = newPlan['id'] as String?;
 
         // Mark as template (not navigate to wizard)
-        if (newProgramId != null) {
-          await service.updatePlan(newProgramId, isTemplate: true);
+        if (newPlanId != null) {
+          await service.updatePlan(newPlanId, isTemplate: true);
         }
 
         // Invalidate the providers to refresh the lists
-        ref.invalidate(catalogProgramsProvider);
+        ref.invalidate(catalogPlansProvider);
         ref.invalidate(importedTemplateIdsProvider);
 
         if (context.mounted) {
@@ -700,16 +700,16 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
   }
 }
 
-// ==================== Program Card ====================
+// ==================== Plan Card ====================
 
-class _ProgramCard extends ConsumerWidget {
-  final Map<String, dynamic> program;
+class _PlanCard extends ConsumerWidget {
+  final Map<String, dynamic> plan;
   final bool isDark;
   final VoidCallback onTap;
   final VoidCallback onImport;
 
-  const _ProgramCard({
-    required this.program,
+  const _PlanCard({
+    required this.plan,
     required this.isDark,
     required this.onTap,
     required this.onImport,
@@ -718,18 +718,18 @@ class _ProgramCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final name = program['name'] as String? ?? 'Plano';
-    final goal = program['goal'] as String? ?? '';
-    final difficulty = program['difficulty'] as String? ?? '';
-    final workoutCount = program['workout_count'] as int? ?? 0;
-    final creatorName = program['creator_name'] as String?;
-    final hasDiet = program['has_diet'] as bool? ?? false;
-    final programId = program['id'] as String?;
+    final name = plan['name'] as String? ?? 'Plano';
+    final goal = plan['goal'] as String? ?? '';
+    final difficulty = plan['difficulty'] as String? ?? '';
+    final workoutCount = plan['workout_count'] as int? ?? 0;
+    final creatorName = plan['creator_name'] as String?;
+    final hasDiet = plan['has_diet'] as bool? ?? false;
+    final planId = plan['id'] as String?;
 
-    // Check if this program has been imported
+    // Check if this plan has been imported
     final importedIdsAsync = ref.watch(importedTemplateIdsProvider);
     final isImported = importedIdsAsync.maybeWhen(
-      data: (ids) => programId != null && ids.contains(programId),
+      data: (ids) => planId != null && ids.contains(planId),
       orElse: () => false,
     );
 
@@ -994,15 +994,15 @@ class _Badge extends StatelessWidget {
   }
 }
 
-// ==================== Compact Program Card (Spotify-style) ====================
+// ==================== Compact Plan Card (Spotify-style) ====================
 
-class _CompactProgramCard extends ConsumerWidget {
-  final Map<String, dynamic> program;
+class _CompactPlanCard extends ConsumerWidget {
+  final Map<String, dynamic> plan;
   final bool isDark;
   final VoidCallback onTap;
 
-  const _CompactProgramCard({
-    required this.program,
+  const _CompactPlanCard({
+    required this.plan,
     required this.isDark,
     required this.onTap,
   });
@@ -1010,22 +1010,22 @@ class _CompactProgramCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final name = program['name'] as String? ?? 'Plano';
-    final goal = program['goal'] as String? ?? '';
-    final difficulty = program['difficulty'] as String? ?? '';
-    final workoutCount = program['workout_count'] as int? ?? 0;
-    final creatorName = program['creator_name'] as String?;
-    final programId = program['id'] as String?;
-    final createdById = program['created_by_id'] as String?;
+    final name = plan['name'] as String? ?? 'Plano';
+    final goal = plan['goal'] as String? ?? '';
+    final difficulty = plan['difficulty'] as String? ?? '';
+    final workoutCount = plan['workout_count'] as int? ?? 0;
+    final creatorName = plan['creator_name'] as String?;
+    final planId = plan['id'] as String?;
+    final createdById = plan['created_by_id'] as String?;
 
-    // Check if this program belongs to the current user
+    // Check if this plan belongs to the current user
     final currentUser = ref.watch(currentUserProvider);
     final isOwned = currentUser != null && createdById == currentUser.id;
 
-    // Check if this program has been imported
+    // Check if this plan has been imported
     final importedIdsAsync = ref.watch(importedTemplateIdsProvider);
     final isImported = importedIdsAsync.maybeWhen(
-      data: (ids) => programId != null && ids.contains(programId),
+      data: (ids) => planId != null && ids.contains(planId),
       orElse: () => false,
     );
 
@@ -1353,14 +1353,14 @@ class _FilterSheet extends StatelessWidget {
   }
 }
 
-// ==================== Program Detail Sheet ====================
+// ==================== Plan Detail Sheet ====================
 
-class _ProgramDetailSheet extends ConsumerWidget {
-  final Map<String, dynamic> program;
+class _PlanDetailSheet extends ConsumerWidget {
+  final Map<String, dynamic> plan;
   final VoidCallback onImport;
 
-  const _ProgramDetailSheet({
-    required this.program,
+  const _PlanDetailSheet({
+    required this.plan,
     required this.onImport,
   });
 
@@ -1369,25 +1369,25 @@ class _ProgramDetailSheet extends ConsumerWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final name = program['name'] as String? ?? 'Plano';
-    final description = program['description'] as String?;
-    final goal = program['goal'] as String? ?? '';
-    final difficulty = program['difficulty'] as String? ?? '';
-    final splitType = program['split_type'] as String? ?? '';
-    final durationWeeks = program['duration_weeks'] as int?;
-    final workoutCount = program['workout_count'] as int? ?? 0;
-    final creatorName = program['creator_name'] as String?;
-    final programId = program['id'] as String?;
-    final createdById = program['created_by_id'] as String?;
+    final name = plan['name'] as String? ?? 'Plano';
+    final description = plan['description'] as String?;
+    final goal = plan['goal'] as String? ?? '';
+    final difficulty = plan['difficulty'] as String? ?? '';
+    final splitType = plan['split_type'] as String? ?? '';
+    final durationWeeks = plan['duration_weeks'] as int?;
+    final workoutCount = plan['workout_count'] as int? ?? 0;
+    final creatorName = plan['creator_name'] as String?;
+    final planId = plan['id'] as String?;
+    final createdById = plan['created_by_id'] as String?;
 
-    // Check if this program belongs to the current user
+    // Check if this plan belongs to the current user
     final currentUser = ref.watch(currentUserProvider);
     final isOwned = currentUser != null && createdById == currentUser.id;
 
-    // Check if this program has been imported
+    // Check if this plan has been imported
     final importedIdsAsync = ref.watch(importedTemplateIdsProvider);
     final isImported = importedIdsAsync.maybeWhen(
-      data: (ids) => programId != null && ids.contains(programId),
+      data: (ids) => planId != null && ids.contains(planId),
       orElse: () => false,
     );
 

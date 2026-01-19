@@ -523,47 +523,47 @@ StudentProgress _emptyProgress(String studentId) {
   );
 }
 
-// ==================== Student Programs Provider ====================
+// ==================== Student Plans Provider ====================
 
-class StudentProgramsState {
-  final List<Map<String, dynamic>> programs;
+class StudentPlansState {
+  final List<Map<String, dynamic>> plans;
   final bool isLoading;
   final String? error;
 
-  const StudentProgramsState({
-    this.programs = const [],
+  const StudentPlansState({
+    this.plans = const [],
     this.isLoading = false,
     this.error,
   });
 
-  StudentProgramsState copyWith({
-    List<Map<String, dynamic>>? programs,
+  StudentPlansState copyWith({
+    List<Map<String, dynamic>>? plans,
     bool? isLoading,
     String? error,
   }) {
-    return StudentProgramsState(
-      programs: programs ?? this.programs,
+    return StudentPlansState(
+      plans: plans ?? this.plans,
       isLoading: isLoading ?? this.isLoading,
       error: error,
     );
   }
 }
 
-class StudentProgramsNotifier extends StateNotifier<StudentProgramsState> {
+class StudentPlansNotifier extends StateNotifier<StudentPlansState> {
   final WorkoutService _service;
   final String studentId;
 
-  StudentProgramsNotifier(this._service, this.studentId)
-      : super(const StudentProgramsState()) {
-    loadPrograms();
+  StudentPlansNotifier(this._service, this.studentId)
+      : super(const StudentPlansState()) {
+    loadPlans();
   }
 
-  Future<void> loadPrograms() async {
+  Future<void> loadPlans() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // Load programs - backend should filter by student if studentId is provided
-      final programs = await _service.getPlans(studentId: studentId);
-      state = state.copyWith(programs: programs, isLoading: false);
+      // Load plans - backend should filter by student if studentId is provided
+      final plans = await _service.getPlans(studentId: studentId);
+      state = state.copyWith(plans: plans, isLoading: false);
     } on ApiException catch (e) {
       state = state.copyWith(isLoading: false, error: e.message);
     } catch (e, stackTrace) {
@@ -573,15 +573,15 @@ class StudentProgramsNotifier extends StateNotifier<StudentProgramsState> {
     }
   }
 
-  void refresh() => loadPrograms();
+  void refresh() => loadPlans();
 }
 
-final studentProgramsNotifierProvider = StateNotifierProvider.family<
-    StudentProgramsNotifier, StudentProgramsState, String>((ref, studentId) {
+final studentPlansNotifierProvider = StateNotifierProvider.family<
+    StudentPlansNotifier, StudentPlansState, String>((ref, studentId) {
   final service = ref.watch(workoutServiceProvider);
-  return StudentProgramsNotifier(service, studentId);
+  return StudentPlansNotifier(service, studentId);
 });
 
-final studentProgramsProvider = Provider.family<List<Map<String, dynamic>>, String>((ref, studentId) {
-  return ref.watch(studentProgramsNotifierProvider(studentId)).programs;
+final studentPlansProvider = Provider.family<List<Map<String, dynamic>>, String>((ref, studentId) {
+  return ref.watch(studentPlansNotifierProvider(studentId)).plans;
 });

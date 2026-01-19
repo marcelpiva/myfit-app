@@ -7,22 +7,22 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../core/services/workout_service.dart';
 import '../../../trainer_workout/presentation/providers/trainer_students_provider.dart';
 
-/// Sheet for assigning a program to a student
-class AssignProgramSheet extends ConsumerStatefulWidget {
-  final String programId;
-  final String programName;
+/// Sheet for assigning a plan to a student
+class AssignPlanSheet extends ConsumerStatefulWidget {
+  final String planId;
+  final String planName;
 
-  const AssignProgramSheet({
+  const AssignPlanSheet({
     super.key,
-    required this.programId,
-    required this.programName,
+    required this.planId,
+    required this.planName,
   });
 
   @override
-  ConsumerState<AssignProgramSheet> createState() => _AssignProgramSheetState();
+  ConsumerState<AssignPlanSheet> createState() => _AssignPlanSheetState();
 }
 
-class _AssignProgramSheetState extends ConsumerState<AssignProgramSheet> {
+class _AssignPlanSheetState extends ConsumerState<AssignPlanSheet> {
   final _workoutService = WorkoutService();
   final _searchController = TextEditingController();
 
@@ -39,7 +39,7 @@ class _AssignProgramSheetState extends ConsumerState<AssignProgramSheet> {
     super.dispose();
   }
 
-  Future<void> _assignProgram() async {
+  Future<void> _assignPlan() async {
     if (_selectedStudentId == null) return;
 
     setState(() {
@@ -49,7 +49,7 @@ class _AssignProgramSheetState extends ConsumerState<AssignProgramSheet> {
 
     try {
       await _workoutService.createPlanAssignment(
-        planId: widget.programId,
+        planId: widget.planId,
         studentId: _selectedStudentId!,
         startDate: _startDate,
         endDate: _endDate,
@@ -148,7 +148,7 @@ class _AssignProgramSheetState extends ConsumerState<AssignProgramSheet> {
                         ),
                       ),
                       Text(
-                        widget.programName,
+                        widget.planName,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
@@ -371,7 +371,7 @@ class _AssignProgramSheetState extends ConsumerState<AssignProgramSheet> {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: _selectedStudentId != null && !_isLoading
-                    ? _assignProgram
+                    ? _assignPlan
                     : null,
                 icon: _isLoading
                     ? const SizedBox(

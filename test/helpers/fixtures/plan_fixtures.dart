@@ -1,5 +1,5 @@
-/// Fixtures for program-related test data
-class ProgramFixtures {
+/// Fixtures for plan-related test data
+class PlanFixtures {
   /// Creates a basic ABC split program API response
   static Map<String, dynamic> abcSplit({
     String id = 'program-1',

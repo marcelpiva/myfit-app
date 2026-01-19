@@ -11,21 +11,21 @@ import '../../../../core/services/workout_service.dart';
 import '../../../../shared/presentation/components/role_bottom_navigation.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
-// Provider for all user's programs (both created and imported)
+// Provider for all user's plans (both created and imported)
 final allPlansProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   final service = WorkoutService();
-  final programs = await service.getPlans(templatesOnly: false);
+  final plans = await service.getPlans(templatesOnly: false);
   final currentUser = ref.read(currentUserProvider);
   final userId = currentUser?.id;
   if (userId == null) return [];
-  // Filter programs created by current user
-  return programs.where((p) {
+  // Filter plans created by current user
+  return plans.where((p) {
     final createdById = p['created_by_id'];
     return createdById != null && createdById.toString() == userId;
   }).toList();
 });
 
-/// Page showing trainer's workout programs
+/// Page showing trainer's training plans
 class TrainerPlansPage extends ConsumerWidget {
   const TrainerPlansPage({super.key});
 
@@ -91,7 +91,7 @@ class TrainerPlansPage extends ConsumerWidget {
 
             // Programs List
             Expanded(
-              child: _ProgramsList(),
+              child: _PlansList(),
             ),
           ],
         ),
@@ -100,21 +100,21 @@ class TrainerPlansPage extends ConsumerWidget {
   }
 }
 
-/// Unified list of all user's programs
-class _ProgramsList extends ConsumerWidget {
+/// Unified list of all user's plans
+class _PlansList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final programsAsync = ref.watch(allPlansProvider);
+    final plansAsync = ref.watch(allPlansProvider);
 
-    return programsAsync.when(
+    return plansAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) => _ErrorState(
         onRetry: () => ref.invalidate(allPlansProvider),
       ),
-      data: (programs) {
-        if (programs.isEmpty) {
+      data: (plans) {
+        if (plans.isEmpty) {
           return _EmptyState(
             icon: LucideIcons.dumbbell,
             message: 'Nenhum plano criado',
@@ -131,32 +131,32 @@ class _ProgramsList extends ConsumerWidget {
           onRefresh: () async => ref.invalidate(allPlansProvider),
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: programs.length,
+            itemCount: plans.length,
             itemBuilder: (context, index) {
-              final program = programs[index];
-              final isImported = program['source_template_id'] != null;
+              final plan = plans[index];
+              final isImported = plan['source_template_id'] != null;
 
-              return _UnifiedProgramCard(
-                program: program,
+              return _UnifiedPlanCard(
+                plan: plan,
                 isDark: isDark,
                 isImported: isImported,
-                showPublishBadge: program['is_public'] == true && !isImported,
+                showPublishBadge: plan['is_public'] == true && !isImported,
                 onTap: () {
                   HapticUtils.lightImpact();
-                  final programId = program['id'] as String?;
-                  if (programId != null) {
+                  final planId = plan['id'] as String?;
+                  if (planId != null) {
                     if (isImported) {
-                      // Show view-only detail for imported programs
-                      _showProgramDetail(context, ref, program);
+                      // Show view-only detail for imported plans
+                      _showPlanDetail(context, ref, plan);
                     } else {
-                      // Edit own programs
-                      context.push('${RouteNames.planWizard}?edit=$programId');
+                      // Edit own plans
+                      context.push('${RouteNames.planWizard}?edit=$planId');
                     }
                   }
                 },
-                onDelete: () => _handleDelete(context, ref, program, isImported),
-                onPublish: isImported ? null : () => _handlePublish(context, ref, program),
-                onDuplicate: isImported ? () => _handleDuplicate(context, ref, program) : null,
+                onDelete: () => _handleDelete(context, ref, plan, isImported),
+                onPublish: isImported ? null : () => _handlePublish(context, ref, plan),
+                onDuplicate: isImported ? () => _handleDuplicate(context, ref, plan) : null,
               );
             },
           ),
@@ -165,19 +165,19 @@ class _ProgramsList extends ConsumerWidget {
     );
   }
 
-  void _showProgramDetail(
+  void _showPlanDetail(
     BuildContext context,
     WidgetRef ref,
-    Map<String, dynamic> program,
+    Map<String, dynamic> plan,
   ) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final name = program['name'] as String? ?? 'Plano';
-    final description = program['description'] as String?;
-    final goal = program['goal'] as String? ?? '';
-    final difficulty = program['difficulty'] as String? ?? '';
-    final splitType = program['split_type'] as String? ?? '';
-    final workoutCount = program['workout_count'] as int? ?? 0;
+    final name = plan['name'] as String? ?? 'Plano';
+    final description = plan['description'] as String?;
+    final goal = plan['goal'] as String? ?? '';
+    final difficulty = plan['difficulty'] as String? ?? '';
+    final splitType = plan['split_type'] as String? ?? '';
+    final workoutCount = plan['workout_count'] as int? ?? 0;
 
     showModalBottomSheet(
       context: context,
@@ -322,7 +322,7 @@ class _ProgramsList extends ConsumerWidget {
               child: FilledButton.icon(
                 onPressed: () {
                   Navigator.pop(ctx);
-                  _handleDuplicate(context, ref, program);
+                  _handleDuplicate(context, ref, plan);
                 },
                 icon: const Icon(LucideIcons.copy),
                 label: const Text('Criar novo a partir deste'),
@@ -340,17 +340,17 @@ class _ProgramsList extends ConsumerWidget {
   Future<void> _handleDelete(
     BuildContext context,
     WidgetRef ref,
-    Map<String, dynamic> program,
+    Map<String, dynamic> plan,
     bool isImported,
   ) async {
-    final programId = program['id'] as String?;
-    final programName = program['name'] as String? ?? 'Plano';
-    if (programId == null) return;
+    final planId = plan['id'] as String?;
+    final planName = plan['name'] as String? ?? 'Plano';
+    if (planId == null) return;
 
     final title = isImported ? 'Remover Plano' : 'Excluir Plano';
     final message = isImported
-        ? 'Deseja remover "$programName" da sua lista?'
-        : 'Deseja excluir "$programName"? Esta ação não pode ser desfeita.';
+        ? 'Deseja remover "$planName" da sua lista?'
+        : 'Deseja excluir "$planName"? Esta ação não pode ser desfeita.';
     final buttonLabel = isImported ? 'Remover' : 'Excluir';
 
     final confirmed = await showDialog<bool>(
@@ -375,7 +375,7 @@ class _ProgramsList extends ConsumerWidget {
     if (confirmed == true) {
       try {
         final service = WorkoutService();
-        await service.deletePlan(programId);
+        await service.deletePlan(planId);
         ref.invalidate(allPlansProvider);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -395,12 +395,12 @@ class _ProgramsList extends ConsumerWidget {
   Future<void> _handlePublish(
     BuildContext context,
     WidgetRef ref,
-    Map<String, dynamic> program,
+    Map<String, dynamic> plan,
   ) async {
-    final programId = program['id'] as String?;
-    final programName = program['name'] as String? ?? 'Plano';
-    final isPublic = program['is_public'] as bool? ?? false;
-    if (programId == null) return;
+    final planId = plan['id'] as String?;
+    final planName = plan['name'] as String? ?? 'Plano';
+    final isPublic = plan['is_public'] as bool? ?? false;
+    if (planId == null) return;
 
     final action = isPublic ? 'despublicar' : 'publicar';
     final confirmed = await showDialog<bool>(
@@ -409,8 +409,8 @@ class _ProgramsList extends ConsumerWidget {
         title: Text(isPublic ? 'Despublicar do Catálogo' : 'Publicar no Catálogo'),
         content: Text(
           isPublic
-              ? 'Deseja remover "$programName" do catálogo? Outros usuários não poderão mais importá-lo.'
-              : 'Deseja publicar "$programName" no catálogo? Outros Personal Trainers poderão importá-lo.',
+              ? 'Deseja remover "$planName" do catálogo? Outros usuários não poderão mais importá-lo.'
+              : 'Deseja publicar "$planName" no catálogo? Outros Personal Trainers poderão importá-lo.',
         ),
         actions: [
           TextButton(
@@ -429,7 +429,7 @@ class _ProgramsList extends ConsumerWidget {
       try {
         final service = WorkoutService();
         await service.updatePlan(
-          programId,
+          planId,
           isTemplate: true,
           isPublic: !isPublic,
         );
@@ -452,14 +452,14 @@ class _ProgramsList extends ConsumerWidget {
   Future<void> _handleDuplicate(
     BuildContext context,
     WidgetRef ref,
-    Map<String, dynamic> program,
+    Map<String, dynamic> plan,
   ) async {
-    final programId = program['id'] as String?;
-    final programName = program['name'] as String? ?? 'Plano';
-    if (programId == null) return;
+    final planId = plan['id'] as String?;
+    final planName = plan['name'] as String? ?? 'Plano';
+    if (planId == null) return;
 
-    // Show dialog to get new program name
-    final nameController = TextEditingController(text: '$programName (Cópia)');
+    // Show dialog to get new plan name
+    final nameController = TextEditingController(text: '$planName (Cópia)');
     final newName = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -489,25 +489,25 @@ class _ProgramsList extends ConsumerWidget {
 
     try {
       final service = WorkoutService();
-      final newProgram = await service.duplicatePlan(programId, newName: newName);
-      final newProgramId = newProgram['id'] as String?;
+      final newPlan = await service.duplicatePlan(planId, newName: newName);
+      final newPlanId = newPlan['id'] as String?;
 
       ref.invalidate(allPlansProvider);
 
-      if (context.mounted && newProgramId != null) {
+      if (context.mounted && newPlanId != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Plano "$newName" duplicado com sucesso'),
             action: SnackBarAction(
               label: 'Editar',
               onPressed: () {
-                context.push('${RouteNames.planWizard}?edit=$newProgramId');
+                context.push('${RouteNames.planWizard}?edit=$newPlanId');
               },
             ),
           ),
         );
-        // Navigate to edit the new program
-        context.push('${RouteNames.planWizard}?edit=$newProgramId');
+        // Navigate to edit the new plan
+        context.push('${RouteNames.planWizard}?edit=$newPlanId');
       }
     } catch (e) {
       if (context.mounted) {
@@ -611,8 +611,8 @@ class _ErrorState extends StatelessWidget {
   }
 }
 
-class _UnifiedProgramCard extends StatelessWidget {
-  final Map<String, dynamic> program;
+class _UnifiedPlanCard extends StatelessWidget {
+  final Map<String, dynamic> plan;
   final bool isDark;
   final bool isImported;
   final bool showPublishBadge;
@@ -621,8 +621,8 @@ class _UnifiedProgramCard extends StatelessWidget {
   final VoidCallback? onPublish;
   final VoidCallback? onDuplicate;
 
-  const _UnifiedProgramCard({
-    required this.program,
+  const _UnifiedPlanCard({
+    required this.plan,
     required this.isDark,
     required this.isImported,
     required this.onTap,
@@ -635,11 +635,11 @@ class _UnifiedProgramCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final name = program['name'] as String? ?? 'Plano';
-    final goal = program['goal'] as String? ?? '';
-    final difficulty = program['difficulty'] as String? ?? '';
-    final splitType = program['split_type'] as String? ?? '';
-    final workoutCount = program['workout_count'] as int? ?? 0;
+    final name = plan['name'] as String? ?? 'Plano';
+    final goal = plan['goal'] as String? ?? '';
+    final difficulty = plan['difficulty'] as String? ?? '';
+    final splitType = plan['split_type'] as String? ?? '';
+    final workoutCount = plan['workout_count'] as int? ?? 0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -693,7 +693,7 @@ class _UnifiedProgramCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                    // Published badge (only for own programs)
+                    // Published badge (only for own plans)
                     if (showPublishBadge && !isImported)
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

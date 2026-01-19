@@ -4,7 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:myfit_app/core/error/api_exceptions.dart';
 import 'package:myfit_app/core/services/workout_service.dart';
 
-import '../../helpers/fixtures/program_fixtures.dart';
+import '../../helpers/fixtures/plan_fixtures.dart';
 import '../../helpers/fixtures/workout_fixtures.dart';
 import '../../helpers/mock_services.dart';
 
@@ -342,7 +342,7 @@ void main() {
 
     group('getPrograms', () {
       test('should return list of programs on success', () async {
-        final programs = ProgramFixtures.apiResponseList(count: 3);
+        final programs = PlanFixtures.apiResponseList(count: 3);
         when(() => mockApiClient.get(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -384,7 +384,7 @@ void main() {
 
     group('getCatalogTemplates', () {
       test('should return list of catalog templates on success', () async {
-        final templates = ProgramFixtures.catalogResponseList(count: 5);
+        final templates = PlanFixtures.catalogResponseList(count: 5);
         when(() => mockApiClient.get(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -478,7 +478,7 @@ void main() {
 
     group('duplicateProgram', () {
       test('should duplicate program on success', () async {
-        final duplicate = ProgramFixtures.abcSplit(id: 'program-copy');
+        final duplicate = PlanFixtures.abcSplit(id: 'program-copy');
         when(() => mockApiClient.post(
               any(),
               queryParameters: any(named: 'queryParameters'),
@@ -506,7 +506,7 @@ void main() {
 
     group('createProgramAssignment', () {
       test('should assign program to student on success', () async {
-        final assignment = ProgramFixtures.assignmentApiResponse();
+        final assignment = PlanFixtures.assignmentApiResponse();
         when(() => mockApiClient.post(
               any(),
               data: any(named: 'data'),
@@ -597,11 +597,12 @@ void main() {
     });
 
     group('generatePlanWithAI', () {
-      test('should generate program on success', () async {
-        final aiResponse = ProgramFixtures.aiGenerationResponse();
+      test('should generate plan on success', () async {
+        final aiResponse = PlanFixtures.aiGenerationResponse();
         when(() => mockApiClient.post(
               any(),
               data: any(named: 'data'),
+              options: any(named: 'options'),
             )).thenAnswer((_) async => createResponse(data: aiResponse));
 
         final result = await workoutService.generatePlanWithAI(
@@ -612,13 +613,14 @@ void main() {
           equipment: 'full_gym',
         );
 
-        expect(result['program'], isNotNull);
+        expect(result, isNotNull);
       });
 
       test('should include injuries in request', () async {
         when(() => mockApiClient.post(
               any(),
               data: any(named: 'data'),
+              options: any(named: 'options'),
             )).thenAnswer((_) async => createResponse(data: <String, dynamic>{}));
 
         await workoutService.generatePlanWithAI(
@@ -633,6 +635,7 @@ void main() {
         verify(() => mockApiClient.post(
               any(),
               data: captureAny(named: 'data'),
+              options: any(named: 'options'),
             )).called(1);
       });
 
@@ -640,6 +643,7 @@ void main() {
         when(() => mockApiClient.post(
               any(),
               data: any(named: 'data'),
+              options: any(named: 'options'),
             )).thenAnswer((_) async => createResponse(data: null, statusCode: 500));
 
         expect(

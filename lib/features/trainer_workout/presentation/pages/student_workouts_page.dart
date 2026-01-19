@@ -50,7 +50,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
     final workouts = ref.watch(studentWorkoutsProvider(widget.studentId));
     final progress = ref.watch(studentProgressProvider(widget.studentId));
     final suggestions = ref.watch(aiSuggestionsProvider(widget.studentId));
-    final programs = ref.watch(studentProgramsProvider(widget.studentId));
+    final plans = ref.watch(studentPlansProvider(widget.studentId));
 
     final activeWorkouts =
         workouts.where((w) => w.status == WorkoutAssignmentStatus.active).toList();
@@ -87,7 +87,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                   controller: _tabController,
                   children: [
                     // Treinos Ativos + Sugestões IA + Planos
-                    _buildActiveTab(context, isDark, activeWorkouts, suggestions, progress, programs),
+                    _buildActiveTab(context, isDark, activeWorkouts, suggestions, progress, plans),
 
                     // Rascunhos
                     _buildDraftsTab(context, isDark, draftWorkouts),
@@ -382,7 +382,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
     List<TrainerWorkout> workouts,
     List<AISuggestion> suggestions,
     StudentProgress progress,
-    List<Map<String, dynamic>> programs,
+    List<Map<String, dynamic>> plans,
   ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -398,7 +398,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
           ],
 
           // Planos de treino
-          if (programs.isNotEmpty) ...[
+          if (plans.isNotEmpty) ...[
             FadeInUp(
               delay: const Duration(milliseconds: 50),
               child: Row(
@@ -421,17 +421,17 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
               ),
             ),
             const SizedBox(height: 12),
-            ...programs.asMap().entries.map((entry) {
+            ...plans.asMap().entries.map((entry) {
               return FadeInUp(
                 delay: Duration(milliseconds: 100 + (entry.key * 50)),
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: _StudentProgramCard(
-                    program: entry.value,
+                  child: _StudentPlanCard(
+                    plan: entry.value,
                     isDark: isDark,
                     onTap: () {
                       HapticUtils.lightImpact();
-                      context.push('/programs/${entry.value['id']}');
+                      context.push('/plans/${entry.value['id']}');
                     },
                   ),
                 ),
@@ -1899,16 +1899,16 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
 }
 
 // ============================================================
-// STUDENT PROGRAM CARD
+// STUDENT PLAN CARD
 // ============================================================
 
-class _StudentProgramCard extends StatelessWidget {
-  final Map<String, dynamic> program;
+class _StudentPlanCard extends StatelessWidget {
+  final Map<String, dynamic> plan;
   final bool isDark;
   final VoidCallback onTap;
 
-  const _StudentProgramCard({
-    required this.program,
+  const _StudentPlanCard({
+    required this.plan,
     required this.isDark,
     required this.onTap,
   });
@@ -1945,12 +1945,12 @@ class _StudentProgramCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = program['name'] as String? ?? 'Plano';
-    final goal = program['goal'] as String?;
-    final difficulty = program['difficulty'] as String?;
-    final splitType = program['split_type'] as String?;
-    final workoutsCount = (program['workouts'] as List?)?.length ?? 0;
-    final durationWeeks = program['duration_weeks'] as int?;
+    final name = plan['name'] as String? ?? 'Plano';
+    final goal = plan['goal'] as String?;
+    final difficulty = plan['difficulty'] as String?;
+    final splitType = plan['split_type'] as String?;
+    final workoutsCount = (plan['workouts'] as List?)?.length ?? 0;
+    final durationWeeks = plan['duration_weeks'] as int?;
 
     return GestureDetector(
       onTap: onTap,
@@ -2024,25 +2024,25 @@ class _StudentProgramCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _ProgramBadge(
+                _PlanBadge(
                   label: '$workoutsCount treinos',
                   icon: LucideIcons.dumbbell,
                   isDark: isDark,
                 ),
                 if (splitType != null)
-                  _ProgramBadge(
+                  _PlanBadge(
                     label: splitType.toUpperCase(),
                     icon: LucideIcons.layoutGrid,
                     isDark: isDark,
                   ),
                 if (difficulty != null)
-                  _ProgramBadge(
+                  _PlanBadge(
                     label: _getDifficultyLabel(difficulty),
                     icon: LucideIcons.gauge,
                     isDark: isDark,
                   ),
                 if (durationWeeks != null)
-                  _ProgramBadge(
+                  _PlanBadge(
                     label: '$durationWeeks semanas',
                     icon: LucideIcons.calendar,
                     isDark: isDark,
@@ -2056,12 +2056,12 @@ class _StudentProgramCard extends StatelessWidget {
   }
 }
 
-class _ProgramBadge extends StatelessWidget {
+class _PlanBadge extends StatelessWidget {
   final String label;
   final IconData icon;
   final bool isDark;
 
-  const _ProgramBadge({
+  const _PlanBadge({
     required this.label,
     required this.icon,
     required this.isDark,
