@@ -1,5 +1,5 @@
-import 'package:myfit_app/features/workout_program/domain/models/workout_program.dart';
-import 'package:myfit_app/features/workout_program/presentation/providers/program_wizard_provider.dart';
+import 'package:myfit_app/features/training_plan/domain/models/training_plan.dart';
+import 'package:myfit_app/features/training_plan/presentation/providers/plan_wizard_provider.dart';
 import 'package:myfit_app/features/workout_builder/domain/models/exercise.dart';
 
 /// Fixtures for exercise group and technique-related test data.

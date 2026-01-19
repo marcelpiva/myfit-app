@@ -632,7 +632,7 @@ void main() {
         {'id': 'program-2', 'name': 'Program B'},
       ];
 
-      when(() => mockWorkoutService.getPrograms(studentId: any(named: 'studentId')))
+      when(() => mockWorkoutService.getPlans(studentId: any(named: 'studentId')))
           .thenAnswer((_) async => programs);
 
       final container = createTestContainer();
@@ -651,7 +651,7 @@ void main() {
     });
 
     test('should handle error', () async {
-      when(() => mockWorkoutService.getPrograms(studentId: any(named: 'studentId')))
+      when(() => mockWorkoutService.getPlans(studentId: any(named: 'studentId')))
           .thenThrow(const ServerException('Error'));
 
       final container = createTestContainer();

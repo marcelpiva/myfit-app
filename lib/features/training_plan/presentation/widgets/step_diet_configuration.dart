@@ -6,7 +6,7 @@ import '../../../../core/utils/haptic_utils.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
-import '../providers/program_wizard_provider.dart';
+import '../providers/plan_wizard_provider.dart';
 
 /// Step 5: Diet configuration (optional)
 class StepDietConfiguration extends ConsumerStatefulWidget {
@@ -26,7 +26,7 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
   @override
   void initState() {
     super.initState();
-    final state = ref.read(programWizardProvider);
+    final state = ref.read(planWizardProvider);
     _caloriesController.text = state.dailyCalories?.toString() ?? '';
     _proteinController.text = state.proteinGrams?.toString() ?? '';
     _carbsController.text = state.carbsGrams?.toString() ?? '';
@@ -46,8 +46,8 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(programWizardProvider);
-    final notifier = ref.read(programWizardProvider.notifier);
+    final state = ref.watch(planWizardProvider);
+    final notifier = ref.read(planWizardProvider.notifier);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -59,7 +59,7 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Dieta do Programa',
+              'Dieta do Plano',
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -136,8 +136,8 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
   Widget _buildIncludeDietToggle(
     ThemeData theme,
     bool isDark,
-    ProgramWizardState state,
-    ProgramWizardNotifier notifier,
+    PlanWizardState state,
+    PlanWizardNotifier notifier,
   ) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -203,8 +203,8 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
   Widget _buildDietTypeSelection(
     ThemeData theme,
     bool isDark,
-    ProgramWizardState state,
-    ProgramWizardNotifier notifier,
+    PlanWizardState state,
+    PlanWizardNotifier notifier,
   ) {
     final dietTypes = DietType.values;
 
@@ -288,7 +288,7 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
     }
   }
 
-  Widget _buildCaloriesField(ThemeData theme, ProgramWizardNotifier notifier) {
+  Widget _buildCaloriesField(ThemeData theme, PlanWizardNotifier notifier) {
     return TextFormField(
       controller: _caloriesController,
       keyboardType: TextInputType.number,
@@ -308,7 +308,7 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
     );
   }
 
-  Widget _buildMacrosRow(ThemeData theme, ProgramWizardNotifier notifier) {
+  Widget _buildMacrosRow(ThemeData theme, PlanWizardNotifier notifier) {
     return Row(
       children: [
         Expanded(
@@ -398,7 +398,7 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
     );
   }
 
-  Widget _buildMacrosSummary(ThemeData theme, bool isDark, ProgramWizardState state) {
+  Widget _buildMacrosSummary(ThemeData theme, bool isDark, PlanWizardState state) {
     final protein = state.proteinGrams ?? 0;
     final carbs = state.carbsGrams ?? 0;
     final fat = state.fatGrams ?? 0;
@@ -448,8 +448,8 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
   Widget _buildMealsPerDaySelection(
     ThemeData theme,
     bool isDark,
-    ProgramWizardState state,
-    ProgramWizardNotifier notifier,
+    PlanWizardState state,
+    PlanWizardNotifier notifier,
   ) {
     final mealOptions = [3, 4, 5, 6];
 
@@ -507,7 +507,7 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
     );
   }
 
-  Widget _buildNotesField(ThemeData theme, ProgramWizardNotifier notifier) {
+  Widget _buildNotesField(ThemeData theme, PlanWizardNotifier notifier) {
     return TextFormField(
       controller: _notesController,
       maxLines: 3,

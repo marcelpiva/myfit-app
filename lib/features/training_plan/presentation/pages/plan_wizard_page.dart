@@ -4,12 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
-import '../../../trainer_workout/presentation/pages/trainer_programs_page.dart';
-import '../providers/program_wizard_provider.dart';
+import '../../../trainer_workout/presentation/pages/trainer_plans_page.dart';
+import '../providers/plan_wizard_provider.dart';
 import '../widgets/step_ai_questionnaire.dart';
 import '../widgets/step_diet_configuration.dart';
 import '../widgets/step_method_selection.dart';
-import '../widgets/step_program_info.dart';
+import '../widgets/step_plan_info.dart';
 import '../widgets/step_review.dart';
 import '../widgets/step_split_selection.dart';
 import '../widgets/step_student_assignment.dart';
@@ -17,35 +17,35 @@ import '../widgets/step_workouts_config.dart';
 import '../widgets/template_browser_sheet.dart';
 
 /// Main wizard page for creating workout programs
-class ProgramWizardPage extends ConsumerStatefulWidget {
+class PlanWizardPage extends ConsumerStatefulWidget {
   final String? studentId;
-  final String? programId;
+  final String? planId;
 
-  const ProgramWizardPage({super.key, this.studentId, this.programId});
+  const PlanWizardPage({super.key, this.studentId, this.planId});
 
   /// Check if this is an edit operation
-  bool get isEditing => programId != null;
+  bool get isEditing => planId != null;
 
   @override
-  ConsumerState<ProgramWizardPage> createState() => _ProgramWizardPageState();
+  ConsumerState<PlanWizardPage> createState() => _PlanWizardPageState();
 }
 
-class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
+class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
   final PageController _pageController = PageController();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Load program for editing if programId is provided
-      if (widget.programId != null) {
-        ref.read(programWizardProvider.notifier).loadProgramForEdit(widget.programId!);
+      // Load program for editing if planId is provided
+      if (widget.planId != null) {
+        ref.read(planWizardProvider.notifier).loadPlanForEdit(widget.planId!);
         // Jump to step 1 (skip method selection in edit mode)
         _pageController.jumpToPage(1);
       }
       // Set student ID if provided
       if (widget.studentId != null) {
-        ref.read(programWizardProvider.notifier).setStudentId(widget.studentId);
+        ref.read(planWizardProvider.notifier).setStudentId(widget.studentId);
       }
     });
   }
@@ -62,11 +62,11 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
-    ref.read(programWizardProvider.notifier).goToStep(step);
+    ref.read(planWizardProvider.notifier).goToStep(step);
   }
 
   void _nextStep() {
-    final state = ref.read(programWizardProvider);
+    final state = ref.read(planWizardProvider);
 
     // Validate current step before proceeding
     final validationError = _validateCurrentStep(state);
@@ -85,7 +85,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
     }
   }
 
-  String? _validateCurrentStep(ProgramWizardState state) {
+  String? _validateCurrentStep(PlanWizardState state) {
     switch (state.currentStep) {
       case 0: // Method selection
         if (state.method == null) {
@@ -93,10 +93,10 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
         }
         break;
       case 1: // Program info
-        if (state.programName.trim().isEmpty) {
-          return 'Informe o nome do programa';
+        if (state.planName.trim().isEmpty) {
+          return 'Informe o nome do plano';
         }
-        if (state.programName.trim().length < 3) {
+        if (state.planName.trim().length < 3) {
           return 'O nome deve ter pelo menos 3 caracteres';
         }
         break;
@@ -123,7 +123,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
   }
 
   void _previousStep() {
-    final state = ref.read(programWizardProvider);
+    final state = ref.read(planWizardProvider);
     // In edit mode, step 1 is the first step (skip method selection)
     final firstStep = state.isEditing ? 1 : 0;
 
@@ -131,17 +131,17 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
       _goToStep(state.currentStep - 1);
     } else {
       // Just navigate back without confirmation
-      ref.read(programWizardProvider.notifier).reset();
+      ref.read(planWizardProvider.notifier).reset();
       Navigator.of(context).pop();
     }
   }
 
   Future<void> _confirmClose() async {
-    final state = ref.read(programWizardProvider);
+    final state = ref.read(planWizardProvider);
 
     // If no changes made (still on step 0 or no name entered), just close
-    if (state.currentStep == 0 && state.programName.isEmpty) {
-      ref.read(programWizardProvider.notifier).reset();
+    if (state.currentStep == 0 && state.planName.isEmpty) {
+      ref.read(planWizardProvider.notifier).reset();
       Navigator.of(context).pop();
       return;
     }
@@ -150,7 +150,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
     final shouldClose = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Descartar programa?'),
+        title: const Text('Descartar plano?'),
         content: const Text('As alterações não salvas serão perdidas.'),
         actions: [
           TextButton(
@@ -169,7 +169,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
     );
 
     if (shouldClose == true && mounted) {
-      ref.read(programWizardProvider.notifier).reset();
+      ref.read(planWizardProvider.notifier).reset();
       Navigator.of(context).pop();
     }
   }
@@ -186,7 +186,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
       builder: (context) => TemplateBrowserSheet(
         onTemplateSelected: (template) {
           // Clone template into wizard state
-          ref.read(programWizardProvider.notifier).loadFromTemplate(template);
+          ref.read(planWizardProvider.notifier).loadFromTemplate(template);
           _nextStep();
         },
       ),
@@ -211,7 +211,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
             Navigator.pop(sheetContext);
             // AI generation sets currentStep to 2 (workouts config)
             // Animate PageController to the correct step
-            final state = ref.read(programWizardProvider);
+            final state = ref.read(planWizardProvider);
             _pageController.jumpToPage(state.currentStep);
           },
           onCancel: () {
@@ -222,9 +222,9 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
     );
   }
 
-  Future<void> _createProgram() async {
-    final state = ref.read(programWizardProvider);
-    final notifier = ref.read(programWizardProvider.notifier);
+  Future<void> _createPlan() async {
+    final state = ref.read(planWizardProvider);
+    final notifier = ref.read(planWizardProvider.notifier);
     final navigator = Navigator.of(context);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
@@ -240,21 +240,21 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
       return;
     }
 
-    final programId = await notifier.createProgram();
+    final planId = await notifier.createPlan();
 
-    if (programId != null && mounted) {
+    if (planId != null && mounted) {
       // Invalidate the programs list to refresh it
-      ref.invalidate(allProgramsProvider);
+      ref.invalidate(allPlansProvider);
 
       scaffoldMessenger.showSnackBar(
-        SnackBar(content: Text(state.isEditing ? 'Programa atualizado com sucesso!' : 'Programa criado com sucesso!')),
+        SnackBar(content: Text(state.isEditing ? 'Plano atualizado com sucesso!' : 'Plano criado com sucesso!')),
       );
       // Navigate back to previous screen
       if (mounted) {
         navigator.pop(true);
       }
     } else {
-      final error = ref.read(programWizardProvider).error;
+      final error = ref.read(planWizardProvider).error;
       if (mounted && error != null) {
         scaffoldMessenger.showSnackBar(
           SnackBar(content: Text('Erro: $error')),
@@ -263,17 +263,17 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
     }
   }
 
-  String? _validateAllSteps(ProgramWizardState state) {
+  String? _validateAllSteps(PlanWizardState state) {
     // Validate program name
-    if (state.programName.trim().isEmpty) {
-      return 'O nome do programa é obrigatório';
+    if (state.planName.trim().isEmpty) {
+      return 'O nome do plano é obrigatório';
     }
-    if (state.programName.trim().length < 3) {
-      return 'O nome do programa deve ter pelo menos 3 caracteres';
+    if (state.planName.trim().length < 3) {
+      return 'O nome do plano deve ter pelo menos 3 caracteres';
     }
     // Validate workouts
     if (state.workouts.isEmpty) {
-      return 'Adicione pelo menos um treino ao programa';
+      return 'Adicione pelo menos um treino ao plano';
     }
     for (final workout in state.workouts) {
       if (workout.exercises.isEmpty) {
@@ -285,7 +285,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(programWizardProvider);
+    final state = ref.watch(planWizardProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -343,7 +343,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            state.isEditing ? 'Editar Programa' : 'Criar Programa',
+                            state.isEditing ? 'Editar Plano' : 'Criar Plano',
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
@@ -421,11 +421,11 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
                 onPageChanged: (index) {
-                  ref.read(programWizardProvider.notifier).goToStep(index);
+                  ref.read(planWizardProvider.notifier).goToStep(index);
                 },
                 children: [
                   StepMethodSelection(onMethodSelected: (method) {
-                    ref.read(programWizardProvider.notifier).selectMethod(method);
+                    ref.read(planWizardProvider.notifier).selectMethod(method);
                     if (method == CreationMethod.template) {
                       _showTemplateBrowser();
                     } else if (method == CreationMethod.ai) {
@@ -434,7 +434,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
                       _nextStep();
                     }
                   }),
-                  const StepProgramInfo(),
+                  const StepPlanInfo(),
                   const StepSplitSelection(),
                   const StepWorkoutsConfig(),
                   const StepDietConfiguration(),
@@ -483,7 +483,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
                 child: FilledButton.icon(
                   onPressed: state.isLoading || !state.isCurrentStepValid
                       ? null
-                      : (state.isLastStep ? _createProgram : _nextStep),
+                      : (state.isLastStep ? _createPlan : _nextStep),
                   icon: state.isLoading
                       ? const SizedBox(
                           width: 18,
@@ -494,7 +494,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
                           state.isLastStep ? LucideIcons.check : LucideIcons.arrowRight,
                           size: 18,
                         ),
-                  label: Text(state.isLastStep ? (state.isEditing ? 'Salvar Alterações' : 'Criar Programa') : 'Continuar'),
+                  label: Text(state.isLastStep ? (state.isEditing ? 'Salvar Alterações' : 'Criar Plano') : 'Continuar'),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -515,7 +515,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
       case 0:
         return 'Passo 1 de 7 - Método de Criação';
       case 1:
-        return 'Passo 2 de 7 - Informações do Programa';
+        return 'Passo 2 de 7 - Informações do Plano';
       case 2:
         return 'Passo 3 de 7 - Divisão de Treino';
       case 3:

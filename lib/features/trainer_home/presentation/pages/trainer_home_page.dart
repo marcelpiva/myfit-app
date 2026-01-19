@@ -178,7 +178,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
                       },
                       onNovoProgramy: () {
                         HapticUtils.lightImpact();
-                        context.push(RouteNames.programWizard);
+                        context.push(RouteNames.planWizard);
                       },
                       onVerCatalogo: () {
                         HapticUtils.lightImpact();
@@ -810,7 +810,7 @@ class _StatsSection extends StatelessWidget {
                 isDark: isDark,
                 onTap: () {
                   HapticUtils.lightImpact();
-                  context.push(RouteNames.programWizard);
+                  context.push(RouteNames.planWizard);
                 },
               ),
             ),
@@ -1033,7 +1033,7 @@ class _QuickActionsSection extends StatelessWidget {
         Expanded(
           child: _QuickActionButton(
             icon: LucideIcons.filePlus,
-            label: 'Programa',
+            label: 'Plano',
             color: isDark ? AppColors.secondaryDark : AppColors.secondary,
             isDark: isDark,
             onTap: onNovoProgramy,

@@ -7,7 +7,7 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/exercise_theme.dart';
 import '../../../workout_builder/domain/models/exercise.dart';
 import '../../../workout_builder/presentation/providers/exercise_catalog_provider.dart';
-import '../../domain/models/workout_program.dart';
+import '../../domain/models/training_plan.dart';
 import 'technique_config_modal.dart';
 
 /// Exercise picker that supports selecting multiple exercises for techniques

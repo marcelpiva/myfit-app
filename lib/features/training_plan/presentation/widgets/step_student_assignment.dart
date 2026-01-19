@@ -5,7 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/services/trainer_service.dart';
-import '../providers/program_wizard_provider.dart';
+import '../providers/plan_wizard_provider.dart';
 
 /// Provider for active students
 final activeStudentsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
@@ -21,8 +21,8 @@ class StepStudentAssignment extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(programWizardProvider);
-    final notifier = ref.read(programWizardProvider.notifier);
+    final state = ref.watch(planWizardProvider);
+    final notifier = ref.read(planWizardProvider.notifier);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final studentsAsync = ref.watch(activeStudentsProvider);
@@ -40,7 +40,7 @@ class StepStudentAssignment extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Opcional: selecione um aluno para atribuir este programa automaticamente',
+            'Opcional: selecione um aluno para atribuir este plano automaticamente',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
@@ -195,7 +195,7 @@ class StepStudentAssignment extends ConsumerWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Adicione alunos para poder atribuir programas',
+                          'Adicione alunos para poder atribuir planos',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                           ),

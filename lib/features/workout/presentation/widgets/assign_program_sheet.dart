@@ -48,8 +48,8 @@ class _AssignProgramSheetState extends ConsumerState<AssignProgramSheet> {
     });
 
     try {
-      await _workoutService.createProgramAssignment(
-        programId: widget.programId,
+      await _workoutService.createPlanAssignment(
+        planId: widget.programId,
         studentId: _selectedStudentId!,
         startDate: _startDate,
         endDate: _endDate,
@@ -64,7 +64,7 @@ class _AssignProgramSheetState extends ConsumerState<AssignProgramSheet> {
                 const Icon(LucideIcons.checkCircle, color: Colors.white, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text('Programa atribuído a $_selectedStudentName'),
+                  child: Text('Plano atribuído a $_selectedStudentName'),
                 ),
               ],
             ),
@@ -142,7 +142,7 @@ class _AssignProgramSheetState extends ConsumerState<AssignProgramSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Atribuir Programa',
+                        'Atribuir Plano',
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -380,7 +380,7 @@ class _AssignProgramSheetState extends ConsumerState<AssignProgramSheet> {
                         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
                     : const Icon(LucideIcons.userPlus, size: 20),
-                label: Text(_isLoading ? 'Atribuindo...' : 'Atribuir Programa'),
+                label: Text(_isLoading ? 'Atribuindo...' : 'Atribuir Plano'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,

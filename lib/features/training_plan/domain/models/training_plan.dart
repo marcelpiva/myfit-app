@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'workout_program.freezed.dart';
-part 'workout_program.g.dart';
+part 'training_plan.freezed.dart';
+part 'training_plan.g.dart';
 
 /// Training program goals
 enum WorkoutGoal {
@@ -38,7 +38,7 @@ enum SplitType {
 }
 
 /// Difficulty levels
-enum ProgramDifficulty {
+enum PlanDifficulty {
   @JsonValue('beginner')
   beginner,
   @JsonValue('intermediate')
@@ -206,15 +206,15 @@ extension SplitTypeToApi on SplitType {
   }
 }
 
-/// Extension to get API-compatible string values for ProgramDifficulty
-extension ProgramDifficultyToApi on ProgramDifficulty {
+/// Extension to get API-compatible string values for PlanDifficulty
+extension PlanDifficultyToApi on PlanDifficulty {
   String toApiValue() {
     switch (this) {
-      case ProgramDifficulty.beginner:
+      case PlanDifficulty.beginner:
         return 'beginner';
-      case ProgramDifficulty.intermediate:
+      case PlanDifficulty.intermediate:
         return 'intermediate';
-      case ProgramDifficulty.advanced:
+      case PlanDifficulty.advanced:
         return 'advanced';
     }
   }
@@ -222,14 +222,14 @@ extension ProgramDifficultyToApi on ProgramDifficulty {
 
 /// Workout Program - a structured collection of workouts
 @freezed
-sealed class WorkoutProgram with _$WorkoutProgram {
-  const WorkoutProgram._();
+sealed class TrainingPlan with _$TrainingPlan {
+  const TrainingPlan._();
 
-  const factory WorkoutProgram({
+  const factory TrainingPlan({
     required String id,
     required String name,
     required WorkoutGoal goal,
-    required ProgramDifficulty difficulty,
+    required PlanDifficulty difficulty,
     required SplitType splitType,
     String? description,
     int? durationWeeks,
@@ -238,11 +238,11 @@ sealed class WorkoutProgram with _$WorkoutProgram {
     required String createdById,
     String? organizationId,
     DateTime? createdAt,
-    @Default([]) List<ProgramWorkout> programWorkouts,
-  }) = _WorkoutProgram;
+    @Default([]) List<PlanWorkout> planWorkouts,
+  }) = _TrainingPlan;
 
-  factory WorkoutProgram.fromJson(Map<String, dynamic> json) =>
-      _$WorkoutProgramFromJson(json);
+  factory TrainingPlan.fromJson(Map<String, dynamic> json) =>
+      _$TrainingPlanFromJson(json);
 
   /// Display name for goal
   String get goalName {
@@ -265,11 +265,11 @@ sealed class WorkoutProgram with _$WorkoutProgram {
   /// Display name for difficulty
   String get difficultyName {
     switch (difficulty) {
-      case ProgramDifficulty.beginner:
+      case PlanDifficulty.beginner:
         return 'Iniciante';
-      case ProgramDifficulty.intermediate:
+      case PlanDifficulty.intermediate:
         return 'Intermediário';
-      case ProgramDifficulty.advanced:
+      case PlanDifficulty.advanced:
         return 'Avançado';
     }
   }
@@ -295,11 +295,11 @@ sealed class WorkoutProgram with _$WorkoutProgram {
   }
 
   /// Get the number of workouts
-  int get workoutCount => programWorkouts.length;
+  int get workoutCount => planWorkouts.length;
 
   /// Get total estimated duration of all workouts
   int get totalEstimatedMinutes {
-    return programWorkouts.fold<int>(
+    return planWorkouts.fold<int>(
       0,
       (sum, pw) => sum + (pw.workout?.estimatedDurationMin ?? 0),
     );
@@ -308,20 +308,20 @@ sealed class WorkoutProgram with _$WorkoutProgram {
 
 /// Workout within a program
 @freezed
-sealed class ProgramWorkout with _$ProgramWorkout {
-  const ProgramWorkout._();
+sealed class PlanWorkout with _$PlanWorkout {
+  const PlanWorkout._();
 
-  const factory ProgramWorkout({
+  const factory PlanWorkout({
     required String id,
     required String workoutId,
     required int order,
     required String label,
     int? dayOfWeek,
-    ProgramWorkoutDetail? workout,
-  }) = _ProgramWorkout;
+    PlanWorkoutDetail? workout,
+  }) = _PlanWorkout;
 
-  factory ProgramWorkout.fromJson(Map<String, dynamic> json) =>
-      _$ProgramWorkoutFromJson(json);
+  factory PlanWorkout.fromJson(Map<String, dynamic> json) =>
+      _$PlanWorkoutFromJson(json);
 
   /// Get day of week name
   String? get dayOfWeekName {
@@ -349,21 +349,21 @@ sealed class ProgramWorkout with _$ProgramWorkout {
 
 /// Workout detail for program
 @freezed
-sealed class ProgramWorkoutDetail with _$ProgramWorkoutDetail {
-  const ProgramWorkoutDetail._();
+sealed class PlanWorkoutDetail with _$PlanWorkoutDetail {
+  const PlanWorkoutDetail._();
 
-  const factory ProgramWorkoutDetail({
+  const factory PlanWorkoutDetail({
     required String id,
     required String name,
     String? description,
     required String difficulty,
     required int estimatedDurationMin,
     List<String>? targetMuscles,
-    @Default([]) List<ProgramExercise> exercises,
-  }) = _ProgramWorkoutDetail;
+    @Default([]) List<PlanExercise> exercises,
+  }) = _PlanWorkoutDetail;
 
-  factory ProgramWorkoutDetail.fromJson(Map<String, dynamic> json) =>
-      _$ProgramWorkoutDetailFromJson(json);
+  factory PlanWorkoutDetail.fromJson(Map<String, dynamic> json) =>
+      _$PlanWorkoutDetailFromJson(json);
 
   /// Get display name for difficulty
   String get difficultyName {
@@ -382,10 +382,10 @@ sealed class ProgramWorkoutDetail with _$ProgramWorkoutDetail {
 
 /// Exercise within a program workout
 @freezed
-sealed class ProgramExercise with _$ProgramExercise {
-  const ProgramExercise._();
+sealed class PlanExercise with _$PlanExercise {
+  const PlanExercise._();
 
-  const factory ProgramExercise({
+  const factory PlanExercise({
     required String id,
     required String exerciseId,
     required int order,
@@ -400,11 +400,11 @@ sealed class ProgramExercise with _$ProgramExercise {
     @Default(TechniqueType.normal) TechniqueType techniqueType,
     String? exerciseGroupId,
     @Default(0) int exerciseGroupOrder,
-    ProgramExerciseDetail? exercise,
-  }) = _ProgramExercise;
+    PlanExerciseDetail? exercise,
+  }) = _PlanExercise;
 
-  factory ProgramExercise.fromJson(Map<String, dynamic> json) =>
-      _$ProgramExerciseFromJson(json);
+  factory PlanExercise.fromJson(Map<String, dynamic> json) =>
+      _$PlanExerciseFromJson(json);
 
   /// Check if exercise is part of a group (superset, triset, etc.)
   bool get isGrouped => exerciseGroupId != null && exerciseGroupId!.isNotEmpty;
@@ -415,8 +415,8 @@ sealed class ProgramExercise with _$ProgramExercise {
 
 /// Exercise detail
 @freezed
-sealed class ProgramExerciseDetail with _$ProgramExerciseDetail {
-  const factory ProgramExerciseDetail({
+sealed class PlanExerciseDetail with _$PlanExerciseDetail {
+  const factory PlanExerciseDetail({
     required String id,
     required String name,
     required String muscleGroup,
@@ -424,10 +424,10 @@ sealed class ProgramExerciseDetail with _$ProgramExerciseDetail {
     String? instructions,
     String? imageUrl,
     String? videoUrl,
-  }) = _ProgramExerciseDetail;
+  }) = _PlanExerciseDetail;
 
-  factory ProgramExerciseDetail.fromJson(Map<String, dynamic> json) =>
-      _$ProgramExerciseDetailFromJson(json);
+  factory PlanExerciseDetail.fromJson(Map<String, dynamic> json) =>
+      _$PlanExerciseDetailFromJson(json);
 }
 
 /// Extension to parse goal from string
@@ -479,20 +479,20 @@ extension SplitTypeParsing on String {
 }
 
 /// Extension to parse difficulty from string
-extension ProgramDifficultyParsing on String {
-  ProgramDifficulty toProgramDifficulty() {
+extension PlanDifficultyParsing on String {
+  PlanDifficulty toPlanDifficulty() {
     switch (toLowerCase()) {
       case 'beginner':
       case 'iniciante':
-        return ProgramDifficulty.beginner;
+        return PlanDifficulty.beginner;
       case 'intermediate':
       case 'intermediario':
-        return ProgramDifficulty.intermediate;
+        return PlanDifficulty.intermediate;
       case 'advanced':
       case 'avancado':
-        return ProgramDifficulty.advanced;
+        return PlanDifficulty.advanced;
       default:
-        return ProgramDifficulty.intermediate;
+        return PlanDifficulty.intermediate;
     }
   }
 }

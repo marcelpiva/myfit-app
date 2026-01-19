@@ -4,25 +4,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
-import '../../domain/models/workout_program.dart';
-import '../providers/program_wizard_provider.dart';
+import '../../domain/models/training_plan.dart';
+import '../providers/plan_wizard_provider.dart';
 
 /// Step 2: Program information input
-class StepProgramInfo extends ConsumerStatefulWidget {
-  const StepProgramInfo({super.key});
+class StepPlanInfo extends ConsumerStatefulWidget {
+  const StepPlanInfo({super.key});
 
   @override
-  ConsumerState<StepProgramInfo> createState() => _StepProgramInfoState();
+  ConsumerState<StepPlanInfo> createState() => _StepPlanInfoState();
 }
 
-class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
+class _StepPlanInfoState extends ConsumerState<StepPlanInfo> {
   final _nameController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    final state = ref.read(programWizardProvider);
-    _nameController.text = state.programName;
+    final state = ref.read(planWizardProvider);
+    _nameController.text = state.planName;
   }
 
   @override
@@ -33,7 +33,7 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
 
   String? _validateName(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'Informe um nome para o programa';
+      return 'Informe um nome para o plano';
     }
     if (value.trim().length < 3) {
       return 'O nome deve ter pelo menos 3 caracteres';
@@ -43,8 +43,8 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(programWizardProvider);
-    final notifier = ref.read(programWizardProvider.notifier);
+    final state = ref.watch(planWizardProvider);
+    final notifier = ref.read(planWizardProvider.notifier);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -58,9 +58,9 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
     ];
 
     final difficulties = [
-      (ProgramDifficulty.beginner, 'Iniciante'),
-      (ProgramDifficulty.intermediate, 'Intermediário'),
-      (ProgramDifficulty.advanced, 'Avançado'),
+      (PlanDifficulty.beginner, 'Iniciante'),
+      (PlanDifficulty.intermediate, 'Intermediário'),
+      (PlanDifficulty.advanced, 'Avançado'),
     ];
 
     final durations = [
@@ -76,14 +76,14 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Informações do Programa',
+            'Informações do Plano',
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Configure os detalhes básicos do seu programa de treino',
+            'Configure os detalhes básicos do seu plano de treino',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
@@ -94,14 +94,14 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
           _buildSection(
             theme,
             isDark,
-            'Nome do Programa',
+            'Nome do Plano',
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextFormField(
                   controller: _nameController,
                   onChanged: (value) {
-                    notifier.setProgramName(value);
+                    notifier.setPlanName(value);
                   },
                   validator: _validateName,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -121,7 +121,7 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
                     ),
                   ),
                 ),
-                if (state.programName.isNotEmpty && state.programName.length >= 3)
+                if (state.planName.isNotEmpty && state.planName.length >= 3)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Row(
@@ -277,7 +277,7 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
           _buildSection(
             theme,
             isDark,
-            'Duração do Programa (opcional)',
+            'Duração do Plano (opcional)',
             Wrap(
               spacing: 8,
               runSpacing: 8,

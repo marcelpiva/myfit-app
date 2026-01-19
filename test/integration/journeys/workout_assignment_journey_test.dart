@@ -37,7 +37,7 @@ void main() {
       testWidgets('should show programs list', (tester) async {
         final programs = ProgramFixtures.apiResponseList(count: 3);
 
-        when(() => mockWorkoutService.getPrograms())
+        when(() => mockWorkoutService.getPlans())
             .thenAnswer((_) async => programs);
 
         await tester.pumpTestApp(
@@ -101,8 +101,8 @@ void main() {
       testWidgets('should create assignment successfully', (tester) async {
         final assignment = ProgramFixtures.assignmentApiResponse();
 
-        when(() => mockWorkoutService.createProgramAssignment(
-              programId: any(named: 'programId'),
+        when(() => mockWorkoutService.createPlanAssignment(
+              planId: any(named: 'programId'),
               studentId: any(named: 'studentId'),
               startDate: any(named: 'startDate'),
             )).thenAnswer((_) async => assignment);
@@ -115,8 +115,8 @@ void main() {
             studentName: 'João Silva',
             startDate: DateTime.now(),
             onConfirm: () async {
-              await mockWorkoutService.createProgramAssignment(
-                programId: 'program-1',
+              await mockWorkoutService.createPlanAssignment(
+                planId: 'program-1',
                 studentId: 'student-1',
               );
               assignmentCreated = true;
@@ -136,8 +136,8 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(assignmentCreated, true);
-        verify(() => mockWorkoutService.createProgramAssignment(
-              programId: 'program-1',
+        verify(() => mockWorkoutService.createPlanAssignment(
+              planId: 'program-1',
               studentId: 'student-1',
             )).called(1);
       });
@@ -202,7 +202,7 @@ void main() {
       });
 
       testWidgets('should publish program and show badge', (tester) async {
-        when(() => mockWorkoutService.updateProgram(
+        when(() => mockWorkoutService.updatePlan(
               any(),
               isPublic: true,
             )).thenAnswer((_) async => {'id': 'program-1', 'is_public': true});
@@ -211,9 +211,9 @@ void main() {
 
         await tester.pumpTestApp(
           _MockPublishProgramPage(
-            programId: 'program-1',
+            planId: 'program-1',
             onPublish: () async {
-              await mockWorkoutService.updateProgram(
+              await mockWorkoutService.updatePlan(
                 'program-1',
                 isPublic: true,
               );
@@ -284,7 +284,7 @@ void main() {
           'is_template': false,
         };
 
-        when(() => mockWorkoutService.duplicateProgram(any()))
+        when(() => mockWorkoutService.duplicatePlan(any()))
             .thenAnswer((_) async => imported);
 
         bool wasImported = false;
@@ -293,7 +293,7 @@ void main() {
           _MockImportTemplatePage(
             template: template,
             onImport: () async {
-              await mockWorkoutService.duplicateProgram('catalog-1');
+              await mockWorkoutService.duplicatePlan('catalog-1');
               wasImported = true;
             },
           ),
@@ -629,11 +629,11 @@ class _MockPublishConfirmationDialog extends StatelessWidget {
 }
 
 class _MockPublishProgramPage extends StatefulWidget {
-  final String programId;
+  final String planId;
   final VoidCallback onPublish;
 
   const _MockPublishProgramPage({
-    required this.programId,
+    required this.planId,
     required this.onPublish,
   });
 

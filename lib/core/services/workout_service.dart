@@ -527,10 +527,10 @@ class WorkoutService {
     }
   }
 
-  // ==================== Workout Programs ====================
+  // ==================== Training Plans ====================
 
-  /// Get list of workout programs
-  Future<List<Map<String, dynamic>>> getPrograms({
+  /// Get list of training plans
+  Future<List<Map<String, dynamic>>> getPlans({
     bool? templatesOnly,
     String? search,
     String? studentId,
@@ -546,40 +546,40 @@ class WorkoutService {
       if (search != null) params['search'] = search;
       if (studentId != null) params['student_id'] = studentId;
 
-      debugPrint('getPrograms: Fetching from ${ApiEndpoints.programs} with params: $params');
-      final response = await _client.get(ApiEndpoints.programs, queryParameters: params);
-      debugPrint('getPrograms: Response status: ${response.statusCode}');
-      debugPrint('getPrograms: Response data type: ${response.data?.runtimeType}');
+      debugPrint('getPlans: Fetching from ${ApiEndpoints.plans} with params: $params');
+      final response = await _client.get(ApiEndpoints.plans, queryParameters: params);
+      debugPrint('getPlans: Response status: ${response.statusCode}');
+      debugPrint('getPlans: Response data type: ${response.data?.runtimeType}');
 
       if (response.statusCode == 200 && response.data != null) {
         // Handle both array response and paginated response formats
         final data = response.data;
         if (data is List) {
-          debugPrint('getPrograms: Data is List with ${data.length} items');
+          debugPrint('getPlans: Data is List with ${data.length} items');
           return data.cast<Map<String, dynamic>>();
         } else if (data is Map && data['data'] is List) {
-          debugPrint('getPrograms: Data is Map with data[] key');
+          debugPrint('getPlans: Data is Map with data[] key');
           return (data['data'] as List).cast<Map<String, dynamic>>();
         } else if (data is Map && data['items'] is List) {
-          debugPrint('getPrograms: Data is Map with items[] key');
+          debugPrint('getPlans: Data is Map with items[] key');
           return (data['items'] as List).cast<Map<String, dynamic>>();
         } else if (data is Map && data['results'] is List) {
-          debugPrint('getPrograms: Data is Map with results[] key');
+          debugPrint('getPlans: Data is Map with results[] key');
           return (data['results'] as List).cast<Map<String, dynamic>>();
         } else {
-          debugPrint('getPrograms: Unexpected data format: $data');
+          debugPrint('getPlans: Unexpected data format: $data');
         }
       }
       return [];
     } on DioException catch (e) {
-      debugPrint('getPrograms DioException: ${e.message}');
-      debugPrint('getPrograms response: ${e.response?.data}');
+      debugPrint('getPlans DioException: ${e.message}');
+      debugPrint('getPlans response: ${e.response?.data}');
       throw e.error is ApiException
           ? e.error as ApiException
-          : UnknownApiException(e.response?.data?['detail'] ?? e.message ?? 'Erro ao carregar programas', e);
+          : UnknownApiException(e.response?.data?['detail'] ?? e.message ?? 'Erro ao carregar planos', e);
     } catch (e, stackTrace) {
-      debugPrint('getPrograms Error: $e');
-      debugPrint('getPrograms StackTrace: $stackTrace');
+      debugPrint('getPlans Error: $e');
+      debugPrint('getPlans StackTrace: $stackTrace');
       rethrow;
     }
   }
@@ -603,8 +603,8 @@ class WorkoutService {
       if (difficulty != null) params['difficulty'] = difficulty;
       if (splitType != null) params['split_type'] = splitType;
 
-      debugPrint('getCatalogTemplates: Fetching from ${ApiEndpoints.programsCatalog} with params: $params');
-      final response = await _client.get(ApiEndpoints.programsCatalog, queryParameters: params);
+      debugPrint('getCatalogTemplates: Fetching from ${ApiEndpoints.plansCatalog} with params: $params');
+      final response = await _client.get(ApiEndpoints.plansCatalog, queryParameters: params);
       debugPrint('getCatalogTemplates: Response status: ${response.statusCode}');
       debugPrint('getCatalogTemplates: Response data type: ${response.data?.runtimeType}');
 
@@ -641,23 +641,23 @@ class WorkoutService {
     }
   }
 
-  /// Get program by ID
-  Future<Map<String, dynamic>> getProgram(String programId) async {
+  /// Get plan by ID
+  Future<Map<String, dynamic>> getPlan(String planId) async {
     try {
-      final response = await _client.get(ApiEndpoints.program(programId));
+      final response = await _client.get(ApiEndpoints.plan(planId));
       if (response.statusCode == 200 && response.data != null) {
         return response.data as Map<String, dynamic>;
       }
-      throw const NotFoundException('Programa não encontrado');
+      throw const NotFoundException('Plano não encontrado');
     } on DioException catch (e) {
       throw e.error is ApiException
           ? e.error as ApiException
-          : UnknownApiException(e.message ?? 'Erro ao carregar programa', e);
+          : UnknownApiException(e.message ?? 'Erro ao carregar plano', e);
     }
   }
 
-  /// Create workout program
-  Future<String> createProgram({
+  /// Create training plan
+  Future<String> createPlan({
     required String name,
     required String goal,
     required String difficulty,
@@ -695,23 +695,23 @@ class WorkoutService {
       if (mealsPerDay != null) data['meals_per_day'] = mealsPerDay;
       if (dietNotes != null) data['diet_notes'] = dietNotes;
 
-      final response = await _client.post(ApiEndpoints.programs, data: data);
+      final response = await _client.post(ApiEndpoints.plans, data: data);
       if (response.statusCode == 201 && response.data != null) {
         return (response.data as Map<String, dynamic>)['id'] as String;
       }
-      debugPrint('createProgram: Unexpected response - status: ${response.statusCode}, data: ${response.data}');
-      throw ServerException('Erro ao criar programa (status: ${response.statusCode})');
+      debugPrint('createPlan: Unexpected response - status: ${response.statusCode}, data: ${response.data}');
+      throw ServerException('Erro ao criar plano (status: ${response.statusCode})');
     } on DioException catch (e) {
-      debugPrint('createProgram DioException: ${e.message}');
-      debugPrint('createProgram response: ${e.response?.data}');
+      debugPrint('createPlan DioException: ${e.message}');
+      debugPrint('createPlan response: ${e.response?.data}');
       throw e.error is ApiException
           ? e.error as ApiException
-          : UnknownApiException(e.response?.data?['detail'] ?? e.message ?? 'Erro ao criar programa', e);
+          : UnknownApiException(e.response?.data?['detail'] ?? e.message ?? 'Erro ao criar plano', e);
     }
   }
 
-  /// Update workout program
-  Future<Map<String, dynamic>> updateProgram(String programId, {
+  /// Update training plan
+  Future<Map<String, dynamic>> updatePlan(String planId, {
     String? name,
     String? goal,
     String? difficulty,
@@ -750,32 +750,32 @@ class WorkoutService {
       if (mealsPerDay != null) data['meals_per_day'] = mealsPerDay;
       if (dietNotes != null) data['diet_notes'] = dietNotes;
 
-      final response = await _client.put(ApiEndpoints.program(programId), data: data);
+      final response = await _client.put(ApiEndpoints.plan(planId), data: data);
       if (response.statusCode == 200 && response.data != null) {
         return response.data as Map<String, dynamic>;
       }
-      throw const ServerException('Erro ao atualizar programa');
+      throw const ServerException('Erro ao atualizar plano');
     } on DioException catch (e) {
       throw e.error is ApiException
           ? e.error as ApiException
-          : UnknownApiException(e.message ?? 'Erro ao atualizar programa', e);
+          : UnknownApiException(e.message ?? 'Erro ao atualizar plano', e);
     }
   }
 
-  /// Delete workout program
-  Future<void> deleteProgram(String programId) async {
+  /// Delete training plan
+  Future<void> deletePlan(String planId) async {
     try {
-      await _client.delete(ApiEndpoints.program(programId));
+      await _client.delete(ApiEndpoints.plan(planId));
     } on DioException catch (e) {
       throw e.error is ApiException
           ? e.error as ApiException
-          : UnknownApiException(e.message ?? 'Erro ao excluir programa', e);
+          : UnknownApiException(e.message ?? 'Erro ao excluir plano', e);
     }
   }
 
-  /// Duplicate workout program
-  /// If [fromCatalog] is true, tracks the original program as source_template_id
-  Future<Map<String, dynamic>> duplicateProgram(String programId, {
+  /// Duplicate training plan
+  /// If [fromCatalog] is true, tracks the original plan as source_template_id
+  Future<Map<String, dynamic>> duplicatePlan(String planId, {
     bool duplicateWorkouts = true,
     String? newName,
     bool fromCatalog = false,
@@ -787,23 +787,23 @@ class WorkoutService {
       };
       if (newName != null) params['new_name'] = newName;
       final response = await _client.post(
-        ApiEndpoints.programDuplicate(programId),
+        ApiEndpoints.planDuplicate(planId),
         queryParameters: params,
       );
       if (response.statusCode == 201 && response.data != null) {
         return response.data as Map<String, dynamic>;
       }
-      throw const ServerException('Erro ao duplicar programa');
+      throw const ServerException('Erro ao duplicar plano');
     } on DioException catch (e) {
       throw e.error is ApiException
           ? e.error as ApiException
-          : UnknownApiException(e.message ?? 'Erro ao duplicar programa', e);
+          : UnknownApiException(e.message ?? 'Erro ao duplicar plano', e);
     }
   }
 
-  /// Add workout to program
-  Future<Map<String, dynamic>> addWorkoutToProgram(
-    String programId, {
+  /// Add workout to plan
+  Future<Map<String, dynamic>> addWorkoutToPlan(
+    String planId, {
     String? workoutId,
     String? workoutName,
     required String label,
@@ -822,13 +822,13 @@ class WorkoutService {
       if (exercises != null) data['workout_exercises'] = exercises;
 
       final response = await _client.post(
-        ApiEndpoints.programWorkouts(programId),
+        ApiEndpoints.planWorkouts(planId),
         data: data,
       );
       if (response.statusCode == 200 && response.data != null) {
         return response.data as Map<String, dynamic>;
       }
-      throw const ServerException('Erro ao adicionar treino ao programa');
+      throw const ServerException('Erro ao adicionar treino ao plano');
     } on DioException catch (e) {
       throw e.error is ApiException
           ? e.error as ApiException
@@ -836,20 +836,20 @@ class WorkoutService {
     }
   }
 
-  /// Remove workout from program
-  Future<void> removeWorkoutFromProgram(String programId, String programWorkoutId) async {
+  /// Remove workout from plan
+  Future<void> removeWorkoutFromPlan(String planId, String planWorkoutId) async {
     try {
-      await _client.delete(ApiEndpoints.programWorkout(programId, programWorkoutId));
+      await _client.delete(ApiEndpoints.planWorkout(planId, planWorkoutId));
     } on DioException catch (e) {
       throw e.error is ApiException
           ? e.error as ApiException
-          : UnknownApiException(e.message ?? 'Erro ao remover treino do programa', e);
+          : UnknownApiException(e.message ?? 'Erro ao remover treino do plano', e);
     }
   }
 
-  /// Create program assignment
-  Future<Map<String, dynamic>> createProgramAssignment({
-    required String programId,
+  /// Create plan assignment
+  Future<Map<String, dynamic>> createPlanAssignment({
+    required String planId,
     required String studentId,
     DateTime? startDate,
     DateTime? endDate,
@@ -857,22 +857,22 @@ class WorkoutService {
   }) async {
     try {
       final data = <String, dynamic>{
-        'program_id': programId,
+        'plan_id': planId,
         'student_id': studentId,
         'start_date': (startDate ?? DateTime.now()).toIso8601String().split('T')[0],
       };
       if (endDate != null) data['end_date'] = endDate.toIso8601String().split('T')[0];
       if (notes != null) data['notes'] = notes;
 
-      final response = await _client.post(ApiEndpoints.programAssignments, data: data);
+      final response = await _client.post(ApiEndpoints.planAssignments, data: data);
       if (response.statusCode == 201 && response.data != null) {
         return response.data as Map<String, dynamic>;
       }
-      throw const ServerException('Erro ao atribuir programa');
+      throw const ServerException('Erro ao atribuir plano');
     } on DioException catch (e) {
       throw e.error is ApiException
           ? e.error as ApiException
-          : UnknownApiException(e.message ?? 'Erro ao atribuir programa', e);
+          : UnknownApiException(e.message ?? 'Erro ao atribuir plano', e);
     }
   }
 
@@ -888,9 +888,9 @@ class WorkoutService {
     // Workout context parameters
     String? workoutName,
     String? workoutLabel,
-    String? programName,
-    String? programGoal,
-    String? programSplitType,
+    String? planName,
+    String? planGoal,
+    String? planSplitType,
     List<String>? existingExercises,
     int existingExerciseCount = 0,
     bool allowAdvancedTechniques = true,
@@ -910,16 +910,16 @@ class WorkoutService {
       // Build context if any context parameter is provided
       if (workoutName != null ||
           workoutLabel != null ||
-          programName != null ||
-          programGoal != null ||
-          programSplitType != null ||
+          planName != null ||
+          planGoal != null ||
+          planSplitType != null ||
           (existingExercises != null && existingExercises.isNotEmpty)) {
         data['context'] = <String, dynamic>{
           if (workoutName != null) 'workout_name': workoutName,
           if (workoutLabel != null) 'workout_label': workoutLabel,
-          if (programName != null) 'program_name': programName,
-          if (programGoal != null) 'program_goal': programGoal,
-          if (programSplitType != null) 'program_split_type': programSplitType,
+          if (planName != null) 'plan_name': planName,
+          if (planGoal != null) 'plan_goal': planGoal,
+          if (planSplitType != null) 'plan_split_type': planSplitType,
           if (existingExercises != null && existingExercises.isNotEmpty)
             'existing_exercises': existingExercises,
           'existing_exercise_count': existingExerciseCount,
@@ -938,8 +938,8 @@ class WorkoutService {
     }
   }
 
-  /// Generate workout program with AI based on questionnaire
-  Future<Map<String, dynamic>> generateProgramWithAI({
+  /// Generate training plan with AI based on questionnaire
+  Future<Map<String, dynamic>> generatePlanWithAI({
     required String goal,
     required String difficulty,
     required int daysPerWeek,
@@ -965,7 +965,7 @@ class WorkoutService {
 
       // AI generation can take longer, use extended timeout
       final response = await _client.post(
-        ApiEndpoints.programsGenerateAI,
+        ApiEndpoints.plansGenerateAI,
         data: data,
         options: Options(
           sendTimeout: const Duration(seconds: 120),
@@ -975,11 +975,11 @@ class WorkoutService {
       if (response.statusCode == 200 && response.data != null) {
         return response.data as Map<String, dynamic>;
       }
-      throw const ServerException('Erro ao gerar programa');
+      throw const ServerException('Erro ao gerar plano');
     } on DioException catch (e) {
       throw e.error is ApiException
           ? e.error as ApiException
-          : UnknownApiException(e.message ?? 'Erro ao gerar programa', e);
+          : UnknownApiException(e.message ?? 'Erro ao gerar plano', e);
     }
   }
 }

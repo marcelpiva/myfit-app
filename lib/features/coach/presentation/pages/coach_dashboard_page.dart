@@ -78,7 +78,7 @@ class CoachDashboardPage extends ConsumerWidget {
               FadeInUp(
                 delay: const Duration(milliseconds: 100),
                 child: _SectionHeader(
-                  title: 'Programas Ativos',
+                  title: 'Planos Ativos',
                   icon: LucideIcons.layoutGrid,
                   isDark: isDark,
                 ),
@@ -90,7 +90,7 @@ class CoachDashboardPage extends ConsumerWidget {
                 FadeInUp(
                   delay: const Duration(milliseconds: 150),
                   child: _EmptyStateCard(
-                    message: 'Nenhum programa ativo',
+                    message: 'Nenhum plano ativo',
                     icon: LucideIcons.layoutGrid,
                     isDark: isDark,
                   ),
@@ -587,7 +587,7 @@ class _QuickActionsGrid extends StatelessWidget {
         Expanded(
           child: _QuickActionButton(
             icon: LucideIcons.plus,
-            label: 'Novo Programa',
+            label: 'Novo Plano',
             color: isDark ? AppColors.primaryDark : AppColors.primary,
             isDark: isDark,
             onTap: () {

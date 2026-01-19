@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/tokens/exercise_theme.dart';
-import '../../../../features/workout_program/domain/models/workout_program.dart';
+import '../../../../features/training_plan/domain/models/training_plan.dart';
 
 /// A widget that displays the configuration of single-exercise techniques
 /// (dropset, rest-pause, cluster).

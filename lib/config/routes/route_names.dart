@@ -26,8 +26,8 @@ abstract class RouteNames {
   // Workout routes
   static const workoutDetail = '/workouts/:workoutId';
   static const workoutBuilder = '/workouts/builder';
-  static const programWizard = '/programs/wizard';
-  static const programDetail = '/programs/:programId';
+  static const planWizard = '/plans/wizard';
+  static const planDetail = '/plans/:planId';
   static const activeWorkout = '/workouts/active/:sessionId';
   static const exerciseLibrary = '/workouts/exercises';
 
@@ -90,7 +90,7 @@ abstract class RouteNames {
   static const students = '/students';
   static const schedule = '/schedule';
   static const studentWorkouts = '/students/:studentId/workouts';
-  static const trainerPrograms = '/trainer-programs';
+  static const trainerPlans = '/trainer-plans';
 
   // Nutritionist routes
   static const patients = '/patients';

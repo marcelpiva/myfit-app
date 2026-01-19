@@ -348,7 +348,7 @@ void main() {
               queryParameters: any(named: 'queryParameters'),
             )).thenAnswer((_) async => createResponse(data: programs));
 
-        final result = await workoutService.getPrograms();
+        final result = await workoutService.getPlans();
 
         expect(result.length, 3);
       });
@@ -359,7 +359,7 @@ void main() {
               queryParameters: any(named: 'queryParameters'),
             )).thenAnswer((_) async => createResponse(data: []));
 
-        await workoutService.getPrograms(studentId: 'student-1');
+        await workoutService.getPlans(studentId: 'student-1');
 
         verify(() => mockApiClient.get(
               any(),
@@ -373,7 +373,7 @@ void main() {
               queryParameters: any(named: 'queryParameters'),
             )).thenAnswer((_) async => createResponse(data: []));
 
-        await workoutService.getPrograms(templatesOnly: true);
+        await workoutService.getPlans(templatesOnly: true);
 
         verify(() => mockApiClient.get(
               any(),
@@ -448,7 +448,7 @@ void main() {
               statusCode: 201,
             ));
 
-        final result = await workoutService.createProgram(
+        final result = await workoutService.createPlan(
           name: 'New Program',
           goal: 'hypertrophy',
           difficulty: 'intermediate',
@@ -465,7 +465,7 @@ void main() {
             )).thenAnswer((_) async => createResponse(data: null, statusCode: 400));
 
         expect(
-          () => workoutService.createProgram(
+          () => workoutService.createPlan(
             name: 'Test',
             goal: 'strength',
             difficulty: 'beginner',
@@ -484,7 +484,7 @@ void main() {
               queryParameters: any(named: 'queryParameters'),
             )).thenAnswer((_) async => createResponse(data: duplicate, statusCode: 201));
 
-        final result = await workoutService.duplicateProgram('program-1');
+        final result = await workoutService.duplicatePlan('program-1');
 
         expect(result['id'], 'program-copy');
       });
@@ -495,7 +495,7 @@ void main() {
               queryParameters: any(named: 'queryParameters'),
             )).thenAnswer((_) async => createResponse(data: <String, dynamic>{}, statusCode: 201));
 
-        await workoutService.duplicateProgram('program-1');
+        await workoutService.duplicatePlan('program-1');
 
         verify(() => mockApiClient.post(
               any(),
@@ -512,8 +512,8 @@ void main() {
               data: any(named: 'data'),
             )).thenAnswer((_) async => createResponse(data: assignment, statusCode: 201));
 
-        final result = await workoutService.createProgramAssignment(
-          programId: 'program-1',
+        final result = await workoutService.createPlanAssignment(
+          planId: 'program-1',
           studentId: 'student-1',
         );
 
@@ -527,8 +527,8 @@ void main() {
               data: any(named: 'data'),
             )).thenAnswer((_) async => createResponse(data: <String, dynamic>{}, statusCode: 201));
 
-        await workoutService.createProgramAssignment(
-          programId: 'program-1',
+        await workoutService.createPlanAssignment(
+          planId: 'program-1',
           studentId: 'student-1',
         );
 
@@ -544,8 +544,8 @@ void main() {
               data: any(named: 'data'),
             )).thenAnswer((_) async => createResponse(data: <String, dynamic>{}, statusCode: 201));
 
-        await workoutService.createProgramAssignment(
-          programId: 'program-1',
+        await workoutService.createPlanAssignment(
+          planId: 'program-1',
           studentId: 'student-1',
           startDate: DateTime(2024, 2, 1),
         );
@@ -596,7 +596,7 @@ void main() {
       });
     });
 
-    group('generateProgramWithAI', () {
+    group('generatePlanWithAI', () {
       test('should generate program on success', () async {
         final aiResponse = ProgramFixtures.aiGenerationResponse();
         when(() => mockApiClient.post(
@@ -604,7 +604,7 @@ void main() {
               data: any(named: 'data'),
             )).thenAnswer((_) async => createResponse(data: aiResponse));
 
-        final result = await workoutService.generateProgramWithAI(
+        final result = await workoutService.generatePlanWithAI(
           goal: 'hypertrophy',
           difficulty: 'intermediate',
           daysPerWeek: 4,
@@ -621,7 +621,7 @@ void main() {
               data: any(named: 'data'),
             )).thenAnswer((_) async => createResponse(data: <String, dynamic>{}));
 
-        await workoutService.generateProgramWithAI(
+        await workoutService.generatePlanWithAI(
           goal: 'hypertrophy',
           difficulty: 'intermediate',
           daysPerWeek: 4,
@@ -643,7 +643,7 @@ void main() {
             )).thenAnswer((_) async => createResponse(data: null, statusCode: 500));
 
         expect(
-          () => workoutService.generateProgramWithAI(
+          () => workoutService.generatePlanWithAI(
             goal: 'strength',
             difficulty: 'beginner',
             daysPerWeek: 3,

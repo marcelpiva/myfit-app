@@ -4,7 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/exercise_theme.dart';
-import '../../domain/models/workout_program.dart';
+import '../../domain/models/training_plan.dart';
 
 /// Configuration data for technique-specific parameters
 class TechniqueConfigData {

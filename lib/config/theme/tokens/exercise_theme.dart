@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../../features/workout_program/domain/models/workout_program.dart';
+import '../../../features/training_plan/domain/models/training_plan.dart';
 
 /// Centralized theme for exercise display across the application.
 /// Single source of truth for technique colors, icons, and visual properties.

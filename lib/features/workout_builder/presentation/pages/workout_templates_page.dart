@@ -163,7 +163,7 @@ class _WorkoutTemplatesPageState extends ConsumerState<WorkoutTemplatesPage> {
           _WorkoutTemplate(
             id: 'hiper_avancado',
             name: 'Hipertrofia Avançado',
-            description: 'Programa completo ABCDE para avançados',
+            description: 'Plano completo ABCDE para avançados',
             difficulty: 'Avançado',
             duration: 70,
             exerciseCount: 8,

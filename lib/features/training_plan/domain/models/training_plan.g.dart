@@ -1,17 +1,17 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'workout_program.dart';
+part of 'training_plan.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-_WorkoutProgram _$WorkoutProgramFromJson(Map<String, dynamic> json) =>
-    _WorkoutProgram(
+_TrainingPlan _$TrainingPlanFromJson(Map<String, dynamic> json) =>
+    _TrainingPlan(
       id: json['id'] as String,
       name: json['name'] as String,
       goal: $enumDecode(_$WorkoutGoalEnumMap, json['goal']),
-      difficulty: $enumDecode(_$ProgramDifficultyEnumMap, json['difficulty']),
+      difficulty: $enumDecode(_$PlanDifficultyEnumMap, json['difficulty']),
       splitType: $enumDecode(_$SplitTypeEnumMap, json['splitType']),
       description: json['description'] as String?,
       durationWeeks: (json['durationWeeks'] as num?)?.toInt(),
@@ -22,19 +22,19 @@ _WorkoutProgram _$WorkoutProgramFromJson(Map<String, dynamic> json) =>
       createdAt: json['createdAt'] == null
           ? null
           : DateTime.parse(json['createdAt'] as String),
-      programWorkouts:
-          (json['programWorkouts'] as List<dynamic>?)
-              ?.map((e) => ProgramWorkout.fromJson(e as Map<String, dynamic>))
+      planWorkouts:
+          (json['planWorkouts'] as List<dynamic>?)
+              ?.map((e) => PlanWorkout.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
     );
 
-Map<String, dynamic> _$WorkoutProgramToJson(_WorkoutProgram instance) =>
+Map<String, dynamic> _$TrainingPlanToJson(_TrainingPlan instance) =>
     <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
       'goal': _$WorkoutGoalEnumMap[instance.goal]!,
-      'difficulty': _$ProgramDifficultyEnumMap[instance.difficulty]!,
+      'difficulty': _$PlanDifficultyEnumMap[instance.difficulty]!,
       'splitType': _$SplitTypeEnumMap[instance.splitType]!,
       'description': instance.description,
       'durationWeeks': instance.durationWeeks,
@@ -43,7 +43,7 @@ Map<String, dynamic> _$WorkoutProgramToJson(_WorkoutProgram instance) =>
       'createdById': instance.createdById,
       'organizationId': instance.organizationId,
       'createdAt': instance.createdAt?.toIso8601String(),
-      'programWorkouts': instance.programWorkouts,
+      'planWorkouts': instance.planWorkouts,
     };
 
 const _$WorkoutGoalEnumMap = {
@@ -55,10 +55,10 @@ const _$WorkoutGoalEnumMap = {
   WorkoutGoal.generalFitness: 'general_fitness',
 };
 
-const _$ProgramDifficultyEnumMap = {
-  ProgramDifficulty.beginner: 'beginner',
-  ProgramDifficulty.intermediate: 'intermediate',
-  ProgramDifficulty.advanced: 'advanced',
+const _$PlanDifficultyEnumMap = {
+  PlanDifficulty.beginner: 'beginner',
+  PlanDifficulty.intermediate: 'intermediate',
+  PlanDifficulty.advanced: 'advanced',
 };
 
 const _$SplitTypeEnumMap = {
@@ -71,21 +71,18 @@ const _$SplitTypeEnumMap = {
   SplitType.custom: 'custom',
 };
 
-_ProgramWorkout _$ProgramWorkoutFromJson(Map<String, dynamic> json) =>
-    _ProgramWorkout(
-      id: json['id'] as String,
-      workoutId: json['workoutId'] as String,
-      order: (json['order'] as num).toInt(),
-      label: json['label'] as String,
-      dayOfWeek: (json['dayOfWeek'] as num?)?.toInt(),
-      workout: json['workout'] == null
-          ? null
-          : ProgramWorkoutDetail.fromJson(
-              json['workout'] as Map<String, dynamic>,
-            ),
-    );
+_PlanWorkout _$PlanWorkoutFromJson(Map<String, dynamic> json) => _PlanWorkout(
+  id: json['id'] as String,
+  workoutId: json['workoutId'] as String,
+  order: (json['order'] as num).toInt(),
+  label: json['label'] as String,
+  dayOfWeek: (json['dayOfWeek'] as num?)?.toInt(),
+  workout: json['workout'] == null
+      ? null
+      : PlanWorkoutDetail.fromJson(json['workout'] as Map<String, dynamic>),
+);
 
-Map<String, dynamic> _$ProgramWorkoutToJson(_ProgramWorkout instance) =>
+Map<String, dynamic> _$PlanWorkoutToJson(_PlanWorkout instance) =>
     <String, dynamic>{
       'id': instance.id,
       'workoutId': instance.workoutId,
@@ -95,38 +92,36 @@ Map<String, dynamic> _$ProgramWorkoutToJson(_ProgramWorkout instance) =>
       'workout': instance.workout,
     };
 
-_ProgramWorkoutDetail _$ProgramWorkoutDetailFromJson(
-  Map<String, dynamic> json,
-) => _ProgramWorkoutDetail(
-  id: json['id'] as String,
-  name: json['name'] as String,
-  description: json['description'] as String?,
-  difficulty: json['difficulty'] as String,
-  estimatedDurationMin: (json['estimatedDurationMin'] as num).toInt(),
-  targetMuscles: (json['targetMuscles'] as List<dynamic>?)
-      ?.map((e) => e as String)
-      .toList(),
-  exercises:
-      (json['exercises'] as List<dynamic>?)
-          ?.map((e) => ProgramExercise.fromJson(e as Map<String, dynamic>))
-          .toList() ??
-      const [],
-);
+_PlanWorkoutDetail _$PlanWorkoutDetailFromJson(Map<String, dynamic> json) =>
+    _PlanWorkoutDetail(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String?,
+      difficulty: json['difficulty'] as String,
+      estimatedDurationMin: (json['estimatedDurationMin'] as num).toInt(),
+      targetMuscles: (json['targetMuscles'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
+      exercises:
+          (json['exercises'] as List<dynamic>?)
+              ?.map((e) => PlanExercise.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+    );
 
-Map<String, dynamic> _$ProgramWorkoutDetailToJson(
-  _ProgramWorkoutDetail instance,
-) => <String, dynamic>{
-  'id': instance.id,
-  'name': instance.name,
-  'description': instance.description,
-  'difficulty': instance.difficulty,
-  'estimatedDurationMin': instance.estimatedDurationMin,
-  'targetMuscles': instance.targetMuscles,
-  'exercises': instance.exercises,
-};
+Map<String, dynamic> _$PlanWorkoutDetailToJson(_PlanWorkoutDetail instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'name': instance.name,
+      'description': instance.description,
+      'difficulty': instance.difficulty,
+      'estimatedDurationMin': instance.estimatedDurationMin,
+      'targetMuscles': instance.targetMuscles,
+      'exercises': instance.exercises,
+    };
 
-_ProgramExercise _$ProgramExerciseFromJson(Map<String, dynamic> json) =>
-    _ProgramExercise(
+_PlanExercise _$PlanExerciseFromJson(Map<String, dynamic> json) =>
+    _PlanExercise(
       id: json['id'] as String,
       exerciseId: json['exerciseId'] as String,
       order: (json['order'] as num).toInt(),
@@ -144,12 +139,12 @@ _ProgramExercise _$ProgramExerciseFromJson(Map<String, dynamic> json) =>
       exerciseGroupOrder: (json['exerciseGroupOrder'] as num?)?.toInt() ?? 0,
       exercise: json['exercise'] == null
           ? null
-          : ProgramExerciseDetail.fromJson(
+          : PlanExerciseDetail.fromJson(
               json['exercise'] as Map<String, dynamic>,
             ),
     );
 
-Map<String, dynamic> _$ProgramExerciseToJson(_ProgramExercise instance) =>
+Map<String, dynamic> _$PlanExerciseToJson(_PlanExercise instance) =>
     <String, dynamic>{
       'id': instance.id,
       'exerciseId': instance.exerciseId,
@@ -178,26 +173,24 @@ const _$TechniqueTypeEnumMap = {
   TechniqueType.cluster: 'cluster',
 };
 
-_ProgramExerciseDetail _$ProgramExerciseDetailFromJson(
-  Map<String, dynamic> json,
-) => _ProgramExerciseDetail(
-  id: json['id'] as String,
-  name: json['name'] as String,
-  muscleGroup: json['muscleGroup'] as String,
-  description: json['description'] as String?,
-  instructions: json['instructions'] as String?,
-  imageUrl: json['imageUrl'] as String?,
-  videoUrl: json['videoUrl'] as String?,
-);
+_PlanExerciseDetail _$PlanExerciseDetailFromJson(Map<String, dynamic> json) =>
+    _PlanExerciseDetail(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      muscleGroup: json['muscleGroup'] as String,
+      description: json['description'] as String?,
+      instructions: json['instructions'] as String?,
+      imageUrl: json['imageUrl'] as String?,
+      videoUrl: json['videoUrl'] as String?,
+    );
 
-Map<String, dynamic> _$ProgramExerciseDetailToJson(
-  _ProgramExerciseDetail instance,
-) => <String, dynamic>{
-  'id': instance.id,
-  'name': instance.name,
-  'muscleGroup': instance.muscleGroup,
-  'description': instance.description,
-  'instructions': instance.instructions,
-  'imageUrl': instance.imageUrl,
-  'videoUrl': instance.videoUrl,
-};
+Map<String, dynamic> _$PlanExerciseDetailToJson(_PlanExerciseDetail instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'name': instance.name,
+      'muscleGroup': instance.muscleGroup,
+      'description': instance.description,
+      'instructions': instance.instructions,
+      'imageUrl': instance.imageUrl,
+      'videoUrl': instance.videoUrl,
+    };

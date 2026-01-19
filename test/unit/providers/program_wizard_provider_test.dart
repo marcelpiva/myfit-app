@@ -1,28 +1,28 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:myfit_app/features/workout_program/domain/models/workout_program.dart';
-import 'package:myfit_app/features/workout_program/presentation/providers/program_wizard_provider.dart';
+import 'package:myfit_app/features/training_plan/domain/models/training_plan.dart';
+import 'package:myfit_app/features/training_plan/presentation/providers/plan_wizard_provider.dart';
 
 import '../../helpers/fixtures/exercise_group_fixtures.dart';
 import '../../helpers/test_helpers.dart';
 
 /// Extended notifier for testing that exposes state setter
-class TestProgramWizardNotifier extends ProgramWizardNotifier {
+class TestPlanWizardNotifier extends PlanWizardNotifier {
   void setTestWorkouts(List<WizardWorkout> workouts) {
     state = state.copyWith(workouts: workouts);
   }
 }
 
 void main() {
-  group('ProgramWizardNotifier', () {
+  group('PlanWizardNotifier', () {
     late ProviderContainer container;
-    late TestProgramWizardNotifier notifier;
+    late TestPlanWizardNotifier notifier;
 
     setUp(() {
-      notifier = TestProgramWizardNotifier();
+      notifier = TestPlanWizardNotifier();
       container = createContainer(
         overrides: [
-          programWizardProvider.overrideWith((ref) => notifier),
+          planWizardProvider.overrideWith((ref) => notifier),
         ],
       );
     });
@@ -40,7 +40,7 @@ void main() {
 
     // Helper to get exercises from the first workout
     List<WizardExercise> getExercises() {
-      return container.read(programWizardProvider).workouts.first.exercises;
+      return container.read(planWizardProvider).workouts.first.exercises;
     }
 
     // ============================================

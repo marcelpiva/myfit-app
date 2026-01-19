@@ -5,8 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:myfit_app/features/trainer_workout/presentation/providers/trainer_workout_provider.dart';
-import 'package:myfit_app/features/workout_program/domain/models/workout_program.dart';
-import 'package:myfit_app/features/workout_program/presentation/providers/program_wizard_provider.dart';
+import 'package:myfit_app/features/training_plan/domain/models/training_plan.dart';
+import 'package:myfit_app/features/training_plan/presentation/providers/plan_wizard_provider.dart';
 
 import '../../helpers/fixtures/exercise_group_fixtures.dart';
 import '../../helpers/mock_services.dart';

@@ -27,10 +27,10 @@ class WorkoutHubPage extends ConsumerWidget {
       ),
       _HubOption(
         icon: LucideIcons.clipboard,
-        title: 'Criar Programa',
-        description: 'Monte um programa completo de treinos',
+        title: 'Criar Plano',
+        description: 'Monte um plano completo de treinos',
         color: isDark ? AppColors.secondaryDark : AppColors.secondary,
-        route: RouteNames.programWizard,
+        route: RouteNames.planWizard,
       ),
     ];
 

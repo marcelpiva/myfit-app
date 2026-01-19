@@ -3,7 +3,7 @@ import '../../../../core/utils/haptic_utils.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
-import '../providers/program_wizard_provider.dart';
+import '../providers/plan_wizard_provider.dart';
 
 /// Step 1: Method selection for creating a workout program
 class StepMethodSelection extends StatelessWidget {
@@ -25,7 +25,7 @@ class StepMethodSelection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Como deseja criar seu programa?',
+            'Como deseja criar seu plano?',
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -77,9 +77,9 @@ class StepMethodSelection extends StatelessWidget {
           _MethodCard(
             icon: LucideIcons.copy,
             iconColor: Colors.orange,
-            title: 'A partir dos meus programas',
+            title: 'A partir dos meus planos',
             description:
-                'Use um dos seus programas de treino como base para criar um novo.',
+                'Use um dos seus planos de treino como base para criar um novo.',
             isRecommended: false,
             isDark: isDark,
             theme: theme,

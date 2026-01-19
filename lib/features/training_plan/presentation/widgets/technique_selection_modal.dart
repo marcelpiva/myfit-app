@@ -5,7 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/exercise_theme.dart';
 import '../../../workout_builder/domain/models/exercise.dart';
-import '../../domain/models/workout_program.dart';
+import '../../domain/models/training_plan.dart';
 
 /// Modal for selecting a training technique before adding exercises.
 /// Uses internal state to switch between views instead of multiple modals.

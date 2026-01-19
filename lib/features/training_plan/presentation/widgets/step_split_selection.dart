@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
-import '../../domain/models/workout_program.dart';
-import '../providers/program_wizard_provider.dart';
+import '../../domain/models/training_plan.dart';
+import '../providers/plan_wizard_provider.dart';
 
 /// Step 3: Training split selection
 class StepSplitSelection extends ConsumerWidget {
@@ -13,8 +13,8 @@ class StepSplitSelection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(programWizardProvider);
-    final notifier = ref.read(programWizardProvider.notifier);
+    final state = ref.watch(planWizardProvider);
+    final notifier = ref.read(planWizardProvider.notifier);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -83,7 +83,7 @@ class StepSplitSelection extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Escolha como seu programa será estruturado',
+            'Escolha como seu plano será estruturado',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),

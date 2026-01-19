@@ -18,7 +18,7 @@ final catalogProgramsProvider = FutureProvider.autoDispose<List<Map<String, dyna
 // Provider for imported template IDs (source_template_id from user's programs)
 final importedTemplateIdsProvider = FutureProvider.autoDispose<Set<String>>((ref) async {
   final service = WorkoutService();
-  final programs = await service.getPrograms(templatesOnly: false);
+  final programs = await service.getPlans(templatesOnly: false);
   // Extract source_template_id from programs that were imported
   final importedIds = programs
       .where((p) => p['source_template_id'] != null)
@@ -134,13 +134,13 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Catalogo de Programas',
+                                'Catálogo de Planos',
                                 style: theme.textTheme.headlineSmall?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Text(
-                                'Programas prontos para importar',
+                                'Planos prontos para importar',
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: isDark
                                       ? AppColors.mutedForegroundDark
@@ -286,7 +286,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Buscar programas...',
+                hintText: 'Buscar planos...',
                 hintStyle: TextStyle(
                   fontSize: 15,
                   color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -433,7 +433,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             ),
             const SizedBox(height: 16),
             Text(
-              noPrograms ? 'Nenhum programa disponível' : 'Nenhum programa encontrado',
+              noPrograms ? 'Nenhum plano disponível' : 'Nenhum plano encontrado',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -443,7 +443,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             const SizedBox(height: 8),
             Text(
               noPrograms
-                  ? 'Ainda não há programas no catálogo'
+                  ? 'Ainda não há planos no catálogo'
                   : 'Tente ajustar os filtros de busca',
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -523,7 +523,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
 
   Future<void> _importProgram(BuildContext context, Map<String, dynamic> program) async {
     final programId = program['id'] as String?;
-    final programName = program['name'] as String? ?? 'Programa';
+    final programName = program['name'] as String? ?? 'Plano';
     final hasDiet = program['has_diet'] as bool? ?? false;
     final createdById = program['created_by_id'] as String?;
     if (programId == null) return;
@@ -533,7 +533,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     if (currentUser != null && createdById == currentUser.id) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Você não pode importar seu próprio programa'),
+          content: Text('Você não pode importar seu próprio plano'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -573,7 +573,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                     children: [
                       Icon(LucideIcons.dumbbell, size: 16, color: Theme.of(ctx).colorScheme.primary),
                       const SizedBox(width: 8),
-                      const Text('Programa de treino completo'),
+                      const Text('Plano de treino completo'),
                     ],
                   ),
                   if (hasDiet) ...[
@@ -591,7 +591,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             ),
             const SizedBox(height: 12),
             Text(
-              'O template ficará disponível em "Meus Programas" para você usar com seus alunos.',
+              'O template ficará disponível em "Meus Planos" para você usar com seus alunos.',
               style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
                 color: Theme.of(ctx).colorScheme.onSurfaceVariant,
               ),
@@ -616,7 +616,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       try {
         final service = WorkoutService();
         // Duplicate the program from catalog (tracks source_template_id)
-        final newProgram = await service.duplicateProgram(
+        final newProgram = await service.duplicatePlan(
           programId,
           newName: newName,
           fromCatalog: true,
@@ -625,7 +625,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
 
         // Mark as template (not navigate to wizard)
         if (newProgramId != null) {
-          await service.updateProgram(newProgramId, isTemplate: true);
+          await service.updatePlan(newProgramId, isTemplate: true);
         }
 
         // Invalidate the providers to refresh the lists
@@ -650,7 +650,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                 label: 'Ver Templates',
                 textColor: Colors.white,
                 onPressed: () {
-                  context.push(RouteNames.trainerPrograms);
+                  context.push(RouteNames.trainerPlans);
                 },
               ),
             ),
@@ -718,7 +718,7 @@ class _ProgramCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final name = program['name'] as String? ?? 'Programa';
+    final name = program['name'] as String? ?? 'Plano';
     final goal = program['goal'] as String? ?? '';
     final difficulty = program['difficulty'] as String? ?? '';
     final workoutCount = program['workout_count'] as int? ?? 0;
@@ -1010,7 +1010,7 @@ class _CompactProgramCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final name = program['name'] as String? ?? 'Programa';
+    final name = program['name'] as String? ?? 'Plano';
     final goal = program['goal'] as String? ?? '';
     final difficulty = program['difficulty'] as String? ?? '';
     final workoutCount = program['workout_count'] as int? ?? 0;
@@ -1112,7 +1112,7 @@ class _CompactProgramCard extends ConsumerWidget {
                                   ),
                                   const SizedBox(width: 3),
                                   Text(
-                                    'Meu Programa',
+                                    'Meu Plano',
                                     style: TextStyle(
                                       fontSize: 9,
                                       fontWeight: FontWeight.w600,
@@ -1369,7 +1369,7 @@ class _ProgramDetailSheet extends ConsumerWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final name = program['name'] as String? ?? 'Programa';
+    final name = program['name'] as String? ?? 'Plano';
     final description = program['description'] as String?;
     final goal = program['goal'] as String? ?? '';
     final difficulty = program['difficulty'] as String? ?? '';
@@ -1611,7 +1611,7 @@ class _ProgramDetailSheet extends ConsumerWidget {
                       onPressed: null,
                       icon: Icon(LucideIcons.crown, color: AppColors.primary),
                       label: Text(
-                        'Este e o seu programa',
+                        'Este é o seu plano',
                         style: TextStyle(color: AppColors.primary),
                       ),
                       style: OutlinedButton.styleFrom(
@@ -1624,7 +1624,7 @@ class _ProgramDetailSheet extends ConsumerWidget {
                           onPressed: null,
                           icon: Icon(LucideIcons.check, color: AppColors.success),
                           label: Text(
-                            'Já importado para Meus Programas',
+                            'Já importado para Meus Planos',
                             style: TextStyle(color: AppColors.success),
                           ),
                           style: OutlinedButton.styleFrom(
@@ -1635,7 +1635,7 @@ class _ProgramDetailSheet extends ConsumerWidget {
                       : FilledButton.icon(
                           onPressed: onImport,
                           icon: const Icon(LucideIcons.download),
-                          label: const Text('Importar para Meus Programas'),
+                          label: const Text('Importar para Meus Planos'),
                           style: FilledButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),

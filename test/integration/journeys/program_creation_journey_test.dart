@@ -146,7 +146,7 @@ void main() {
       });
 
       testWidgets('should show review and confirm screen', (tester) async {
-        when(() => mockWorkoutService.createProgram(
+        when(() => mockWorkoutService.createPlan(
               name: any(named: 'name'),
               goal: any(named: 'goal'),
               difficulty: any(named: 'difficulty'),
@@ -160,7 +160,7 @@ void main() {
           _MockProgramReviewStep(
             programData: ProgramFixtures.abcSplit(),
             onConfirm: () async {
-              await mockWorkoutService.createProgram(
+              await mockWorkoutService.createPlan(
                 name: 'Programa ABC',
                 goal: 'hypertrophy',
                 difficulty: 'intermediate',
@@ -184,7 +184,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify service was called
-        verify(() => mockWorkoutService.createProgram(
+        verify(() => mockWorkoutService.createPlan(
               name: any(named: 'name'),
               goal: any(named: 'goal'),
               difficulty: any(named: 'difficulty'),
@@ -197,7 +197,7 @@ void main() {
       testWidgets('should show existing programs list', (tester) async {
         final templates = ProgramFixtures.apiResponseList(count: 3);
 
-        when(() => mockWorkoutService.getPrograms(templatesOnly: true))
+        when(() => mockWorkoutService.getPlans(templatesOnly: true))
             .thenAnswer((_) async => templates);
 
         await tester.pumpTestApp(
@@ -220,14 +220,14 @@ void main() {
           'name': 'Programa ABC - Hipertrofia (Cópia)',
         };
 
-        when(() => mockWorkoutService.duplicateProgram(any()))
+        when(() => mockWorkoutService.duplicatePlan(any()))
             .thenAnswer((_) async => duplicate);
 
         await tester.pumpTestApp(
           _MockDuplicateTemplateStep(
             template: template,
             onDuplicate: () async {
-              return await mockWorkoutService.duplicateProgram('program-1');
+              return await mockWorkoutService.duplicatePlan('program-1');
             },
           ),
           overrides: getOverrides(),
@@ -239,7 +239,7 @@ void main() {
         await tester.tap(find.text('Duplicar'));
         await tester.pumpAndSettle();
 
-        verify(() => mockWorkoutService.duplicateProgram('program-1')).called(1);
+        verify(() => mockWorkoutService.duplicatePlan('program-1')).called(1);
       });
 
       testWidgets('should allow renaming duplicated program', (tester) async {
@@ -288,7 +288,7 @@ void main() {
       testWidgets('should generate program with AI', (tester) async {
         final aiResponse = ProgramFixtures.aiGenerationResponse();
 
-        when(() => mockWorkoutService.generateProgramWithAI(
+        when(() => mockWorkoutService.generatePlanWithAI(
               goal: any(named: 'goal'),
               difficulty: any(named: 'difficulty'),
               daysPerWeek: any(named: 'daysPerWeek'),
@@ -302,7 +302,7 @@ void main() {
         await tester.pumpTestApp(
           _MockGenerateAIProgramStep(
             onGenerate: () async {
-              return await mockWorkoutService.generateProgramWithAI(
+              return await mockWorkoutService.generatePlanWithAI(
                 goal: 'hypertrophy',
                 difficulty: 'intermediate',
                 daysPerWeek: 4,
@@ -326,7 +326,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify AI was called
-        verify(() => mockWorkoutService.generateProgramWithAI(
+        verify(() => mockWorkoutService.generatePlanWithAI(
               goal: any(named: 'goal'),
               difficulty: any(named: 'difficulty'),
               daysPerWeek: any(named: 'daysPerWeek'),

@@ -12,9 +12,9 @@ import '../../../../shared/presentation/components/role_bottom_navigation.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 // Provider for all user's programs (both created and imported)
-final allProgramsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+final allPlansProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   final service = WorkoutService();
-  final programs = await service.getPrograms(templatesOnly: false);
+  final programs = await service.getPlans(templatesOnly: false);
   final currentUser = ref.read(currentUserProvider);
   final userId = currentUser?.id;
   if (userId == null) return [];
@@ -26,8 +26,8 @@ final allProgramsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>
 });
 
 /// Page showing trainer's workout programs
-class TrainerProgramsPage extends ConsumerWidget {
-  const TrainerProgramsPage({super.key});
+class TrainerPlansPage extends ConsumerWidget {
+  const TrainerPlansPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -54,14 +54,14 @@ class TrainerProgramsPage extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Meus Programas',
+                          'Meus Planos',
                           style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Crie e gerencie seus programas de treino',
+                          'Crie e gerencie seus planos de treino',
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: isDark
                                 ? AppColors.mutedForegroundDark
@@ -74,7 +74,7 @@ class TrainerProgramsPage extends ConsumerWidget {
                   FilledButton.icon(
                     onPressed: () {
                       HapticUtils.lightImpact();
-                      context.push(RouteNames.programWizard);
+                      context.push(RouteNames.planWizard);
                     },
                     icon: const Icon(LucideIcons.plus, size: 18),
                     label: const Text('Novo'),
@@ -106,29 +106,29 @@ class _ProgramsList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final programsAsync = ref.watch(allProgramsProvider);
+    final programsAsync = ref.watch(allPlansProvider);
 
     return programsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) => _ErrorState(
-        onRetry: () => ref.invalidate(allProgramsProvider),
+        onRetry: () => ref.invalidate(allPlansProvider),
       ),
       data: (programs) {
         if (programs.isEmpty) {
           return _EmptyState(
             icon: LucideIcons.dumbbell,
-            message: 'Nenhum programa criado',
-            subtitle: 'Crie seu primeiro programa de treino',
-            actionLabel: 'Criar Programa',
+            message: 'Nenhum plano criado',
+            subtitle: 'Crie seu primeiro plano de treino',
+            actionLabel: 'Criar Plano',
             onAction: () {
               HapticUtils.lightImpact();
-              context.push(RouteNames.programWizard);
+              context.push(RouteNames.planWizard);
             },
           );
         }
 
         return RefreshIndicator(
-          onRefresh: () async => ref.invalidate(allProgramsProvider),
+          onRefresh: () async => ref.invalidate(allPlansProvider),
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             itemCount: programs.length,
@@ -150,7 +150,7 @@ class _ProgramsList extends ConsumerWidget {
                       _showProgramDetail(context, ref, program);
                     } else {
                       // Edit own programs
-                      context.push('${RouteNames.programWizard}?edit=$programId');
+                      context.push('${RouteNames.planWizard}?edit=$programId');
                     }
                   }
                 },
@@ -172,7 +172,7 @@ class _ProgramsList extends ConsumerWidget {
   ) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final name = program['name'] as String? ?? 'Programa';
+    final name = program['name'] as String? ?? 'Plano';
     final description = program['description'] as String?;
     final goal = program['goal'] as String? ?? '';
     final difficulty = program['difficulty'] as String? ?? '';
@@ -344,10 +344,10 @@ class _ProgramsList extends ConsumerWidget {
     bool isImported,
   ) async {
     final programId = program['id'] as String?;
-    final programName = program['name'] as String? ?? 'Programa';
+    final programName = program['name'] as String? ?? 'Plano';
     if (programId == null) return;
 
-    final title = isImported ? 'Remover Programa' : 'Excluir Programa';
+    final title = isImported ? 'Remover Plano' : 'Excluir Plano';
     final message = isImported
         ? 'Deseja remover "$programName" da sua lista?'
         : 'Deseja excluir "$programName"? Esta ação não pode ser desfeita.';
@@ -375,11 +375,11 @@ class _ProgramsList extends ConsumerWidget {
     if (confirmed == true) {
       try {
         final service = WorkoutService();
-        await service.deleteProgram(programId);
-        ref.invalidate(allProgramsProvider);
+        await service.deletePlan(programId);
+        ref.invalidate(allPlansProvider);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Programa ${isImported ? 'removido' : 'excluído'} com sucesso')),
+            SnackBar(content: Text('Plano ${isImported ? 'removido' : 'excluído'} com sucesso')),
           );
         }
       } catch (e) {
@@ -398,7 +398,7 @@ class _ProgramsList extends ConsumerWidget {
     Map<String, dynamic> program,
   ) async {
     final programId = program['id'] as String?;
-    final programName = program['name'] as String? ?? 'Programa';
+    final programName = program['name'] as String? ?? 'Plano';
     final isPublic = program['is_public'] as bool? ?? false;
     if (programId == null) return;
 
@@ -428,15 +428,15 @@ class _ProgramsList extends ConsumerWidget {
     if (confirmed == true) {
       try {
         final service = WorkoutService();
-        await service.updateProgram(
+        await service.updatePlan(
           programId,
           isTemplate: true,
           isPublic: !isPublic,
         );
-        ref.invalidate(allProgramsProvider);
+        ref.invalidate(allPlansProvider);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Programa ${isPublic ? 'despublicado' : 'publicado'} com sucesso')),
+            SnackBar(content: Text('Plano ${isPublic ? 'despublicado' : 'publicado'} com sucesso')),
           );
         }
       } catch (e) {
@@ -455,7 +455,7 @@ class _ProgramsList extends ConsumerWidget {
     Map<String, dynamic> program,
   ) async {
     final programId = program['id'] as String?;
-    final programName = program['name'] as String? ?? 'Programa';
+    final programName = program['name'] as String? ?? 'Plano';
     if (programId == null) return;
 
     // Show dialog to get new program name
@@ -463,13 +463,13 @@ class _ProgramsList extends ConsumerWidget {
     final newName = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Duplicar Programa'),
+        title: const Text('Duplicar Plano'),
         content: TextField(
           controller: nameController,
           autofocus: true,
           decoration: const InputDecoration(
-            labelText: 'Nome do novo programa',
-            hintText: 'Digite o nome do programa',
+            labelText: 'Nome do novo plano',
+            hintText: 'Digite o nome do plano',
           ),
         ),
         actions: [
@@ -489,25 +489,25 @@ class _ProgramsList extends ConsumerWidget {
 
     try {
       final service = WorkoutService();
-      final newProgram = await service.duplicateProgram(programId, newName: newName);
+      final newProgram = await service.duplicatePlan(programId, newName: newName);
       final newProgramId = newProgram['id'] as String?;
 
-      ref.invalidate(allProgramsProvider);
+      ref.invalidate(allPlansProvider);
 
       if (context.mounted && newProgramId != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Programa "$newName" duplicado com sucesso'),
+            content: Text('Plano "$newName" duplicado com sucesso'),
             action: SnackBarAction(
               label: 'Editar',
               onPressed: () {
-                context.push('${RouteNames.programWizard}?edit=$newProgramId');
+                context.push('${RouteNames.planWizard}?edit=$newProgramId');
               },
             ),
           ),
         );
         // Navigate to edit the new program
-        context.push('${RouteNames.programWizard}?edit=$newProgramId');
+        context.push('${RouteNames.planWizard}?edit=$newProgramId');
       }
     } catch (e) {
       if (context.mounted) {
@@ -635,7 +635,7 @@ class _UnifiedProgramCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final name = program['name'] as String? ?? 'Programa';
+    final name = program['name'] as String? ?? 'Plano';
     final goal = program['goal'] as String? ?? '';
     final difficulty = program['difficulty'] as String? ?? '';
     final splitType = program['split_type'] as String? ?? '';

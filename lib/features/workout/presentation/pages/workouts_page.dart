@@ -225,7 +225,7 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage>
   void _showCreateWorkoutOptions(BuildContext context, bool isDark) {
     // Navigate directly to program wizard which handles method selection
     HapticUtils.lightImpact();
-    context.push(RouteNames.programWizard);
+    context.push(RouteNames.planWizard);
   }
 }
 
@@ -508,7 +508,7 @@ class _WorkoutsList extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Crie seu primeiro programa de treino',
+              'Crie seu primeiro plano de treino',
               style: TextStyle(
                 fontSize: 14,
                 color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -535,7 +535,7 @@ class _WorkoutsList extends ConsumerWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Programas',
+                  'Planos',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -665,7 +665,7 @@ class _ProgramCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = program['name'] as String? ?? 'Programa';
+    final name = program['name'] as String? ?? 'Plano';
     final goal = program['goal'] as String?;
     final difficulty = program['difficulty'] as String?;
     final splitType = program['split_type'] as String?;

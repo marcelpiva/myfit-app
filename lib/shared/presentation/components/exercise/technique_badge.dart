@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/tokens/exercise_theme.dart';
-import '../../../../features/workout_program/domain/models/workout_program.dart';
+import '../../../../features/training_plan/domain/models/training_plan.dart';
 
 /// A badge widget that displays the technique type with icon and color.
 ///

@@ -469,20 +469,20 @@ class ProgramsNotifier extends StateNotifier<ProgramsState> {
   Future<void> loadPrograms() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final programs = await _service.getPrograms();
+      final programs = await _service.getPlans();
       state = state.copyWith(programs: programs, isLoading: false);
     } on ApiException catch (e) {
       state = state.copyWith(isLoading: false, error: e.message);
     } catch (e, stackTrace) {
-      debugPrint('Erro ao carregar programas: $e');
+      debugPrint('Erro ao carregar planos: $e');
       debugPrint('StackTrace: $stackTrace');
-      state = state.copyWith(isLoading: false, error: 'Erro ao carregar programas: ${e.runtimeType}');
+      state = state.copyWith(isLoading: false, error: 'Erro ao carregar planos: ${e.runtimeType}');
     }
   }
 
   Future<void> deleteProgram(String programId) async {
     try {
-      await _service.deleteProgram(programId);
+      await _service.deletePlan(programId);
       state = state.copyWith(
         programs: state.programs.where((p) => p['id'] != programId).toList(),
       );
@@ -493,7 +493,7 @@ class ProgramsNotifier extends StateNotifier<ProgramsState> {
 
   Future<void> duplicateProgram(String programId) async {
     try {
-      final program = await _service.duplicateProgram(programId);
+      final program = await _service.duplicatePlan(programId);
       state = state.copyWith(programs: [program, ...state.programs]);
     } on ApiException catch (e) {
       throw e;
@@ -553,12 +553,12 @@ class ProgramDetailNotifier extends StateNotifier<ProgramDetailState> {
   Future<void> loadDetail() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final program = await _service.getProgram(programId);
+      final program = await _service.getPlan(programId);
       state = state.copyWith(program: program, isLoading: false);
     } on ApiException catch (e) {
       state = state.copyWith(isLoading: false, error: e.message);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'Erro ao carregar programa');
+      state = state.copyWith(isLoading: false, error: 'Erro ao carregar plano');
     }
   }
 

@@ -57,17 +57,17 @@ class ApiEndpoints {
       '/workouts/sessions/$id/complete';
   static String workoutSessionSets(String id) => '/workouts/sessions/$id/sets';
 
-  // ==================== Workout Programs ====================
-  static const String programs = '/workouts/programs';
-  static const String programsCatalog = '/workouts/programs/catalog';
-  static const String programsGenerateAI = '/workouts/programs/generate-ai';
-  static String program(String id) => '/workouts/programs/$id';
-  static String programDuplicate(String id) => '/workouts/programs/$id/duplicate';
-  static String programWorkouts(String id) => '/workouts/programs/$id/workouts';
-  static String programWorkout(String programId, String workoutId) =>
-      '/workouts/programs/$programId/workouts/$workoutId';
-  static const String programAssignments = '/workouts/programs/assignments';
-  static String programAssignment(String id) => '/workouts/programs/assignments/$id';
+  // ==================== Training Plans ====================
+  static const String plans = '/workouts/plans';
+  static const String plansCatalog = '/workouts/plans/catalog';
+  static const String plansGenerateAI = '/workouts/plans/generate-ai';
+  static String plan(String id) => '/workouts/plans/$id';
+  static String planDuplicate(String id) => '/workouts/plans/$id/duplicate';
+  static String planWorkouts(String id) => '/workouts/plans/$id/workouts';
+  static String planWorkout(String planId, String workoutId) =>
+      '/workouts/plans/$planId/workouts/$workoutId';
+  static const String planAssignments = '/workouts/plans/assignments';
+  static String planAssignment(String id) => '/workouts/plans/assignments/$id';
 
   // ==================== Nutrition - Foods ====================
   static const String foods = '/nutrition/foods';

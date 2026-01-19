@@ -613,7 +613,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
       }),
       (LucideIcons.sparkles, 'AI\nWizard', AppColors.accent, () {
         HapticUtils.lightImpact();
-        context.push(RouteNames.programWizard);
+        context.push(RouteNames.planWizard);
       }),
       (LucideIcons.creditCard, 'Cobranças', AppColors.success, () {
         HapticUtils.lightImpact();
@@ -983,7 +983,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                 () {
                   HapticUtils.lightImpact();
                   Navigator.pop(ctx);
-                  context.push(RouteNames.programWizard);
+                  context.push(RouteNames.planWizard);
                 },
               ),
             ],

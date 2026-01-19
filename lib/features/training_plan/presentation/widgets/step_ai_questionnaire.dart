@@ -5,8 +5,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/services/workout_service.dart';
-import '../../domain/models/workout_program.dart';
-import '../providers/program_wizard_provider.dart';
+import '../../domain/models/training_plan.dart';
+import '../providers/plan_wizard_provider.dart';
 
 /// Step for AI-powered program generation questionnaire
 class StepAIQuestionnaire extends ConsumerStatefulWidget {
@@ -31,7 +31,7 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
 
   // Questionnaire answers
   WorkoutGoal _goal = WorkoutGoal.hypertrophy;
-  ProgramDifficulty _difficulty = ProgramDifficulty.intermediate;
+  PlanDifficulty _difficulty = PlanDifficulty.intermediate;
   int _daysPerWeek = 4;
   int _minutesPerSession = 60;
   String _equipment = 'full_gym';
@@ -76,7 +76,7 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
       icon: LucideIcons.settings,
     ),
     _Question(
-      title: 'Duração do programa?',
+      title: 'Duração do plano?',
       subtitle: 'Tempo total do ciclo de treinamento',
       icon: LucideIcons.calendarDays,
     ),
@@ -118,7 +118,7 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
 
     try {
       final workoutService = WorkoutService();
-      final result = await workoutService.generateProgramWithAI(
+      final result = await workoutService.generatePlanWithAI(
         goal: _goal.toApiValue(),
         difficulty: _difficulty.toApiValue(),
         daysPerWeek: _daysPerWeek,
@@ -130,11 +130,11 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
       );
 
       // Fill wizard with AI-generated data
-      final notifier = ref.read(programWizardProvider.notifier);
+      final notifier = ref.read(planWizardProvider.notifier);
       notifier.loadFromAIGenerated(result);
 
       // Check if there was an error in loading
-      final state = ref.read(programWizardProvider);
+      final state = ref.read(planWizardProvider);
       if (state.error != null) {
         throw Exception(state.error);
       }
@@ -198,7 +198,7 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'Gerando programa...',
+                    'Gerando plano...',
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -351,7 +351,7 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
                       ),
                       label: Text(
                         _currentQuestion == _questions.length - 1
-                            ? 'Gerar Programa'
+                            ? 'Gerar Plano'
                             : 'Continuar',
                       ),
                       style: FilledButton.styleFrom(
@@ -471,7 +471,7 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
         children: [
           _buildQuestionHeader(_questions[1], theme),
           const SizedBox(height: 16),
-          ...ProgramDifficulty.values.map((diff) => _OptionCard(
+          ...PlanDifficulty.values.map((diff) => _OptionCard(
                 title: _getDifficultyTitle(diff),
                 description: _getDifficultyDescription(diff),
                 isSelected: _difficulty == diff,
@@ -487,24 +487,24 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
     );
   }
 
-  String _getDifficultyTitle(ProgramDifficulty diff) {
+  String _getDifficultyTitle(PlanDifficulty diff) {
     switch (diff) {
-      case ProgramDifficulty.beginner:
+      case PlanDifficulty.beginner:
         return 'Iniciante';
-      case ProgramDifficulty.intermediate:
+      case PlanDifficulty.intermediate:
         return 'Intermediário';
-      case ProgramDifficulty.advanced:
+      case PlanDifficulty.advanced:
         return 'Avançado';
     }
   }
 
-  String _getDifficultyDescription(ProgramDifficulty diff) {
+  String _getDifficultyDescription(PlanDifficulty diff) {
     switch (diff) {
-      case ProgramDifficulty.beginner:
+      case PlanDifficulty.beginner:
         return 'Menos de 6 meses de treino';
-      case ProgramDifficulty.intermediate:
+      case PlanDifficulty.intermediate:
         return '6 meses a 2 anos de treino';
-      case ProgramDifficulty.advanced:
+      case PlanDifficulty.advanced:
         return 'Mais de 2 anos de treino consistente';
     }
   }

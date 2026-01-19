@@ -25,7 +25,7 @@ import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/workout/presentation/pages/workout_detail_page.dart';
 import '../../features/workout/presentation/pages/workouts_page.dart';
 import '../../features/workout/presentation/pages/program_detail_page.dart';
-import '../../features/workout_program/presentation/pages/program_wizard_page.dart';
+import '../../features/training_plan/presentation/pages/plan_wizard_page.dart';
 import '../../features/workout_builder/presentation/pages/workout_from_scratch_page.dart';
 import '../../features/workout_builder/presentation/pages/workout_with_ai_page.dart';
 import '../../features/workout_builder/presentation/pages/workout_templates_page.dart';
@@ -56,7 +56,7 @@ import '../../features/auth/presentation/pages/invite_accept_page.dart';
 import '../../features/trainer_workout/presentation/pages/students_list_page.dart';
 import '../../features/trainer_workout/presentation/pages/student_workouts_page.dart';
 import '../../features/trainer_workout/presentation/pages/trainer_student_progress_page.dart';
-import '../../features/trainer_workout/presentation/pages/trainer_programs_page.dart';
+import '../../features/trainer_workout/presentation/pages/trainer_plans_page.dart';
 import '../../features/schedule/presentation/pages/schedule_page.dart';
 import '../../features/nutrition/presentation/pages/patients_list_page.dart';
 import '../../features/nutrition/presentation/pages/diet_plans_list_page.dart';
@@ -234,16 +234,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SettingsPage(),
       ),
       GoRoute(
-        path: RouteNames.programWizard,
-        name: 'program-wizard',
+        path: RouteNames.planWizard,
+        name: 'plan-wizard',
         builder: (context, state) {
           final studentId = state.uri.queryParameters['studentId'];
-          final programId = state.uri.queryParameters['edit'];
-          return ProgramWizardPage(studentId: studentId, programId: programId);
+          final planId = state.uri.queryParameters['edit'];
+          return PlanWizardPage(studentId: studentId, planId: planId);
         },
       ),
       GoRoute(
-        path: RouteNames.programDetail,
+        path: RouteNames.planDetail,
         name: 'program-detail',
         builder: (context, state) => ProgramDetailPage(
           programId: state.pathParameters['programId'] ?? '',
@@ -444,9 +444,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
-        path: RouteNames.trainerPrograms,
+        path: RouteNames.trainerPlans,
         name: 'trainer-programs',
-        builder: (context, state) => const TrainerProgramsPage(),
+        builder: (context, state) => const TrainerPlansPage(),
       ),
 
       // Nutritionist routes

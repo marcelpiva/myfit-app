@@ -562,14 +562,14 @@ class StudentProgramsNotifier extends StateNotifier<StudentProgramsState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       // Load programs - backend should filter by student if studentId is provided
-      final programs = await _service.getPrograms(studentId: studentId);
+      final programs = await _service.getPlans(studentId: studentId);
       state = state.copyWith(programs: programs, isLoading: false);
     } on ApiException catch (e) {
       state = state.copyWith(isLoading: false, error: e.message);
     } catch (e, stackTrace) {
-      debugPrint('Erro ao carregar programas: $e');
+      debugPrint('Erro ao carregar planos: $e');
       debugPrint('StackTrace: $stackTrace');
-      state = state.copyWith(isLoading: false, error: 'Erro ao carregar programas: ${e.runtimeType}');
+      state = state.copyWith(isLoading: false, error: 'Erro ao carregar planos: ${e.runtimeType}');
     }
   }
 

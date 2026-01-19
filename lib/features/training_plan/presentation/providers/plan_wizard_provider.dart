@@ -3,11 +3,11 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../../core/services/workout_service.dart';
 import '../../../workout_builder/domain/models/exercise.dart';
-import '../../domain/models/workout_program.dart';
+import '../../domain/models/training_plan.dart';
 
-part 'program_wizard_provider.freezed.dart';
+part 'plan_wizard_provider.freezed.dart';
 
-/// Creation method for the program
+/// Creation method for the plan
 enum CreationMethod {
   scratch,
   ai,
@@ -109,17 +109,17 @@ extension DietTypeParsing on String? {
   }
 }
 
-/// Program wizard state
+/// Plan wizard state
 @freezed
-sealed class ProgramWizardState with _$ProgramWizardState {
-  const ProgramWizardState._();
+sealed class PlanWizardState with _$PlanWizardState {
+  const PlanWizardState._();
 
-  const factory ProgramWizardState({
+  const factory PlanWizardState({
     @Default(0) int currentStep,
     CreationMethod? method,
-    @Default('') String programName,
+    @Default('') String planName,
     @Default(WorkoutGoal.hypertrophy) WorkoutGoal goal,
-    @Default(ProgramDifficulty.intermediate) ProgramDifficulty difficulty,
+    @Default(PlanDifficulty.intermediate) PlanDifficulty difficulty,
     @Default(SplitType.abc) SplitType splitType,
     int? durationWeeks,
     @Default([]) List<WizardWorkout> workouts,
@@ -128,7 +128,7 @@ sealed class ProgramWizardState with _$ProgramWizardState {
     @Default(false) bool isTemplate,
     String? templateId,
     String? studentId,
-    String? editingProgramId,
+    String? editingPlanId,
     // Diet fields
     @Default(false) bool includeDiet,
     DietType? dietType,
@@ -138,10 +138,10 @@ sealed class ProgramWizardState with _$ProgramWizardState {
     int? fatGrams,
     int? mealsPerDay,
     String? dietNotes,
-  }) = _ProgramWizardState;
+  }) = _PlanWizardState;
 
   /// Check if we're in edit mode
-  bool get isEditing => editingProgramId != null;
+  bool get isEditing => editingPlanId != null;
 
   /// Check if current step is valid
   bool get isCurrentStepValid {
@@ -149,7 +149,7 @@ sealed class ProgramWizardState with _$ProgramWizardState {
       case 0:
         return method != null;
       case 1:
-        return programName.trim().length >= 3;
+        return planName.trim().length >= 3;
       case 2:
         return true; // Split is always selected with default
       case 3:
@@ -188,9 +188,9 @@ sealed class ProgramWizardState with _$ProgramWizardState {
   }
 }
 
-/// Program wizard notifier
-class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
-  ProgramWizardNotifier() : super(const ProgramWizardState());
+/// Plan wizard notifier
+class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
+  PlanWizardNotifier() : super(const PlanWizardState());
 
   // Step navigation
   void nextStep() {
@@ -216,16 +216,16 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
     state = state.copyWith(method: method);
   }
 
-  // Step 2: Program info
-  void setProgramName(String name) {
-    state = state.copyWith(programName: name);
+  // Step 2: Plan info
+  void setPlanName(String name) {
+    state = state.copyWith(planName: name);
   }
 
   void setGoal(WorkoutGoal goal) {
     state = state.copyWith(goal: goal);
   }
 
-  void setDifficulty(ProgramDifficulty difficulty) {
+  void setDifficulty(PlanDifficulty difficulty) {
     state = state.copyWith(difficulty: difficulty);
   }
 
@@ -290,21 +290,21 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
   void loadFromTemplate(Map<String, dynamic> template) {
     try {
       // Parse template data
-      final name = '${template['name'] ?? 'Programa'} (Copia)';
+      final name = '${template['name'] ?? 'Plano'} (Copia)';
       final goalStr = template['goal'] as String? ?? 'hypertrophy';
       final difficultyStr = template['difficulty'] as String? ?? 'intermediate';
       final splitTypeStr = template['split_type'] as String? ?? 'abc';
       final durationWeeks = template['duration_weeks'] as int?;
-      final programWorkouts = (template['program_workouts'] as List<dynamic>?) ?? [];
+      final planWorkouts = (template['plan_workouts'] as List<dynamic>?) ?? [];
 
-      if (programWorkouts.isEmpty) {
+      if (planWorkouts.isEmpty) {
         state = state.copyWith(error: 'Template sem treinos definidos');
         return;
       }
 
       // Convert to wizard workouts
       final workouts = <WizardWorkout>[];
-      for (final pw in programWorkouts) {
+      for (final pw in planWorkouts) {
         final pwMap = pw as Map<String, dynamic>;
         final label = pwMap['label'] as String? ?? 'A';
         final workout = pwMap['workout'] as Map<String, dynamic>?;
@@ -355,13 +355,13 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
 
       state = state.copyWith(
         templateId: template['id']?.toString(),
-        programName: name,
+        planName: name,
         goal: goalStr.toWorkoutGoal(),
-        difficulty: difficultyStr.toProgramDifficulty(),
+        difficulty: difficultyStr.toPlanDifficulty(),
         splitType: splitTypeStr.toSplitType(),
         durationWeeks: durationWeeks,
         workouts: workouts,
-        currentStep: 1, // Go to step 1 (program info) after loading template
+        currentStep: 1, // Go to step 1 (plan info) after loading template
         method: CreationMethod.template,
         isTemplate: false,
         error: null,
@@ -371,10 +371,10 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
     }
   }
 
-  /// Load data from AI-generated program
+  /// Load data from AI-generated plan
   void loadFromAIGenerated(Map<String, dynamic> aiData) {
     try {
-      final name = aiData['name'] as String? ?? 'Programa IA';
+      final name = aiData['name'] as String? ?? 'Plano IA';
       final description = aiData['description'] as String?;
       final goalStr = aiData['goal'] as String? ?? 'hypertrophy';
       final difficultyStr = aiData['difficulty'] as String? ?? 'intermediate';
@@ -430,9 +430,9 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
       }
 
       state = state.copyWith(
-        programName: name,
+        planName: name,
         goal: goalStr.toWorkoutGoal(),
-        difficulty: difficultyStr.toProgramDifficulty(),
+        difficulty: difficultyStr.toPlanDifficulty(),
         splitType: splitTypeStr.toSplitType(),
         durationWeeks: durationWeeks,
         workouts: workouts,
@@ -442,39 +442,39 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
         currentStep: 2, // Go directly to workouts config step
       );
     } catch (e) {
-      state = state.copyWith(error: 'Erro ao processar programa IA: $e');
+      state = state.copyWith(error: 'Erro ao processar plano IA: $e');
     }
   }
 
-  /// Load program data for editing
-  Future<void> loadProgramForEdit(String programId) async {
+  /// Load plan data for editing
+  Future<void> loadPlanForEdit(String planId) async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
       final workoutService = WorkoutService();
-      final program = await workoutService.getProgram(programId);
+      final plan = await workoutService.getPlan(planId);
 
-      // Parse program data
-      final name = program['name'] as String? ?? '';
-      final goalStr = program['goal'] as String? ?? 'hypertrophy';
-      final difficultyStr = program['difficulty'] as String? ?? 'intermediate';
-      final splitTypeStr = program['split_type'] as String? ?? 'abc';
-      final durationWeeks = program['duration_weeks'] as int?;
-      final isTemplate = program['is_template'] as bool? ?? false;
-      final programWorkouts = (program['program_workouts'] as List<dynamic>?) ?? [];
+      // Parse plan data
+      final name = plan['name'] as String? ?? '';
+      final goalStr = plan['goal'] as String? ?? 'hypertrophy';
+      final difficultyStr = plan['difficulty'] as String? ?? 'intermediate';
+      final splitTypeStr = plan['split_type'] as String? ?? 'abc';
+      final durationWeeks = plan['duration_weeks'] as int?;
+      final isTemplate = plan['is_template'] as bool? ?? false;
+      final planWorkouts = (plan['plan_workouts'] as List<dynamic>?) ?? [];
 
       // Parse diet data
-      final includeDiet = program['include_diet'] as bool? ?? false;
-      final dietTypeStr = program['diet_type'] as String?;
-      final dailyCalories = program['daily_calories'] as int?;
-      final proteinGrams = program['protein_grams'] as int?;
-      final carbsGrams = program['carbs_grams'] as int?;
-      final fatGrams = program['fat_grams'] as int?;
-      final mealsPerDay = program['meals_per_day'] as int?;
-      final dietNotes = program['diet_notes'] as String?;
+      final includeDiet = plan['include_diet'] as bool? ?? false;
+      final dietTypeStr = plan['diet_type'] as String?;
+      final dailyCalories = plan['daily_calories'] as int?;
+      final proteinGrams = plan['protein_grams'] as int?;
+      final carbsGrams = plan['carbs_grams'] as int?;
+      final fatGrams = plan['fat_grams'] as int?;
+      final mealsPerDay = plan['meals_per_day'] as int?;
+      final dietNotes = plan['diet_notes'] as String?;
 
       // Convert to wizard workouts
-      final workouts = programWorkouts.map((pw) {
+      final workouts = planWorkouts.map((pw) {
         final pwMap = pw as Map<String, dynamic>;
         final label = pwMap['label'] as String? ?? '';
         final workout = pwMap['workout'] as Map<String, dynamic>?;
@@ -516,10 +516,10 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
       }).toList();
 
       state = state.copyWith(
-        editingProgramId: programId,
-        programName: name,
+        editingPlanId: planId,
+        planName: name,
         goal: goalStr.toWorkoutGoal(),
-        difficulty: difficultyStr.toProgramDifficulty(),
+        difficulty: difficultyStr.toPlanDifficulty(),
         splitType: splitTypeStr.toSplitType(),
         durationWeeks: durationWeeks,
         isTemplate: isTemplate,
@@ -1644,12 +1644,12 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
         // Workout context
         workoutName: workout.name,
         workoutLabel: workout.label,
-        programName: state.programName,
-        programGoal: state.goal.toApiValue(),
-        programSplitType: state.splitType.toApiValue(),
+        planName: state.planName,
+        planGoal: state.goal.toApiValue(),
+        planSplitType: state.splitType.toApiValue(),
         existingExercises: existingNames.isNotEmpty ? existingNames : null,
         existingExerciseCount: workout.exercises.length,
-        allowAdvancedTechniques: state.difficulty != ProgramDifficulty.beginner,
+        allowAdvancedTechniques: state.difficulty != PlanDifficulty.beginner,
       );
 
       final suggestions = (response['suggestions'] as List<dynamic>?) ?? [];
@@ -1708,8 +1708,8 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
     }
   }
 
-  // Step 5: Create or update program
-  Future<String?> createProgram() async {
+  // Step 5: Create or update plan
+  Future<String?> createPlan() async {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
@@ -1740,13 +1740,13 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
         };
       }).toList();
 
-      String? programId;
+      String? planId;
 
       if (state.isEditing) {
-        // Update existing program with metadata and workouts
-        await workoutService.updateProgram(
-          state.editingProgramId!,
-          name: state.programName,
+        // Update existing plan with metadata and workouts
+        await workoutService.updatePlan(
+          state.editingPlanId!,
+          name: state.planName,
           goal: state.goal.toApiValue(),
           difficulty: state.difficulty.toApiValue(),
           splitType: state.splitType.toApiValue(),
@@ -1763,11 +1763,11 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
           mealsPerDay: state.mealsPerDay,
           dietNotes: state.dietNotes,
         );
-        programId = state.editingProgramId;
+        planId = state.editingPlanId;
       } else {
-        // Create new program
-        programId = await workoutService.createProgram(
-          name: state.programName,
+        // Create new plan
+        planId = await workoutService.createPlan(
+          name: state.planName,
           goal: state.goal.toApiValue(),
           difficulty: state.difficulty.toApiValue(),
           splitType: state.splitType.toApiValue(),
@@ -1787,15 +1787,15 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
       }
 
       // Auto-assign to student if studentId is present
-      if (programId != null && state.studentId != null) {
-        await workoutService.createProgramAssignment(
-          programId: programId,
+      if (planId != null && state.studentId != null) {
+        await workoutService.createPlanAssignment(
+          planId: planId,
           studentId: state.studentId!,
         );
       }
 
       state = state.copyWith(isLoading: false);
-      return programId;
+      return planId;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
       return null;
@@ -1804,14 +1804,14 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
 
   // Reset
   void reset() {
-    state = const ProgramWizardState();
+    state = const PlanWizardState();
   }
 }
 
-/// Provider for program wizard
-final programWizardProvider =
-    StateNotifierProvider.autoDispose<ProgramWizardNotifier, ProgramWizardState>(
-  (ref) => ProgramWizardNotifier(),
+/// Provider for plan wizard
+final planWizardProvider =
+    StateNotifierProvider.autoDispose<PlanWizardNotifier, PlanWizardState>(
+  (ref) => PlanWizardNotifier(),
 );
 
 /// Helper class for mapping UI indices to data indices

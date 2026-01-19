@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
-import '../providers/program_wizard_provider.dart';
+import '../providers/plan_wizard_provider.dart';
 
 /// Step 5: Review the program before creating
 class StepReview extends ConsumerWidget {
@@ -11,7 +11,7 @@ class StepReview extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(programWizardProvider);
+    final state = ref.watch(planWizardProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -21,7 +21,7 @@ class StepReview extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Revisar Programa',
+            'Revisar Plano',
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -75,9 +75,9 @@ class StepReview extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            state.programName.isEmpty
-                                ? 'Programa sem nome'
-                                : state.programName,
+                            state.planName.isEmpty
+                                ? 'Plano sem nome'
+                                : state.planName,
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -143,7 +143,7 @@ class StepReview extends ConsumerWidget {
 
           // Workouts List
           Text(
-            'Treinos do Programa',
+            'Treinos do Plano',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -385,7 +385,7 @@ class StepReview extends ConsumerWidget {
   }
 }
 
-extension on ProgramWizardState {
+extension on PlanWizardState {
   String get splitTypeName {
     switch (splitType) {
       case _:

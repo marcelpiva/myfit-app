@@ -9,8 +9,8 @@ import '../../../../core/services/workout_service.dart';
 import '../../../../core/widgets/video_player_page.dart';
 import '../../../workout_builder/domain/models/exercise.dart';
 import '../../../workout_builder/presentation/providers/exercise_catalog_provider.dart';
-import '../../domain/models/workout_program.dart';
-import '../providers/program_wizard_provider.dart';
+import '../../domain/models/training_plan.dart';
+import '../providers/plan_wizard_provider.dart';
 import 'multi_exercise_picker.dart';
 import 'technique_config_modal.dart';
 import 'technique_selection_modal.dart';
@@ -28,8 +28,8 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(programWizardProvider);
-    final notifier = ref.read(programWizardProvider.notifier);
+    final state = ref.watch(planWizardProvider);
+    final notifier = ref.read(planWizardProvider.notifier);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -200,7 +200,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
   void _showWorkoutOptionsSheet(
     BuildContext context,
     WizardWorkout workout,
-    ProgramWizardNotifier notifier,
+    PlanWizardNotifier notifier,
     int index,
     int totalWorkouts,
   ) {
@@ -311,7 +311,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
   void _showEditWorkoutDialogState(
     BuildContext context,
     WizardWorkout workout,
-    ProgramWizardNotifier notifier,
+    PlanWizardNotifier notifier,
   ) {
     final labelController = TextEditingController(text: workout.label);
     final nameController = TextEditingController(text: workout.name);
@@ -453,7 +453,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
   void _showRemoveExercisesConfirmDialog(
     BuildContext context,
     WizardWorkout workout,
-    ProgramWizardNotifier notifier,
+    PlanWizardNotifier notifier,
     String newLabel,
     String newName,
     List<String> newMuscleGroups,
@@ -568,7 +568,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
     BuildContext context,
     String workoutId,
     String label,
-    ProgramWizardNotifier notifier,
+    PlanWizardNotifier notifier,
     int index,
   ) {
     final theme = Theme.of(context);
@@ -630,7 +630,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
 
   @override
   Widget build(BuildContext context) {
-    final notifier = ref.read(programWizardProvider.notifier);
+    final notifier = ref.read(planWizardProvider.notifier);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -919,7 +919,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
     int? maxCount,
     TechniqueConfigData? config,
   ) {
-    final notifier = ref.read(programWizardProvider.notifier);
+    final notifier = ref.read(planWizardProvider.notifier);
 
     showModalBottomSheet(
       context: context,
@@ -1018,7 +1018,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
 
   void _showExercisePicker(
       BuildContext context, WidgetRef ref, String workoutId, List<String> muscleGroups) {
-    final notifier = ref.read(programWizardProvider.notifier);
+    final notifier = ref.read(planWizardProvider.notifier);
 
     showModalBottomSheet(
       context: context,
@@ -1049,7 +1049,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
 
   /// Show dialog to edit workout settings (label, name, muscle groups)
   void _showEditWorkoutDialog(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(programWizardProvider.notifier);
+    final notifier = ref.read(planWizardProvider.notifier);
     final labelController = TextEditingController(text: workout.label);
     final nameController = TextEditingController(text: workout.name);
     final selectedMuscleGroups = List<String>.from(workout.muscleGroups);
@@ -1221,7 +1221,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
 
   /// Build exercise list with groups properly displayed
   Widget _buildExerciseList(BuildContext context, WidgetRef ref, WizardWorkout workout, bool isDark) {
-    final notifier = ref.read(programWizardProvider.notifier);
+    final notifier = ref.read(planWizardProvider.notifier);
     final exercises = workout.exercises;
 
     // Group exercises by exerciseGroupId
@@ -1312,7 +1312,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (exercises.isEmpty) return const SizedBox.shrink();
 
-    final notifier = ref.read(programWizardProvider.notifier);
+    final notifier = ref.read(planWizardProvider.notifier);
     final leader = exercises.first;
     final techniqueType = leader.techniqueType;
     final techniqueColor = ExerciseTheme.getColor(techniqueType);
@@ -1495,7 +1495,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
         maxGroupSize: 8,
         allowedMuscleGroups: muscleGroups,
         onExercisesSelected: (exercisesList) {
-          final notifier = ref.read(programWizardProvider.notifier);
+          final notifier = ref.read(planWizardProvider.notifier);
           for (final exercise in exercisesList) {
             notifier.addExerciseToGroup(
               workoutId: workoutId,
@@ -1575,7 +1575,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
-              ref.read(programWizardProvider.notifier).updateGroupInstructions(
+              ref.read(planWizardProvider.notifier).updateGroupInstructions(
                     workoutId: workoutId,
                     groupId: groupId,
                     instructions: controller.text.trim(),
@@ -1642,7 +1642,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
             ),
             onPressed: () {
               Navigator.pop(ctx);
-              ref.read(programWizardProvider.notifier).deleteExerciseGroup(
+              ref.read(planWizardProvider.notifier).deleteExerciseGroup(
                     workoutId,
                     groupId,
                   );
@@ -1805,7 +1805,7 @@ class _GroupedExerciseItem extends ConsumerWidget {
   }
 
   void _showEditGroupedExerciseDialog(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(programWizardProvider.notifier);
+    final notifier = ref.read(planWizardProvider.notifier);
     int sets = exercise.sets;
     String reps = exercise.reps;
     int restSeconds = exercise.restSeconds;
@@ -2207,7 +2207,7 @@ class _GroupedExerciseItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(programWizardProvider.notifier);
+    final notifier = ref.read(planWizardProvider.notifier);
 
     return GestureDetector(
       onTap: () {
@@ -2581,7 +2581,7 @@ class _ExerciseItem extends ConsumerWidget {
   }
 
   void _showEditExerciseDialog(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(programWizardProvider.notifier);
+    final notifier = ref.read(planWizardProvider.notifier);
     int sets = exercise.sets;
     String reps = exercise.reps;
     int restSeconds = exercise.restSeconds;
@@ -2959,7 +2959,7 @@ class _ExerciseItem extends ConsumerWidget {
 
   /// Show dialog to edit execution instructions (same style as group instructions)
   void _showInstructionsDialog(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(programWizardProvider.notifier);
+    final notifier = ref.read(planWizardProvider.notifier);
     final controller = TextEditingController(text: exercise.executionInstructions);
 
     showDialog(
@@ -3043,7 +3043,7 @@ class _ExerciseItem extends ConsumerWidget {
 
   /// Show dialog to select technique category
   void _showTechniqueSelectionDialog(BuildContext context, WidgetRef ref) {
-    final state = ref.read(programWizardProvider);
+    final state = ref.read(planWizardProvider);
     final workout = state.workouts.firstWhere((w) => w.id == workoutId);
 
     // Check if there are other truly simple exercises available for grouping
@@ -3123,7 +3123,7 @@ class _ExerciseItem extends ConsumerWidget {
 
   /// Show single exercise techniques (Dropset, Rest-Pause, Cluster)
   void _showSingleExerciseTechniques(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(programWizardProvider.notifier);
+    final notifier = ref.read(planWizardProvider.notifier);
     final singleTechniques = [
       TechniqueType.dropset,
       TechniqueType.restPause,
@@ -3190,7 +3190,7 @@ class _ExerciseItem extends ConsumerWidget {
 
   /// Show group techniques (Bi-Set/Tri-Set, Giant Set)
   void _showGroupTechniques(BuildContext context, WidgetRef ref) {
-    final state = ref.read(programWizardProvider);
+    final state = ref.read(planWizardProvider);
     final workout = state.workouts.firstWhere((w) => w.id == workoutId);
 
     // Count other truly simple exercises available for grouping
@@ -3276,8 +3276,8 @@ class _ExerciseItem extends ConsumerWidget {
 
   /// Show dialog to select exercises for grouping (superset, triset, etc.)
   Future<void> _showGroupingDialog(BuildContext context, WidgetRef ref, TechniqueType techniqueType) async {
-    final state = ref.read(programWizardProvider);
-    final notifier = ref.read(programWizardProvider.notifier);
+    final state = ref.read(planWizardProvider);
+    final notifier = ref.read(planWizardProvider.notifier);
 
     // Get the current workout
     final workout = state.workouts.firstWhere((w) => w.id == workoutId);
@@ -3611,8 +3611,8 @@ class _ExerciseItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(programWizardProvider);
-    final notifier = ref.read(programWizardProvider.notifier);
+    final state = ref.watch(planWizardProvider);
+    final notifier = ref.read(planWizardProvider.notifier);
     final otherWorkouts = state.workouts.where((w) => w.id != workoutId).toList();
 
     // Check if this is a single-exercise technique (dropset, rest-pause, etc.)
@@ -4073,7 +4073,7 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
   @override
   Widget build(BuildContext context) {
     final exercisesAsync = ref.watch(exercisesByMuscleGroupProvider);
-    final notifier = ref.read(programWizardProvider.notifier);
+    final notifier = ref.read(planWizardProvider.notifier);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -4469,7 +4469,7 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
               padding: const EdgeInsets.all(16),
               child: FilledButton.icon(
                 onPressed: () {
-                  final notifier = ref.read(programWizardProvider.notifier);
+                  final notifier = ref.read(planWizardProvider.notifier);
                   notifier.addExerciseToWorkout(widget.workoutId, exercise);
                   Navigator.pop(context); // Close preview
                   Navigator.pop(context); // Close picker

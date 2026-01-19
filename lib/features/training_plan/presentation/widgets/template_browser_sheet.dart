@@ -52,7 +52,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
 
     try {
       // Get only user's own programs (not public templates from others)
-      final templates = await _workoutService.getPrograms(templatesOnly: false);
+      final templates = await _workoutService.getPlans(templatesOnly: false);
       setState(() {
         _templates = templates;
         _isLoading = false;
@@ -82,7 +82,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
         throw Exception('Template ID não encontrado');
       }
 
-      final fullTemplate = await _workoutService.getProgram(templateId);
+      final fullTemplate = await _workoutService.getPlan(templateId);
 
       if (mounted) {
         Navigator.pop(context); // Close loading
@@ -190,13 +190,13 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Meus Programas',
+                            'Meus Planos',
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
-                            'Selecione um programa como base',
+                            'Selecione um plano como base',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
@@ -217,7 +217,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
                 TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Buscar programas...',
+                    hintText: 'Buscar planos...',
                     prefixIcon: const Icon(LucideIcons.search, size: 20),
                     filled: true,
                     fillColor: isDark
@@ -484,7 +484,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Erro ao carregar programas',
+              'Erro ao carregar planos',
               style: theme.textTheme.bodyLarge,
             ),
             if (_error != null) ...[
@@ -534,8 +534,8 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
             const SizedBox(height: 16),
             Text(
               noTemplatesExist
-                  ? 'Nenhum programa disponível'
-                  : 'Nenhum programa encontrado',
+                  ? 'Nenhum plano disponível'
+                  : 'Nenhum plano encontrado',
               style: theme.textTheme.bodyLarge?.copyWith(
                 fontWeight: FontWeight.w500,
               ),
@@ -543,7 +543,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
             const SizedBox(height: 8),
             Text(
               noTemplatesExist
-                  ? 'Você ainda não criou nenhum programa'
+                  ? 'Você ainda não criou nenhum plano'
                   : 'Tente ajustar os filtros de busca',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.6),

@@ -135,7 +135,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
             ),
             const SizedBox(height: 16),
             Text(
-              'Programa não encontrado',
+              'Plano não encontrado',
               style: theme.textTheme.bodyLarge,
               textAlign: TextAlign.center,
             ),
@@ -156,7 +156,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
     bool isDark,
     Map<String, dynamic> program,
   ) {
-    final name = program['name'] as String? ?? 'Programa';
+    final name = program['name'] as String? ?? 'Plano';
     final goal = program['goal'] as String? ?? '';
     final difficulty = program['difficulty'] as String? ?? '';
     final splitType = program['split_type'] as String? ?? '';
@@ -214,7 +214,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
 
                 // Workouts
                 Text(
-                  'Treinos do Programa',
+                  'Treinos do Plano',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -493,7 +493,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
           ),
           const SizedBox(height: 12),
           Text(
-            'Nenhum treino no programa',
+            'Nenhum treino no plano',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
@@ -695,7 +695,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
             _buildMenuItem(
               context,
               LucideIcons.pencil,
-              'Editar Programa',
+              'Editar Plano',
               () {
                 Navigator.pop(context);
                 context.push('/programs/wizard?edit=${widget.programId}');
@@ -704,7 +704,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
             _buildMenuItem(
               context,
               LucideIcons.copy,
-              'Duplicar Programa',
+              'Duplicar Plano',
               () {
                 Navigator.pop(context);
                 _duplicateProgram();
@@ -723,7 +723,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
             _buildMenuItem(
               context,
               LucideIcons.trash2,
-              'Excluir Programa',
+              'Excluir Plano',
               () {
                 Navigator.pop(context);
                 _confirmDelete(context);
@@ -770,7 +770,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
               children: [
                 Icon(LucideIcons.checkCircle, color: Colors.white, size: 20),
                 SizedBox(width: 12),
-                Text('Programa duplicado com sucesso'),
+                Text('Plano duplicado com sucesso'),
               ],
             ),
             backgroundColor: AppColors.success,
@@ -791,7 +791,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
 
   void _showAssignSheet() {
     final detailState = ref.read(programDetailNotifierProvider(widget.programId));
-    final programName = detailState.program?['name'] as String? ?? 'Programa';
+    final programName = detailState.program?['name'] as String? ?? 'Plano';
 
     showModalBottomSheet(
       context: context,
@@ -928,9 +928,9 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Excluir Programa'),
+        title: const Text('Excluir Plano'),
         content: const Text(
-          'Tem certeza que deseja excluir este programa? Esta ação não pode ser desfeita.',
+          'Tem certeza que deseja excluir este plano? Esta ação não pode ser desfeita.',
         ),
         actions: [
           TextButton(
@@ -962,7 +962,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
               children: [
                 Icon(LucideIcons.checkCircle, color: Colors.white, size: 20),
                 SizedBox(width: 12),
-                Text('Programa excluído com sucesso'),
+                Text('Plano excluído com sucesso'),
               ],
             ),
             backgroundColor: AppColors.success,

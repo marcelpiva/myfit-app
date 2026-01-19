@@ -86,7 +86,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    // Treinos Ativos + Sugestões IA + Programas
+                    // Treinos Ativos + Sugestões IA + Planos
                     _buildActiveTab(context, isDark, activeWorkouts, suggestions, progress, programs),
 
                     // Rascunhos
@@ -397,7 +397,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
             const SizedBox(height: 24),
           ],
 
-          // Programas de treino
+          // Planos de treino
           if (programs.isNotEmpty) ...[
             FadeInUp(
               delay: const Duration(milliseconds: 50),
@@ -410,7 +410,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Programas',
+                    'Planos',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -1422,7 +1422,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
   void _createNewWorkout(BuildContext context, bool isDark) {
     // Navigate directly to program wizard with studentId
     HapticUtils.lightImpact();
-    context.push('${RouteNames.programWizard}?studentId=${widget.studentId}');
+    context.push('${RouteNames.planWizard}?studentId=${widget.studentId}');
   }
 
   void _openWorkout(BuildContext context, TrainerWorkout workout) {
@@ -1945,7 +1945,7 @@ class _StudentProgramCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = program['name'] as String? ?? 'Programa';
+    final name = program['name'] as String? ?? 'Plano';
     final goal = program['goal'] as String?;
     final difficulty = program['difficulty'] as String?;
     final splitType = program['split_type'] as String?;
