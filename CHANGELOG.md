@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-01-19
+
+### Changed
+- **Renamed "Programa" to "Plano de Treino"** - Full terminology refactor across the app
+  - Renamed `workout_program` feature module to `training_plan`
+  - Updated all class names: `WorkoutProgram` → `TrainingPlan`, `ProgramWizard` → `PlanWizard`
+  - Updated API endpoints: `/programs` → `/plans`
+  - Updated route names: `programWizard` → `planWizard`, `programDetail` → `planDetail`
+  - Updated service methods: `getPrograms` → `getPlans`, `createProgram` → `createPlan`
+  - Updated navigation labels: "Programas" → "Planos"
+  - Updated all Portuguese UI texts from "Programa" to "Plano de Treino"
+  - Updated tests to match new naming convention
+
 ## [1.2.2] - 2026-01-19
 
 ### Fixed

@@ -1,6 +1,6 @@
 # MyFit App
 
-[![Version](https://img.shields.io/badge/version-1.2.2-blue.svg)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)](./CHANGELOG.md)
 [![Flutter](https://img.shields.io/badge/Flutter-3.10+-02569B.svg?logo=flutter)](https://flutter.dev)
 [![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20Android%20%7C%20Web-lightgrey.svg)](https://flutter.dev/multi-platform)
 [![Tests](https://img.shields.io/badge/tests-150+-green.svg)]()
@@ -84,7 +84,7 @@ lib/
 ├── features/           # Feature modules
 │   ├── auth/
 │   ├── workout/
-│   ├── workout_program/ # Program wizard, techniques
+│   ├── training_plan/   # Training plan wizard, techniques
 │   ├── trainer_workout/
 │   ├── nutrition/
 │   ├── progress/
@@ -133,7 +133,7 @@ flutter test test/unit/
 flutter test test/integration/
 
 # Run specific test file
-flutter test test/unit/providers/program_wizard_provider_test.dart
+flutter test test/unit/providers/plan_wizard_provider_test.dart
 
 # Run with coverage
 flutter test --coverage
