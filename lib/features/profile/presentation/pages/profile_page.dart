@@ -46,7 +46,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final currentUser = ref.watch(currentUserProvider);
-    final userName = currentUser?.name ?? 'Usuario';
+    final userName = currentUser?.name ?? 'Usuário';
     final userEmail = currentUser?.email ?? '';
 
     return Scaffold(
@@ -288,31 +288,31 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                         _buildSectionTitle(context, isDark, 'Conta'),
                         const SizedBox(height: 12),
                         _buildMenuCard(context, isDark, [
-                          _MenuItem(LucideIcons.user, 'Informacoes Pessoais', () {
+                          _MenuItem(LucideIcons.user, 'Informações Pessoais', () {
                             HapticUtils.lightImpact();
                           }),
                           _MenuItem(LucideIcons.lock, 'Alterar Senha', () {
                             HapticUtils.lightImpact();
                           }),
-                          _MenuItem(LucideIcons.bell, 'Notificacoes', () {
+                          _MenuItem(LucideIcons.bell, 'Notificações', () {
                             HapticUtils.lightImpact();
                           }),
                         ]),
 
                         const SizedBox(height: 24),
 
-                        _buildSectionTitle(context, isDark, 'Preferencias'),
+                        _buildSectionTitle(context, isDark, 'Preferências'),
                         const SizedBox(height: 12),
                         _buildMenuCard(context, isDark, [
                           _MenuItem(LucideIcons.globe, 'Idioma', () {
                             HapticUtils.lightImpact();
-                          }, trailing: 'Portugues'),
+                          }, trailing: 'Português'),
                           _MenuItem(LucideIcons.moon, 'Tema', () {
                             HapticUtils.lightImpact();
                           }, trailing: 'Sistema'),
                           _MenuItem(LucideIcons.ruler, 'Unidades', () {
                             HapticUtils.lightImpact();
-                          }, trailing: 'Metrico'),
+                          }, trailing: 'Métrico'),
                         ]),
 
                         const SizedBox(height: 24),
@@ -356,7 +356,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                         // Version
                         Center(
                           child: Text(
-                            'Versao 1.0.0',
+                            'Versão 1.0.0',
                             style: TextStyle(
                               fontSize: 12,
                               color: isDark

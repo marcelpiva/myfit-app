@@ -213,7 +213,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
 
   Widget _buildHeader(BuildContext context, bool isDark) {
     final user = ref.watch(currentUserProvider);
-    final userName = user?.name ?? 'Usuario';
+    final userName = user?.name ?? 'Usuário';
     final initials = userName.isNotEmpty
         ? userName.split(' ').take(2).map((n) => n.isNotEmpty ? n[0].toUpperCase() : '').join()
         : 'U';
@@ -246,7 +246,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Ola, ${userName.split(' ').first}!',
+                  'Olá, ${userName.split(' ').first}!',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -377,7 +377,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
           Expanded(
             child: _ActionButton(
               icon: LucideIcons.qrCode,
-              label: 'Entrar com codigo',
+              label: 'Entrar com código',
               isDark: isDark,
               isPrimary: true,
               onTap: () {
@@ -421,7 +421,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Crie uma organizacao ou entre\ncom um codigo de convite',
+            'Crie uma organização ou entre\ncom um código de convite',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,
@@ -443,7 +443,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
       children: [
         _EmptyActionCard(
           icon: LucideIcons.building2,
-          title: 'Criar Organizacao',
+          title: 'Criar Organização',
           subtitle: 'Personal, academia ou studio',
           isDark: isDark,
           isPrimary: true,
@@ -455,8 +455,8 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
         const SizedBox(height: 12),
         _EmptyActionCard(
           icon: LucideIcons.qrCode,
-          title: 'Entrar com Codigo',
-          subtitle: 'Ja tem um convite?',
+          title: 'Entrar com Código',
+          subtitle: 'Já tem um convite?',
           isDark: isDark,
           isPrimary: false,
           onTap: () {
@@ -872,7 +872,7 @@ class _PendingInviteCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      invite.organizationName ?? 'Organizacao',
+                      invite.organizationName ?? 'Organização',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,

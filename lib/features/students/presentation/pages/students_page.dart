@@ -606,7 +606,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _buildDetailStat('12', 'Treinos', isDark),
-                      _buildDetailStat('85%', 'Aderencia', isDark),
+                      _buildDetailStat('85%', 'Aderência', isDark),
                       _buildDetailStat('-4.2kg', 'Resultado', isDark),
                     ],
                   ),
@@ -711,7 +711,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
 
                 ...List.generate(3, (index) {
                   final activities = [
-                    ('Treino Completo', 'Peito e Triceps', '2h atras', LucideIcons.checkCircle, AppColors.success),
+                    ('Treino Completo', 'Peito e Tríceps', '2h atrás', LucideIcons.checkCircle, AppColors.success),
                     ('Dieta Seguida', '1800 kcal consumidas', 'Ontem', LucideIcons.utensils, AppColors.secondary),
                     ('Peso Atualizado', '74.5kg (-0.5kg)', '2 dias', LucideIcons.scale, AppColors.primary),
                   ];
@@ -875,13 +875,13 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                 _buildStatDetailItem(isDark, 'Inativos', '3', AppColors.warning),
               ] else if (label == 'Ativos') ...[
                 _buildStatDetailItem(isDark, 'Treinando esta semana', '18', AppColors.success),
-                _buildStatDetailItem(isDark, 'Ultima semana', '4', AppColors.primary),
+                _buildStatDetailItem(isDark, 'Última semana', '4', AppColors.primary),
               ] else if (label == 'Inativos') ...[
-                _buildStatDetailItem(isDark, 'Ha mais de 7 dias', '2', AppColors.warning),
-                _buildStatDetailItem(isDark, 'Ha mais de 30 dias', '1', AppColors.destructive),
+                _buildStatDetailItem(isDark, 'Há mais de 7 dias', '2', AppColors.warning),
+                _buildStatDetailItem(isDark, 'Há mais de 30 dias', '1', AppColors.destructive),
               ] else if (label == 'Novos') ...[
                 _buildStatDetailItem(isDark, 'Esta semana', '1', AppColors.primary),
-                _buildStatDetailItem(isDark, 'Este mes', '2', AppColors.secondary),
+                _buildStatDetailItem(isDark, 'Este mês', '2', AppColors.secondary),
               ],
             ],
           ),
@@ -1231,7 +1231,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: const Text('Abrindo edicao...'),
+                    content: const Text('Abrindo edição...'),
                     backgroundColor: AppColors.secondary,
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1333,7 +1333,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
               ),
               const SizedBox(height: 8),
               Text(
-                'Tem certeza que deseja remover ${student['name']}? Esta acao nao pode ser desfeita.',
+                'Tem certeza que deseja remover ${student['name']}? Esta ação não pode ser desfeita.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
@@ -1443,8 +1443,8 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                 ),
               ),
               const SizedBox(height: 16),
-              _buildWorkoutItem(isDark, 'Treino A', 'Peito e Triceps', true),
-              _buildWorkoutItem(isDark, 'Treino B', 'Costas e Biceps', true),
+              _buildWorkoutItem(isDark, 'Treino A', 'Peito e Tríceps', true),
+              _buildWorkoutItem(isDark, 'Treino B', 'Costas e Bíceps', true),
               _buildWorkoutItem(isDark, 'Treino C', 'Pernas', false),
               const SizedBox(height: 16),
               GestureDetector(
@@ -1596,7 +1596,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _buildDietStat('1800', 'kcal', isDark),
-                    _buildDietStat('120g', 'Proteina', isDark),
+                    _buildDietStat('120g', 'Proteína', isDark),
                     _buildDietStat('180g', 'Carbs', isDark),
                     _buildDietStat('60g', 'Gordura', isDark),
                   ],
@@ -1742,17 +1742,17 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
               ),
               const SizedBox(height: 24),
               if (title == 'Treino Completo') ...[
-                _buildActivityDetailItem(isDark, 'Exercicios', '8 exercicios'),
-                _buildActivityDetailItem(isDark, 'Duracao', '45 minutos'),
+                _buildActivityDetailItem(isDark, 'Exercícios', '8 exercícios'),
+                _buildActivityDetailItem(isDark, 'Duração', '45 minutos'),
                 _buildActivityDetailItem(isDark, 'Calorias', '320 kcal'),
               ] else if (title == 'Dieta Seguida') ...[
-                _buildActivityDetailItem(isDark, 'Refeicoes', '5 refeicoes'),
-                _buildActivityDetailItem(isDark, 'Proteina', '118g'),
-                _buildActivityDetailItem(isDark, 'Agua', '2.5L'),
+                _buildActivityDetailItem(isDark, 'Refeições', '5 refeições'),
+                _buildActivityDetailItem(isDark, 'Proteína', '118g'),
+                _buildActivityDetailItem(isDark, 'Água', '2.5L'),
               ] else if (title == 'Peso Atualizado') ...[
                 _buildActivityDetailItem(isDark, 'Peso anterior', '75.0kg'),
                 _buildActivityDetailItem(isDark, 'Peso atual', '74.5kg'),
-                _buildActivityDetailItem(isDark, 'Variacao', '-0.5kg'),
+                _buildActivityDetailItem(isDark, 'Variação', '-0.5kg'),
               ],
             ],
           ),
@@ -1923,7 +1923,7 @@ class _StudentCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Aderencia',
+                  'Aderência',
                   style: TextStyle(
                     fontSize: 11,
                     color: isDark
@@ -2007,7 +2007,7 @@ class _AddStudentSheetState extends State<_AddStudentSheet> with SingleTickerPro
     if (_nameController.text.trim().isEmpty || _emailController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Nome e email sao obrigatorios'),
+          content: const Text('Nome e email são obrigatórios'),
           backgroundColor: AppColors.warning,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -2235,7 +2235,7 @@ class _AddStudentSheetState extends State<_AddStudentSheet> with SingleTickerPro
                           ),
                           const SizedBox(height: 20),
                           Text(
-                            'Compartilhe o codigo',
+                            'Compartilhe o código',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -2244,7 +2244,7 @@ class _AddStudentSheetState extends State<_AddStudentSheet> with SingleTickerPro
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'O aluno pode usar este codigo para se cadastrar',
+                            'O aluno pode usar este código para se cadastrar',
                             style: TextStyle(
                               fontSize: 14,
                               color: widget.isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -2257,7 +2257,7 @@ class _AddStudentSheetState extends State<_AddStudentSheet> with SingleTickerPro
                               Clipboard.setData(ClipboardData(text: _inviteCode ?? ''));
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: const Text('Codigo copiado!'),
+                                  content: const Text('Código copiado!'),
                                   backgroundColor: AppColors.success,
                                   behavior: SnackBarBehavior.floating,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

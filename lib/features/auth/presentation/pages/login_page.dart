@@ -108,15 +108,15 @@ class _LoginPageState extends ConsumerState<LoginPage>
         final shouldEnable = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Login mais rapido'),
+            title: const Text('Login mais rápido'),
             content: Text(
               'Deseja usar $biometricLabel para entrar no app? '
-              'Voce podera entrar sem digitar sua senha.',
+              'Você poderá entrar sem digitar sua senha.',
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Agora nao'),
+                child: const Text('Agora não'),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),

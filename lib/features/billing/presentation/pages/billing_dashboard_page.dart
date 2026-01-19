@@ -239,14 +239,14 @@ class BillingDashboardPage extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  'Nenhuma cobranca encontrada',
+                                  'Nenhuma cobrança encontrada',
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     color: isDark ? AppColors.foregroundDark : AppColors.foreground,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'Nao ha cobrancas com este filtro',
+                                  'Não há cobranças com este filtro',
                                   style: theme.textTheme.bodyMedium?.copyWith(
                                     color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                                   ),
@@ -526,7 +526,7 @@ class _AlertsSection extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Pagamentos Proximos',
+                    'Pagamentos Próximos',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
@@ -640,7 +640,7 @@ class _AlertsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Acoes sugeridas',
+          'Ações sugeridas',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -738,7 +738,7 @@ class _AlertsSection extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${upcomingPayments.length} cobranca${upcomingPayments.length > 1 ? 's' : ''} vence${upcomingPayments.length > 1 ? 'm' : ''} em 3 dias',
+                          '${upcomingPayments.length} cobrança${upcomingPayments.length > 1 ? 's' : ''} vence${upcomingPayments.length > 1 ? 'm' : ''} em 3 dias',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -802,13 +802,13 @@ class _OverduePaymentItem extends StatelessWidget {
       case PaymentMethod.pix:
         return 'PIX';
       case PaymentMethod.creditCard:
-        return 'Cartao';
+        return 'Cartão';
       case PaymentMethod.bankTransfer:
-        return 'Transferencia';
+        return 'Transferência';
       case PaymentMethod.cash:
         return 'Dinheiro';
       default:
-        return 'Nao definido';
+        return 'Não definido';
     }
   }
 
@@ -1037,7 +1037,7 @@ class _OverduePaymentItem extends StatelessWidget {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: const Text('Link de pagamento por cartao enviado!'),
+                        content: const Text('Link de pagamento por cartão enviado!'),
                         backgroundColor: AppColors.primary,
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -1059,7 +1059,7 @@ class _OverduePaymentItem extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'Cartao',
+                          'Cartão',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -1095,13 +1095,13 @@ class _UpcomingPaymentItem extends StatelessWidget {
       case PaymentMethod.pix:
         return 'PIX';
       case PaymentMethod.creditCard:
-        return 'Cartao';
+        return 'Cartão';
       case PaymentMethod.bankTransfer:
-        return 'Transferencia';
+        return 'Transferência';
       case PaymentMethod.cash:
         return 'Dinheiro';
       default:
-        return 'Nao definido';
+        return 'Não definido';
     }
   }
 
@@ -1209,7 +1209,7 @@ class _UpcomingPaymentItem extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                'Metodo: ${_getPaymentMethodLabel(payment.paymentMethod)}',
+                'Método: ${_getPaymentMethodLabel(payment.paymentMethod)}',
                 style: TextStyle(
                   fontSize: 13,
                   color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,

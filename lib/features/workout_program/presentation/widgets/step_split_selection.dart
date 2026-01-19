@@ -37,7 +37,7 @@ class StepSplitSelection extends ConsumerWidget {
         SplitType.abcde,
         'ABCDE',
         '5 treinos',
-        'Para atletas avancados',
+        'Para atletas avançados',
         ['A', 'B', 'C', 'D', 'E'],
       ),
       (
@@ -58,13 +58,13 @@ class StepSplitSelection extends ConsumerWidget {
         SplitType.fullBody,
         'Full Body',
         '1 treino',
-        'Corpo inteiro em cada sessao',
+        'Corpo inteiro em cada sessão',
         ['Full'],
       ),
       (
         SplitType.custom,
         'Personalizado',
-        'Flexivel',
+        'Flexível',
         'Configure do seu jeito',
         <String>[],
       ),
@@ -76,14 +76,14 @@ class StepSplitSelection extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Divisao de Treino',
+            'Divisão de Treino',
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Escolha como seu programa sera estruturado',
+            'Escolha como seu programa será estruturado',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),

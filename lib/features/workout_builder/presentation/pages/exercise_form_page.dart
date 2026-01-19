@@ -33,11 +33,11 @@ class _ExerciseFormPageState extends ConsumerState<ExerciseFormPage> {
     (MuscleGroup.chest, 'Peito'),
     (MuscleGroup.back, 'Costas'),
     (MuscleGroup.shoulders, 'Ombros'),
-    (MuscleGroup.biceps, 'Biceps'),
-    (MuscleGroup.triceps, 'Triceps'),
+    (MuscleGroup.biceps, 'Bíceps'),
+    (MuscleGroup.triceps, 'Tríceps'),
     (MuscleGroup.legs, 'Pernas'),
-    (MuscleGroup.glutes, 'Gluteos'),
-    (MuscleGroup.abs, 'Abdomen'),
+    (MuscleGroup.glutes, 'Glúteos'),
+    (MuscleGroup.abs, 'Abdômen'),
     (MuscleGroup.cardio, 'Cardio'),
     (MuscleGroup.fullBody, 'Corpo Inteiro'),
   ];
@@ -47,17 +47,17 @@ class _ExerciseFormPageState extends ConsumerState<ExerciseFormPage> {
     (EquipmentType.barbell, 'Barra'),
     (EquipmentType.dumbbell, 'Halteres'),
     (EquipmentType.cable, 'Cabo'),
-    (EquipmentType.machine, 'Maquina'),
+    (EquipmentType.machine, 'Máquina'),
     (EquipmentType.bodyweight, 'Peso Corporal'),
     (EquipmentType.kettlebell, 'Kettlebell'),
-    (EquipmentType.bands, 'Elasticos'),
+    (EquipmentType.bands, 'Elásticos'),
     (EquipmentType.other, 'Outro'),
   ];
 
   final _difficulties = [
     ('beginner', 'Iniciante'),
-    ('intermediate', 'Intermediario'),
-    ('advanced', 'Avancado'),
+    ('intermediate', 'Intermediário'),
+    ('advanced', 'Avançado'),
   ];
 
   @override
@@ -97,14 +97,14 @@ class _ExerciseFormPageState extends ConsumerState<ExerciseFormPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Exercicio criado com sucesso!')),
+          const SnackBar(content: Text('Exercício criado com sucesso!')),
         );
         context.pop(true); // Return true to indicate success
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao criar exercicio: $e')),
+          SnackBar(content: Text('Erro ao criar exercício: $e')),
         );
       }
     } finally {
@@ -171,7 +171,7 @@ class _ExerciseFormPageState extends ConsumerState<ExerciseFormPage> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Novo Exercicio',
+                        'Novo Exercício',
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -194,13 +194,13 @@ class _ExerciseFormPageState extends ConsumerState<ExerciseFormPage> {
                       _buildSection(
                         theme,
                         isDark,
-                        'Informacoes Basicas',
+                        'Informações Básicas',
                         Column(
                           children: [
                             TextFormField(
                               controller: _nameController,
                               decoration: InputDecoration(
-                                labelText: 'Nome do Exercicio *',
+                                labelText: 'Nome do Exercício *',
                                 hintText: 'Ex: Supino Reto',
                                 prefixIcon: Icon(LucideIcons.dumbbell),
                                 border: OutlineInputBorder(
@@ -209,7 +209,7 @@ class _ExerciseFormPageState extends ConsumerState<ExerciseFormPage> {
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
-                                  return 'Nome e obrigatorio';
+                                  return 'Nome é obrigatório';
                                 }
                                 return null;
                               },
@@ -219,8 +219,8 @@ class _ExerciseFormPageState extends ConsumerState<ExerciseFormPage> {
                               controller: _descriptionController,
                               maxLines: 3,
                               decoration: InputDecoration(
-                                labelText: 'Descricao (opcional)',
-                                hintText: 'Descreva o exercicio...',
+                                labelText: 'Descrição (opcional)',
+                                hintText: 'Descreva o exercício...',
                                 prefixIcon: Icon(LucideIcons.alignLeft),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(8),
@@ -351,7 +351,7 @@ class _ExerciseFormPageState extends ConsumerState<ExerciseFormPage> {
                       _buildSection(
                         theme,
                         isDark,
-                        'Instrucoes de Execucao',
+                        'Instruções de Execução',
                         TextFormField(
                           controller: _instructionsController,
                           maxLines: 4,
@@ -374,11 +374,11 @@ class _ExerciseFormPageState extends ConsumerState<ExerciseFormPage> {
                       _buildSection(
                         theme,
                         isDark,
-                        'Video Demonstrativo',
+                        'Vídeo Demonstrativo',
                         TextFormField(
                           controller: _videoUrlController,
                           decoration: InputDecoration(
-                            labelText: 'URL do Video (opcional)',
+                            labelText: 'URL do Vídeo (opcional)',
                             hintText: 'https://youtube.com/...',
                             prefixIcon: Icon(LucideIcons.video),
                             border: OutlineInputBorder(
@@ -439,7 +439,7 @@ class _ExerciseFormPageState extends ConsumerState<ExerciseFormPage> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : Icon(LucideIcons.save, size: 18),
-                  label: const Text('Criar Exercicio'),
+                  label: const Text('Criar Exercício'),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(

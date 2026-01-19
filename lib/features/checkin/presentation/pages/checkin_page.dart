@@ -113,7 +113,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
                                   context,
                                   isDark,
                                   LucideIcons.hash,
-                                  'Codigo',
+                                  'Código',
                                   'Digitar',
                                   AppColors.secondary,
                                   () => _showCodeInput(context, isDark),
@@ -134,7 +134,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
                                   context,
                                   isDark,
                                   LucideIcons.mapPin,
-                                  'Localizacao',
+                                  'Localização',
                                   'GPS',
                                   AppColors.accent,
                                   () => _showLocationCheckin(context, isDark),
@@ -173,7 +173,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Historico Recente',
+                                'Histórico Recente',
                                 style: theme.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: isDark ? AppColors.foregroundDark : AppColors.foreground,
@@ -270,7 +270,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
                   ),
                 ),
                 Text(
-                  'Registre sua presenca',
+                  'Registre sua presença',
                   style: TextStyle(
                     fontSize: 14,
                     color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -398,7 +398,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Faca seu primeiro check-in usando um dos metodos acima',
+            'Faça seu primeiro check-in usando um dos métodos acima',
             style: TextStyle(
               fontSize: 14,
               color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -453,7 +453,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Digitar Codigo',
+                  'Digitar Código',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -462,7 +462,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Digite o codigo fornecido pelo seu Personal ou Academia',
+                  'Digite o código fornecido pelo seu Personal ou Academia',
                   style: TextStyle(
                     fontSize: 14,
                     color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -538,7 +538,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
                       HapticUtils.mediumImpact();
                       if (_codeController.text.trim().length >= 4) {
                         Navigator.pop(context);
-                        _simulateCheckin(context, 'Codigo');
+                        _simulateCheckin(context, 'Código');
                       }
                     },
                     child: Container(
@@ -596,7 +596,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
               ),
               const SizedBox(height: 20),
               Text(
-                'Check-in por Localizacao',
+                'Check-in por Localização',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
@@ -605,7 +605,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Detectamos que voce esta proximo de uma academia cadastrada',
+                'Detectamos que você está próximo de uma academia cadastrada',
                 style: TextStyle(
                   fontSize: 14,
                   color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -649,7 +649,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
                               Icon(LucideIcons.navigation, size: 12, color: AppColors.accent),
                               const SizedBox(width: 4),
                               Text(
-                                '~50m de distancia',
+                                '~50m de distância',
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: AppColors.accent,
@@ -670,7 +670,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
                   onTap: () {
                     HapticUtils.mediumImpact();
                     Navigator.pop(context);
-                    _simulateCheckin(context, 'Localizacao');
+                    _simulateCheckin(context, 'Localização');
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -777,7 +777,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Uma notificacao sera enviada para aprovacao do seu check-in',
+                        'Uma notificação será enviada para aprovação do seu check-in',
                         style: TextStyle(fontSize: 13, color: AppColors.success),
                       ),
                     ),
@@ -880,9 +880,9 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
               ),
               const SizedBox(height: 20),
               _buildHelpItem(isDark, LucideIcons.scanLine, 'QR Code', 'Escaneie o QR do seu Personal ou Academia'),
-              _buildHelpItem(isDark, LucideIcons.hash, 'Codigo', 'Digite o codigo fornecido pelo responsavel'),
-              _buildHelpItem(isDark, LucideIcons.mapPin, 'Localizacao', 'Check-in automatico quando estiver perto'),
-              _buildHelpItem(isDark, LucideIcons.send, 'Solicitar', 'Envie uma solicitacao para aprovacao'),
+              _buildHelpItem(isDark, LucideIcons.hash, 'Código', 'Digite o código fornecido pelo responsável'),
+              _buildHelpItem(isDark, LucideIcons.mapPin, 'Localização', 'Check-in automático quando estiver perto'),
+              _buildHelpItem(isDark, LucideIcons.send, 'Solicitar', 'Envie uma solicitação para aprovação'),
               const SizedBox(height: 16),
             ],
           ),
@@ -960,7 +960,7 @@ class _CheckinPageState extends ConsumerState<CheckinPage> {
           children: [
             const Icon(LucideIcons.send, color: Colors.white, size: 20),
             const SizedBox(width: 12),
-            Text('Solicitacao enviada para $target'),
+            Text('Solicitação enviada para $target'),
           ],
         ),
         backgroundColor: AppColors.success,

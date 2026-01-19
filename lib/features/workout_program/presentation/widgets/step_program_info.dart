@@ -50,17 +50,17 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
 
     final goals = [
       (WorkoutGoal.hypertrophy, 'Hipertrofia', LucideIcons.dumbbell),
-      (WorkoutGoal.strength, 'Forca', LucideIcons.zap),
+      (WorkoutGoal.strength, 'Força', LucideIcons.zap),
       (WorkoutGoal.fatLoss, 'Emagrecimento', LucideIcons.flame),
-      (WorkoutGoal.endurance, 'Resistencia', LucideIcons.heart),
+      (WorkoutGoal.endurance, 'Resistência', LucideIcons.heart),
       (WorkoutGoal.functional, 'Funcional', LucideIcons.activity),
       (WorkoutGoal.generalFitness, 'Condicionamento', LucideIcons.target),
     ];
 
     final difficulties = [
       (ProgramDifficulty.beginner, 'Iniciante'),
-      (ProgramDifficulty.intermediate, 'Intermediario'),
-      (ProgramDifficulty.advanced, 'Avancado'),
+      (ProgramDifficulty.intermediate, 'Intermediário'),
+      (ProgramDifficulty.advanced, 'Avançado'),
     ];
 
     final durations = [
@@ -76,14 +76,14 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Informacoes do Programa',
+            'Informações do Programa',
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Configure os detalhes basicos do seu programa de treino',
+            'Configure os detalhes básicos do seu programa de treino',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
@@ -133,7 +133,7 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'Nome valido',
+                          'Nome válido',
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: AppColors.success,
                           ),
@@ -219,7 +219,7 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
           _buildSection(
             theme,
             isDark,
-            'Nivel de Experiencia',
+            'Nível de Experiência',
             Row(
               children: difficulties.map((item) {
                 final isSelected = state.difficulty == item.$1;
@@ -277,7 +277,7 @@ class _StepProgramInfoState extends ConsumerState<StepProgramInfo> {
           _buildSection(
             theme,
             isDark,
-            'Duracao do Programa (opcional)',
+            'Duração do Programa (opcional)',
             Wrap(
               spacing: 8,
               runSpacing: 8,

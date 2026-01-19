@@ -123,7 +123,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Nao'),
+            child: const Text('Não'),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
@@ -199,7 +199,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Token de convite nao disponivel',
+            'Token de convite não disponível',
             style: TextStyle(color: isDark ? Colors.black : Colors.white),
           ),
           backgroundColor: isDark ? AppColors.warning : AppColors.warning,
@@ -232,13 +232,13 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
     } else if (difference.inDays == 1) {
       return 'Ontem';
     } else if (difference.inDays < 7) {
-      return 'Ha ${difference.inDays} dias';
+      return 'Há ${difference.inDays} dias';
     } else if (difference.inDays < 30) {
       final weeks = (difference.inDays / 7).floor();
-      return 'Ha $weeks semana${weeks > 1 ? 's' : ''}';
+      return 'Há $weeks semana${weeks > 1 ? 's' : ''}';
     } else {
       final months = (difference.inDays / 30).floor();
-      return 'Ha $months mes${months > 1 ? 'es' : ''}';
+      return 'Há $months mês${months > 1 ? 'es' : ''}';
     }
   }
 
@@ -855,7 +855,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                         isDark,
                       ),
                       _buildStatItem(
-                        'Aderencia',
+                        'Aderência',
                         '${student.adherencePercent.toInt()}%',
                         isDark,
                       ),
@@ -1152,12 +1152,12 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                       ),
                       _buildDetailStat(
                         '${((student['frequency'] as double) * 100).toInt()}%',
-                        'Frequencia',
+                        'Frequência',
                         isDark,
                       ),
                       _buildDetailStat(
                         _formatLastWorkout(student['lastWorkout'] as DateTime?),
-                        'Ultimo Treino',
+                        'Último Treino',
                         isDark,
                       ),
                     ],
@@ -1374,7 +1374,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
       'Bom treino!',
       'Como foi o treino?',
       'Lembre-se de descansar hoje',
-      'Parabens pelo progresso!',
+      'Parabéns pelo progresso!',
     ];
 
     showModalBottomSheet(
@@ -1669,7 +1669,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
 
             // Header
             Text(
-              'Opcoes para $studentName',
+              'Opções para $studentName',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -1707,7 +1707,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
             _buildOptionItem(
               isDark: isDark,
               icon: LucideIcons.calendarPlus,
-              label: 'Agendar sessao',
+              label: 'Agendar sessão',
               onTap: () {
                 HapticUtils.lightImpact();
                 Navigator.pop(ctx);
@@ -1845,7 +1845,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
               const SizedBox(height: 24),
 
               Text(
-                'Agendar Sessao',
+                'Agendar Sessão',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
@@ -1929,7 +1929,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
 
               // Time picker
               Text(
-                'Horario',
+                'Horário',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -2035,7 +2035,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    'Sessao agendada com $studentName',
+                                    'Sessão agendada com $studentName',
                                   ),
                                 ),
                               ],
@@ -2330,7 +2330,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
           ],
         ),
         content: Text(
-          'Tem certeza que deseja remover $studentName da sua lista de alunos? Esta acao nao pode ser desfeita.',
+          'Tem certeza que deseja remover $studentName da sua lista de alunos? Esta ação não pode ser desfeita.',
           style: TextStyle(
             fontSize: 14,
             color: isDark
@@ -3161,7 +3161,7 @@ class _EmptyState extends StatelessWidget {
             Text(
               isSearching
                   ? 'Tente buscar por outro nome'
-                  : 'Adicione seu primeiro aluno para comecar',
+                  : 'Adicione seu primeiro aluno para começar',
               style: TextStyle(
                 fontSize: 14,
                 color: isDark

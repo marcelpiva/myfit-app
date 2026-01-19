@@ -94,7 +94,7 @@ class StepStudentAssignment extends ConsumerWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Nao atribuir a nenhum aluno agora',
+                          'Não atribuir a nenhum aluno agora',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: isDark
                                 ? AppColors.mutedForegroundDark

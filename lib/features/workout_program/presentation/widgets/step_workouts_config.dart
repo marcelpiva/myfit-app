@@ -276,7 +276,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
                   child: const Icon(LucideIcons.settings2, color: AppColors.secondary, size: 20),
                 ),
                 title: const Text('Editar Treino'),
-                subtitle: const Text('Alterar titulo, label e grupos musculares'),
+                subtitle: const Text('Alterar título, label e grupos musculares'),
                 onTap: () {
                   Navigator.pop(context);
                   _showEditWorkoutDialogState(context, workout, notifier);
@@ -294,7 +294,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
                     child: Icon(LucideIcons.trash2, color: Colors.red.shade400, size: 20),
                   ),
                   title: Text('Remover', style: TextStyle(color: Colors.red.shade400)),
-                  subtitle: const Text('Excluir treino e exercicios'),
+                  subtitle: const Text('Excluir treino e exercícios'),
                   onTap: () {
                     Navigator.pop(context);
                     _showDeleteConfirmDialog(context, workout.id, workout.label, notifier, index);
@@ -362,7 +362,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
                   controller: nameController,
                   decoration: InputDecoration(
                     labelText: 'Nome do Treino',
-                    hintText: 'Ex: Peito e Triceps',
+                    hintText: 'Ex: Peito e Tríceps',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -481,7 +481,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
               child: const Icon(LucideIcons.alertTriangle, color: Colors.orange, size: 18),
             ),
             const SizedBox(width: 12),
-            const Expanded(child: Text('Exercicios serao removidos')),
+            const Expanded(child: Text('Exercícios serão removidos')),
           ],
         ),
         content: SingleChildScrollView(
@@ -490,7 +490,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Ao remover os grupos "$groupsRemoved", ${exercisesToRemove.length} exercicio(s) serao excluidos:',
+                'Ao remover os grupos "$groupsRemoved", ${exercisesToRemove.length} exercício(s) serão excluídos:',
                 style: theme.textTheme.bodyMedium,
               ),
               const SizedBox(height: 12),
@@ -578,7 +578,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
       builder: (context) => AlertDialog(
         title: Text('Remover Treino $label?'),
         content: const Text(
-          'O treino e todos os exercicios configurados serao removidos. Deseja continuar?',
+          'O treino e todos os exercícios configurados serão removidos. Deseja continuar?',
         ),
         actions: [
           TextButton(
@@ -736,7 +736,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Nenhum exercicio adicionado',
+                          'Nenhum exercício adicionado',
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: theme.colorScheme.onSurface
                                 .withValues(alpha: 0.6),
@@ -985,7 +985,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            '${detectedTechnique.displayName} adicionado com ${exercises.length} exercicio${exercises.length > 1 ? 's' : ''}',
+                            '${detectedTechnique.displayName} adicionado com ${exercises.length} exercício${exercises.length > 1 ? 's' : ''}',
                           ),
                         ),
                       ],
@@ -1139,7 +1139,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
                         controller: nameController,
                         decoration: InputDecoration(
                           labelText: 'Nome do Treino',
-                          hintText: 'Ex: Peito e Triceps',
+                          hintText: 'Ex: Peito e Tríceps',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
@@ -1508,7 +1508,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
               content: Text(
                 exercisesList.length == 1
                     ? '${exercisesList.first.name} adicionado ao grupo'
-                    : '${exercisesList.length} exercicios adicionados ao grupo',
+                    : '${exercisesList.length} exercícios adicionados ao grupo',
               ),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
@@ -1536,7 +1536,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
             Icon(LucideIcons.fileText, color: AppColors.primary, size: 20),
             const SizedBox(width: 8),
             const Expanded(
-              child: Text('Instrucoes do Grupo'),
+              child: Text('Instruções do Grupo'),
             ),
           ],
         ),
@@ -1547,7 +1547,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Estas instrucoes serao aplicadas a todos os exercicios do grupo.',
+                'Estas instruções serão aplicadas a todos os exercícios do grupo.',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
@@ -1557,7 +1557,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
                 controller: controller,
                 maxLines: 4,
                 decoration: InputDecoration(
-                  hintText: 'Ex: Execute sem descanso entre os exercicios...',
+                  hintText: 'Ex: Execute sem descanso entre os exercícios...',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -1582,7 +1582,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
                   );
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text('Instrucoes atualizadas'),
+                  content: const Text('Instruções atualizadas'),
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -1624,7 +1624,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Todos os ${exercises.length} exercicios serao removidos do treino.',
+              'Todos os ${exercises.length} exercícios serão removidos do treino.',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
@@ -1648,7 +1648,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
                   );
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('${techniqueType.displayName} excluido'),
+                  content: Text('${techniqueType.displayName} excluído'),
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -1714,7 +1714,7 @@ class _GroupedExerciseItem extends ConsumerWidget {
           if (exerciseData == null) {
             return const SizedBox(
               height: 200,
-              child: Center(child: Text('Exercicio nao encontrado')),
+              child: Center(child: Text('Exercício não encontrado')),
             );
           }
 
@@ -1774,14 +1774,14 @@ class _GroupedExerciseItem extends ConsumerWidget {
                   const SizedBox(height: 16),
 
                   if (description.isNotEmpty) ...[
-                    Text('Descricao', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                    Text('Descrição', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
                     Text(description, style: theme.textTheme.bodyMedium),
                     const SizedBox(height: 16),
                   ],
 
                   if (instructions.isNotEmpty) ...[
-                    Text('Instrucoes', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                    Text('Instruções', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
                     Text(instructions, style: theme.textTheme.bodyMedium),
                     const SizedBox(height: 16),
@@ -1884,7 +1884,7 @@ class _GroupedExerciseItem extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
-                    '${exercise.techniqueType.displayName} - Exercicio ${orderInGroup + 1}/$totalInGroup',
+                    '${exercise.techniqueType.displayName} - Exercício ${orderInGroup + 1}/$totalInGroup',
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: techniqueColor,
                     ),
@@ -1896,7 +1896,7 @@ class _GroupedExerciseItem extends ConsumerWidget {
                 OutlinedButton.icon(
                   onPressed: () => _showExerciseDetails(context),
                   icon: const Icon(LucideIcons.info, size: 18),
-                  label: const Text('Ver Detalhes do Exercicio'),
+                  label: const Text('Ver Detalhes do Exercício'),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 44),
                   ),
@@ -1907,7 +1907,7 @@ class _GroupedExerciseItem extends ConsumerWidget {
                 const SizedBox(height: 16),
 
                 // Sets
-                Text('Series', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                Text('Séries', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -1940,7 +1940,7 @@ class _GroupedExerciseItem extends ConsumerWidget {
                 const SizedBox(height: 16),
 
                 // Reps
-                Text('Repeticoes', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                Text('Repetições', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 TextField(
                   controller: repsController,
@@ -1993,7 +1993,7 @@ class _GroupedExerciseItem extends ConsumerWidget {
                         Icon(LucideIcons.info, size: 12, color: techniqueColor),
                         const SizedBox(width: 4),
                         Text(
-                          'Exercicios no meio do grupo tem descanso 0',
+                          'Exercícios no meio do grupo têm descanso 0',
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: techniqueColor,
                           ),
@@ -2081,7 +2081,7 @@ class _GroupedExerciseItem extends ConsumerWidget {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            'Tecnicas Avancadas',
+                            'Técnicas Avançadas',
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w600,
                               color: showAdvancedOptions ? techniqueColor : null,
@@ -2145,10 +2145,10 @@ class _GroupedExerciseItem extends ConsumerWidget {
                         const SizedBox(height: 16),
 
                         // Execution Instructions
-                        Text('Instrucoes de Execucao', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                        Text('Instruções de Execução', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         Text(
-                          'Orientacoes especificas para este exercicio no treino',
+                          'Orientações específicas para este exercício no treino',
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                           ),
@@ -2416,7 +2416,7 @@ class _ExerciseItem extends ConsumerWidget {
           if (exerciseData == null) {
             return const SizedBox(
               height: 200,
-              child: Center(child: Text('Exercicio nao encontrado')),
+              child: Center(child: Text('Exercício não encontrado')),
             );
           }
 
@@ -2516,7 +2516,7 @@ class _ExerciseItem extends ConsumerWidget {
                         );
                       },
                       icon: const Icon(LucideIcons.playCircle),
-                      label: const Text('Assistir Video'),
+                      label: const Text('Assistir Vídeo'),
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 48),
                       ),
@@ -2527,7 +2527,7 @@ class _ExerciseItem extends ConsumerWidget {
                   // Description
                   if (description.isNotEmpty) ...[
                     Text(
-                      'Descricao',
+                      'Descrição',
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -2547,7 +2547,7 @@ class _ExerciseItem extends ConsumerWidget {
                   // Instructions
                   if (instructions.isNotEmpty) ...[
                     Text(
-                      'Instrucoes',
+                      'Instruções',
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -2672,7 +2672,7 @@ class _ExerciseItem extends ConsumerWidget {
                 OutlinedButton.icon(
                   onPressed: () => _showExerciseDetails(context, exercise.exerciseId),
                   icon: const Icon(LucideIcons.info, size: 18),
-                  label: const Text('Ver Detalhes do Exercicio'),
+                  label: const Text('Ver Detalhes do Exercício'),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 44),
                   ),
@@ -2683,7 +2683,7 @@ class _ExerciseItem extends ConsumerWidget {
                 const SizedBox(height: 16),
 
                 // Sets
-                Text('Series', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                Text('Séries', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -2716,7 +2716,7 @@ class _ExerciseItem extends ConsumerWidget {
                 const SizedBox(height: 16),
 
                 // Reps
-                Text('Repeticoes', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                Text('Repetições', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 TextField(
                   controller: repsController,
@@ -2833,7 +2833,7 @@ class _ExerciseItem extends ConsumerWidget {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            'Tecnicas Avancadas',
+                            'Técnicas Avançadas',
                             style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w600,
                               color: showAdvancedOptions ? AppColors.primary : null,
@@ -2897,10 +2897,10 @@ class _ExerciseItem extends ConsumerWidget {
                         const SizedBox(height: 16),
 
                         // Execution Instructions
-                        Text('Instrucoes de Execucao', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                        Text('Instruções de Execução', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         Text(
-                          'Orientacoes especificas para este exercicio no treino',
+                          'Orientações específicas para este exercício no treino',
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                           ),
@@ -2970,7 +2970,7 @@ class _ExerciseItem extends ConsumerWidget {
             Icon(LucideIcons.fileText, color: AppColors.primary, size: 20),
             const SizedBox(width: 8),
             const Expanded(
-              child: Text('Instrucoes do Exercicio'),
+              child: Text('Instruções do Exercício'),
             ),
           ],
         ),
@@ -2989,7 +2989,7 @@ class _ExerciseItem extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Adicione instrucoes especificas para este exercicio.',
+                'Adicione instruções específicas para este exercício.',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
@@ -3025,7 +3025,7 @@ class _ExerciseItem extends ConsumerWidget {
               HapticUtils.lightImpact();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text('Instrucoes atualizadas'),
+                  content: const Text('Instruções atualizadas'),
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -3295,7 +3295,7 @@ class _ExerciseItem extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Adicione mais exercicios ao treino para criar um grupo'),
+            content: Text('Adicione mais exercícios ao treino para criar um grupo'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -3522,7 +3522,7 @@ class _ExerciseItem extends ConsumerWidget {
                                   color: isSelected ? techniqueColor : null,
                                 ),
                               ),
-                              subtitle: Text('${ex.sets} series x ${ex.reps}'),
+                              subtitle: Text('${ex.sets} séries x ${ex.reps}'),
                               trailing: isSelected
                                   ? Icon(LucideIcons.checkCircle2, color: techniqueColor)
                                   : canAdd
@@ -3834,7 +3834,7 @@ class _ExerciseItem extends ConsumerWidget {
                                 ),
                               if (exercise.executionInstructions.isNotEmpty)
                                 _MiniChip(
-                                  label: 'Instrucoes',
+                                  label: 'Instruções',
                                   isDark: isDark,
                                   icon: LucideIcons.fileText,
                                 ),
@@ -3857,7 +3857,7 @@ class _ExerciseItem extends ConsumerWidget {
                         notifier.copyExerciseToWorkout(workoutId, exercise.id, targetWorkoutId);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Exercicio copiado para Treino ${otherWorkouts.firstWhere((w) => w.id == targetWorkoutId).label}'),
+                            content: Text('Exercício copiado para Treino ${otherWorkouts.firstWhere((w) => w.id == targetWorkoutId).label}'),
                             duration: const Duration(seconds: 2),
                           ),
                         );
@@ -4105,7 +4105,7 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Selecionar Exercicio',
+                        'Selecionar Exercício',
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -4134,7 +4134,7 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Buscar exercicio...',
+                hintText: 'Buscar exercício...',
                 prefixIcon: const Icon(LucideIcons.search, size: 20),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
@@ -4223,7 +4223,7 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Erro ao carregar exercicios',
+                        'Erro ao carregar exercícios',
                         style: theme.textTheme.titleMedium,
                       ),
                       const SizedBox(height: 8),
@@ -4277,15 +4277,15 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
                           const SizedBox(height: 16),
                           Text(
                             _searchQuery.isNotEmpty || _selectedMuscleGroup != null
-                                ? 'Nenhum exercicio encontrado'
-                                : 'Nenhum exercicio disponivel',
+                                ? 'Nenhum exercício encontrado'
+                                : 'Nenhum exercício disponível',
                             style: theme.textTheme.titleMedium,
                           ),
                           const SizedBox(height: 8),
                           Text(
                             _searchQuery.isNotEmpty || _selectedMuscleGroup != null
                                 ? 'Tente ajustar os filtros ou a busca'
-                                : 'O catalogo de exercicios esta vazio.',
+                                : 'O catálogo de exercícios está vazio.',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
@@ -4405,7 +4405,7 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
                     // Description
                     if (exercise.description != null && exercise.description!.isNotEmpty) ...[
                       Text(
-                        'Descricao',
+                        'Descrição',
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -4423,7 +4423,7 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
                     // Instructions
                     if (exercise.instructions != null && exercise.instructions!.isNotEmpty) ...[
                       Text(
-                        'Instrucoes',
+                        'Instruções',
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -4453,7 +4453,7 @@ class _ExercisePickerSheetState extends ConsumerState<_ExercisePickerSheet> {
                           );
                         },
                         icon: const Icon(LucideIcons.play, size: 18),
-                        label: const Text('Assistir Video'),
+                        label: const Text('Assistir Vídeo'),
                         style: OutlinedButton.styleFrom(
                           minimumSize: const Size(double.infinity, 48),
                         ),
@@ -4767,7 +4767,7 @@ class _AddToGroupExercisePickerState extends ConsumerState<_AddToGroupExercisePi
                       ),
                       Text(
                         _selectedExercises.isEmpty
-                            ? 'Selecione ate $_remainingSlots exercicio${_remainingSlots != 1 ? 's' : ''}'
+                            ? 'Selecione até $_remainingSlots exercício${_remainingSlots != 1 ? 's' : ''}'
                             : '${_selectedExercises.length} selecionado${_selectedExercises.length != 1 ? 's' : ''} ($_remainingSlots restante${_remainingSlots != 1 ? 's' : ''})',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: widget.techniqueColor,
@@ -4791,7 +4791,7 @@ class _AddToGroupExercisePickerState extends ConsumerState<_AddToGroupExercisePi
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Buscar exercicio...',
+                hintText: 'Buscar exercício...',
                 prefixIcon: const Icon(LucideIcons.search, size: 20),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
@@ -4880,7 +4880,7 @@ class _AddToGroupExercisePickerState extends ConsumerState<_AddToGroupExercisePi
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Erro ao carregar exercicios',
+                        'Erro ao carregar exercícios',
                         style: theme.textTheme.titleMedium,
                       ),
                     ],
@@ -4927,7 +4927,7 @@ class _AddToGroupExercisePickerState extends ConsumerState<_AddToGroupExercisePi
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'Nenhum exercicio encontrado',
+                            'Nenhum exercício encontrado',
                             style: theme.textTheme.titleMedium?.copyWith(
                               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
@@ -5093,7 +5093,7 @@ class _AddToGroupExercisePickerState extends ConsumerState<_AddToGroupExercisePi
                     minimumSize: const Size.fromHeight(50),
                   ),
                   child: Text(
-                    'Adicionar ${_selectedExercises.length} Exercicio${_selectedExercises.length != 1 ? 's' : ''}',
+                    'Adicionar ${_selectedExercises.length} Exercício${_selectedExercises.length != 1 ? 's' : ''}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 16,

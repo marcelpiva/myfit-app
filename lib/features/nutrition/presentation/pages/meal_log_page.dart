@@ -28,9 +28,9 @@ class _MealLogPageState extends ConsumerState<MealLogPage>
   final List<Map<String, dynamic>> _selectedFoods = [];
 
   final _mealTypes = [
-    {'id': 'breakfast', 'name': 'Cafe da Manha', 'icon': LucideIcons.coffee},
-    {'id': 'morning_snack', 'name': 'Lanche Manha', 'icon': LucideIcons.apple},
-    {'id': 'lunch', 'name': 'Almoco', 'icon': LucideIcons.utensils},
+    {'id': 'breakfast', 'name': 'Café da Manhã', 'icon': LucideIcons.coffee},
+    {'id': 'morning_snack', 'name': 'Lanche Manhã', 'icon': LucideIcons.apple},
+    {'id': 'lunch', 'name': 'Almoço', 'icon': LucideIcons.utensils},
     {'id': 'afternoon_snack', 'name': 'Lanche Tarde', 'icon': LucideIcons.cookie},
     {'id': 'dinner', 'name': 'Jantar', 'icon': LucideIcons.moon},
     {'id': 'evening_snack', 'name': 'Ceia', 'icon': LucideIcons.star},
@@ -41,7 +41,7 @@ class _MealLogPageState extends ConsumerState<MealLogPage>
     {'id': '1', 'name': 'Frango grelhado', 'portion': '100g', 'calories': 165, 'protein': 31, 'carbs': 0, 'fat': 4},
     {'id': '2', 'name': 'Arroz integral', 'portion': '100g', 'calories': 130, 'protein': 3, 'carbs': 28, 'fat': 1},
     {'id': '3', 'name': 'Ovo cozido', 'portion': '1 unidade', 'calories': 78, 'protein': 6, 'carbs': 1, 'fat': 5},
-    {'id': '4', 'name': 'Banana', 'portion': '1 media', 'calories': 105, 'protein': 1, 'carbs': 27, 'fat': 0},
+    {'id': '4', 'name': 'Banana', 'portion': '1 média', 'calories': 105, 'protein': 1, 'carbs': 27, 'fat': 0},
     {'id': '5', 'name': 'Whey Protein', 'portion': '30g', 'calories': 120, 'protein': 24, 'carbs': 3, 'fat': 1},
   ];
 
@@ -116,7 +116,7 @@ class _MealLogPageState extends ConsumerState<MealLogPage>
     HapticUtils.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Refeicao registrada com sucesso!'),
+        content: const Text('Refeição registrada com sucesso!'),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -220,7 +220,7 @@ class _MealLogPageState extends ConsumerState<MealLogPage>
           ),
           const Spacer(),
           Text(
-            'Registrar Refeicao',
+            'Registrar Refeição',
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -434,7 +434,7 @@ class _MealLogPageState extends ConsumerState<MealLogPage>
             ),
             const SizedBox(height: 4),
             Text(
-              'Adicione alimentos usando as opcoes abaixo',
+              'Adicione alimentos usando as opções abaixo',
               style: TextStyle(
                 fontSize: 12,
                 color: isDark
@@ -768,7 +768,7 @@ class _MealLogPageState extends ConsumerState<MealLogPage>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Observacoes (opcional)',
+          'Observações (opcional)',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
@@ -786,7 +786,7 @@ class _MealLogPageState extends ConsumerState<MealLogPage>
             color: isDark ? AppColors.foregroundDark : AppColors.foreground,
           ),
           decoration: InputDecoration(
-            hintText: 'Ex: Refeicao pos-treino',
+            hintText: 'Ex: Refeição pós-treino',
             hintStyle: TextStyle(
               color: isDark
                   ? AppColors.mutedForegroundDark.withAlpha(150)
@@ -835,7 +835,7 @@ class _MealLogPageState extends ConsumerState<MealLogPage>
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildMacroTotal('Calorias', '$_totalCalories', 'kcal', AppColors.warning, isDark),
-                _buildMacroTotal('Proteina', '$_totalProtein', 'g', AppColors.destructive, isDark),
+                _buildMacroTotal('Proteína', '$_totalProtein', 'g', AppColors.destructive, isDark),
                 _buildMacroTotal('Carbos', '$_totalCarbs', 'g', AppColors.info, isDark),
                 _buildMacroTotal('Gordura', '$_totalFat', 'g', AppColors.warning, isDark),
               ],
@@ -862,7 +862,7 @@ class _MealLogPageState extends ConsumerState<MealLogPage>
                     Icon(LucideIcons.check, size: 18),
                     SizedBox(width: 8),
                     Text(
-                      'Registrar Refeicao',
+                      'Registrar Refeição',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,

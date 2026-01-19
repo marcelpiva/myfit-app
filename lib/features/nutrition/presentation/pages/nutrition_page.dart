@@ -74,7 +74,7 @@ class _NutritionPageState extends ConsumerState<NutritionPage>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Nutricao',
+                          'Nutrição',
                           style: theme.textTheme.headlineMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -221,7 +221,7 @@ class _NutritionPageState extends ConsumerState<NutritionPage>
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Text(
-                      'Refeicoes',
+                      'Refeições',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -292,7 +292,7 @@ class _NutritionPageState extends ConsumerState<NutritionPage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Adicionar Refeicao',
+                'Adicionar Refeição',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
@@ -318,7 +318,7 @@ class _NutritionPageState extends ConsumerState<NutritionPage>
                 ctx,
                 isDark,
                 LucideIcons.scanLine,
-                'Escanear Codigo de Barras',
+                'Escanear Código de Barras',
                 'Adicione produto rapidamente',
                 AppColors.secondary,
                 () {
@@ -332,8 +332,8 @@ class _NutritionPageState extends ConsumerState<NutritionPage>
                 ctx,
                 isDark,
                 LucideIcons.clock,
-                'Refeicoes Recentes',
-                'Repita uma refeicao anterior',
+                'Refeições Recentes',
+                'Repita uma refeição anterior',
                 AppColors.accent,
                 () {
                   HapticUtils.lightImpact();
@@ -346,8 +346,8 @@ class _NutritionPageState extends ConsumerState<NutritionPage>
                 ctx,
                 isDark,
                 LucideIcons.sparkles,
-                'Sugestao com IA',
-                'Deixe a IA sugerir uma refeicao',
+                'Sugestão com IA',
+                'Deixe a IA sugerir uma refeição',
                 AppColors.info,
                 () {
                   HapticUtils.lightImpact();
@@ -540,7 +540,7 @@ class _MacrosSummary extends StatelessWidget {
           Row(
             children: [
               _MacroProgress(
-                label: 'Proteina',
+                label: 'Proteína',
                 current: 98,
                 target: 150,
                 color: AppColors.primary,

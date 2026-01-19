@@ -203,7 +203,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage>
                       ),
                       const Spacer(),
                       Text(
-                        'Notificacoes',
+                        'Notificações',
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -264,7 +264,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage>
                           ),
                           const SizedBox(width: 10),
                           Text(
-                            '$unreadCount ${unreadCount == 1 ? 'nova notificacao' : 'novas notificacoes'}',
+                            '$unreadCount ${unreadCount == 1 ? 'nova notificação' : 'novas notificações'}',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -337,7 +337,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage>
             ),
             const SizedBox(height: 24),
             Text(
-              'Nenhuma notificacao',
+              'Nenhuma notificação',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -346,7 +346,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage>
             ),
             const SizedBox(height: 8),
             Text(
-              'Voce vera aqui atualizacoes sobre\nseus treinos, mensagens e mais.',
+              'Você verá aqui atualizações sobre\nseus treinos, mensagens e mais.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,

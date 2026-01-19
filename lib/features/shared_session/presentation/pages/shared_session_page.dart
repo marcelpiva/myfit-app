@@ -58,7 +58,7 @@ class _SharedSessionPageState extends ConsumerState<SharedSessionPage> {
               Icon(LucideIcons.alertCircle, size: 48, color: theme.colorScheme.error),
               const SizedBox(height: 16),
               Text(
-                'Erro ao carregar sessao',
+                'Erro ao carregar sessão',
                 style: theme.textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
@@ -83,8 +83,8 @@ class _SharedSessionPageState extends ConsumerState<SharedSessionPage> {
     final session = sessionState.session;
     if (session == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Sessao nao encontrada')),
-        body: const Center(child: Text('Sessao nao encontrada')),
+        appBar: AppBar(title: const Text('Sessão não encontrada')),
+        body: const Center(child: Text('Sessão não encontrada')),
       );
     }
 
@@ -165,7 +165,7 @@ class _SharedSessionPageState extends ConsumerState<SharedSessionPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Series Completadas',
+                  'Séries Completadas',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -173,7 +173,7 @@ class _SharedSessionPageState extends ConsumerState<SharedSessionPage> {
                 const SizedBox(height: 8),
                 if (session.sets.isEmpty)
                   Text(
-                    'Nenhuma serie completada ainda',
+                    'Nenhuma série completada ainda',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -281,7 +281,7 @@ class _SharedSessionPageState extends ConsumerState<SharedSessionPage> {
               ),
               const SizedBox(width: 8),
               Text(
-                'Exercicio Atual',
+                'Exercício Atual',
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: theme.colorScheme.primary,
                 ),
@@ -298,7 +298,7 @@ class _SharedSessionPageState extends ConsumerState<SharedSessionPage> {
           const SizedBox(height: 8),
           Row(
             children: [
-              _buildExerciseChip(context, '4 series', LucideIcons.repeat),
+              _buildExerciseChip(context, '4 séries', LucideIcons.repeat),
               const SizedBox(width: 8),
               _buildExerciseChip(context, '10-12 reps', LucideIcons.hash),
               const SizedBox(width: 8),

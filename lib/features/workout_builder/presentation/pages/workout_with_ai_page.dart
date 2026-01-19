@@ -34,14 +34,14 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
     ),
     _GoalOption(
       id: 'forca',
-      title: 'Forca',
+      title: 'Força',
       subtitle: 'Aumento de carga',
       icon: LucideIcons.zap,
     ),
     _GoalOption(
       id: 'resistencia',
-      title: 'Resistencia',
-      subtitle: 'Condicionamento fisico',
+      title: 'Resistência',
+      subtitle: 'Condicionamento físico',
       icon: LucideIcons.heart,
     ),
   ];
@@ -52,11 +52,11 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
     _MuscleGroupOption(id: 'peito', name: 'Peito', icon: LucideIcons.heart),
     _MuscleGroupOption(id: 'costas', name: 'Costas', icon: LucideIcons.arrowUpDown),
     _MuscleGroupOption(id: 'ombros', name: 'Ombros', icon: LucideIcons.mountain),
-    _MuscleGroupOption(id: 'biceps', name: 'Biceps', icon: LucideIcons.armchair),
-    _MuscleGroupOption(id: 'triceps', name: 'Triceps', icon: LucideIcons.armchair),
+    _MuscleGroupOption(id: 'biceps', name: 'Bíceps', icon: LucideIcons.armchair),
+    _MuscleGroupOption(id: 'triceps', name: 'Tríceps', icon: LucideIcons.armchair),
     _MuscleGroupOption(id: 'pernas', name: 'Pernas', icon: LucideIcons.footprints),
-    _MuscleGroupOption(id: 'gluteos', name: 'Gluteos', icon: LucideIcons.circle),
-    _MuscleGroupOption(id: 'abdomen', name: 'Abdomen', icon: LucideIcons.alignCenter),
+    _MuscleGroupOption(id: 'gluteos', name: 'Glúteos', icon: LucideIcons.circle),
+    _MuscleGroupOption(id: 'abdomen', name: 'Abdômen', icon: LucideIcons.alignCenter),
   ];
 
   // Duration preference
@@ -75,7 +75,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
     _EquipmentOption(
       id: 'casa',
       title: 'Treino em Casa',
-      subtitle: 'Halteres e elasticos',
+      subtitle: 'Halteres e elásticos',
       icon: LucideIcons.home,
     ),
     _EquipmentOption(
@@ -100,7 +100,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
       HapticUtils.heavyImpact();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Preencha todas as opcoes para gerar o treino', style: const TextStyle(color: Colors.white)),
+          content: Text('Preencha todas as opções para gerar o treino', style: const TextStyle(color: Colors.white)),
           backgroundColor: AppColors.warning,
         ),
       );
@@ -145,9 +145,9 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
       case 'emagrecimento':
         return 'Emagrecimento';
       case 'forca':
-        return 'Forca';
+        return 'Força';
       case 'resistencia':
-        return 'Resistencia';
+        return 'Resistência';
       default:
         return '';
     }
@@ -174,7 +174,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
       case 'ombros':
         return [
           _GeneratedExercise(name: 'Desenvolvimento', sets: sets, reps: reps, rest: rest),
-          _GeneratedExercise(name: 'Elevacao Lateral', sets: sets, reps: reps, rest: rest),
+          _GeneratedExercise(name: 'Elevação Lateral', sets: sets, reps: reps, rest: rest),
         ];
       case 'biceps':
         return [
@@ -182,7 +182,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
         ];
       case 'triceps':
         return [
-          _GeneratedExercise(name: 'Triceps Pulley', sets: sets, reps: reps, rest: rest),
+          _GeneratedExercise(name: 'Tríceps Pulley', sets: sets, reps: reps, rest: rest),
         ];
       case 'pernas':
         return [
@@ -443,7 +443,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
           // Duration Selection
           FadeInUp(
             delay: const Duration(milliseconds: 200),
-            child: _buildSectionTitle(theme, isDark, 'Duracao do treino', LucideIcons.clock),
+            child: _buildSectionTitle(theme, isDark, 'Duração do treino', LucideIcons.clock),
           ),
           const SizedBox(height: 12),
           FadeInUp(
@@ -456,7 +456,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
           // Equipment Selection
           FadeInUp(
             delay: const Duration(milliseconds: 300),
-            child: _buildSectionTitle(theme, isDark, 'Equipamentos disponiveis', LucideIcons.wrench),
+            child: _buildSectionTitle(theme, isDark, 'Equipamentos disponíveis', LucideIcons.wrench),
           ),
           const SizedBox(height: 12),
           FadeInUp(
@@ -947,7 +947,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
                               theme,
                               isDark,
                               '${workout.exercises.length}',
-                              'exercicios',
+                              'exercícios',
                               LucideIcons.dumbbell,
                             ),
                             const SizedBox(width: 24),
@@ -963,7 +963,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
                               theme,
                               isDark,
                               '${workout.exercises.fold(0, (sum, e) => sum + e.sets)}',
-                              'series',
+                              'séries',
                               LucideIcons.repeat,
                             ),
                           ],
@@ -979,7 +979,7 @@ class _WorkoutWithAIPageState extends ConsumerState<WorkoutWithAIPage> {
                 FadeInUp(
                   delay: const Duration(milliseconds: 200),
                   child: Text(
-                    'Exercicios',
+                    'Exercícios',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: isDark ? AppColors.foregroundDark : AppColors.foreground,

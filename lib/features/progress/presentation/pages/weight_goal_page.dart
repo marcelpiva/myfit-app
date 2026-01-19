@@ -309,7 +309,7 @@ class _WeightGoalPageState extends ConsumerState<WeightGoalPage>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildWeightStat(
-                'Inicio',
+                'Início',
                 '${_startWeight.toStringAsFixed(1)} kg',
                 isDark,
               ),
@@ -348,7 +348,7 @@ class _WeightGoalPageState extends ConsumerState<WeightGoalPage>
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Voce ja perdeu ${(_startWeight - _currentWeight).toStringAsFixed(1)} kg!',
+                  'Você já perdeu ${(_startWeight - _currentWeight).toStringAsFixed(1)} kg!',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -714,18 +714,18 @@ class _WeightGoalPageState extends ConsumerState<WeightGoalPage>
     final tips = [
       {
         'icon': LucideIcons.heartPulse,
-        'title': 'Perda saudavel',
-        'text': '0.5-1kg por semana e considerado seguro',
+        'title': 'Perda saudável',
+        'text': '0.5-1kg por semana é considerado seguro',
       },
       {
         'icon': LucideIcons.utensils,
-        'title': 'Alimentacao',
-        'text': 'Deficite de 500kcal/dia = 0.5kg/semana',
+        'title': 'Alimentação',
+        'text': 'Déficit de 500kcal/dia = 0.5kg/semana',
       },
       {
         'icon': LucideIcons.dumbbell,
-        'title': 'Exercicios',
-        'text': 'Combine cardio e musculacao para melhores resultados',
+        'title': 'Exercícios',
+        'text': 'Combine cardio e musculação para melhores resultados',
       },
     ];
 

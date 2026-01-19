@@ -161,7 +161,7 @@ class _CheckinHistoryPageState extends ConsumerState<CheckinHistoryPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Historico de Check-ins',
+                  'Histórico de Check-ins',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -169,7 +169,7 @@ class _CheckinHistoryPageState extends ConsumerState<CheckinHistoryPage> {
                   ),
                 ),
                 Text(
-                  'Todos os seus registros de presenca',
+                  'Todos os seus registros de presença',
                   style: TextStyle(
                     fontSize: 14,
                     color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -218,9 +218,9 @@ class _CheckinHistoryPageState extends ConsumerState<CheckinHistoryPage> {
     final filters = [
       {'id': 'all', 'label': 'Todos', 'icon': LucideIcons.list},
       {'id': 'qr', 'label': 'QR Code', 'icon': LucideIcons.scanLine},
-      {'id': 'code', 'label': 'Codigo', 'icon': LucideIcons.hash},
+      {'id': 'code', 'label': 'Código', 'icon': LucideIcons.hash},
       {'id': 'location', 'label': 'GPS', 'icon': LucideIcons.mapPin},
-      {'id': 'request', 'label': 'Solicitacao', 'icon': LucideIcons.send},
+      {'id': 'request', 'label': 'Solicitação', 'icon': LucideIcons.send},
     ];
 
     return SingleChildScrollView(
@@ -354,7 +354,7 @@ class _CheckinHistoryPageState extends ConsumerState<CheckinHistoryPage> {
                     ),
                   ),
                   Text(
-                    'Este mes',
+                    'Este mês',
                     style: TextStyle(
                       fontSize: 13,
                       color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -414,7 +414,7 @@ class _CheckinHistoryPageState extends ConsumerState<CheckinHistoryPage> {
       label = 'Ontem';
     } else {
       final months = [
-        'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho',
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
         'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
       ];
       label = '${date.day} de ${months[date.month - 1]}';
@@ -543,19 +543,19 @@ class _CheckinHistoryPageState extends ConsumerState<CheckinHistoryPage> {
       case CheckInMethod.manualCode:
         return {
           'icon': LucideIcons.hash,
-          'label': 'Codigo',
+          'label': 'Código',
           'color': AppColors.secondary,
         };
       case CheckInMethod.location:
         return {
           'icon': LucideIcons.mapPin,
-          'label': 'Localizacao',
+          'label': 'Localização',
           'color': AppColors.accent,
         };
       case CheckInMethod.request:
         return {
           'icon': LucideIcons.send,
-          'label': 'Solicitacao',
+          'label': 'Solicitação',
           'color': AppColors.success,
         };
       case CheckInMethod.nfc:
@@ -615,7 +615,7 @@ class _CheckinHistoryPageState extends ConsumerState<CheckinHistoryPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Tente ajustar os filtros ou faca seu primeiro check-in',
+              'Tente ajustar os filtros ou faça seu primeiro check-in',
               style: TextStyle(
                 fontSize: 14,
                 color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,

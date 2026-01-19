@@ -643,7 +643,7 @@ class _DietPlansListPageState extends ConsumerState<DietPlansListPage>
                         isDark,
                       ),
                       _buildDetailStat(
-                        (plan['isTemplate'] as bool) ? 'Sim' : 'Nao',
+                        (plan['isTemplate'] as bool) ? 'Sim' : 'Não',
                         'Template',
                         isDark,
                       ),
@@ -655,7 +655,7 @@ class _DietPlansListPageState extends ConsumerState<DietPlansListPage>
 
                 // Macros breakdown
                 Text(
-                  'Distribuicao de Macros',
+                  'Distribuição de Macros',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -867,7 +867,7 @@ class _DietPlansListPageState extends ConsumerState<DietPlansListPage>
           ),
         ),
         content: Text(
-          'Tem certeza que deseja excluir "${plan['name']}"? Esta acao nao pode ser desfeita.',
+          'Tem certeza que deseja excluir "${plan['name']}"? Esta ação não pode ser desfeita.',
           style: TextStyle(
             color: isDark
                 ? AppColors.mutedForegroundDark
@@ -893,7 +893,7 @@ class _DietPlansListPageState extends ConsumerState<DietPlansListPage>
               // Delete plan
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text('Plano excluido com sucesso!'),
+                  content: const Text('Plano excluído com sucesso!'),
                   backgroundColor: AppColors.destructive,
                 ),
               );
@@ -1370,7 +1370,7 @@ class _MacrosBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildMacroLegend('Carboidratos', '50%', AppColors.primary, isDark),
-            _buildMacroLegend('Proteinas', '25%', AppColors.success, isDark),
+            _buildMacroLegend('Proteínas', '25%', AppColors.success, isDark),
             _buildMacroLegend('Gorduras', '25%', AppColors.warning, isDark),
           ],
         ),
@@ -1464,7 +1464,7 @@ class _EmptyState extends StatelessWidget {
             Text(
               isSearching
                   ? 'Tente buscar por outro nome'
-                  : 'Crie seu primeiro plano alimentar para comecar',
+                  : 'Crie seu primeiro plano alimentar para começar',
               style: TextStyle(
                 fontSize: 14,
                 color: isDark

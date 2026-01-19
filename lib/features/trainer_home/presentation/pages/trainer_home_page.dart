@@ -155,7 +155,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
                   FadeInUp(
                     delay: const Duration(milliseconds: 200),
                     child: _SectionHeader(
-                      title: 'Acoes Rapidas',
+                      title: 'Ações Rápidas',
                       icon: LucideIcons.zap,
                       isDark: isDark,
                     ),
@@ -222,7 +222,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
                     FadeInUp(
                       delay: const Duration(milliseconds: 350),
                       child: _EmptyStateCard(
-                        message: 'Nenhuma sessao agendada para hoje',
+                        message: 'Nenhuma sessão agendada para hoje',
                         icon: LucideIcons.calendar,
                         isDark: isDark,
                       ),
@@ -397,7 +397,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
                 const SizedBox(height: 24),
 
                 Text(
-                  'Agendar Sessao',
+                  'Agendar Sessão',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -420,7 +420,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Text(
-                        'Voce ainda nao tem alunos. Convide alunos primeiro.',
+                        'Você ainda não tem alunos. Convide alunos primeiro.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -517,7 +517,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
 
                   // Time picker
                   Text(
-                    'Horario',
+                    'Horário',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -575,14 +575,14 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    'Sessao agendada com ${selectedStudent!['name']} para ${DateFormat('dd/MM').format(selectedDate)} as ${selectedTime.format(context)}',
+                                    'Sessão agendada com ${selectedStudent!['name']} para ${DateFormat('dd/MM').format(selectedDate)} as ${selectedTime.format(context)}',
                                   ),
                                   behavior: SnackBarBehavior.floating,
                                 ),
                               );
                             },
                       icon: const Icon(LucideIcons.calendarPlus, size: 18),
-                      label: const Text('Agendar Sessao'),
+                      label: const Text('Agendar Sessão'),
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
@@ -1788,7 +1788,7 @@ void _showSessionDetailsModal(
           const SizedBox(height: 20),
           _DetailRow(
             icon: LucideIcons.clock,
-            label: 'Horario',
+            label: 'Horário',
             value: '${session.time} (${session.duration})',
             isDark: isDark,
           ),
@@ -1958,7 +1958,7 @@ void _showAlertDetailsModal(
       actionIcon = LucideIcons.eye;
       break;
     case _AlertSeverity.low:
-      actionLabel = 'Tomar Acao';
+      actionLabel = 'Tomar Ação';
       actionIcon = LucideIcons.arrowRight;
       break;
   }

@@ -116,7 +116,7 @@ class GymDashboardPage extends ConsumerWidget {
                     FadeInUp(
                       delay: const Duration(milliseconds: 300),
                       child: Text(
-                        'Acoes Rapidas',
+                        'Ações Rápidas',
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -186,7 +186,7 @@ class GymDashboardPage extends ConsumerWidget {
       {'label': 'Alunos Ativos', 'value': '$studentCount', 'change': '', 'icon': LucideIcons.users, 'positive': true},
       {'label': 'Professores', 'value': '$trainerCount', 'change': '', 'icon': LucideIcons.userCheck, 'positive': true},
       {'label': 'Check-ins Hoje', 'value': '$checkinsToday', 'change': '', 'icon': LucideIcons.logIn, 'positive': true},
-      {'label': 'Taxa de Retencao', 'value': '${retentionRate.toStringAsFixed(0)}%', 'change': '', 'icon': LucideIcons.trendingUp, 'positive': true},
+      {'label': 'Taxa de Retenção', 'value': '${retentionRate.toStringAsFixed(0)}%', 'change': '', 'icon': LucideIcons.trendingUp, 'positive': true},
     ];
 
     return GridView.builder(
@@ -335,7 +335,7 @@ class GymDashboardPage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Dados financeiros serao exibidos aqui',
+                      'Dados financeiros serão exibidos aqui',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -355,7 +355,7 @@ class GymDashboardPage extends ConsumerWidget {
       {'label': 'Novo Aluno', 'icon': LucideIcons.userPlus, 'color': AppColors.primary},
       {'label': 'Novo Professor', 'icon': LucideIcons.userCheck, 'color': AppColors.secondary},
       {'label': 'Financeiro', 'icon': LucideIcons.dollarSign, 'color': AppColors.success},
-      {'label': 'Relatorios', 'icon': LucideIcons.fileText, 'color': AppColors.accent},
+      {'label': 'Relatórios', 'icon': LucideIcons.fileText, 'color': AppColors.accent},
     ];
 
     return Row(
@@ -557,7 +557,7 @@ class GymDashboardPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Atividades recentes serao exibidas aqui',
+                    'Atividades recentes serão exibidas aqui',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -666,7 +666,7 @@ class GymDashboardPage extends ConsumerWidget {
             Icon(LucideIcons.checkCircle, color: AppColors.success, size: 24),
             const SizedBox(width: 12),
             Text(
-              'Nenhuma aprovacao pendente',
+              'Nenhuma aprovação pendente',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -693,7 +693,7 @@ class GymDashboardPage extends ConsumerWidget {
               Icon(LucideIcons.alertCircle, color: AppColors.warning, size: 20),
               const SizedBox(width: 8),
               Text(
-                'Aprovacoes Pendentes',
+                'Aprovações Pendentes',
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),

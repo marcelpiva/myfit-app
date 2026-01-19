@@ -97,7 +97,7 @@ class _ChatPageState extends ConsumerState<ChatPage>
             if (conversations.isEmpty)
               Center(
                 child: Text(
-                  'Nenhum contato disponivel',
+                  'Nenhum contato disponível',
                   style: TextStyle(
                     color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                   ),
@@ -781,7 +781,7 @@ class _ConversationPageState extends ConsumerState<_ConversationPage> {
               context: context,
               isDark: isDark,
               icon: LucideIcons.bellOff,
-              label: 'Silenciar notificacoes',
+              label: 'Silenciar notificações',
               onTap: () {
                 HapticUtils.selectionClick();
                 Navigator.pop(context);
@@ -846,7 +846,7 @@ class _ConversationPageState extends ConsumerState<_ConversationPage> {
               context: context,
               isDark: isDark,
               icon: LucideIcons.camera,
-              label: 'Camera',
+              label: 'Câmera',
               onTap: () {
                 HapticUtils.selectionClick();
                 Navigator.pop(context);
@@ -876,7 +876,7 @@ class _ConversationPageState extends ConsumerState<_ConversationPage> {
               context: context,
               isDark: isDark,
               icon: LucideIcons.mapPin,
-              label: 'Localizacao',
+              label: 'Localização',
               onTap: () {
                 HapticUtils.selectionClick();
                 Navigator.pop(context);

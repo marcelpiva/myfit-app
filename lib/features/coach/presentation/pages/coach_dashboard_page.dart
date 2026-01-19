@@ -41,7 +41,7 @@ class CoachDashboardPage extends ConsumerWidget {
               context.push('/settings');
             },
             icon: const Icon(LucideIcons.settings),
-            tooltip: 'Configuracoes',
+            tooltip: 'Configurações',
           ),
         ],
       ),
@@ -141,7 +141,7 @@ class CoachDashboardPage extends ConsumerWidget {
               FadeInUp(
                 delay: const Duration(milliseconds: 450),
                 child: _SectionHeader(
-                  title: 'Acoes Rapidas',
+                  title: 'Ações Rápidas',
                   icon: LucideIcons.zap,
                   isDark: isDark,
                 ),
@@ -250,7 +250,7 @@ class _MetricsHeader extends StatelessWidget {
                 Expanded(
                   child: _MetricItem(
                     value: isLoading ? '-' : '${retentionRate.toStringAsFixed(0)}%',
-                    label: 'Retencao',
+                    label: 'Retenção',
                     icon: LucideIcons.userCheck,
                   ),
                 ),
@@ -548,7 +548,7 @@ class _CommunityCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'mensagens nao lidas',
+                        'mensagens não lidas',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -559,7 +559,7 @@ class _CommunityCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Ultima atividade ha 15 minutos',
+                    'Última atividade há 15 minutos',
                     style: TextStyle(
                       fontSize: 13,
                       color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,

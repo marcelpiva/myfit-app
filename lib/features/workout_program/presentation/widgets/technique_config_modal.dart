@@ -183,7 +183,7 @@ class _TechniqueConfigModalState extends State<TechniqueConfigModal> {
 
                     // Execution instructions
                     Text(
-                      'Instrucoes de Execucao (opcional)',
+                      'Instruções de Execução (opcional)',
                       style: theme.textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -193,7 +193,7 @@ class _TechniqueConfigModalState extends State<TechniqueConfigModal> {
                       controller: _instructionsController,
                       maxLines: 3,
                       decoration: InputDecoration(
-                        hintText: 'Ex: Manter tensao constante...',
+                        hintText: 'Ex: Manter tensão constante...',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -225,7 +225,7 @@ class _TechniqueConfigModalState extends State<TechniqueConfigModal> {
                           widget.onConfirm(_config);
                         },
                         icon: const Icon(LucideIcons.check, size: 18),
-                        label: const Text('Confirmar e Selecionar Exercicio'),
+                        label: const Text('Confirmar e Selecionar Exercício'),
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           backgroundColor: _techniqueColor,
@@ -255,7 +255,7 @@ class _TechniqueConfigModalState extends State<TechniqueConfigModal> {
 
   List<Widget> _buildDropsetFields(ThemeData theme, bool isDark) {
     return [
-      _buildSectionTitle(theme, 'Numero de Drops'),
+      _buildSectionTitle(theme, 'Número de Drops'),
       const SizedBox(height: 8),
       _buildChipSelector(
         values: [2, 3, 4, 5],
@@ -289,7 +289,7 @@ class _TechniqueConfigModalState extends State<TechniqueConfigModal> {
 
   List<Widget> _buildRestPauseFields(ThemeData theme, bool isDark) {
     return [
-      _buildSectionTitle(theme, 'Duracao da Pausa'),
+      _buildSectionTitle(theme, 'Duração da Pausa'),
       const SizedBox(height: 8),
       _buildChipSelector(
         values: [10, 15, 20, 30],
@@ -308,14 +308,14 @@ class _TechniqueConfigModalState extends State<TechniqueConfigModal> {
         theme,
         isDark,
         LucideIcons.info,
-        'Faca o maximo de repeticoes, descanse brevemente, e continue ate a falha.',
+        'Faça o máximo de repetições, descanse brevemente, e continue até a falha.',
       ),
     ];
   }
 
   List<Widget> _buildClusterFields(ThemeData theme, bool isDark) {
     return [
-      _buildSectionTitle(theme, 'Mini-Series por Set'),
+      _buildSectionTitle(theme, 'Mini-Séries por Set'),
       const SizedBox(height: 8),
       _buildChipSelector(
         values: [3, 4, 5, 6],
@@ -330,7 +330,7 @@ class _TechniqueConfigModalState extends State<TechniqueConfigModal> {
         isDark: isDark,
       ),
       const SizedBox(height: 16),
-      _buildSectionTitle(theme, 'Pausa entre Mini-Series'),
+      _buildSectionTitle(theme, 'Pausa entre Mini-Séries'),
       const SizedBox(height: 8),
       _buildChipSelector(
         values: [10, 15, 20, 30],
@@ -349,7 +349,7 @@ class _TechniqueConfigModalState extends State<TechniqueConfigModal> {
         theme,
         isDark,
         LucideIcons.info,
-        'Cluster sets permitem mais volume com cargas pesadas atraves de micro-pausas.',
+        'Cluster sets permitem mais volume com cargas pesadas através de micro-pausas.',
       ),
     ];
   }

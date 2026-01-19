@@ -42,41 +42,41 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
   final List<_Question> _questions = [
     _Question(
       title: 'Qual o objetivo principal?',
-      subtitle: 'Isso nos ajuda a selecionar os exercicios e configurar series/repeticoes',
+      subtitle: 'Isso nos ajuda a selecionar os exercícios e configurar séries/repetições',
       icon: LucideIcons.target,
     ),
     _Question(
-      title: 'Qual o nivel de experiencia?',
-      subtitle: 'Ajustamos a complexidade dos exercicios e volume de treino',
+      title: 'Qual o nível de experiência?',
+      subtitle: 'Ajustamos a complexidade dos exercícios e volume de treino',
       icon: LucideIcons.gauge,
     ),
     _Question(
       title: 'Quantos dias por semana?',
-      subtitle: 'Isso determina a divisao do treino (split)',
+      subtitle: 'Isso determina a divisão do treino (split)',
       icon: LucideIcons.calendar,
     ),
     _Question(
       title: 'Quanto tempo por treino?',
-      subtitle: 'Ajustamos a quantidade de exercicios',
+      subtitle: 'Ajustamos a quantidade de exercícios',
       icon: LucideIcons.clock,
     ),
     _Question(
-      title: 'Quais equipamentos disponiveis?',
-      subtitle: 'Selecionamos exercicios compativeis',
+      title: 'Quais equipamentos disponíveis?',
+      subtitle: 'Selecionamos exercícios compatíveis',
       icon: LucideIcons.dumbbell,
     ),
     _Question(
-      title: 'Alguma lesao ou restricao?',
-      subtitle: 'Evitamos exercicios que possam agravar',
+      title: 'Alguma lesão ou restrição?',
+      subtitle: 'Evitamos exercícios que possam agravar',
       icon: LucideIcons.heartPulse,
     ),
     _Question(
-      title: 'Preferencias de treino?',
-      subtitle: 'Priorizamos o tipo de exercicio preferido',
+      title: 'Preferências de treino?',
+      subtitle: 'Priorizamos o tipo de exercício preferido',
       icon: LucideIcons.settings,
     ),
     _Question(
-      title: 'Duracao do programa?',
+      title: 'Duração do programa?',
       subtitle: 'Tempo total do ciclo de treinamento',
       icon: LucideIcons.calendarDays,
     ),
@@ -205,7 +205,7 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'A IA esta selecionando os melhores exercicios',
+                    'A IA está selecionando os melhores exercícios',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
@@ -435,11 +435,11 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
       case WorkoutGoal.hypertrophy:
         return 'Hipertrofia';
       case WorkoutGoal.strength:
-        return 'Forca';
+        return 'Força';
       case WorkoutGoal.fatLoss:
         return 'Emagrecimento';
       case WorkoutGoal.endurance:
-        return 'Resistencia';
+        return 'Resistência';
       case WorkoutGoal.generalFitness:
         return 'Condicionamento Geral';
       case WorkoutGoal.functional:
@@ -452,13 +452,13 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
       case WorkoutGoal.hypertrophy:
         return 'Aumento de massa muscular';
       case WorkoutGoal.strength:
-        return 'Aumento de forca maxima';
+        return 'Aumento de força máxima';
       case WorkoutGoal.fatLoss:
         return 'Queima de gordura';
       case WorkoutGoal.endurance:
-        return 'Resistencia muscular';
+        return 'Resistência muscular';
       case WorkoutGoal.generalFitness:
-        return 'Saude e condicionamento';
+        return 'Saúde e condicionamento';
       case WorkoutGoal.functional:
         return 'Movimentos funcionais do dia a dia';
     }
@@ -492,9 +492,9 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
       case ProgramDifficulty.beginner:
         return 'Iniciante';
       case ProgramDifficulty.intermediate:
-        return 'Intermediario';
+        return 'Intermediário';
       case ProgramDifficulty.advanced:
-        return 'Avancado';
+        return 'Avançado';
     }
   }
 
@@ -537,13 +537,13 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
       case 2:
         return 'Full Body - Corpo inteiro a cada treino';
       case 3:
-        return 'ABC - Divisao em 3 treinos diferentes';
+        return 'ABC - Divisão em 3 treinos diferentes';
       case 4:
         return 'Upper/Lower - Superior e inferior alternados';
       case 5:
         return 'ABCDE - Um grupo muscular por dia';
       case 6:
-        return 'Push/Pull/Legs 2x - Alta frequencia';
+        return 'Push/Pull/Legs 2x - Alta frequência';
       default:
         return '';
     }
@@ -573,19 +573,19 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
   }
 
   String _getMinutesDescription(int minutes) {
-    if (minutes <= 30) return 'Treino rapido - 4 a 5 exercicios';
-    if (minutes <= 45) return 'Treino moderado - 5 a 6 exercicios';
-    if (minutes <= 60) return 'Treino padrao - 6 a 7 exercicios';
-    if (minutes <= 75) return 'Treino completo - 7 a 8 exercicios';
-    return 'Treino extenso - 8+ exercicios';
+    if (minutes <= 30) return 'Treino rápido - 4 a 5 exercícios';
+    if (minutes <= 45) return 'Treino moderado - 5 a 6 exercícios';
+    if (minutes <= 60) return 'Treino padrão - 6 a 7 exercícios';
+    if (minutes <= 75) return 'Treino completo - 7 a 8 exercícios';
+    return 'Treino extenso - 8+ exercícios';
   }
 
   Widget _buildEquipmentQuestion(ThemeData theme, bool isDark) {
     final options = [
-      ('full_gym', 'Academia Completa', 'Todos os equipamentos disponiveis'),
+      ('full_gym', 'Academia Completa', 'Todos os equipamentos disponíveis'),
       ('home_full', 'Home Gym Completa', 'Halteres, barra e banco'),
-      ('home_dumbbells', 'Halteres em Casa', 'Apenas halteres ajustaveis'),
-      ('home_basic', 'Equipamento Basico', 'Elásticos e peso corporal'),
+      ('home_dumbbells', 'Halteres em Casa', 'Apenas halteres ajustáveis'),
+      ('home_basic', 'Equipamento Básico', 'Elásticos e peso corporal'),
       ('bodyweight', 'Peso Corporal', 'Sem equipamentos'),
     ];
 
@@ -613,8 +613,8 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
 
   Widget _buildInjuriesQuestion(ThemeData theme, bool isDark) {
     final options = [
-      ('none', 'Nenhuma', 'Sem lesoes ou restricoes'),
-      ('shoulder', 'Ombro', 'Evitar exercicios de ombro'),
+      ('none', 'Nenhuma', 'Sem lesões ou restrições'),
+      ('shoulder', 'Ombro', 'Evitar exercícios de ombro'),
       ('knee', 'Joelho', 'Evitar agachamentos profundos'),
       ('back', 'Coluna', 'Evitar carga axial'),
       ('wrist', 'Punho', 'Evitar pegadas pesadas'),
@@ -656,10 +656,10 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
 
   Widget _buildPreferencesQuestion(ThemeData theme, bool isDark) {
     final options = [
-      ('mixed', 'Misto', 'Combinacao de maquinas e pesos livres'),
+      ('mixed', 'Misto', 'Combinação de máquinas e pesos livres'),
       ('free_weights', 'Pesos Livres', 'Halteres e barras'),
-      ('machines', 'Maquinas', 'Equipamentos guiados'),
-      ('bodyweight', 'Calistenia', 'Exercicios com peso corporal'),
+      ('machines', 'Máquinas', 'Equipamentos guiados'),
+      ('bodyweight', 'Calistenia', 'Exercícios com peso corporal'),
     ];
 
     return SingleChildScrollView(
@@ -686,9 +686,9 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
 
   Widget _buildWeeksQuestion(ThemeData theme, bool isDark) {
     final options = [
-      (4, '4 semanas', 'Ciclo curto - Introducao ou manutencao'),
-      (8, '8 semanas', 'Ciclo padrao - Tempo ideal para progressao'),
-      (12, '12 semanas', 'Ciclo longo - Transformacao completa'),
+      (4, '4 semanas', 'Ciclo curto - Introdução ou manutenção'),
+      (8, '8 semanas', 'Ciclo padrão - Tempo ideal para progressão'),
+      (12, '12 semanas', 'Ciclo longo - Transformação completa'),
     ];
 
     return SingleChildScrollView(

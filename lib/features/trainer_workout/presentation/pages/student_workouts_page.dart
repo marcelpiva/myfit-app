@@ -788,9 +788,9 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                 ),
               ),
               const SizedBox(height: 20),
-              // Titulo
+              // Título
               Text(
-                'Opcoes do Aluno',
+                'Opções do Aluno',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -798,13 +798,13 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                 ),
               ),
               const SizedBox(height: 16),
-              // Opcoes
+              // Opções
               _buildStudentOptionTile(
                 ctx,
                 isDark,
                 LucideIcons.lineChart,
                 'Ver Progresso Detalhado',
-                'Acompanhe a evolucao do aluno',
+                'Acompanhe a evolução do aluno',
                 AppColors.primary,
                 () {
                   HapticUtils.lightImpact();
@@ -831,8 +831,8 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                 ctx,
                 isDark,
                 LucideIcons.calendar,
-                'Agendar Sessao',
-                'Marque uma sessao de treino',
+                'Agendar Sessão',
+                'Marque uma sessão de treino',
                 AppColors.success,
                 () {
                   HapticUtils.lightImpact();
@@ -846,7 +846,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                 isDark,
                 LucideIcons.fileText,
                 'Notas do Aluno',
-                'Adicione observacoes importantes',
+                'Adicione observações importantes',
                 AppColors.warning,
                 () {
                   HapticUtils.lightImpact();
@@ -1118,7 +1118,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Agendar Sessao',
+                          'Agendar Sessão',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
@@ -1191,9 +1191,9 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                 ),
               ),
               const SizedBox(height: 16),
-              // Horario
+              // Horário
               Text(
-                'Horario',
+                'Horário',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -1254,7 +1254,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
                           children: [
                             const Icon(LucideIcons.checkCircle, color: Colors.white, size: 20),
                             const SizedBox(width: 12),
-                            Text('Sessao agendada para ${selectedDate.day}/${selectedDate.month} as ${selectedTime.hour}:${selectedTime.minute.toString().padLeft(2, '0')}'),
+                            Text('Sessão agendada para ${selectedDate.day}/${selectedDate.month} as ${selectedTime.hour}:${selectedTime.minute.toString().padLeft(2, '0')}'),
                           ],
                         ),
                         backgroundColor: AppColors.success,
@@ -1354,7 +1354,7 @@ class _StudentWorkoutsPageState extends ConsumerState<StudentWorkoutsPage>
               controller: notesController,
               maxLines: 6,
               decoration: InputDecoration(
-                hintText: 'Adicione observacoes sobre o aluno...\n\nEx: Lesao no ombro direito, evitar exercicios de pressao overhead.',
+                hintText: 'Adicione observacoes sobre o aluno...\n\nEx: Lesão no ombro direito, evitar exercícios de pressão overhead.',
                 hintStyle: TextStyle(
                   color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                 ),

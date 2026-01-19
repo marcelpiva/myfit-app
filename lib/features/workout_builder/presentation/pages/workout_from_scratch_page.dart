@@ -83,7 +83,7 @@ class _WorkoutFromScratchPageState extends ConsumerState<WorkoutFromScratchPage>
       HapticUtils.heavyImpact();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Adicione pelo menos um exercicio ao treino', style: const TextStyle(color: Colors.white)),
+          content: Text('Adicione pelo menos um exercício ao treino', style: const TextStyle(color: Colors.white)),
           backgroundColor: AppColors.destructive,
         ),
       );
@@ -153,7 +153,7 @@ class _WorkoutFromScratchPageState extends ConsumerState<WorkoutFromScratchPage>
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Exercicios (${_exercises.length})',
+                              'Exercícios (${_exercises.length})',
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
                                 color: isDark ? AppColors.foregroundDark : AppColors.foreground,
@@ -297,7 +297,7 @@ class _WorkoutFromScratchPageState extends ConsumerState<WorkoutFromScratchPage>
               color: isDark ? AppColors.foregroundDark : AppColors.foreground,
             ),
             decoration: InputDecoration(
-              hintText: 'Ex: Treino A - Peito e Triceps',
+              hintText: 'Ex: Treino A - Peito e Tríceps',
               hintStyle: TextStyle(
                 color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
               ),
@@ -353,7 +353,7 @@ class _WorkoutFromScratchPageState extends ConsumerState<WorkoutFromScratchPage>
               ),
               const SizedBox(width: 8),
               Text(
-                'Descricao (opcional)',
+                'Descrição (opcional)',
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: isDark ? AppColors.foregroundDark : AppColors.foreground,
@@ -423,14 +423,14 @@ class _WorkoutFromScratchPageState extends ConsumerState<WorkoutFromScratchPage>
           ),
           const SizedBox(height: 16),
           Text(
-            'Nenhum exercicio adicionado',
+            'Nenhum exercício adicionado',
             style: theme.textTheme.titleSmall?.copyWith(
               color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Adicione exercicios para montar seu treino',
+            'Adicione exercícios para montar seu treino',
             style: theme.textTheme.bodySmall?.copyWith(
               color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
             ),
@@ -534,7 +534,7 @@ class _WorkoutFromScratchPageState extends ConsumerState<WorkoutFromScratchPage>
                 _buildExerciseStat(
                   theme,
                   isDark,
-                  'Series',
+                  'Séries',
                   '${exercise.sets}',
                   LucideIcons.repeat,
                 ),
@@ -622,7 +622,7 @@ class _WorkoutFromScratchPageState extends ConsumerState<WorkoutFromScratchPage>
             ),
             const SizedBox(width: 8),
             Text(
-              'Adicionar Exercicio',
+              'Adicionar Exercício',
               style: theme.textTheme.titleSmall?.copyWith(
                 color: isDark ? AppColors.primaryDark : AppColors.primary,
                 fontWeight: FontWeight.w600,
@@ -750,9 +750,9 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
     'Supino Inclinado',
     'Crucifixo',
     'Desenvolvimento',
-    'Elevacao Lateral',
-    'Triceps Pulley',
-    'Triceps Frances',
+    'Elevação Lateral',
+    'Tríceps Pulley',
+    'Tríceps Francês',
     'Rosca Direta',
     'Rosca Martelo',
     'Puxada Frontal',
@@ -820,7 +820,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Adicionar Exercicio',
+                  'Adicionar Exercício',
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: isDark ? AppColors.foregroundDark : AppColors.foreground,
@@ -847,7 +847,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                 children: [
                   // Exercise Name
                   Text(
-                    'Nome do Exercicio',
+                    'Nome do Exercício',
                     style: theme.textTheme.labelLarge?.copyWith(
                       color: isDark ? AppColors.foregroundDark : AppColors.foreground,
                     ),
@@ -859,7 +859,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                       color: isDark ? AppColors.foregroundDark : AppColors.foreground,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Digite o nome do exercicio',
+                      hintText: 'Digite o nome do exercício',
                       hintStyle: TextStyle(
                         color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                       ),
@@ -881,7 +881,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
 
                   // Suggested Exercises
                   Text(
-                    'Sugestoes',
+                    'Sugestões',
                     style: theme.textTheme.labelLarge?.copyWith(
                       color: isDark ? AppColors.foregroundDark : AppColors.foreground,
                     ),
@@ -925,7 +925,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
 
                   // Sets
                   Text(
-                    'Series',
+                    'Séries',
                     style: theme.textTheme.labelLarge?.copyWith(
                       color: isDark ? AppColors.foregroundDark : AppColors.foreground,
                     ),
@@ -990,7 +990,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
 
                   // Reps
                   Text(
-                    'Repeticoes',
+                    'Repetições',
                     style: theme.textTheme.labelLarge?.copyWith(
                       color: isDark ? AppColors.foregroundDark : AppColors.foreground,
                     ),
@@ -1058,7 +1058,7 @@ class _AddExerciseSheetState extends State<_AddExerciseSheet> {
                     child: ElevatedButton.icon(
                       onPressed: _addExercise,
                       icon: Icon(LucideIcons.plus, size: 18),
-                      label: const Text('Adicionar Exercicio'),
+                      label: const Text('Adicionar Exercício'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isDark ? AppColors.primaryDark : AppColors.primary,
                         foregroundColor: Colors.white,
@@ -1165,7 +1165,7 @@ class _EditExerciseSheetState extends State<_EditExerciseSheet> {
 
             // Title
             Text(
-              'Editar Exercicio',
+              'Editar Exercício',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: isDark ? AppColors.foregroundDark : AppColors.foreground,
@@ -1202,7 +1202,7 @@ class _EditExerciseSheetState extends State<_EditExerciseSheet> {
 
             // Sets
             Text(
-              'Series',
+              'Séries',
               style: theme.textTheme.labelLarge?.copyWith(
                 color: isDark ? AppColors.foregroundDark : AppColors.foreground,
               ),
@@ -1267,7 +1267,7 @@ class _EditExerciseSheetState extends State<_EditExerciseSheet> {
 
             // Reps
             Text(
-              'Repeticoes',
+              'Repetições',
               style: theme.textTheme.labelLarge?.copyWith(
                 color: isDark ? AppColors.foregroundDark : AppColors.foreground,
               ),
@@ -1342,7 +1342,7 @@ class _EditExerciseSheetState extends State<_EditExerciseSheet> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text('Salvar Alteracoes'),
+                child: const Text('Salvar Alterações'),
               ),
             ),
           ],

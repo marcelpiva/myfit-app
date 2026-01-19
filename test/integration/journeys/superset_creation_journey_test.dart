@@ -100,7 +100,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify picker appears with available exercises
-        expect(find.text('Selecionar Exercicios'), findsOneWidget);
+        expect(find.text('Selecionar Exercícios'), findsOneWidget);
         expect(find.text('Puxada Frontal'), findsOneWidget);
         expect(find.text('Remada Curvada'), findsOneWidget);
       });
@@ -143,7 +143,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify group badge
-        expect(find.text('Super Serie'), findsOneWidget);
+        expect(find.text('Super-Set'), findsOneWidget);
 
         // Verify exercises are grouped visually
         expect(find.text('Supino Reto'), findsOneWidget);
@@ -223,7 +223,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Initially shows superset
-        expect(find.text('Super Serie'), findsOneWidget);
+        expect(find.text('Super-Set'), findsOneWidget);
 
         // Add third exercise
         await tester.tap(find.byIcon(LucideIcons.plus));
@@ -271,7 +271,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Open technique selection
-        await tester.tap(find.text('Tecnica'));
+        await tester.tap(find.text('Técnica'));
         await tester.pumpAndSettle();
 
         // Verify techniques are available
@@ -295,8 +295,8 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify config options appear
-        expect(find.text('Numero de Reducoes'), findsOneWidget);
-        expect(find.text('Descanso entre Reducoes'), findsOneWidget);
+        expect(find.text('Número de Reduções'), findsOneWidget);
+        expect(find.text('Descanso entre Reduções'), findsOneWidget);
       });
 
       testWidgets('should display dropset badge after configuration',
@@ -333,7 +333,7 @@ class _MockWorkoutWithExercises extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Exercicios do Treino')),
+      appBar: AppBar(title: const Text('Exercícios do Treino')),
       body: ListView.builder(
         itemCount: exercises.length,
         itemBuilder: (context, index) {
@@ -371,7 +371,7 @@ class _MockExerciseWithContextMenuState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Exercicio')),
+      appBar: AppBar(title: const Text('Exercício')),
       body: Column(
         children: [
           GestureDetector(
@@ -436,7 +436,7 @@ class _MockCreateSupersetFlowState extends State<_MockCreateSupersetFlow> {
               child: const Text('Criar Superset'),
             ),
           if (_showPicker) ...[
-            const Text('Selecionar Exercicios'),
+            const Text('Selecionar Exercícios'),
             const Divider(),
             ...widget.availableExercises.map(
               (ex) => ListTile(
@@ -515,7 +515,7 @@ class _MockSupersetDisplay extends StatelessWidget {
                 children: [
                   Icon(LucideIcons.arrowRightLeft, color: Colors.purple),
                   SizedBox(width: 8),
-                  Text('Super Serie',
+                  Text('Super-Set',
                       style: TextStyle(
                           fontWeight: FontWeight.bold, color: Colors.purple)),
                 ],
@@ -569,7 +569,7 @@ class _MockExerciseGroupWithActions extends StatelessWidget {
                 children: [
                   const Icon(LucideIcons.arrowRightLeft, color: Colors.purple),
                   const SizedBox(width: 8),
-                  const Text('Super Serie',
+                  const Text('Super-Set',
                       style: TextStyle(
                           fontWeight: FontWeight.bold, color: Colors.purple)),
                   const Spacer(),
@@ -633,7 +633,7 @@ class _MockAddToGroupFlowState extends State<_MockAddToGroupFlow> {
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   child: Row(
                     children: [
-                      const Text('Super Serie'),
+                      const Text('Super-Set'),
                       const Spacer(),
                       IconButton(
                         icon: const Icon(LucideIcons.plus, size: 18),
@@ -692,7 +692,7 @@ class _MockGroupUpgradeState extends State<_MockGroupUpgrade> {
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   child: Row(
                     children: [
-                      Text(_isTriset ? 'Tri-Set' : 'Super Serie'),
+                      Text(_isTriset ? 'Tri-Set' : 'Super-Set'),
                       const Spacer(),
                       IconButton(
                         icon: const Icon(LucideIcons.plus, size: 18),
@@ -782,11 +782,11 @@ class _MockExerciseSettingsState extends State<_MockExerciseSettings> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Configuracoes')),
+      appBar: AppBar(title: const Text('Configurações')),
       body: Column(
         children: [
           ListTile(
-            title: const Text('Tecnica'),
+            title: const Text('Técnica'),
             subtitle: Text(_showTechniques ? 'Selecione' : 'Atual: Normal'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => setState(() => _showTechniques = true),
@@ -816,7 +816,7 @@ class _MockDropsetConfigState extends State<_MockDropsetConfig> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tecnica')),
+      appBar: AppBar(title: const Text('Técnica')),
       body: Column(
         children: [
           ListTile(
@@ -829,8 +829,8 @@ class _MockDropsetConfigState extends State<_MockDropsetConfig> {
           ),
           if (_showConfig) ...[
             const Divider(),
-            const ListTile(title: Text('Numero de Reducoes')),
-            const ListTile(title: Text('Descanso entre Reducoes')),
+            const ListTile(title: Text('Número de Reduções')),
+            const ListTile(title: Text('Descanso entre Reduções')),
           ],
         ],
       ),
@@ -847,7 +847,7 @@ class _MockDropsetExerciseDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Exercicio')),
+      appBar: AppBar(title: const Text('Exercício')),
       body: Card(
         margin: const EdgeInsets.all(16),
         child: Column(

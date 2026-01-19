@@ -63,21 +63,21 @@ abstract class ExerciseTheme {
   /// Get the short description of what the technique does.
   static String getDescription(TechniqueType type) {
     return switch (type) {
-      TechniqueType.normal => 'Execucao padrao do exercicio',
+      TechniqueType.normal => 'Execução padrão do exercício',
       TechniqueType.superset =>
-        'Peito/Costas ou Biceps/Triceps (grupos opostos)',
+        'Peito/Costas ou Bíceps/Tríceps (grupos opostos)',
       TechniqueType.biset =>
-        'Peito/Ombros ou Costas/Biceps (mesma area)',
+        'Peito/Ombros ou Costas/Bíceps (mesma área)',
       TechniqueType.triset =>
-        'Tres exercicios do mesmo grupo muscular',
+        'Três exercícios do mesmo grupo muscular',
       TechniqueType.giantset =>
-        'Quatro ou mais exercicios do mesmo grupo',
+        'Quatro ou mais exercícios do mesmo grupo',
       TechniqueType.dropset =>
-        'Reducao progressiva de carga sem descanso',
+        'Redução progressiva de carga sem descanso',
       TechniqueType.restPause =>
-        'Pequenas pausas durante a serie',
+        'Pequenas pausas durante a série',
       TechniqueType.cluster =>
-        'Serie dividida em mini-series',
+        'Série dividida em mini-séries',
     };
   }
 

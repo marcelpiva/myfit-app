@@ -96,7 +96,7 @@ class ExerciseStatsRow extends StatelessWidget {
           _DetailedStat(
             icon: LucideIcons.layers,
             value: '$sets',
-            label: 'Series',
+            label: 'Séries',
             color: color,
             theme: theme,
           ),

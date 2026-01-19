@@ -117,7 +117,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
     } else if (difference.inDays == 0) {
       return 'Hoje';
     } else if (difference.inDays == 1) {
-      return 'Amanha';
+      return 'Amanhã';
     } else if (difference.inDays < 7) {
       return 'Em ${difference.inDays} dias';
     } else if (difference.inDays < 30) {
@@ -125,7 +125,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
       return 'Em $weeks semana${weeks > 1 ? 's' : ''}';
     } else {
       final months = (difference.inDays / 30).floor();
-      return 'Em $months mes${months > 1 ? 'es' : ''}';
+      return 'Em $months mês${months > 1 ? 'es' : ''}';
     }
   }
 
@@ -644,16 +644,16 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
                     children: [
                       _buildDetailStat(
                         '${((patient['adherence'] as double) * 100).toInt()}%',
-                        'Aderencia',
+                        'Aderência',
                         isDark,
                       ),
                       _buildDetailStat(
                         _formatNextAppointment(patient['nextAppointment'] as DateTime?),
-                        'Proxima Consulta',
+                        'Próxima Consulta',
                         isDark,
                       ),
                       _buildDetailStat(
-                        (patient['hasPlan'] as bool) ? 'Sim' : 'Nao',
+                        (patient['hasPlan'] as bool) ? 'Sim' : 'Não',
                         'Plano Ativo',
                         isDark,
                       ),
@@ -763,9 +763,9 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
 
                 ...List.generate(3, (index) {
                   final activities = [
-                    ('Refeicao Registrada', 'Almoco - 650 kcal', '2h atras', LucideIcons.utensils, AppColors.success),
+                    ('Refeição Registrada', 'Almoço - 650 kcal', '2h atrás', LucideIcons.utensils, AppColors.success),
                     ('Peso Atualizado', '72.3kg (-0.4kg)', 'Ontem', LucideIcons.scale, AppColors.primary),
-                    ('Meta Atingida', 'Proteina diaria', '2 dias', LucideIcons.target, AppColors.secondary),
+                    ('Meta Atingida', 'Proteína diária', '2 dias', LucideIcons.target, AppColors.secondary),
                   ];
                   final (title, subtitle, time, icon, color) = activities[index];
 
@@ -1045,7 +1045,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
 
                 // Weight History Chart Placeholder
                 Text(
-                  'Historico de Peso',
+                  'Histórico de Peso',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -1079,7 +1079,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Grafico de evolucao de peso',
+                          'Gráfico de evolução de peso',
                           style: TextStyle(
                             fontSize: 14,
                             color: isDark
@@ -1120,7 +1120,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
                   child: Column(
                     children: [
                       _buildMacroProgressRow(
-                        'Proteina',
+                        'Proteína',
                         adherence > 0 ? 0.88 : 0,
                         '132g / 150g',
                         AppColors.primary,
@@ -1150,7 +1150,7 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
 
                 // Recent Meals History
                 Text(
-                  'Refeicoes Recentes',
+                  'Refeições Recentes',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -1162,8 +1162,8 @@ class _PatientsListPageState extends ConsumerState<PatientsListPage>
                 const SizedBox(height: 12),
                 ...List.generate(3, (index) {
                   final meals = [
-                    ('Cafe da Manha', '420 kcal', 'Hoje, 07:30', LucideIcons.coffee),
-                    ('Almoco', '650 kcal', 'Hoje, 12:15', LucideIcons.utensils),
+                    ('Café da Manhã', '420 kcal', 'Hoje, 07:30', LucideIcons.coffee),
+                    ('Almoço', '650 kcal', 'Hoje, 12:15', LucideIcons.utensils),
                     ('Lanche', '180 kcal', 'Ontem, 16:00', LucideIcons.apple),
                   ];
                   final (title, calories, time, icon) = meals[index];
@@ -2191,7 +2191,7 @@ class _EmptyState extends StatelessWidget {
             Text(
               isSearching
                   ? 'Tente buscar por outro nome'
-                  : 'Adicione seu primeiro paciente para comecar',
+                  : 'Adicione seu primeiro paciente para começar',
               style: TextStyle(
                 fontSize: 14,
                 color: isDark

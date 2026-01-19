@@ -31,7 +31,7 @@ extension UserRoleExtension on UserRole {
       case UserRole.nutritionist:
         return 'Nutricionista';
       case UserRole.gymOwner:
-        return 'Proprietario';
+        return 'Proprietário';
       case UserRole.gymAdmin:
         return 'Administrador';
     }

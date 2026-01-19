@@ -135,7 +135,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
             ),
             const SizedBox(height: 16),
             Text(
-              'Programa nao encontrado',
+              'Programa não encontrado',
               style: theme.textTheme.bodyLarge,
               textAlign: TextAlign.center,
             ),
@@ -184,7 +184,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
                 // Description
                 if (description != null && description.isNotEmpty) ...[
                   Text(
-                    'Descricao',
+                    'Descrição',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -579,7 +579,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
                         ),
                       ),
                       Text(
-                        '${exercises.length} exercicios - ~$estimatedDuration min',
+                        '${exercises.length} exercícios - ~$estimatedDuration min',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
@@ -904,7 +904,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
                   ),
                 ),
                 title: Text(workoutName),
-                subtitle: Text('$exerciseCount exercicios - ~$duration min'),
+                subtitle: Text('$exerciseCount exercícios - ~$duration min'),
                 trailing: const Icon(LucideIcons.chevronRight),
                 onTap: workoutId != null
                     ? () {
@@ -930,7 +930,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
       builder: (context) => AlertDialog(
         title: const Text('Excluir Programa'),
         content: const Text(
-          'Tem certeza que deseja excluir este programa? Esta acao nao pode ser desfeita.',
+          'Tem certeza que deseja excluir este programa? Esta ação não pode ser desfeita.',
         ),
         actions: [
           TextButton(
@@ -962,7 +962,7 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
               children: [
                 Icon(LucideIcons.checkCircle, color: Colors.white, size: 20),
                 SizedBox(width: 12),
-                Text('Programa excluido com sucesso'),
+                Text('Programa excluído com sucesso'),
               ],
             ),
             backgroundColor: AppColors.success,
@@ -987,11 +987,11 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
       case 'hypertrophy':
         return 'Hipertrofia';
       case 'strength':
-        return 'Forca';
+        return 'Força';
       case 'fat_loss':
         return 'Emagrecimento';
       case 'endurance':
-        return 'Resistencia';
+        return 'Resistência';
       case 'functional':
         return 'Funcional';
       case 'general_fitness':
@@ -1006,9 +1006,9 @@ class _ProgramDetailPageState extends ConsumerState<ProgramDetailPage>
       case 'beginner':
         return 'Iniciante';
       case 'intermediate':
-        return 'Intermediario';
+        return 'Intermediário';
       case 'advanced':
-        return 'Avancado';
+        return 'Avançado';
       default:
         return difficulty;
     }

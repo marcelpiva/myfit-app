@@ -495,6 +495,396 @@ abstract class AppLocalizations {
   /// In pt, this message translates to:
   /// **'Sucesso'**
   String get success;
+
+  /// No description provided for @confirm.
+  ///
+  /// In pt, this message translates to:
+  /// **'Confirmar'**
+  String get confirm;
+
+  /// No description provided for @back.
+  ///
+  /// In pt, this message translates to:
+  /// **'Voltar'**
+  String get back;
+
+  /// No description provided for @next.
+  ///
+  /// In pt, this message translates to:
+  /// **'Próximo'**
+  String get next;
+
+  /// No description provided for @finish.
+  ///
+  /// In pt, this message translates to:
+  /// **'Finalizar'**
+  String get finish;
+
+  /// No description provided for @close.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fechar'**
+  String get close;
+
+  /// No description provided for @create.
+  ///
+  /// In pt, this message translates to:
+  /// **'Criar'**
+  String get create;
+
+  /// No description provided for @update.
+  ///
+  /// In pt, this message translates to:
+  /// **'Atualizar'**
+  String get update;
+
+  /// No description provided for @select.
+  ///
+  /// In pt, this message translates to:
+  /// **'Selecionar'**
+  String get select;
+
+  /// No description provided for @goalHypertrophy.
+  ///
+  /// In pt, this message translates to:
+  /// **'Hipertrofia'**
+  String get goalHypertrophy;
+
+  /// No description provided for @goalStrength.
+  ///
+  /// In pt, this message translates to:
+  /// **'Força'**
+  String get goalStrength;
+
+  /// No description provided for @goalFatLoss.
+  ///
+  /// In pt, this message translates to:
+  /// **'Emagrecimento'**
+  String get goalFatLoss;
+
+  /// No description provided for @goalEndurance.
+  ///
+  /// In pt, this message translates to:
+  /// **'Resistência'**
+  String get goalEndurance;
+
+  /// No description provided for @goalFunctional.
+  ///
+  /// In pt, this message translates to:
+  /// **'Funcional'**
+  String get goalFunctional;
+
+  /// No description provided for @goalGeneralFitness.
+  ///
+  /// In pt, this message translates to:
+  /// **'Condicionamento Geral'**
+  String get goalGeneralFitness;
+
+  /// No description provided for @difficultyBeginner.
+  ///
+  /// In pt, this message translates to:
+  /// **'Iniciante'**
+  String get difficultyBeginner;
+
+  /// No description provided for @difficultyIntermediate.
+  ///
+  /// In pt, this message translates to:
+  /// **'Intermediário'**
+  String get difficultyIntermediate;
+
+  /// No description provided for @difficultyAdvanced.
+  ///
+  /// In pt, this message translates to:
+  /// **'Avançado'**
+  String get difficultyAdvanced;
+
+  /// No description provided for @muscleChest.
+  ///
+  /// In pt, this message translates to:
+  /// **'Peito'**
+  String get muscleChest;
+
+  /// No description provided for @muscleBack.
+  ///
+  /// In pt, this message translates to:
+  /// **'Costas'**
+  String get muscleBack;
+
+  /// No description provided for @muscleShoulders.
+  ///
+  /// In pt, this message translates to:
+  /// **'Ombros'**
+  String get muscleShoulders;
+
+  /// No description provided for @muscleBiceps.
+  ///
+  /// In pt, this message translates to:
+  /// **'Bíceps'**
+  String get muscleBiceps;
+
+  /// No description provided for @muscleTriceps.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tríceps'**
+  String get muscleTriceps;
+
+  /// No description provided for @muscleLegs.
+  ///
+  /// In pt, this message translates to:
+  /// **'Pernas'**
+  String get muscleLegs;
+
+  /// No description provided for @muscleGlutes.
+  ///
+  /// In pt, this message translates to:
+  /// **'Glúteos'**
+  String get muscleGlutes;
+
+  /// No description provided for @muscleAbs.
+  ///
+  /// In pt, this message translates to:
+  /// **'Abdômen'**
+  String get muscleAbs;
+
+  /// No description provided for @muscleCardio.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cardio'**
+  String get muscleCardio;
+
+  /// No description provided for @muscleFullBody.
+  ///
+  /// In pt, this message translates to:
+  /// **'Corpo Inteiro'**
+  String get muscleFullBody;
+
+  /// No description provided for @techniqueNormal.
+  ///
+  /// In pt, this message translates to:
+  /// **'Normal'**
+  String get techniqueNormal;
+
+  /// No description provided for @techniqueSuperset.
+  ///
+  /// In pt, this message translates to:
+  /// **'Super-Set'**
+  String get techniqueSuperset;
+
+  /// No description provided for @techniqueBiset.
+  ///
+  /// In pt, this message translates to:
+  /// **'Bi-Set'**
+  String get techniqueBiset;
+
+  /// No description provided for @techniqueTriset.
+  ///
+  /// In pt, this message translates to:
+  /// **'Tri-Set'**
+  String get techniqueTriset;
+
+  /// No description provided for @techniqueGiantset.
+  ///
+  /// In pt, this message translates to:
+  /// **'Giant Set'**
+  String get techniqueGiantset;
+
+  /// No description provided for @techniqueDropset.
+  ///
+  /// In pt, this message translates to:
+  /// **'Drop Set'**
+  String get techniqueDropset;
+
+  /// No description provided for @techniqueRestPause.
+  ///
+  /// In pt, this message translates to:
+  /// **'Rest Pause'**
+  String get techniqueRestPause;
+
+  /// No description provided for @techniqueCluster.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cluster'**
+  String get techniqueCluster;
+
+  /// No description provided for @session.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sessão'**
+  String get session;
+
+  /// No description provided for @newSession.
+  ///
+  /// In pt, this message translates to:
+  /// **'Nova Sessão'**
+  String get newSession;
+
+  /// No description provided for @createSession.
+  ///
+  /// In pt, this message translates to:
+  /// **'Criar Sessão'**
+  String get createSession;
+
+  /// No description provided for @editSession.
+  ///
+  /// In pt, this message translates to:
+  /// **'Editar Sessão'**
+  String get editSession;
+
+  /// No description provided for @cancelSession.
+  ///
+  /// In pt, this message translates to:
+  /// **'Cancelar Sessão'**
+  String get cancelSession;
+
+  /// No description provided for @rescheduleSession.
+  ///
+  /// In pt, this message translates to:
+  /// **'Reagendar Sessão'**
+  String get rescheduleSession;
+
+  /// No description provided for @sessionCreated.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sessão criada'**
+  String get sessionCreated;
+
+  /// No description provided for @sessionConfirmed.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sessão confirmada'**
+  String get sessionConfirmed;
+
+  /// No description provided for @sessionCanceled.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sessão cancelada'**
+  String get sessionCanceled;
+
+  /// No description provided for @sessionRescheduled.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sessão reagendada'**
+  String get sessionRescheduled;
+
+  /// No description provided for @groupSession.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sessão em Grupo'**
+  String get groupSession;
+
+  /// No description provided for @recurringSession.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sessão Recorrente'**
+  String get recurringSession;
+
+  /// No description provided for @duration.
+  ///
+  /// In pt, this message translates to:
+  /// **'Duração'**
+  String get duration;
+
+  /// No description provided for @start.
+  ///
+  /// In pt, this message translates to:
+  /// **'Início'**
+  String get start;
+
+  /// No description provided for @end.
+  ///
+  /// In pt, this message translates to:
+  /// **'Fim'**
+  String get end;
+
+  /// No description provided for @date.
+  ///
+  /// In pt, this message translates to:
+  /// **'Data'**
+  String get date;
+
+  /// No description provided for @time.
+  ///
+  /// In pt, this message translates to:
+  /// **'Horário'**
+  String get time;
+
+  /// No description provided for @exercise.
+  ///
+  /// In pt, this message translates to:
+  /// **'Exercício'**
+  String get exercise;
+
+  /// No description provided for @exercises.
+  ///
+  /// In pt, this message translates to:
+  /// **'Exercícios'**
+  String get exercises;
+
+  /// No description provided for @sets.
+  ///
+  /// In pt, this message translates to:
+  /// **'Séries'**
+  String get sets;
+
+  /// No description provided for @reps.
+  ///
+  /// In pt, this message translates to:
+  /// **'Repetições'**
+  String get reps;
+
+  /// No description provided for @rest.
+  ///
+  /// In pt, this message translates to:
+  /// **'Descanso'**
+  String get rest;
+
+  /// No description provided for @weight.
+  ///
+  /// In pt, this message translates to:
+  /// **'Peso'**
+  String get weight;
+
+  /// No description provided for @monday.
+  ///
+  /// In pt, this message translates to:
+  /// **'Segunda'**
+  String get monday;
+
+  /// No description provided for @tuesday.
+  ///
+  /// In pt, this message translates to:
+  /// **'Terça'**
+  String get tuesday;
+
+  /// No description provided for @wednesday.
+  ///
+  /// In pt, this message translates to:
+  /// **'Quarta'**
+  String get wednesday;
+
+  /// No description provided for @thursday.
+  ///
+  /// In pt, this message translates to:
+  /// **'Quinta'**
+  String get thursday;
+
+  /// No description provided for @friday.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sexta'**
+  String get friday;
+
+  /// No description provided for @saturday.
+  ///
+  /// In pt, this message translates to:
+  /// **'Sábado'**
+  String get saturday;
+
+  /// No description provided for @sunday.
+  ///
+  /// In pt, this message translates to:
+  /// **'Domingo'**
+  String get sunday;
 }
 
 class _AppLocalizationsDelegate

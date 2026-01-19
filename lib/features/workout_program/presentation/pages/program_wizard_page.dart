@@ -89,7 +89,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
     switch (state.currentStep) {
       case 0: // Method selection
         if (state.method == null) {
-          return 'Selecione um metodo de criacao';
+          return 'Selecione um método de criação';
         }
         break;
       case 1: // Program info
@@ -109,7 +109,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
         }
         final emptyWorkout = state.workouts.where((w) => w.exercises.isEmpty).firstOrNull;
         if (emptyWorkout != null) {
-          return 'O treino "${emptyWorkout.name}" precisa de pelo menos um exercicio';
+          return 'O treino "${emptyWorkout.name}" precisa de pelo menos um exercício';
         }
         break;
       case 4: // Diet (optional)
@@ -151,7 +151,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Descartar programa?'),
-        content: const Text('As alteracoes nao salvas serao perdidas.'),
+        content: const Text('As alterações não salvas serão perdidas.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -266,7 +266,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
   String? _validateAllSteps(ProgramWizardState state) {
     // Validate program name
     if (state.programName.trim().isEmpty) {
-      return 'O nome do programa e obrigatorio';
+      return 'O nome do programa é obrigatório';
     }
     if (state.programName.trim().length < 3) {
       return 'O nome do programa deve ter pelo menos 3 caracteres';
@@ -277,7 +277,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
     }
     for (final workout in state.workouts) {
       if (workout.exercises.isEmpty) {
-        return 'O treino "${workout.name}" precisa de pelo menos um exercicio';
+        return 'O treino "${workout.name}" precisa de pelo menos um exercício';
       }
     }
     return null;
@@ -494,7 +494,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
                           state.isLastStep ? LucideIcons.check : LucideIcons.arrowRight,
                           size: 18,
                         ),
-                  label: Text(state.isLastStep ? (state.isEditing ? 'Salvar Alteracoes' : 'Criar Programa') : 'Continuar'),
+                  label: Text(state.isLastStep ? (state.isEditing ? 'Salvar Alterações' : 'Criar Programa') : 'Continuar'),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -513,11 +513,11 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
   String _getStepTitle(int step) {
     switch (step) {
       case 0:
-        return 'Passo 1 de 7 - Metodo de Criacao';
+        return 'Passo 1 de 7 - Método de Criação';
       case 1:
-        return 'Passo 2 de 7 - Informacoes do Programa';
+        return 'Passo 2 de 7 - Informações do Programa';
       case 2:
-        return 'Passo 3 de 7 - Divisao de Treino';
+        return 'Passo 3 de 7 - Divisão de Treino';
       case 3:
         return 'Passo 4 de 7 - Configurar Treinos';
       case 4:
@@ -525,7 +525,7 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
       case 5:
         return 'Passo 6 de 7 - Atribuir a Aluno';
       case 6:
-        return 'Passo 7 de 7 - Revisao Final';
+        return 'Passo 7 de 7 - Revisão Final';
       default:
         return '';
     }

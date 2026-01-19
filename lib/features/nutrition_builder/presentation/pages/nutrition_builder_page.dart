@@ -22,7 +22,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
   final _nameController =
       TextEditingController(text: 'Plano de Emagrecimento');
   final _descriptionController = TextEditingController(
-    text: 'Plano alimentar focado em deficit calorico com alta proteina.',
+    text: 'Plano alimentar focado em déficit calórico com alta proteína.',
   );
 
   // Macro targets
@@ -35,17 +35,17 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
   final List<_MealPlan> _meals = [
     _MealPlan(
       id: '1',
-      name: 'Cafe da Manha',
+      name: 'Café da Manhã',
       time: '07:00',
       foods: [
         _FoodItem(name: '2 ovos mexidos', calories: 180, protein: 14, carbs: 2, fat: 12),
-        _FoodItem(name: '2 fatias pao integral', calories: 140, protein: 6, carbs: 24, fat: 2),
+        _FoodItem(name: '2 fatias pão integral', calories: 140, protein: 6, carbs: 24, fat: 2),
         _FoodItem(name: '1 banana', calories: 90, protein: 1, carbs: 23, fat: 0),
       ],
     ),
     _MealPlan(
       id: '2',
-      name: 'Lanche da Manha',
+      name: 'Lanche da Manhã',
       time: '10:00',
       foods: [
         _FoodItem(name: 'Iogurte grego', calories: 100, protein: 17, carbs: 6, fat: 0),
@@ -54,13 +54,13 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
     ),
     _MealPlan(
       id: '3',
-      name: 'Almoco',
+      name: 'Almoço',
       time: '12:30',
       foods: [
         _FoodItem(name: '150g frango grelhado', calories: 240, protein: 45, carbs: 0, fat: 5),
         _FoodItem(name: '100g arroz integral', calories: 130, protein: 3, carbs: 28, fat: 1),
         _FoodItem(name: 'Salada verde', calories: 25, protein: 1, carbs: 5, fat: 0),
-        _FoodItem(name: 'Brocolis', calories: 35, protein: 3, carbs: 7, fat: 0),
+        _FoodItem(name: 'Brócolis', calories: 35, protein: 3, carbs: 7, fat: 0),
       ],
     ),
     _MealPlan(
@@ -77,7 +77,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
       name: 'Jantar',
       time: '19:00',
       foods: [
-        _FoodItem(name: '150g salmao', calories: 280, protein: 30, carbs: 0, fat: 16),
+        _FoodItem(name: '150g salmão', calories: 280, protein: 30, carbs: 0, fat: 16),
         _FoodItem(name: 'Batata doce 150g', calories: 130, protein: 2, carbs: 30, fat: 0),
         _FoodItem(name: 'Legumes grelhados', calories: 60, protein: 2, carbs: 12, fat: 1),
       ],
@@ -318,7 +318,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
                         const Icon(LucideIcons.save, size: 18, color: Colors.white),
                         const SizedBox(width: 8),
                         Text(
-                          isEditing ? 'Salvar Alteracoes' : 'Criar Plano',
+                          isEditing ? 'Salvar Alterações' : 'Criar Plano',
                           style: const TextStyle(
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
@@ -356,7 +356,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
               Icon(LucideIcons.utensils, size: 20, color: AppColors.primary),
               const SizedBox(width: 8),
               Text(
-                'Informacoes do Plano',
+                'Informações do Plano',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -383,7 +383,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
             controller: _descriptionController,
             maxLines: 2,
             decoration: InputDecoration(
-              labelText: 'Descricao (opcional)',
+              labelText: 'Descrição (opcional)',
               hintText: 'Descreva o objetivo do plano...',
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               enabledBorder: OutlineInputBorder(
@@ -471,7 +471,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
                 child: _buildMacroInput(
                   theme,
                   isDark,
-                  'Proteina',
+                  'Proteína',
                   _proteinTarget,
                   'g',
                   AppColors.destructive,
@@ -639,7 +639,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
           _buildTotalRow(
             theme,
             isDark,
-            'Proteina',
+            'Proteína',
             _totalProtein,
             _proteinTarget,
             'g',
@@ -747,7 +747,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Refeicoes (${_meals.length})',
+          'Refeições (${_meals.length})',
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -1011,7 +1011,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
             Icon(LucideIcons.plus, color: AppColors.primary),
             const SizedBox(width: 8),
             Text(
-              'Adicionar Refeicao',
+              'Adicionar Refeição',
               style: theme.textTheme.titleSmall?.copyWith(
                 color: AppColors.primary,
                 fontWeight: FontWeight.w600,
@@ -1092,7 +1092,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
               ),
               const SizedBox(height: 24),
               Text(
-                'Nova Refeicao',
+                'Nova Refeição',
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -1101,8 +1101,8 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
               TextField(
                 controller: nameController,
                 decoration: InputDecoration(
-                  labelText: 'Nome da Refeicao',
-                  hintText: 'Ex: Cafe da Manha',
+                  labelText: 'Nome da Refeição',
+                  hintText: 'Ex: Café da Manhã',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 ),
               ),
@@ -1110,7 +1110,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
               TextField(
                 controller: timeController,
                 decoration: InputDecoration(
-                  labelText: 'Horario',
+                  labelText: 'Horário',
                   hintText: 'Ex: 07:00',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 ),
@@ -1141,7 +1141,7 @@ class _NutritionBuilderPageState extends ConsumerState<NutritionBuilderPage> {
                     ),
                     child: const Center(
                       child: Text(
-                        'Adicionar Refeicao',
+                        'Adicionar Refeição',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
@@ -1204,7 +1204,7 @@ class _FoodItem {
 
 class _FoodLibrarySheet extends StatelessWidget {
   final List<Map<String, dynamic>> _categories = [
-    {'name': 'Proteinas', 'icon': LucideIcons.beef, 'count': 48},
+    {'name': 'Proteínas', 'icon': LucideIcons.beef, 'count': 48},
     {'name': 'Carboidratos', 'icon': LucideIcons.wheat, 'count': 35},
     {'name': 'Vegetais', 'icon': LucideIcons.leaf, 'count': 42},
     {'name': 'Frutas', 'icon': LucideIcons.apple, 'count': 38},

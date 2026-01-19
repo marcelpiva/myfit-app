@@ -930,11 +930,11 @@ class WorkoutService {
       if (response.statusCode == 200 && response.data != null) {
         return response.data as Map<String, dynamic>;
       }
-      throw const ServerException('Erro ao obter sugestoes');
+      throw const ServerException('Erro ao obter sugestões');
     } on DioException catch (e) {
       throw e.error is ApiException
           ? e.error as ApiException
-          : UnknownApiException(e.message ?? 'Erro ao obter sugestoes', e);
+          : UnknownApiException(e.message ?? 'Erro ao obter sugestões', e);
     }
   }
 

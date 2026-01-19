@@ -31,7 +31,7 @@ class _PatientDietPlanPageState extends ConsumerState<PatientDietPlanPage>
   late Animation<double> _fadeAnimation;
   int _selectedTab = 0;
 
-  final _tabs = ['Plano Atual', 'Historico', 'Notas'];
+  final _tabs = ['Plano Atual', 'Histórico', 'Notas'];
 
   @override
   void initState() {
@@ -318,7 +318,7 @@ class _PatientDietPlanPageState extends ConsumerState<PatientDietPlanPage>
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    'Opcoes do Plano',
+                    'Opções do Plano',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -334,7 +334,7 @@ class _PatientDietPlanPageState extends ConsumerState<PatientDietPlanPage>
                 isDark,
                 icon: LucideIcons.pencil,
                 title: 'Editar Plano',
-                subtitle: 'Modificar refeicoes e metas',
+                subtitle: 'Modificar refeições e metas',
                 color: AppColors.primary,
                 onTap: () {
                   HapticUtils.lightImpact();
@@ -348,7 +348,7 @@ class _PatientDietPlanPageState extends ConsumerState<PatientDietPlanPage>
                 isDark,
                 icon: LucideIcons.copy,
                 title: 'Copiar Plano',
-                subtitle: 'Criar copia como template',
+                subtitle: 'Criar cópia como template',
                 color: AppColors.secondary,
                 onTap: () {
                   HapticUtils.lightImpact();
@@ -554,7 +554,7 @@ class _PatientDietPlanPageState extends ConsumerState<PatientDietPlanPage>
           ],
         ),
         content: Text(
-          'Deseja enviar uma notificacao para ${widget.patientName} sobre o plano alimentar atualizado?',
+          'Deseja enviar uma notificação para ${widget.patientName} sobre o plano alimentar atualizado?',
           style: TextStyle(
             fontSize: 14,
             color: isDark
@@ -664,13 +664,13 @@ class _PatientSummaryCard extends StatelessWidget {
                   children: [
                     _buildMiniStat(
                       isDark,
-                      'Inicio',
+                      'Início',
                       summary?.formattedStartDate ?? '-',
                     ),
                     const SizedBox(width: 16),
                     _buildMiniStat(
                       isDark,
-                      'Duracao',
+                      'Duração',
                       summary?.formattedDuration ?? '-',
                     ),
                   ],
@@ -696,7 +696,7 @@ class _PatientSummaryCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Aderencia',
+                  'Aderência',
                   style: TextStyle(
                     fontSize: 10,
                     color: _getAdherenceColor(summary?.adherence ?? 0),
@@ -772,7 +772,7 @@ class _CurrentPlanTab extends StatelessWidget {
           const SizedBox(height: 20),
           // Meals list
           Text(
-            'Refeicoes do Dia',
+            'Refeições do Dia',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -796,7 +796,7 @@ class _CurrentPlanTab extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  'Nenhuma refeicao cadastrada',
+                  'Nenhuma refeição cadastrada',
                   style: TextStyle(
                     fontSize: 14,
                     color: isDark
@@ -873,7 +873,7 @@ class _CurrentPlanTab extends StatelessWidget {
               Expanded(
                 child: _buildMacroTarget(
                   isDark,
-                  'Proteinas',
+                  'Proteínas',
                   '${targets.protein}g',
                   AppColors.success,
                   LucideIcons.drumstick,
@@ -1119,7 +1119,7 @@ class _HistoryTab extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Historico de Planos',
+                        'Histórico de Planos',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -1431,7 +1431,7 @@ class _NotesTab extends StatelessWidget {
           controller: textController,
           maxLines: 4,
           decoration: InputDecoration(
-            labelText: 'Observacao',
+            labelText: 'Observação',
             hintText: 'Adicione uma nota sobre o plano do paciente...',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             alignLabelWithHint: true,
@@ -1551,7 +1551,7 @@ class _NotesTab extends StatelessWidget {
         return AppColors.warning;
       case 'Feedback':
         return AppColors.success;
-      case 'Restricao':
+      case 'Restrição':
         return AppColors.destructive;
       default:
         return AppColors.secondary;

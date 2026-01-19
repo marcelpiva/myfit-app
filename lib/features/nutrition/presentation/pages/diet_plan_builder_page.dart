@@ -35,8 +35,8 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
 
   final _availableTags = [
     'Low Carb', 'High Protein', 'Vegetariano', 'Vegano',
-    'Sem Gluten', 'Sem Lactose', 'Cutting', 'Bulking',
-    'Manutencao', 'Iniciante',
+    'Sem Glúten', 'Sem Lactose', 'Cutting', 'Bulking',
+    'Manutenção', 'Iniciante',
   ];
 
   @override
@@ -54,9 +54,9 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
     // Initialize with default meals if new plan
     if (widget.planId == null) {
       _meals.addAll([
-        {'name': 'Cafe da Manha', 'time': '07:00', 'foods': <Map<String, dynamic>>[]},
-        {'name': 'Lanche da Manha', 'time': '10:00', 'foods': <Map<String, dynamic>>[]},
-        {'name': 'Almoco', 'time': '12:30', 'foods': <Map<String, dynamic>>[]},
+        {'name': 'Café da Manhã', 'time': '07:00', 'foods': <Map<String, dynamic>>[]},
+        {'name': 'Lanche da Manhã', 'time': '10:00', 'foods': <Map<String, dynamic>>[]},
+        {'name': 'Almoço', 'time': '12:30', 'foods': <Map<String, dynamic>>[]},
         {'name': 'Lanche da Tarde', 'time': '15:30', 'foods': <Map<String, dynamic>>[]},
         {'name': 'Jantar', 'time': '19:00', 'foods': <Map<String, dynamic>>[]},
       ]);
@@ -69,7 +69,7 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
   void _loadExistingPlan() {
     // Mock loading existing plan
     _nameController.text = 'Plano Cutting 2000kcal';
-    _descriptionController.text = 'Plano focado em perda de gordura com preservacao muscular';
+    _descriptionController.text = 'Plano focado em perda de gordura com preservação muscular';
     _caloriesController.text = '2000';
     _proteinController.text = '180';
     _carbsController.text = '150';
@@ -77,27 +77,27 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
     _selectedTags.addAll(['Low Carb', 'High Protein', 'Cutting']);
     _meals.addAll([
       {
-        'name': 'Cafe da Manha',
+        'name': 'Café da Manhã',
         'time': '07:00',
         'foods': [
           {'name': 'Ovos mexidos', 'portion': '3 unidades', 'calories': 210},
-          {'name': 'Pao integral', 'portion': '2 fatias', 'calories': 140},
+          {'name': 'Pão integral', 'portion': '2 fatias', 'calories': 140},
         ],
       },
       {
-        'name': 'Almoco',
+        'name': 'Almoço',
         'time': '12:30',
         'foods': [
           {'name': 'Frango grelhado', 'portion': '200g', 'calories': 330},
           {'name': 'Arroz integral', 'portion': '100g', 'calories': 130},
-          {'name': 'Brocolis', 'portion': '100g', 'calories': 35},
+          {'name': 'Brócolis', 'portion': '100g', 'calories': 35},
         ],
       },
       {
         'name': 'Jantar',
         'time': '19:00',
         'foods': [
-          {'name': 'Salmao grelhado', 'portion': '150g', 'calories': 280},
+          {'name': 'Salmão grelhado', 'portion': '150g', 'calories': 280},
           {'name': 'Salada verde', 'portion': '150g', 'calories': 25},
         ],
       },
@@ -304,7 +304,7 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle('Informacoes Basicas', LucideIcons.fileText, isDark),
+          _buildSectionTitle('Informações Básicas', LucideIcons.fileText, isDark),
           const SizedBox(height: 16),
 
           // Name
@@ -319,7 +319,7 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
           // Description
           _buildTextField(
             controller: _descriptionController,
-            label: 'Descricao',
+            label: 'Descrição',
             hint: 'Descreva o objetivo do plano',
             isDark: isDark,
             maxLines: 3,
@@ -364,7 +364,7 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
               Expanded(
                 child: _buildMacroInput(
                   controller: _proteinController,
-                  label: 'Proteinas',
+                  label: 'Proteínas',
                   suffix: 'g',
                   icon: LucideIcons.beef,
                   color: AppColors.destructive,
@@ -489,7 +489,7 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Refeicoes',
+                  'Refeições',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -763,7 +763,7 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
             ),
             const SizedBox(width: 8),
             Text(
-              widget.planId == null ? 'Criar Plano' : 'Salvar Alteracoes',
+              widget.planId == null ? 'Criar Plano' : 'Salvar Alterações',
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -931,7 +931,7 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: isDark ? AppColors.cardDark : AppColors.card,
-        title: const Text('Nova Refeicao'),
+        title: const Text('Nova Refeição'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -939,14 +939,14 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
               controller: nameController,
               decoration: const InputDecoration(
                 labelText: 'Nome',
-                hintText: 'Ex: Lanche Pre-Treino',
+                hintText: 'Ex: Lanche Pré-Treino',
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: timeController,
               decoration: const InputDecoration(
-                labelText: 'Horario',
+                labelText: 'Horário',
                 hintText: 'Ex: 16:00',
               ),
             ),
@@ -1021,7 +1021,7 @@ class _DietPlanBuilderPageState extends ConsumerState<DietPlanBuilderPage>
             ),
             const SizedBox(height: 8),
             _buildQuickAddOption(
-              'Escanear codigo de barras',
+              'Escanear código de barras',
               LucideIcons.scanLine,
               () {
                 Navigator.pop(ctx);

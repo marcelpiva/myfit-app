@@ -207,7 +207,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Ola, ${userName.split(' ').first}',
+                'Olá, ${userName.split(' ').first}',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
@@ -690,9 +690,9 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
   Widget _buildWorkoutCatalogPreview(BuildContext context, bool isDark) {
     final categories = [
       ('hipertrofia', 'Hipertrofia', 'Ganho de massa', LucideIcons.dumbbell, AppColors.primary),
-      ('forca', 'Forca', 'Forca maxima', LucideIcons.gauge, AppColors.secondary),
+      ('forca', 'Força', 'Força máxima', LucideIcons.gauge, AppColors.secondary),
       ('emagrecimento', 'Emagrecimento', 'Perda de gordura', LucideIcons.flame, AppColors.destructive),
-      ('resistencia', 'Resistencia', 'Condicionamento', LucideIcons.heart, AppColors.success),
+      ('resistencia', 'Resistência', 'Condicionamento', LucideIcons.heart, AppColors.success),
       ('funcional', 'Funcional', 'Dia a dia', LucideIcons.activity, AppColors.accent),
     ];
 

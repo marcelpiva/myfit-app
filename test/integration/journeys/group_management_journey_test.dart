@@ -114,7 +114,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Now shows superset
-        expect(find.text('Super Serie'), findsOneWidget);
+        expect(find.text('Super-Set'), findsOneWidget);
         expect(find.text('Crucifixo'), findsNothing);
       });
 
@@ -127,8 +127,8 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify there's a grouped section and a normal section
-        expect(find.text('Super Serie'), findsOneWidget);
-        expect(find.text('Exercicio Normal'), findsOneWidget);
+        expect(find.text('Super-Set'), findsOneWidget);
+        expect(find.text('Exercício Normal'), findsOneWidget);
       });
 
       testWidgets('should renumber positions after removal', (tester) async {
@@ -140,13 +140,13 @@ void main() {
         await tester.pumpAndSettle();
 
         // Remove middle exercise
-        await tester.tap(find.text('Remover Exercicio 2'));
+        await tester.tap(find.text('Remover Exercício 2'));
         await tester.pumpAndSettle();
 
         // Verify positions are renumbered (1, 2 instead of 1, 3)
-        expect(find.text('Posicao: 1'), findsOneWidget);
-        expect(find.text('Posicao: 2'), findsOneWidget);
-        expect(find.text('Posicao: 3'), findsNothing);
+        expect(find.text('Posição: 1'), findsOneWidget);
+        expect(find.text('Posição: 2'), findsOneWidget);
+        expect(find.text('Posição: 3'), findsNothing);
       });
     });
 
@@ -186,7 +186,7 @@ void main() {
         expect(find.text('Desbandar Grupo?'), findsOneWidget);
         expect(
           find.text(
-              'Todos os exercicios voltarao a ser exercicios individuais.'),
+              'Todos os exercícios voltarão a ser exercícios individuais.'),
           findsOneWidget,
         );
         expect(find.text('Cancelar'), findsOneWidget);
@@ -224,7 +224,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Initially shows superset
-        expect(find.text('Super Serie'), findsOneWidget);
+        expect(find.text('Super-Set'), findsOneWidget);
 
         // Disband
         await tester.tap(find.byIcon(LucideIcons.unlink));
@@ -233,9 +233,9 @@ void main() {
         await tester.pumpAndSettle();
 
         // Now shows normal exercises
-        expect(find.text('Super Serie'), findsNothing);
-        expect(find.text('Exercicio 1'), findsOneWidget);
-        expect(find.text('Exercicio 2'), findsOneWidget);
+        expect(find.text('Super-Set'), findsNothing);
+        expect(find.text('Exercício 1'), findsOneWidget);
+        expect(find.text('Exercício 2'), findsOneWidget);
         expect(find.byIcon(LucideIcons.dumbbell), findsNWidgets(2));
       });
     });
@@ -277,7 +277,7 @@ void main() {
         // Verify confirmation dialog
         expect(find.text('Excluir Grupo?'), findsOneWidget);
         expect(
-          find.text('2 exercicios serao removidos do treino.'),
+          find.text('2 exercícios serão removidos do treino.'),
           findsOneWidget,
         );
       });
@@ -313,7 +313,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Initially shows group
-        expect(find.text('Super Serie'), findsOneWidget);
+        expect(find.text('Super-Set'), findsOneWidget);
 
         // Delete group
         await tester.tap(find.byIcon(LucideIcons.trash2));
@@ -322,8 +322,8 @@ void main() {
         await tester.pumpAndSettle();
 
         // Group is gone
-        expect(find.text('Super Serie'), findsNothing);
-        expect(find.text('Nenhum exercicio'), findsOneWidget);
+        expect(find.text('Super-Set'), findsNothing);
+        expect(find.text('Nenhum exercício'), findsOneWidget);
       });
     });
 
@@ -343,7 +343,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify edit instructions option
-        expect(find.text('Editar Instrucoes'), findsOneWidget);
+        expect(find.text('Editar Instruções'), findsOneWidget);
       });
 
       testWidgets('should open instructions dialog', (tester) async {
@@ -359,7 +359,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verify dialog
-        expect(find.text('Instrucoes do Grupo'), findsOneWidget);
+        expect(find.text('Instruções do Grupo'), findsOneWidget);
         expect(find.byType(TextField), findsOneWidget);
       });
 
@@ -378,7 +378,7 @@ void main() {
         // Enter instructions
         await tester.enterText(
           find.byType(TextField),
-          'Execucao lenta, 3s na excentrica',
+          'Execução lenta, 3s na excêntrica',
         );
         await tester.pumpAndSettle();
 
@@ -386,7 +386,7 @@ void main() {
         await tester.tap(find.text('Salvar'));
         await tester.pumpAndSettle();
 
-        expect(savedInstructions, equals('Execucao lenta, 3s na excentrica'));
+        expect(savedInstructions, equals('Execução lenta, 3s na excêntrica'));
       });
     });
 
@@ -401,15 +401,15 @@ void main() {
         await tester.pumpAndSettle();
 
         // Initially superset with 2 exercises
-        expect(find.text('Super Serie'), findsOneWidget);
+        expect(find.text('Super-Set'), findsOneWidget);
 
         // Remove one exercise
-        await tester.tap(find.text('Remover Exercicio 1'));
+        await tester.tap(find.text('Remover Exercício 1'));
         await tester.pumpAndSettle();
 
         // Group should be automatically disbanded
-        expect(find.text('Super Serie'), findsNothing);
-        expect(find.text('Exercicio convertido para normal'), findsOneWidget);
+        expect(find.text('Super-Set'), findsNothing);
+        expect(find.text('Exercício convertido para normal'), findsOneWidget);
       });
 
       testWidgets('should block adding more than 8 exercises to giantset',
@@ -425,14 +425,14 @@ void main() {
 
         // Verify giantset with 8 exercises
         expect(find.text('Giant Set'), findsOneWidget);
-        expect(find.text('8 exercicios'), findsOneWidget);
+        expect(find.text('8 exercícios'), findsOneWidget);
 
         // Try to add another
         await tester.tap(find.byIcon(LucideIcons.plus));
         await tester.pumpAndSettle();
 
         // Should show warning
-        expect(find.text('Maximo de 8 exercicios por grupo'), findsOneWidget);
+        expect(find.text('Máximo de 8 exercícios por grupo'), findsOneWidget);
       });
 
       testWidgets('should preserve exercise order after group operations',
@@ -449,9 +449,9 @@ void main() {
         final orderedTexts = texts.evaluate().map((e) {
           final widget = e.widget as Text;
           return widget.data;
-        }).where((t) => t != null && t.startsWith('Exercicio')).toList();
+        }).where((t) => t != null && t.startsWith('Exercício')).toList();
 
-        expect(orderedTexts, ['Exercicio 1', 'Exercicio 2', 'Exercicio 3']);
+        expect(orderedTexts, ['Exercício 1', 'Exercício 2', 'Exercício 3']);
       });
     });
   });
@@ -519,7 +519,7 @@ class _MockGroupedExerciseContextMenuState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Exercicio')),
+      appBar: AppBar(title: const Text('Exercício')),
       body: Column(
         children: [
           GestureDetector(
@@ -617,7 +617,7 @@ class _MockGroupDowngradeState extends State<_MockGroupDowngrade> {
             Container(
               padding: const EdgeInsets.all(12),
               child: Text(
-                _isSuperset ? 'Super Serie' : 'Tri-Set',
+                _isSuperset ? 'Super-Set' : 'Tri-Set',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -656,7 +656,7 @@ class _MockRemovedExerciseBecomesNormal extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   color: Colors.purple.withValues(alpha: 0.1),
-                  child: const Text('Super Serie',
+                  child: const Text('Super-Set',
                       style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 const ListTile(title: Text('Supino')),
@@ -668,7 +668,7 @@ class _MockRemovedExerciseBecomesNormal extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 16),
             child: const ListTile(
               leading: Icon(LucideIcons.dumbbell),
-              title: Text('Exercicio Normal'),
+              title: Text('Exercício Normal'),
               subtitle: Text('Crucifixo'),
             ),
           ),
@@ -691,12 +691,12 @@ class _MockPositionRenumberingState extends State<_MockPositionRenumbering> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Posicoes')),
+      appBar: AppBar(title: const Text('Posições')),
       body: Column(
         children: [
           ...positions.map((pos) => ListTile(
-                title: Text('Exercicio $pos'),
-                subtitle: Text('Posicao: $pos'),
+                title: Text('Exercício $pos'),
+                subtitle: Text('Posição: $pos'),
                 trailing: TextButton(
                   onPressed: () => setState(() {
                     positions.remove(pos);
@@ -704,7 +704,7 @@ class _MockPositionRenumberingState extends State<_MockPositionRenumbering> {
                     positions =
                         List.generate(positions.length, (i) => i + 1);
                   }),
-                  child: Text('Remover Exercicio $pos'),
+                  child: Text('Remover Exercício $pos'),
                 ),
               )),
         ],
@@ -739,7 +739,7 @@ class _MockGroupWithMenuState extends State<_MockGroupWithMenu> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
-                  const Text('Super Serie',
+                  const Text('Super-Set',
                       style: TextStyle(fontWeight: FontWeight.bold)),
                   const Spacer(),
                   IconButton(
@@ -750,7 +750,7 @@ class _MockGroupWithMenuState extends State<_MockGroupWithMenu> {
               ),
             ),
             if (_showMenu) ...[
-              const ListTile(title: Text('Editar Instrucoes')),
+              const ListTile(title: Text('Editar Instruções')),
               const ListTile(title: Text('Desbandar Grupo')),
               const ListTile(title: Text('Excluir Grupo')),
             ],
@@ -785,7 +785,7 @@ class _MockDisbandConfirmationState extends State<_MockDisbandConfirmation> {
               children: [
                 Row(
                   children: [
-                    const Text('Super Serie'),
+                    const Text('Super-Set'),
                     const Spacer(),
                     IconButton(
                       icon: const Icon(LucideIcons.unlink),
@@ -800,7 +800,7 @@ class _MockDisbandConfirmationState extends State<_MockDisbandConfirmation> {
             AlertDialog(
               title: const Text('Desbandar Grupo?'),
               content: const Text(
-                  'Todos os exercicios voltarao a ser exercicios individuais.'),
+                  'Todos os exercícios voltarão a ser exercícios individuais.'),
               actions: [
                 TextButton(
                   onPressed: () => setState(() => _showDialog = false),
@@ -834,7 +834,7 @@ class _MockDisbandFlowState extends State<_MockDisbandFlow> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Confirmar Acao')),
+      appBar: AppBar(title: const Text('Confirmar Ação')),
       body: Stack(
         children: [
           Center(
@@ -892,7 +892,7 @@ class _MockDisbandedExercisesState extends State<_MockDisbandedExercises> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Exercicios')),
+      appBar: AppBar(title: const Text('Exercícios')),
       body: Stack(
         children: [
           if (!_isDisbanded)
@@ -905,7 +905,7 @@ class _MockDisbandedExercisesState extends State<_MockDisbandedExercises> {
                     children: [
                       const Padding(
                         padding: EdgeInsets.all(12),
-                        child: Text('Super Serie'),
+                        child: Text('Super-Set'),
                       ),
                       const Spacer(),
                       IconButton(
@@ -914,8 +914,8 @@ class _MockDisbandedExercisesState extends State<_MockDisbandedExercises> {
                       ),
                     ],
                   ),
-                  const ListTile(title: Text('Exercicio 1')),
-                  const ListTile(title: Text('Exercicio 2')),
+                  const ListTile(title: Text('Exercício 1')),
+                  const ListTile(title: Text('Exercício 2')),
                 ],
               ),
             )
@@ -926,14 +926,14 @@ class _MockDisbandedExercisesState extends State<_MockDisbandedExercises> {
                   margin: const EdgeInsets.all(16),
                   child: ListTile(
                     leading: const Icon(LucideIcons.dumbbell),
-                    title: const Text('Exercicio 1'),
+                    title: const Text('Exercício 1'),
                   ),
                 ),
                 Card(
                   margin: const EdgeInsets.symmetric(horizontal: 16),
                   child: ListTile(
                     leading: const Icon(LucideIcons.dumbbell),
-                    title: const Text('Exercicio 2'),
+                    title: const Text('Exercício 2'),
                   ),
                 ),
               ],
@@ -994,7 +994,7 @@ class _MockDeleteGroupConfirmationState
               children: [
                 Row(
                   children: [
-                    const Text('Super Serie'),
+                    const Text('Super-Set'),
                     const Spacer(),
                     IconButton(
                       icon: const Icon(LucideIcons.trash2),
@@ -1009,7 +1009,7 @@ class _MockDeleteGroupConfirmationState
             AlertDialog(
               title: const Text('Excluir Grupo?'),
               content:
-                  Text('${widget.exercises.length} exercicios serao removidos do treino.'),
+                  Text('${widget.exercises.length} exercícios serão removidos do treino.'),
               actions: [
                 TextButton(
                   onPressed: () => setState(() => _showDialog = false),
@@ -1044,7 +1044,7 @@ class _MockDeleteGroupFlowState extends State<_MockDeleteGroupFlow> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Confirmar Exclusao')),
+      appBar: AppBar(title: const Text('Confirmar Exclusão')),
       body: Stack(
         children: [
           Center(
@@ -1061,7 +1061,7 @@ class _MockDeleteGroupFlowState extends State<_MockDeleteGroupFlow> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('Confirmar exclusao?'),
+                      const Text('Confirmar exclusão?'),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: widget.onDeleted,
@@ -1104,7 +1104,7 @@ class _MockDeleteGroupResultState extends State<_MockDeleteGroupResult> {
                     children: [
                       const Padding(
                         padding: EdgeInsets.all(12),
-                        child: Text('Super Serie'),
+                        child: Text('Super-Set'),
                       ),
                       const Spacer(),
                       IconButton(
@@ -1123,7 +1123,7 @@ class _MockDeleteGroupResultState extends State<_MockDeleteGroupResult> {
                 children: [
                   Icon(LucideIcons.inbox, size: 48, color: Colors.grey),
                   SizedBox(height: 16),
-                  Text('Nenhum exercicio'),
+                  Text('Nenhum exercício'),
                 ],
               ),
             ),
@@ -1162,7 +1162,7 @@ class _MockEditInstructionsDialogState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Instrucoes')),
+      appBar: AppBar(title: const Text('Instruções')),
       body: Stack(
         children: [
           Center(
@@ -1173,11 +1173,11 @@ class _MockEditInstructionsDialogState
           ),
           if (_showDialog)
             AlertDialog(
-              title: const Text('Instrucoes do Grupo'),
+              title: const Text('Instruções do Grupo'),
               content: const TextField(
                 maxLines: 3,
                 decoration: InputDecoration(
-                  hintText: 'Digite as instrucoes...',
+                  hintText: 'Digite as instruções...',
                 ),
               ),
               actions: [
@@ -1208,7 +1208,7 @@ class _MockSaveInstructions extends StatelessWidget {
     final controller = TextEditingController();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Instrucoes')),
+      appBar: AppBar(title: const Text('Instruções')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -1237,7 +1237,7 @@ class _MockAutoDisband extends StatefulWidget {
 
 class _MockAutoDisbandState extends State<_MockAutoDisband> {
   bool _autoDisbanded = false;
-  List<String> exercises = ['Exercicio 1', 'Exercicio 2'];
+  List<String> exercises = ['Exercício 1', 'Exercício 2'];
 
   @override
   Widget build(BuildContext context) {
@@ -1253,7 +1253,7 @@ class _MockAutoDisbandState extends State<_MockAutoDisband> {
                 children: [
                   const Padding(
                     padding: EdgeInsets.all(12),
-                    child: Text('Super Serie'),
+                    child: Text('Super-Set'),
                   ),
                   ...exercises.map((name) => ListTile(
                         title: Text(name),
@@ -1264,7 +1264,7 @@ class _MockAutoDisbandState extends State<_MockAutoDisband> {
                               _autoDisbanded = true;
                             }
                           }),
-                          child: Text('Remover $name'),
+                          child: Text('Remover Exercício'),
                         ),
                       )),
                 ],
@@ -1274,8 +1274,8 @@ class _MockAutoDisbandState extends State<_MockAutoDisband> {
             const Card(
               margin: EdgeInsets.all(16),
               child: ListTile(
-                title: Text('Exercicio 2'),
-                subtitle: Text('Exercicio convertido para normal'),
+                title: Text('Exercício 2'),
+                subtitle: Text('Exercício convertido para normal'),
               ),
             ),
         ],
@@ -1300,7 +1300,7 @@ class _MockMaxGroupSizeState extends State<_MockMaxGroupSize> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Grupo Maximo')),
+      appBar: AppBar(title: const Text('Grupo Máximo')),
       body: Column(
         children: [
           Card(
@@ -1337,7 +1337,7 @@ class _MockMaxGroupSizeState extends State<_MockMaxGroupSize> {
                 children: [
                   Icon(LucideIcons.alertTriangle, color: Colors.orange),
                   SizedBox(width: 8),
-                  Text('Maximo de 8 exercicios por grupo'),
+                  Text('Máximo de 8 exercícios por grupo'),
                 ],
               ),
             ),
@@ -1355,9 +1355,9 @@ class _MockOrderPreservation extends StatelessWidget {
       appBar: AppBar(title: const Text('Ordem')),
       body: ListView(
         children: const [
-          ListTile(title: Text('Exercicio 1')),
-          ListTile(title: Text('Exercicio 2')),
-          ListTile(title: Text('Exercicio 3')),
+          ListTile(title: Text('Exercício 1')),
+          ListTile(title: Text('Exercício 2')),
+          ListTile(title: Text('Exercício 3')),
         ],
       ),
     );

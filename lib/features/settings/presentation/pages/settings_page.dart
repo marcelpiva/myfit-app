@@ -89,7 +89,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          'Configuracoes',
+                          'Configurações',
                           style: theme.textTheme.headlineMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -99,7 +99,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   ),
 
                   // Appearance
-                  _buildSectionTitle(context, isDark, 'Aparencia'),
+                  _buildSectionTitle(context, isDark, 'Aparência'),
                   const SizedBox(height: 12),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -126,7 +126,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   const SizedBox(height: 24),
 
                   // Notifications
-                  _buildSectionTitle(context, isDark, 'Notificacoes'),
+                  _buildSectionTitle(context, isDark, 'Notificações'),
                   const SizedBox(height: 12),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -146,8 +146,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             context,
                             isDark,
                             LucideIcons.bell,
-                            'Notificacoes Push',
-                            'Receba notificacoes no seu dispositivo',
+                            'Notificações Push',
+                            'Receba notificações no seu dispositivo',
                             _pushNotifications,
                             (val) {
                               HapticUtils.selectionClick();
@@ -159,8 +159,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             context,
                             isDark,
                             LucideIcons.mail,
-                            'Notificacoes por E-mail',
-                            'Receba atualizacoes por e-mail',
+                            'Notificações por E-mail',
+                            'Receba atualizações por e-mail',
                             _emailNotifications,
                             (val) {
                               HapticUtils.selectionClick();
@@ -185,8 +185,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             context,
                             isDark,
                             LucideIcons.utensils,
-                            'Lembretes de Refeicao',
-                            'Lembrar das refeicoes do dia',
+                            'Lembretes de Refeição',
+                            'Lembrar das refeições do dia',
                             _nutritionReminders,
                             (val) {
                               HapticUtils.selectionClick();
@@ -230,8 +230,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                       context,
                                       isDark,
                                       LucideIcons.fingerprint,
-                                      'Autenticacao Biometrica',
-                                      'Nao disponivel neste dispositivo',
+                                      'Autenticação Biométrica',
+                                      'Não disponível neste dispositivo',
                                     );
                                   }
 
@@ -248,7 +248,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                         context,
                                         isDark,
                                         PlatformUtils.isIOS ? LucideIcons.scanFace : LucideIcons.fingerprint,
-                                        'Autenticacao Biometrica',
+                                        'Autenticação Biométrica',
                                         labelText,
                                         enabled,
                                         (val) => _toggleBiometric(context, ref, val),
@@ -259,7 +259,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                       context,
                                       isDark,
                                       LucideIcons.fingerprint,
-                                      'Autenticacao Biometrica',
+                                      'Autenticação Biométrica',
                                       'Erro ao verificar status',
                                     ),
                                   );
@@ -269,8 +269,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                                   context,
                                   isDark,
                                   LucideIcons.fingerprint,
-                                  'Autenticacao Biometrica',
-                                  'Nao disponivel neste dispositivo',
+                                  'Autenticação Biométrica',
+                                  'Não disponível neste dispositivo',
                                 ),
                               );
                             },
@@ -292,7 +292,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             context,
                             isDark,
                             LucideIcons.smartphone,
-                            'Sessoes Ativas',
+                            'Sessões Ativas',
                             '2 dispositivos',
                             () {
                               HapticUtils.lightImpact();
@@ -356,7 +356,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   const SizedBox(height: 24),
 
                   // Information section
-                  _buildSectionTitle(context, isDark, 'Informacoes'),
+                  _buildSectionTitle(context, isDark, 'Informações'),
                   const SizedBox(height: 12),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -620,7 +620,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 isDark,
                 LucideIcons.smartphone,
                 'Sistema',
-                'Seguir configuracao do dispositivo',
+                'Seguir configuração do dispositivo',
                 ThemeMode.system,
                 currentTheme == ThemeMode.system,
               ),
@@ -1077,7 +1077,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Sessoes Ativas',
+                'Sessões Ativas',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
@@ -1095,7 +1095,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               const SizedBox(height: 24),
               _buildSessionItem(isDark, 'iPhone 15 Pro', 'Este dispositivo', true),
               const SizedBox(height: 12),
-              _buildSessionItem(isDark, 'MacBook Pro', 'Ultimo acesso: ha 2 horas', false),
+              _buildSessionItem(isDark, 'MacBook Pro', 'Último acesso: há 2 horas', false),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
@@ -1105,13 +1105,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: const Text('Outras sessoes encerradas'),
+                        content: const Text('Outras sessões encerradas'),
                         backgroundColor: AppColors.success,
                       ),
                     );
                   },
                   icon: const Icon(LucideIcons.logOut, size: 18),
-                  label: const Text('Encerrar outras sessoes'),
+                  label: const Text('Encerrar outras sessões'),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -1210,15 +1210,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               ),
               const SizedBox(height: 16),
               Text(
-                'Voce recebera um arquivo com todos os seus dados:',
+                'Você receberá um arquivo com todos os seus dados:',
                 style: TextStyle(
                   fontSize: 14,
                   color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                 ),
               ),
               const SizedBox(height: 16),
-              _buildExportItem(isDark, LucideIcons.user, 'Perfil e informacoes pessoais'),
-              _buildExportItem(isDark, LucideIcons.dumbbell, 'Historico de treinos'),
+              _buildExportItem(isDark, LucideIcons.user, 'Perfil e informações pessoais'),
+              _buildExportItem(isDark, LucideIcons.dumbbell, 'Histórico de treinos'),
               _buildExportItem(isDark, LucideIcons.utensils, 'Planos nutricionais'),
               _buildExportItem(isDark, LucideIcons.trendingUp, 'Dados de progresso'),
               const SizedBox(height: 24),
@@ -1245,7 +1245,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: const Text('Exportacao iniciada. Voce recebera um email.'),
+                            content: const Text('Exportação iniciada. Você receberá um email.'),
                             backgroundColor: AppColors.success,
                           ),
                         );
@@ -1326,17 +1326,17 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               ),
               const SizedBox(height: 16),
               Text(
-                'Esta acao e irreversivel. Todos os seus dados serao permanentemente excluidos:',
+                'Esta ação é irreversível. Todos os seus dados serão permanentemente excluídos:',
                 style: TextStyle(
                   fontSize: 14,
                   color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                 ),
               ),
               const SizedBox(height: 12),
-              _buildDeleteItem(isDark, 'Perfil e informacoes pessoais'),
-              _buildDeleteItem(isDark, 'Historico de treinos e progresso'),
+              _buildDeleteItem(isDark, 'Perfil e informações pessoais'),
+              _buildDeleteItem(isDark, 'Histórico de treinos e progresso'),
               _buildDeleteItem(isDark, 'Assinaturas e pagamentos'),
-              _buildDeleteItem(isDark, 'Vinculos com organizacoes'),
+              _buildDeleteItem(isDark, 'Vínculos com organizações'),
               const SizedBox(height: 20),
               Text(
                 'Digite EXCLUIR para confirmar:',
@@ -1394,7 +1394,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                           context.go(RouteNames.welcome);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: const Text('Conta excluida'),
+                              content: const Text('Conta excluída'),
                               backgroundColor: AppColors.destructive,
                             ),
                           );
@@ -1621,7 +1621,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Autenticacao Biometrica',
+                  'Autenticação Biométrica',
                   style: TextStyle(
                     fontSize: 15,
                     color: isDark ? AppColors.foregroundDark : AppColors.foreground,
@@ -1665,7 +1665,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Autenticacao biometrica ativada'),
+              content: const Text('Autenticação biométrica ativada'),
               backgroundColor: AppColors.success,
               behavior: SnackBarBehavior.floating,
             ),
@@ -1678,7 +1678,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Autenticacao biometrica desativada'),
+            content: const Text('Autenticação biométrica desativada'),
             backgroundColor: AppColors.warning,
             behavior: SnackBarBehavior.floating,
           ),

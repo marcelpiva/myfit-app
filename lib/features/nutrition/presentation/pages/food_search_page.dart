@@ -65,7 +65,7 @@ class _FoodSearchPageState extends ConsumerState<FoodSearchPage>
     HapticUtils.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${food['name']} adicionado a refeicao', style: const TextStyle(color: Colors.white)),
+        content: Text('${food['name']} adicionado à refeição', style: const TextStyle(color: Colors.white)),
         backgroundColor: AppColors.success,
       ),
     );

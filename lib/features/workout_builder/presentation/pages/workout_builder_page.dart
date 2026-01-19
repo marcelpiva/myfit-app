@@ -281,7 +281,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : Icon(LucideIcons.save, size: 18),
-                  label: Text(isEditing ? 'Salvar Alteracoes' : 'Criar Treino'),
+                  label: Text(isEditing ? 'Salvar Alterações' : 'Criar Treino'),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -311,7 +311,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Informacoes do Treino',
+            'Informações do Treino',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -324,7 +324,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
             },
             decoration: InputDecoration(
               labelText: 'Nome do Treino *',
-              hintText: 'Ex: Treino A - Peito e Triceps',
+              hintText: 'Ex: Treino A - Peito e Tríceps',
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -342,7 +342,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
               ref.read(workoutBuilderProvider.notifier).setDescription(value);
             },
             decoration: InputDecoration(
-              labelText: 'Descricao (opcional)',
+              labelText: 'Descrição (opcional)',
               hintText: 'Descreva o objetivo do treino...',
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               enabledBorder: OutlineInputBorder(
@@ -395,8 +395,8 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
                   underline: const SizedBox(),
                   items: [
                     const DropdownMenuItem(value: 'beginner', child: Text('Iniciante')),
-                    const DropdownMenuItem(value: 'intermediate', child: Text('Intermediario')),
-                    const DropdownMenuItem(value: 'advanced', child: Text('Avancado')),
+                    const DropdownMenuItem(value: 'intermediate', child: Text('Intermediário')),
+                    const DropdownMenuItem(value: 'advanced', child: Text('Avançado')),
                   ],
                   onChanged: (value) {
                     if (value != null) {
@@ -430,7 +430,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
                     Icon(LucideIcons.clock, size: 16, color: AppColors.secondary),
                     const SizedBox(width: 8),
                     Text(
-                      'Duracao',
+                      'Duração',
                       style: theme.textTheme.labelMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -468,7 +468,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Exercicios (${state.exercises.length})',
+          'Exercícios (${state.exercises.length})',
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -506,14 +506,14 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Nenhum exercicio adicionado',
+            'Nenhum exercício adicionado',
             style: theme.textTheme.titleMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Toque em "Adicionar Exercicio" para comecar',
+            'Toque em "Adicionar Exercício" para começar',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant.withAlpha(180),
             ),
@@ -625,7 +625,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                _buildExerciseStat(theme, 'Series', '${exercise.sets}', LucideIcons.repeat),
+                _buildExerciseStat(theme, 'Séries', '${exercise.sets}', LucideIcons.repeat),
                 const SizedBox(width: 24),
                 _buildExerciseStat(theme, 'Reps', exercise.reps, LucideIcons.hash),
                 const SizedBox(width: 24),
@@ -696,7 +696,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
             Icon(LucideIcons.plus, color: AppColors.primary),
             const SizedBox(width: 8),
             Text(
-              'Adicionar Exercicio',
+              'Adicionar Exercício',
               style: theme.textTheme.titleSmall?.copyWith(
                 color: AppColors.primary,
                 fontWeight: FontWeight.w600,
@@ -714,7 +714,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
 
     if (state.exercises.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Adicione exercicios para ver o preview')),
+        const SnackBar(content: Text('Adicione exercícios para ver o preview')),
       );
       return;
     }
@@ -750,7 +750,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
           }
           Navigator.pop(ctx);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${exercises.length} exercicios adicionados')),
+            SnackBar(content: Text('${exercises.length} exercícios adicionados')),
           );
         },
       ),
@@ -821,10 +821,10 @@ class _ExerciseLibrarySheetState extends ConsumerState<_ExerciseLibrarySheet> {
     _MuscleGroupItem(MuscleGroup.chest, 'Peito', LucideIcons.heart),
     _MuscleGroupItem(MuscleGroup.back, 'Costas', LucideIcons.arrowUpDown),
     _MuscleGroupItem(MuscleGroup.shoulders, 'Ombros', LucideIcons.mountain),
-    _MuscleGroupItem(MuscleGroup.biceps, 'Biceps', LucideIcons.dumbbell),
-    _MuscleGroupItem(MuscleGroup.triceps, 'Triceps', LucideIcons.dumbbell),
+    _MuscleGroupItem(MuscleGroup.biceps, 'Bíceps', LucideIcons.dumbbell),
+    _MuscleGroupItem(MuscleGroup.triceps, 'Tríceps', LucideIcons.dumbbell),
     _MuscleGroupItem(MuscleGroup.legs, 'Pernas', LucideIcons.footprints),
-    _MuscleGroupItem(MuscleGroup.abs, 'Abdomen', LucideIcons.alignCenter),
+    _MuscleGroupItem(MuscleGroup.abs, 'Abdômen', LucideIcons.alignCenter),
     _MuscleGroupItem(MuscleGroup.cardio, 'Cardio', LucideIcons.activity),
   ];
 
@@ -865,7 +865,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<_ExerciseLibrarySheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Biblioteca de Exercicios',
+                  'Biblioteca de Exercícios',
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -881,7 +881,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<_ExerciseLibrarySheet> {
                         }
                       },
                       icon: Icon(LucideIcons.plus, color: AppColors.primary),
-                      tooltip: 'Criar exercicio',
+                      tooltip: 'Criar exercício',
                     ),
                     IconButton(
                       onPressed: () {
@@ -904,7 +904,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<_ExerciseLibrarySheet> {
                 ref.read(exerciseSearchQueryProvider.notifier).state = value;
               },
               decoration: InputDecoration(
-                hintText: 'Buscar exercicio...',
+                hintText: 'Buscar exercício...',
                 prefixIcon: Icon(LucideIcons.search),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
@@ -984,7 +984,7 @@ class _ExerciseLibrarySheetState extends ConsumerState<_ExerciseLibrarySheet> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Nenhum exercicio encontrado',
+                          'Nenhum exercício encontrado',
                           style: theme.textTheme.titleMedium?.copyWith(
                             color: theme.colorScheme.onSurfaceVariant,
                           ),
@@ -1115,7 +1115,7 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
               ),
             ),
             const SizedBox(height: 24),
-            Text('Series', style: theme.textTheme.labelLarge),
+            Text('Séries', style: theme.textTheme.labelLarge),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -1155,7 +1155,7 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
               ],
             ),
             const SizedBox(height: 20),
-            Text('Repeticoes', style: theme.textTheme.labelLarge),
+            Text('Repetições', style: theme.textTheme.labelLarge),
             const SizedBox(height: 8),
             TextField(
               controller: TextEditingController(text: _reps),
@@ -1194,7 +1194,7 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
               controller: _notesController,
               maxLines: 3,
               decoration: InputDecoration(
-                hintText: 'Instrucoes especificas...',
+                hintText: 'Instruções específicas...',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
@@ -1215,7 +1215,7 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
-                child: const Text('Salvar Alteracoes'),
+                child: const Text('Salvar Alterações'),
               ),
             ),
           ],
@@ -1248,9 +1248,9 @@ class _WorkoutPreviewSheet extends StatelessWidget {
       case 'beginner':
         return 'Iniciante';
       case 'intermediate':
-        return 'Intermediario';
+        return 'Intermediário';
       case 'advanced':
-        return 'Avancado';
+        return 'Avançado';
       default:
         return difficulty;
     }
@@ -1380,7 +1380,7 @@ class _WorkoutPreviewSheet extends StatelessWidget {
                               theme,
                               isDark,
                               LucideIcons.repeat,
-                              '$totalSets series',
+                              '$totalSets séries',
                             ),
                           ],
                         ),
@@ -1390,7 +1390,7 @@ class _WorkoutPreviewSheet extends StatelessWidget {
                   const SizedBox(height: 24),
                   // Exercises List
                   Text(
-                    'Exercicios',
+                    'Exercícios',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -1582,8 +1582,8 @@ class _AIWizardSheetState extends ConsumerState<_AIWizardSheet> {
 
   final _goals = [
     ('hipertrofia', 'Hipertrofia', 'Ganhar massa muscular'),
-    ('forca', 'Forca', 'Aumentar forca maxima'),
-    ('resistencia', 'Resistencia', 'Melhorar condicionamento'),
+    ('forca', 'Força', 'Aumentar força máxima'),
+    ('resistencia', 'Resistência', 'Melhorar condicionamento'),
     ('emagrecimento', 'Emagrecimento', 'Perder gordura'),
   ];
 
@@ -1591,10 +1591,10 @@ class _AIWizardSheetState extends ConsumerState<_AIWizardSheet> {
     (MuscleGroup.chest, 'Peito'),
     (MuscleGroup.back, 'Costas'),
     (MuscleGroup.shoulders, 'Ombros'),
-    (MuscleGroup.biceps, 'Biceps'),
-    (MuscleGroup.triceps, 'Triceps'),
+    (MuscleGroup.biceps, 'Bíceps'),
+    (MuscleGroup.triceps, 'Tríceps'),
     (MuscleGroup.legs, 'Pernas'),
-    (MuscleGroup.abs, 'Abdomen'),
+    (MuscleGroup.abs, 'Abdômen'),
   ];
 
   void _generateSuggestions() {
@@ -1784,7 +1784,7 @@ class _AIWizardSheetState extends ConsumerState<_AIWizardSheet> {
                               child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                             )
                           : Icon(LucideIcons.sparkles, size: 18),
-                      label: Text(_isLoading ? 'Gerando...' : 'Gerar Sugestoes'),
+                      label: Text(_isLoading ? 'Gerando...' : 'Gerar Sugestões'),
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -1801,7 +1801,7 @@ class _AIWizardSheetState extends ConsumerState<_AIWizardSheet> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Exercicios Sugeridos',
+                          'Exercícios Sugeridos',
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -1924,7 +1924,7 @@ class _AIWizardSheetState extends ConsumerState<_AIWizardSheet> {
                     widget.onExercisesSelected(_selectedExercises.toList());
                   },
                   icon: Icon(LucideIcons.plus, size: 18),
-                  label: Text('Adicionar ${_selectedExercises.length} Exercicios'),
+                  label: Text('Adicionar ${_selectedExercises.length} Exercícios'),
                   style: FilledButton.styleFrom(
                     minimumSize: const Size(double.infinity, 52),
                     shape: RoundedRectangleBorder(

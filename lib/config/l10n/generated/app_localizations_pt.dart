@@ -208,4 +208,199 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get success => 'Sucesso';
+
+  @override
+  String get confirm => 'Confirmar';
+
+  @override
+  String get back => 'Voltar';
+
+  @override
+  String get next => 'Próximo';
+
+  @override
+  String get finish => 'Finalizar';
+
+  @override
+  String get close => 'Fechar';
+
+  @override
+  String get create => 'Criar';
+
+  @override
+  String get update => 'Atualizar';
+
+  @override
+  String get select => 'Selecionar';
+
+  @override
+  String get goalHypertrophy => 'Hipertrofia';
+
+  @override
+  String get goalStrength => 'Força';
+
+  @override
+  String get goalFatLoss => 'Emagrecimento';
+
+  @override
+  String get goalEndurance => 'Resistência';
+
+  @override
+  String get goalFunctional => 'Funcional';
+
+  @override
+  String get goalGeneralFitness => 'Condicionamento Geral';
+
+  @override
+  String get difficultyBeginner => 'Iniciante';
+
+  @override
+  String get difficultyIntermediate => 'Intermediário';
+
+  @override
+  String get difficultyAdvanced => 'Avançado';
+
+  @override
+  String get muscleChest => 'Peito';
+
+  @override
+  String get muscleBack => 'Costas';
+
+  @override
+  String get muscleShoulders => 'Ombros';
+
+  @override
+  String get muscleBiceps => 'Bíceps';
+
+  @override
+  String get muscleTriceps => 'Tríceps';
+
+  @override
+  String get muscleLegs => 'Pernas';
+
+  @override
+  String get muscleGlutes => 'Glúteos';
+
+  @override
+  String get muscleAbs => 'Abdômen';
+
+  @override
+  String get muscleCardio => 'Cardio';
+
+  @override
+  String get muscleFullBody => 'Corpo Inteiro';
+
+  @override
+  String get techniqueNormal => 'Normal';
+
+  @override
+  String get techniqueSuperset => 'Super-Set';
+
+  @override
+  String get techniqueBiset => 'Bi-Set';
+
+  @override
+  String get techniqueTriset => 'Tri-Set';
+
+  @override
+  String get techniqueGiantset => 'Giant Set';
+
+  @override
+  String get techniqueDropset => 'Drop Set';
+
+  @override
+  String get techniqueRestPause => 'Rest Pause';
+
+  @override
+  String get techniqueCluster => 'Cluster';
+
+  @override
+  String get session => 'Sessão';
+
+  @override
+  String get newSession => 'Nova Sessão';
+
+  @override
+  String get createSession => 'Criar Sessão';
+
+  @override
+  String get editSession => 'Editar Sessão';
+
+  @override
+  String get cancelSession => 'Cancelar Sessão';
+
+  @override
+  String get rescheduleSession => 'Reagendar Sessão';
+
+  @override
+  String get sessionCreated => 'Sessão criada';
+
+  @override
+  String get sessionConfirmed => 'Sessão confirmada';
+
+  @override
+  String get sessionCanceled => 'Sessão cancelada';
+
+  @override
+  String get sessionRescheduled => 'Sessão reagendada';
+
+  @override
+  String get groupSession => 'Sessão em Grupo';
+
+  @override
+  String get recurringSession => 'Sessão Recorrente';
+
+  @override
+  String get duration => 'Duração';
+
+  @override
+  String get start => 'Início';
+
+  @override
+  String get end => 'Fim';
+
+  @override
+  String get date => 'Data';
+
+  @override
+  String get time => 'Horário';
+
+  @override
+  String get exercise => 'Exercício';
+
+  @override
+  String get exercises => 'Exercícios';
+
+  @override
+  String get sets => 'Séries';
+
+  @override
+  String get reps => 'Repetições';
+
+  @override
+  String get rest => 'Descanso';
+
+  @override
+  String get weight => 'Peso';
+
+  @override
+  String get monday => 'Segunda';
+
+  @override
+  String get tuesday => 'Terça';
+
+  @override
+  String get wednesday => 'Quarta';
+
+  @override
+  String get thursday => 'Quinta';
+
+  @override
+  String get friday => 'Sexta';
+
+  @override
+  String get saturday => 'Sábado';
+
+  @override
+  String get sunday => 'Domingo';
 }

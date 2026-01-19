@@ -433,14 +433,14 @@ class _ExerciseCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _buildDetailItem(
-                      'Series',
+                      'Séries',
                       '${exercise['sets']}',
                       LucideIcons.repeat,
                     ),
                   ),
                   Expanded(
                     child: _buildDetailItem(
-                      'Repeticoes',
+                      'Repetições',
                       '${exercise['reps']}',
                       LucideIcons.hash,
                     ),
@@ -457,7 +457,7 @@ class _ExerciseCard extends StatelessWidget {
               if (exercise['notes'] != null) ...[
                 const SizedBox(height: 20),
                 Text(
-                  'Observacoes',
+                  'Observações',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -532,7 +532,7 @@ class _ExerciseCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                'Ver Video',
+                                'Ver Vídeo',
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
@@ -659,7 +659,7 @@ class _ExerciseCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${exercise['sets']} series x ${exercise['reps']}',
+                      '${exercise['sets']} séries x ${exercise['reps']}',
                       style: TextStyle(
                         fontSize: 13,
                         color: isDark

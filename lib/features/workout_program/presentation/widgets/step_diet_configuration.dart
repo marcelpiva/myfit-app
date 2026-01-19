@@ -92,7 +92,7 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
             _buildSection(
               theme,
               isDark,
-              'Calorias Diarias',
+              'Calorias Diárias',
               _buildCaloriesField(theme, notifier),
             ),
             const SizedBox(height: 24),
@@ -101,7 +101,7 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
             _buildSection(
               theme,
               isDark,
-              'Distribuicao de Macros',
+              'Distribuição de Macros',
               _buildMacrosRow(theme, notifier),
             ),
             const SizedBox(height: 16),
@@ -112,7 +112,7 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
             _buildSection(
               theme,
               isDark,
-              'Refeicoes por Dia',
+              'Refeições por Dia',
               _buildMealsPerDaySelection(theme, isDark, state, notifier),
             ),
             const SizedBox(height: 24),
@@ -121,7 +121,7 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
             _buildSection(
               theme,
               isDark,
-              'Observacoes da Dieta (opcional)',
+              'Observações da Dieta (opcional)',
               _buildNotesField(theme, notifier),
             ),
           ],
@@ -177,8 +177,8 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
                 const SizedBox(height: 4),
                 Text(
                   state.includeDiet
-                      ? 'Voce pode configurar a dieta abaixo'
-                      : 'Ative para adicionar orientacoes nutricionais',
+                      ? 'Você pode configurar a dieta abaixo'
+                      : 'Ative para adicionar orientações nutricionais',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
@@ -316,7 +316,7 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Proteina (g)',
+                'Proteína (g)',
                 style: theme.textTheme.labelMedium,
               ),
               const SizedBox(height: 8),
@@ -490,7 +490,7 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'refeicoes',
+                      'refeições',
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: isSelected
                             ? Colors.white.withValues(alpha: 0.8)
@@ -515,7 +515,7 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
         notifier.setDietNotes(value.isEmpty ? null : value);
       },
       decoration: InputDecoration(
-        hintText: 'Ex: Evitar acucar refinado, priorizar proteinas magras...',
+        hintText: 'Ex: Evitar açúcar refinado, priorizar proteínas magras...',
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
         ),

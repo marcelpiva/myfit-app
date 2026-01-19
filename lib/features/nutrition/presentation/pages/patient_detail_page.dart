@@ -55,9 +55,9 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
 
   String _formatTimeAgo(DateTime date) {
     final diff = DateTime.now().difference(date);
-    if (diff.inMinutes < 60) return '${diff.inMinutes}min atras';
-    if (diff.inHours < 24) return '${diff.inHours}h atras';
-    if (diff.inDays < 7) return '${diff.inDays} dias atras';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}min atrás';
+    if (diff.inHours < 24) return '${diff.inHours}h atrás';
+    if (diff.inDays < 7) return '${diff.inDays} dias atrás';
     return _formatDate(date);
   }
 
@@ -265,7 +265,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      '${adherence.toStringAsFixed(0)}% aderencia',
+                      '${adherence.toStringAsFixed(0)}% aderência',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -319,7 +319,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
   }
 
   Widget _buildTabs(bool isDark) {
-    final tabs = ['Visao Geral', 'Plano', 'Anotacoes'];
+    final tabs = ['Visão Geral', 'Plano', 'Anotações'];
 
     return Container(
       margin: const EdgeInsets.all(20),
@@ -412,7 +412,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
             ),
             const SizedBox(height: 12),
             Text(
-              'Sem dados de aderencia',
+              'Sem dados de aderência',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -567,7 +567,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Center(
                 child: Text(
-                  'Dados de progresso semanal serao exibidos aqui',
+                  'Dados de progresso semanal serão exibidos aqui',
                   style: TextStyle(
                     fontSize: 13,
                     color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -653,7 +653,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Informacoes',
+            'Informações',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -665,7 +665,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Text(
-                'Informacoes detalhadas serao exibidas aqui',
+                'Informações detalhadas serão exibidas aqui',
                 style: TextStyle(
                   fontSize: 13,
                   color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -729,7 +729,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
               ),
               const SizedBox(height: 16),
               Text(
-                'Nenhum plano atribuido',
+                'Nenhum plano atribuído',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -749,7 +749,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
               ElevatedButton.icon(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Abrindo selecao de planos...')),
+                    const SnackBar(content: Text('Abrindo seleção de planos...')),
                   );
                 },
                 icon: const Icon(LucideIcons.plus, size: 18),
@@ -809,7 +809,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
                 if (summary.startDate != null) ...[
                   const SizedBox(height: 8),
                   Text(
-                    'Inicio: ${summary.formattedStartDate}',
+                    'Início: ${summary.formattedStartDate}',
                     style: TextStyle(
                       fontSize: 12,
                       color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -940,7 +940,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
                     color: isDark ? AppColors.foregroundDark : AppColors.foreground,
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Adicionar anotacao...',
+                    hintText: 'Adicionar anotação...',
                     hintStyle: TextStyle(
                       color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                     ),
@@ -964,7 +964,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
                   if (_noteController.text.isNotEmpty) {
                     HapticUtils.mediumImpact();
                     final notifier = ref.read(patientDietPlanNotifierProvider(widget.patientId).notifier);
-                    final success = await notifier.addNote(_noteController.text, category: 'observacao');
+                    final success = await notifier.addNote(_noteController.text, category: 'observação');
                     if (success && mounted) {
                       _noteController.clear();
                     }
@@ -998,7 +998,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'Nenhuma anotacao',
+                        'Nenhuma anotação',
                         style: TextStyle(
                           fontSize: 14,
                           color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -1006,7 +1006,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Adicione uma anotacao sobre este paciente',
+                        'Adicione uma anotação sobre este paciente',
                         style: TextStyle(
                           fontSize: 12,
                           color: isDark ? AppColors.mutedForegroundDark.withAlpha(180) : AppColors.mutedForeground.withAlpha(180),
@@ -1030,12 +1030,12 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
 
   Widget _buildPatientNoteItem(PatientNote note, bool isDark) {
     final categoryColors = {
-      'observacao': AppColors.info,
+      'observação': AppColors.info,
       'consulta': AppColors.success,
       'ajuste': AppColors.warning,
     };
 
-    final category = note.category ?? 'observacao';
+    final category = note.category ?? 'observação';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -1107,7 +1107,7 @@ class _PatientDetailPageState extends ConsumerState<PatientDetailPage>
               _buildMenuOption('Agendar consulta', LucideIcons.calendar, () {
                 Navigator.pop(ctx);
               }, isDark),
-              _buildMenuOption('Ver historico', LucideIcons.history, () {
+              _buildMenuOption('Ver histórico', LucideIcons.history, () {
                 Navigator.pop(ctx);
               }, isDark),
               _buildMenuOption('Remover paciente', LucideIcons.userMinus, () {

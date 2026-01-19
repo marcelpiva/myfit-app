@@ -653,7 +653,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Sugestao do Personal',
+                  'Sugestão do Personal',
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.bold,

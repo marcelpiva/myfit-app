@@ -88,7 +88,7 @@ class _TrainerDashboardPageState extends ConsumerState<TrainerDashboardPage>
                     const SizedBox(height: 32),
 
                     // Quick Actions
-                    _buildSectionHeader(context, isDark, 'Acoes Rapidas'),
+                    _buildSectionHeader(context, isDark, 'Ações Rápidas'),
                     const SizedBox(height: 16),
                     _buildQuickActions(context, isDark),
 
@@ -298,7 +298,7 @@ class _TrainerDashboardPageState extends ConsumerState<TrainerDashboardPage>
               child: _StatCard(
                 icon: LucideIcons.trendingUp,
                 value: '92%',
-                label: 'Taxa de Retencao',
+                label: 'Taxa de Retenção',
                 color: AppColors.accent,
                 isDark: isDark,
               ),

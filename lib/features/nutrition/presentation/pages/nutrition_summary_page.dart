@@ -185,7 +185,7 @@ class _NutritionSummaryPageState extends ConsumerState<NutritionSummaryPage>
             onTap: () {
               HapticUtils.lightImpact();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Exportando relatorio...')),
+                const SnackBar(content: Text('Exportando relatório...')),
               );
             },
             child: Container(
@@ -222,7 +222,7 @@ class _NutritionSummaryPageState extends ConsumerState<NutritionSummaryPage>
         child: Row(
           children: [
             _buildPeriodTab('week', 'Semana', isDark),
-            _buildPeriodTab('month', 'Mes', isDark),
+            _buildPeriodTab('month', 'Mês', isDark),
           ],
         ),
       ),
@@ -402,7 +402,7 @@ class _NutritionSummaryPageState extends ConsumerState<NutritionSummaryPage>
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildMiniStat('${totals['loggedDays']}/7', 'Dias', LucideIcons.calendar, isDark),
-                _buildMiniStat('${totals['avgCalories']}', 'Media/dia', LucideIcons.flame, isDark),
+                _buildMiniStat('${totals['avgCalories']}', 'Média/dia', LucideIcons.flame, isDark),
               ],
             ),
           ),
@@ -451,7 +451,7 @@ class _NutritionSummaryPageState extends ConsumerState<NutritionSummaryPage>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Detalhamento Diario',
+          'Detalhamento Diário',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -543,7 +543,7 @@ class _NutritionSummaryPageState extends ConsumerState<NutritionSummaryPage>
                 Row(
                   children: [
                     Text(
-                      logged ? '$calories kcal' : 'Nao registrado',
+                      logged ? '$calories kcal' : 'Não registrado',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -636,7 +636,7 @@ class _NutritionSummaryPageState extends ConsumerState<NutritionSummaryPage>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Media de Macros',
+          'Média de Macros',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -648,7 +648,7 @@ class _NutritionSummaryPageState extends ConsumerState<NutritionSummaryPage>
           children: [
             Expanded(
               child: _buildMacroCard(
-                'Proteina',
+                'Proteína',
                 totals['avgProtein']!,
                 _targets['protein']!,
                 'g',
@@ -754,21 +754,21 @@ class _NutritionSummaryPageState extends ConsumerState<NutritionSummaryPage>
         'icon': LucideIcons.alertTriangle,
         'color': AppColors.warning,
         'title': 'Consumo abaixo da meta',
-        'text': 'Sua media de calorias esta ${((1 - avgCalories / targetCalories) * 100).round()}% abaixo do planejado.',
+        'text': 'Sua média de calorias está ${((1 - avgCalories / targetCalories) * 100).round()}% abaixo do planejado.',
       });
     } else if (avgCalories > targetCalories * 1.1) {
       insights.add({
         'icon': LucideIcons.alertCircle,
         'color': AppColors.destructive,
         'title': 'Consumo acima da meta',
-        'text': 'Sua media de calorias esta ${((avgCalories / targetCalories - 1) * 100).round()}% acima do planejado.',
+        'text': 'Sua média de calorias está ${((avgCalories / targetCalories - 1) * 100).round()}% acima do planejado.',
       });
     } else {
       insights.add({
         'icon': LucideIcons.checkCircle2,
         'color': AppColors.success,
-        'title': 'Otimo trabalho!',
-        'text': 'Voce esta mantendo uma media de calorias dentro da meta.',
+        'title': 'Ótimo trabalho!',
+        'text': 'Você está mantendo uma média de calorias dentro da meta.',
       });
     }
 
@@ -777,7 +777,7 @@ class _NutritionSummaryPageState extends ConsumerState<NutritionSummaryPage>
         'icon': LucideIcons.calendar,
         'color': AppColors.info,
         'title': 'Continue registrando',
-        'text': 'Tente registrar suas refeicoes todos os dias para melhor acompanhamento.',
+        'text': 'Tente registrar suas refeições todos os dias para melhor acompanhamento.',
       });
     }
 

@@ -253,7 +253,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
                       _buildFilterChip(
                         theme,
                         isDark,
-                        'Nivel',
+                        'Nível',
                         _selectedDifficulty != null
                             ? _getDifficultyName(_selectedDifficulty!)
                             : null,
@@ -263,7 +263,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
                       _buildFilterChip(
                         theme,
                         isDark,
-                        'Divisao',
+                        'Divisão',
                         _selectedSplit != null ? _getSplitName(_selectedSplit!) : null,
                         () => _showSplitFilter(context, theme, isDark),
                       ),
@@ -406,9 +406,9 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
         title: 'Objetivo',
         options: [
           ('hypertrophy', 'Hipertrofia'),
-          ('strength', 'Forca'),
+          ('strength', 'Força'),
           ('fat_loss', 'Emagrecimento'),
-          ('endurance', 'Resistencia'),
+          ('endurance', 'Resistência'),
           ('functional', 'Funcional'),
           ('general_fitness', 'Condicionamento'),
         ],
@@ -429,11 +429,11 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => _FilterSheet(
-        title: 'Nivel',
+        title: 'Nível',
         options: [
           ('beginner', 'Iniciante'),
-          ('intermediate', 'Intermediario'),
-          ('advanced', 'Avancado'),
+          ('intermediate', 'Intermediário'),
+          ('advanced', 'Avançado'),
         ],
         selectedValue: _selectedDifficulty,
         onSelected: (value) {
@@ -452,7 +452,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => _FilterSheet(
-        title: 'Divisao de Treino',
+        title: 'Divisão de Treino',
         options: [
           ('abc', 'ABC'),
           ('abcd', 'ABCD'),
@@ -534,7 +534,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
             const SizedBox(height: 16),
             Text(
               noTemplatesExist
-                  ? 'Nenhum programa disponivel'
+                  ? 'Nenhum programa disponível'
                   : 'Nenhum programa encontrado',
               style: theme.textTheme.bodyLarge?.copyWith(
                 fontWeight: FontWeight.w500,
@@ -543,7 +543,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
             const SizedBox(height: 8),
             Text(
               noTemplatesExist
-                  ? 'Voce ainda nao criou nenhum programa'
+                  ? 'Você ainda não criou nenhum programa'
                   : 'Tente ajustar os filtros de busca',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
@@ -591,11 +591,11 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
       case 'hypertrophy':
         return 'Hipertrofia';
       case 'strength':
-        return 'Forca';
+        return 'Força';
       case 'fat_loss':
         return 'Emagrecimento';
       case 'endurance':
-        return 'Resistencia';
+        return 'Resistência';
       case 'functional':
         return 'Funcional';
       case 'general_fitness':
@@ -610,9 +610,9 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
       case 'beginner':
         return 'Iniciante';
       case 'intermediate':
-        return 'Intermediario';
+        return 'Intermediário';
       case 'advanced':
-        return 'Avancado';
+        return 'Avançado';
       default:
         return difficulty;
     }
@@ -792,11 +792,11 @@ class _TemplateCard extends StatelessWidget {
       case 'hypertrophy':
         return 'Hipertrofia';
       case 'strength':
-        return 'Forca';
+        return 'Força';
       case 'fat_loss':
         return 'Emagrecimento';
       case 'endurance':
-        return 'Resistencia';
+        return 'Resistência';
       case 'functional':
         return 'Funcional';
       case 'general_fitness':
@@ -811,9 +811,9 @@ class _TemplateCard extends StatelessWidget {
       case 'beginner':
         return 'Iniciante';
       case 'intermediate':
-        return 'Intermediario';
+        return 'Intermediário';
       case 'advanced':
-        return 'Avancado';
+        return 'Avançado';
       default:
         return difficulty;
     }

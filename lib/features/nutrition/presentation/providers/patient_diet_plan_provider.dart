@@ -73,18 +73,18 @@ class PlanMeal {
   static String _getMealName(String type) {
     switch (type.toLowerCase()) {
       case 'breakfast':
-        return 'Cafe da Manha';
+        return 'Café da Manhã';
       case 'lunch':
-        return 'Almoco';
+        return 'Almoço';
       case 'dinner':
         return 'Jantar';
       case 'snack':
       case 'afternoon_snack':
         return 'Lanche';
       case 'morning_snack':
-        return 'Lanche da Manha';
+        return 'Lanche da Manhã';
       default:
-        return 'Refeicao';
+        return 'Refeição';
     }
   }
 

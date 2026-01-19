@@ -97,7 +97,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
                       child: _buildSectionHeader(
                         context,
                         isDark,
-                        'Acoes Rapidas',
+                        'Ações Rápidas',
                         icon: LucideIcons.zap,
                       ),
                     ),
@@ -182,20 +182,20 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
     final allActivities = [
       _ActivityItem(
         icon: LucideIcons.utensils,
-        message: 'Maria Santos registrou refeicao do almoco',
-        time: 'Ha 15 minutos',
+        message: 'Maria Santos registrou refeição do almoço',
+        time: 'Há 15 minutos',
         color: AppColors.success,
       ),
       _ActivityItem(
         icon: LucideIcons.scale,
-        message: 'Joao Oliveira atualizou peso: 78.5 kg',
-        time: 'Ha 1 hora',
+        message: 'João Oliveira atualizou peso: 78.5 kg',
+        time: 'Há 1 hora',
         color: AppColors.primary,
       ),
       _ActivityItem(
         icon: LucideIcons.apple,
-        message: 'Ana Costa completou diario alimentar',
-        time: 'Ha 2 horas',
+        message: 'Ana Costa completou diário alimentar',
+        time: 'Há 2 horas',
         color: AppColors.secondary,
       ),
       _ActivityItem(
@@ -206,25 +206,25 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
       ),
       _ActivityItem(
         icon: LucideIcons.utensils,
-        message: 'Pedro Silva registrou cafe da manha',
-        time: 'Ha 4 horas',
+        message: 'Pedro Silva registrou café da manhã',
+        time: 'Há 4 horas',
         color: AppColors.success,
       ),
       _ActivityItem(
         icon: LucideIcons.droplet,
-        message: 'Maria Santos atualizou consumo de agua',
-        time: 'Ha 5 horas',
+        message: 'Maria Santos atualizou consumo de água',
+        time: 'Há 5 horas',
         color: AppColors.info,
       ),
       _ActivityItem(
         icon: LucideIcons.scale,
         message: 'Ana Costa atualizou peso: 62.3 kg',
-        time: 'Ha 6 horas',
+        time: 'Há 6 horas',
         color: AppColors.primary,
       ),
       _ActivityItem(
         icon: LucideIcons.clipboardCheck,
-        message: 'Joao Oliveira completou meta semanal',
+        message: 'João Oliveira completou meta semanal',
         time: 'Ontem',
         color: AppColors.warning,
       ),
@@ -236,7 +236,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
       ),
       _ActivityItem(
         icon: LucideIcons.heartPulse,
-        message: 'Pedro Silva registrou atividade fisica',
+        message: 'Pedro Silva registrou atividade física',
         time: 'Ontem',
         color: AppColors.destructive,
       ),
@@ -288,7 +288,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
                       ),
                       const SizedBox(width: 14),
                       Text(
-                        'Historico de Atividades',
+                        'Histórico de Atividades',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -506,7 +506,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
               context,
               isDark,
               LucideIcons.clock,
-              'Horario',
+              'Horário',
               appointment.time,
             ),
             const SizedBox(height: 12),
@@ -522,8 +522,8 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
               context,
               isDark,
               LucideIcons.fileText,
-              'Observacoes',
-              'Nenhuma observacao registrada',
+              'Observações',
+              'Nenhuma observação registrada',
             ),
             const SizedBox(height: 24),
             Row(
@@ -820,7 +820,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
       case 'Enviar lembrete':
         _showSendReminderModal(context, isDark, alert);
         break;
-      case 'Ver historico':
+      case 'Ver histórico':
         _showWeightHistoryModal(context, isDark, alert);
         break;
       case 'Agendar consulta':
@@ -829,7 +829,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
       default:
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Acao: ${alert.actionLabel}', style: const TextStyle(color: Colors.white)),
+            content: Text('Ação: ${alert.actionLabel}', style: const TextStyle(color: Colors.white)),
             backgroundColor: AppColors.success,
           ),
         );
@@ -838,7 +838,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
 
   void _showSendReminderModal(BuildContext context, bool isDark, _AlertItem alert) {
     final messageController = TextEditingController(
-      text: 'Ola! Notamos que voce nao registra suas refeicoes ha alguns dias. Lembre-se que acompanhar sua alimentacao e muito importante para alcancar seus objetivos. Estamos aqui para ajudar!',
+      text: 'Olá! Notamos que você não registra suas refeições há alguns dias. Lembre-se que acompanhar sua alimentação é muito importante para alcançar seus objetivos. Estamos aqui para ajudar!',
     );
 
     showModalBottomSheet(
@@ -1072,7 +1072,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Historico de Peso',
+                            'Histórico de Peso',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
@@ -1139,7 +1139,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Ultimas 2 semanas',
+                          'Últimas 2 semanas',
                           style: TextStyle(
                             fontSize: 12,
                             color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -1493,7 +1493,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
                   HapticUtils.lightImpact();
                   // Show today's schedule - already on this page, scroll or show modal
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Consultas de hoje estao listadas abaixo')),
+                    const SnackBar(content: Text('Consultas de hoje estão listadas abaixo')),
                   );
                 },
               ),
@@ -1521,7 +1521,7 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
               child: _StatCard(
                 icon: LucideIcons.clipboardCheck,
                 value: '12',
-                label: 'Avaliacoes Pendentes',
+                label: 'Avaliações Pendentes',
                 color: AppColors.warning,
                 isDark: isDark,
                 onTap: () {
@@ -1831,20 +1831,20 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
     final activities = [
       _ActivityItem(
         icon: LucideIcons.utensils,
-        message: 'Maria Santos registrou refeicao do almoco',
-        time: 'Ha 15 minutos',
+        message: 'Maria Santos registrou refeição do almoço',
+        time: 'Há 15 minutos',
         color: AppColors.success,
       ),
       _ActivityItem(
         icon: LucideIcons.scale,
-        message: 'Joao Oliveira atualizou peso: 78.5 kg',
-        time: 'Ha 1 hora',
+        message: 'João Oliveira atualizou peso: 78.5 kg',
+        time: 'Há 1 hora',
         color: AppColors.primary,
       ),
       _ActivityItem(
         icon: LucideIcons.apple,
-        message: 'Ana Costa completou diario alimentar',
-        time: 'Ha 2 horas',
+        message: 'Ana Costa completou diário alimentar',
+        time: 'Há 2 horas',
         color: AppColors.secondary,
       ),
       _ActivityItem(
@@ -1930,22 +1930,22 @@ class _NutritionistHomePageState extends ConsumerState<NutritionistHomePage>
     final alerts = [
       _AlertItem(
         icon: LucideIcons.alertCircle,
-        title: 'Refeicoes nao registradas',
-        message: 'Pedro Silva nao registra refeicoes ha 3 dias',
+        title: 'Refeições não registradas',
+        message: 'Pedro Silva não registra refeições há 3 dias',
         severity: _AlertSeverity.high,
         actionLabel: 'Enviar lembrete',
       ),
       _AlertItem(
         icon: LucideIcons.trendingDown,
         title: 'Perda de peso significativa',
-        message: 'Ana Costa perdeu 4kg nas ultimas 2 semanas',
+        message: 'Ana Costa perdeu 4kg nas últimas 2 semanas',
         severity: _AlertSeverity.medium,
-        actionLabel: 'Ver historico',
+        actionLabel: 'Ver histórico',
       ),
       _AlertItem(
         icon: LucideIcons.calendar,
         title: 'Consulta de retorno pendente',
-        message: 'Marcos Alves esta ha 45 dias sem retorno',
+        message: 'Marcos Alves está há 45 dias sem retorno',
         severity: _AlertSeverity.low,
         actionLabel: 'Agendar consulta',
       ),
@@ -2203,9 +2203,9 @@ class _ScheduleConsultationFormState extends State<_ScheduleConsultationForm> {
     'Consulta de Rotina',
     'Primeira Consulta',
     'Retorno',
-    'Avaliacao Nutricional',
+    'Avaliação Nutricional',
     'Acompanhamento Mensal',
-    'Reeducacao Alimentar',
+    'Reeducação Alimentar',
   ];
 
   @override
@@ -2448,7 +2448,7 @@ class _ScheduleConsultationFormState extends State<_ScheduleConsultationForm> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildLabel('Horario', isDark),
+                      _buildLabel('Horário', isDark),
                       const SizedBox(height: 8),
                       GestureDetector(
                         onTap: _selectTime,
@@ -2487,7 +2487,7 @@ class _ScheduleConsultationFormState extends State<_ScheduleConsultationForm> {
             const SizedBox(height: 16),
 
             // Observations
-            _buildLabel('Observacoes (opcional)', isDark),
+            _buildLabel('Observações (opcional)', isDark),
             const SizedBox(height: 8),
             Container(
               decoration: BoxDecoration(

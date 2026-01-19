@@ -271,7 +271,7 @@ class _SmartCheckinPageState extends ConsumerState<SmartCheckinPage>
                   Icon(LucideIcons.bell, size: 24, color: AppColors.warning),
                   const SizedBox(width: 12),
                   Text(
-                    'Confirmacoes Pendentes',
+                    'Confirmações Pendentes',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
@@ -441,7 +441,7 @@ class _StudentCheckinView extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Sessao proxima (se houver)
+          // Sessão próxima (se houver)
           if (context.hasUpcomingSession) ...[
             FadeInUp(
               child: _buildUpcomingSession(buildContext, isDark, context.nextSession!),
@@ -449,7 +449,7 @@ class _StudentCheckinView extends ConsumerWidget {
             const SizedBox(height: 24),
           ],
 
-          // Opcoes de check-in
+          // Opções de check-in
           FadeInUp(
             delay: const Duration(milliseconds: 100),
             child: Text(
@@ -471,7 +471,7 @@ class _StudentCheckinView extends ConsumerWidget {
 
           const SizedBox(height: 24),
 
-          // Aulas disponiveis
+          // Aulas disponíveis
           if (context.availableClasses.isNotEmpty) ...[
             FadeInUp(
               delay: const Duration(milliseconds: 200),
@@ -488,7 +488,7 @@ class _StudentCheckinView extends ConsumerWidget {
 
           const SizedBox(height: 24),
 
-          // Metodos alternativos
+          // Métodos alternativos
           FadeInUp(
             delay: const Duration(milliseconds: 300),
             child: _buildAlternativeMethods(buildContext, isDark),
@@ -605,7 +605,7 @@ class _StudentCheckinView extends ConsumerWidget {
                     Icon(LucideIcons.play, size: 18, color: AppColors.primary),
                     const SizedBox(width: 8),
                     Text(
-                      'Fazer Check-in para Sessao',
+                      'Fazer Check-in para Sessão',
                       style: TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w600,
@@ -650,12 +650,12 @@ class _StudentCheckinView extends ConsumerWidget {
           onTap: () => _doQuickCheckin(context, CheckInType.freeTraining),
         ),
         const SizedBox(height: 12),
-        // Sessao com Personal
+        // Sessão com Personal
         _buildCheckinCard(
           context,
           isDark,
           icon: LucideIcons.users,
-          title: 'Sessao com Personal',
+          title: 'Sessão com Personal',
           subtitle: 'Academia + Personal Trainer',
           color: AppColors.primary,
           targets: [CheckInTargetType.gym, CheckInTargetType.trainer],
@@ -770,7 +770,7 @@ class _StudentCheckinView extends ConsumerWidget {
       case CheckInTargetType.groupClass:
         return 'Aula';
       case CheckInTargetType.session:
-        return 'Sessao';
+        return 'Sessão';
       case CheckInTargetType.equipment:
         return 'Equipamento';
     }
@@ -833,7 +833,7 @@ class _StudentCheckinView extends ConsumerWidget {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Solicitacao enviada para $name', style: const TextStyle(color: Colors.white)),
+            content: Text('Solicitação enviada para $name', style: const TextStyle(color: Colors.white)),
             backgroundColor: AppColors.success,
           ),
         );
@@ -899,7 +899,7 @@ class _StudentCheckinView extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                isAvailable ? 'Disponivel' : 'Ocupado',
+                isAvailable ? 'Disponível' : 'Ocupado',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -918,7 +918,7 @@ class _StudentCheckinView extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Aulas Disponiveis',
+          'Aulas Disponíveis',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -1027,7 +1027,7 @@ class _StudentCheckinView extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Outros Metodos',
+          'Outros Métodos',
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -1055,7 +1055,7 @@ class _StudentCheckinView extends ConsumerWidget {
                 context,
                 isDark,
                 LucideIcons.hash,
-                'Codigo',
+                'Código',
                 () {
                   HapticUtils.lightImpact();
                 },
@@ -1067,7 +1067,7 @@ class _StudentCheckinView extends ConsumerWidget {
                 context,
                 isDark,
                 LucideIcons.history,
-                'Historico',
+                'Histórico',
                 () {
                   HapticUtils.lightImpact();
                   context.push(RouteNames.checkinHistory);
@@ -1180,7 +1180,7 @@ class _TrainerCheckinView extends ConsumerWidget {
               Icon(LucideIcons.bell, size: 20, color: AppColors.warning),
               const SizedBox(width: 8),
               Text(
-                '${trainerContext.pendingConfirmations.length} Solicitacoes Pendentes',
+                '${trainerContext.pendingConfirmations.length} Solicitações Pendentes',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -1227,7 +1227,7 @@ class _TrainerCheckinView extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Sessoes de Hoje',
+              'Sessões de Hoje',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -1271,7 +1271,7 @@ class _TrainerCheckinView extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'Nenhuma sessao agendada',
+                    'Nenhuma sessão agendada',
                     style: TextStyle(
                       fontSize: 16,
                       color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -1352,7 +1352,7 @@ class _TrainerCheckinView extends ConsumerWidget {
                     GestureDetector(
                       onTap: () {
                         HapticUtils.mediumImpact();
-                        // Iniciar sessao
+                        // Iniciar sessão
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -1383,7 +1383,7 @@ class _TrainerCheckinView extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Acoes Rapidas',
+          'Ações Rápidas',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -1701,7 +1701,7 @@ class _SessionCheckinSheet extends StatelessWidget {
 
             // Targets
             Text(
-              'Este check-in sera registrado para:',
+              'Este check-in será registrado para:',
               style: TextStyle(
                 fontSize: 14,
                 color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -1737,7 +1737,7 @@ class _SessionCheckinSheet extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'O Personal recebera uma notificacao para confirmar sua presenca',
+                      'O Personal receberá uma notificação para confirmar sua presença',
                       style: TextStyle(
                         fontSize: 13,
                         color: AppColors.success,
@@ -1789,7 +1789,7 @@ class _SessionCheckinSheet extends StatelessWidget {
                             children: [
                               const Icon(LucideIcons.checkCircle, color: Colors.white, size: 20),
                               const SizedBox(width: 12),
-                              const Text('Check-in realizado! Aguardando confirmacao.'),
+                              const Text('Check-in realizado! Aguardando confirmação.'),
                             ],
                           ),
                           backgroundColor: AppColors.success,

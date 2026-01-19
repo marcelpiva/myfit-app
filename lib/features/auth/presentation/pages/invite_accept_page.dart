@@ -50,7 +50,7 @@ class _InviteAcceptPageState extends ConsumerState<InviteAcceptPage> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = 'Convite nao encontrado ou expirado';
+          _error = 'Convite não encontrado ou expirado';
           _isLoading = false;
         });
       }
@@ -180,7 +180,7 @@ class _InviteAcceptPageState extends ConsumerState<InviteAcceptPage> {
               ),
               const SizedBox(height: 24),
               Text(
-                'Convite Invalido',
+                'Convite Inválido',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
@@ -189,7 +189,7 @@ class _InviteAcceptPageState extends ConsumerState<InviteAcceptPage> {
               ),
               const SizedBox(height: 12),
               Text(
-                _error ?? 'Este convite nao existe ou ja expirou.',
+                _error ?? 'Este convite não existe ou já expirou.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -207,7 +207,7 @@ class _InviteAcceptPageState extends ConsumerState<InviteAcceptPage> {
                     HapticUtils.lightImpact();
                     context.go(RouteNames.welcome);
                   },
-                  child: const Text('Voltar ao Inicio'),
+                  child: const Text('Voltar ao Início'),
                 ),
               ),
             ],
@@ -218,7 +218,7 @@ class _InviteAcceptPageState extends ConsumerState<InviteAcceptPage> {
   }
 
   Widget _buildInviteContent(bool isDark, bool isAuthenticated) {
-    final organizationName = _inviteData?['organization_name'] ?? 'Organizacao';
+    final organizationName = _inviteData?['organization_name'] ?? 'Organização';
     final invitedByName = _inviteData?['invited_by_name'] ?? 'Um profissional';
     final role = _inviteData?['role'] ?? 'student';
     final email = _inviteData?['email'] ?? '';
@@ -285,7 +285,7 @@ class _InviteAcceptPageState extends ConsumerState<InviteAcceptPage> {
           FadeInUp(
             delay: const Duration(milliseconds: 100),
             child: Text(
-              'Voce foi convidado!',
+              'Você foi convidado!',
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
@@ -300,7 +300,7 @@ class _InviteAcceptPageState extends ConsumerState<InviteAcceptPage> {
           FadeInUp(
             delay: const Duration(milliseconds: 150),
             child: Text(
-              '$invitedByName convidou voce para se juntar a equipe.',
+              '$invitedByName convidou você para se juntar à equipe.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -332,14 +332,14 @@ class _InviteAcceptPageState extends ConsumerState<InviteAcceptPage> {
                 children: [
                   _buildDetailRow(
                     icon: LucideIcons.building2,
-                    label: 'Organizacao',
+                    label: 'Organização',
                     value: organizationName,
                     isDark: isDark,
                   ),
                   const SizedBox(height: 16),
                   _buildDetailRow(
                     icon: LucideIcons.user,
-                    label: 'Funcao',
+                    label: 'Função',
                     value: roleLabel,
                     isDark: isDark,
                   ),
@@ -414,7 +414,7 @@ class _InviteAcceptPageState extends ConsumerState<InviteAcceptPage> {
                         HapticUtils.lightImpact();
                         context.go('${RouteNames.login}?invite_token=${widget.token}');
                       },
-                      child: const Text('Ja tenho conta'),
+                      child: const Text('Já tenho conta'),
                     ),
                   ),
                   const SizedBox(height: 12),

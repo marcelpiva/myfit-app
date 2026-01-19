@@ -25,7 +25,7 @@ class _GymReportsPageState extends ConsumerState<GymReportsPage>
   late Animation<double> _fadeAnimation;
   int _selectedPeriod = 0;
 
-  final _periods = ['Este Mes', 'Ultimos 3 Meses', 'Este Ano'];
+  final _periods = ['Este Mês', 'Últimos 3 Meses', 'Este Ano'];
   final _currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
   @override
@@ -245,7 +245,7 @@ class _GymReportsPageState extends ConsumerState<GymReportsPage>
                                 ),
                                 const SizedBox(width: 16),
                                 Text(
-                                  'Relatorios',
+                                  'Relatórios',
                                   style: theme.textTheme.headlineMedium?.copyWith(
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -377,7 +377,7 @@ class _GymReportsPageState extends ConsumerState<GymReportsPage>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Transacoes Recentes',
+                            'Transações Recentes',
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
@@ -444,7 +444,7 @@ class _GymReportsPageState extends ConsumerState<GymReportsPage>
         'positive': summary['cancellations']?['positive'] ?? true,
       },
       {
-        'label': 'Taxa de Retencao',
+        'label': 'Taxa de Retenção',
         'value': isLoading ? '-' : (summary['retention']?['value'] ?? '-'),
         'change': summary['retention']?['change'] ?? '-',
         'icon': LucideIcons.trendingUp,
@@ -556,7 +556,7 @@ class _GymReportsPageState extends ConsumerState<GymReportsPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Evolucao da Receita',
+                    'Evolução da Receita',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -813,7 +813,7 @@ class _GymReportsPageState extends ConsumerState<GymReportsPage>
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Center(
                 child: Text(
-                  'Nenhum dado disponivel',
+                  'Nenhum dado disponível',
                   style: TextStyle(
                     color: isDark
                         ? AppColors.mutedForegroundDark
@@ -909,7 +909,7 @@ class _GymReportsPageState extends ConsumerState<GymReportsPage>
         ),
         child: Center(
           child: Text(
-            'Nenhuma transacao recente',
+            'Nenhuma transação recente',
             style: TextStyle(
               color: isDark
                   ? AppColors.mutedForegroundDark
@@ -1047,7 +1047,7 @@ class _GymReportsPageState extends ConsumerState<GymReportsPage>
               const SizedBox(height: 24),
 
               Text(
-                'Exportar Relatorio',
+                'Exportar Relatório',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w600,
@@ -1142,7 +1142,7 @@ class _GymReportsPageState extends ConsumerState<GymReportsPage>
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Exportando relatorio em $title...'),
+            content: Text('Exportando relatório em $title...'),
           ),
         );
       },

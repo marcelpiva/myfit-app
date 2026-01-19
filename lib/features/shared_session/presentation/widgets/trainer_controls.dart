@@ -150,7 +150,7 @@ class _TrainerControlsState extends ConsumerState<TrainerControls> {
 
           // Quick notes
           Text(
-            'Mensagens Rapidas',
+            'Mensagens Rápidas',
             style: theme.textTheme.labelMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -162,8 +162,8 @@ class _TrainerControlsState extends ConsumerState<TrainerControls> {
             children: [
               _NoteChip(
                 icon: LucideIcons.thumbsUp,
-                label: 'Otimo!',
-                onTap: () => _sendNote('Otimo trabalho!'),
+                label: 'Ótimo!',
+                onTap: () => _sendNote('Ótimo trabalho!'),
               ),
               _NoteChip(
                 icon: LucideIcons.focus,
@@ -226,7 +226,7 @@ class _TrainerControlsState extends ConsumerState<TrainerControls> {
   void _sendAdjustment() {
     if (widget.currentExerciseId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nenhum exercicio atual')),
+        const SnackBar(content: Text('Nenhum exercício atual')),
       );
       return;
     }

@@ -67,7 +67,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Erro ao carregar video',
+                  'Erro ao carregar vídeo',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Colors.white,
                       ),
@@ -149,7 +149,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
             ),
             SizedBox(height: 16),
             Text(
-              'Carregando video...',
+              'Carregando vídeo...',
               style: TextStyle(
                 color: Colors.white70,
               ),
@@ -173,7 +173,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
               ),
               const SizedBox(height: 24),
               Text(
-                'Erro ao carregar video',
+                'Erro ao carregar vídeo',
                 style: theme.textTheme.titleLarge?.copyWith(
                   color: Colors.white,
                 ),

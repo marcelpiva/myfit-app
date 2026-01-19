@@ -2250,7 +2250,7 @@ class _PhotosProgressTab extends StatelessWidget {
           ],
         ),
         content: Text(
-          'Tem certeza que deseja excluir esta foto de ${photo.date}? Esta acao nao pode ser desfeita.',
+          'Tem certeza que deseja excluir esta foto de ${photo.date}? Esta ação não pode ser desfeita.',
           style: TextStyle(
             fontSize: 14,
             color: isDark
@@ -2272,7 +2272,7 @@ class _PhotosProgressTab extends StatelessWidget {
               Navigator.pop(ctx);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text('Foto excluida!'),
+                  content: const Text('Foto excluída!'),
                   backgroundColor: AppColors.destructive,
                 ),
               );

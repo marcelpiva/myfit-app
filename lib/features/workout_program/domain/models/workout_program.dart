@@ -93,21 +93,21 @@ extension TechniqueTypeDisplay on TechniqueType {
   String get description {
     switch (this) {
       case TechniqueType.normal:
-        return 'Execucao padrao com descanso entre series';
+        return 'Execução padrão com descanso entre séries';
       case TechniqueType.superset:
-        return 'Peito/Costas ou Biceps/Triceps (grupos opostos)';
+        return 'Peito/Costas ou Bíceps/Tríceps (grupos opostos)';
       case TechniqueType.biset:
-        return 'Peito/Ombros ou Costas/Biceps (mesma area)';
+        return 'Peito/Ombros ou Costas/Bíceps (mesma área)';
       case TechniqueType.triset:
-        return '3 exercicios do mesmo grupo muscular';
+        return '3 exercícios do mesmo grupo muscular';
       case TechniqueType.giantset:
-        return '4+ exercicios do mesmo grupo muscular';
+        return '4+ exercícios do mesmo grupo muscular';
       case TechniqueType.dropset:
         return 'Reduz o peso e continua sem descanso';
       case TechniqueType.restPause:
-        return 'Pausas curtas (10-15s) durante a serie';
+        return 'Pausas curtas (10-15s) durante a série';
       case TechniqueType.cluster:
-        return 'Mini-series com pausas curtas';
+        return 'Mini-séries com pausas curtas';
     }
   }
 
@@ -250,11 +250,11 @@ sealed class WorkoutProgram with _$WorkoutProgram {
       case WorkoutGoal.hypertrophy:
         return 'Hipertrofia';
       case WorkoutGoal.strength:
-        return 'Forca';
+        return 'Força';
       case WorkoutGoal.fatLoss:
         return 'Emagrecimento';
       case WorkoutGoal.endurance:
-        return 'Resistencia';
+        return 'Resistência';
       case WorkoutGoal.functional:
         return 'Funcional';
       case WorkoutGoal.generalFitness:
@@ -268,9 +268,9 @@ sealed class WorkoutProgram with _$WorkoutProgram {
       case ProgramDifficulty.beginner:
         return 'Iniciante';
       case ProgramDifficulty.intermediate:
-        return 'Intermediario';
+        return 'Intermediário';
       case ProgramDifficulty.advanced:
-        return 'Avancado';
+        return 'Avançado';
     }
   }
 
@@ -330,7 +330,7 @@ sealed class ProgramWorkout with _$ProgramWorkout {
       case 0:
         return 'Segunda';
       case 1:
-        return 'Terca';
+        return 'Terça';
       case 2:
         return 'Quarta';
       case 3:
@@ -338,7 +338,7 @@ sealed class ProgramWorkout with _$ProgramWorkout {
       case 4:
         return 'Sexta';
       case 5:
-        return 'Sabado';
+        return 'Sábado';
       case 6:
         return 'Domingo';
       default:
@@ -371,9 +371,9 @@ sealed class ProgramWorkoutDetail with _$ProgramWorkoutDetail {
       case 'beginner':
         return 'Iniciante';
       case 'intermediate':
-        return 'Intermediario';
+        return 'Intermediário';
       case 'advanced':
-        return 'Avancado';
+        return 'Avançado';
       default:
         return difficulty;
     }

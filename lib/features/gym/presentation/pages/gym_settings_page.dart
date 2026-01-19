@@ -109,7 +109,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          'Configuracoes',
+                          'Configurações',
                           style: theme.textTheme.headlineMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -160,25 +160,25 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                             theme,
                             isDark,
                             icon: LucideIcons.fileText,
-                            title: 'Descricao',
+                            title: 'Descrição',
                             subtitle: _gymProfile['description'] as String,
-                            onTap: () => _showEditDialog(context, isDark, 'Descricao', _gymProfile['description'] as String),
+                            onTap: () => _showEditDialog(context, isDark, 'Descrição', _gymProfile['description'] as String),
                           ),
                           _buildSettingsTile(
                             context,
                             theme,
                             isDark,
                             icon: LucideIcons.mapPin,
-                            title: 'Endereco',
+                            title: 'Endereço',
                             subtitle: _gymProfile['address'] as String,
-                            onTap: () => _showEditDialog(context, isDark, 'Endereco', _gymProfile['address'] as String),
+                            onTap: () => _showEditDialog(context, isDark, 'Endereço', _gymProfile['address'] as String),
                           ),
                           _buildSettingsTile(
                             context,
                             theme,
                             isDark,
                             icon: LucideIcons.clock,
-                            title: 'Horario de Funcionamento',
+                            title: 'Horário de Funcionamento',
                             subtitle: _gymProfile['hours'] as String,
                             onTap: () => _showHoursDialog(context, isDark),
                             showDivider: false,
@@ -197,7 +197,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                         theme,
                         isDark,
                         sectionKey: 'plans',
-                        title: 'Planos e Precos',
+                        title: 'Planos e Preços',
                         icon: LucideIcons.creditCard,
                         color: AppColors.success,
                         children: [
@@ -215,7 +215,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                             theme,
                             isDark,
                             icon: LucideIcons.dollarSign,
-                            title: 'Tabela de Precos',
+                            title: 'Tabela de Preços',
                             subtitle: 'Configurar valores',
                             onTap: () => _navigateToPricing(context),
                           ),
@@ -224,8 +224,8 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                             theme,
                             isDark,
                             icon: LucideIcons.percent,
-                            title: 'Promocoes',
-                            subtitle: '2 promocoes ativas',
+                            title: 'Promoções',
+                            subtitle: '2 promoções ativas',
                             onTap: () => _navigateToPromotions(context),
                             showDivider: false,
                           ),
@@ -319,7 +319,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                             theme,
                             isDark,
                             icon: LucideIcons.shield,
-                            title: 'Permissoes',
+                            title: 'Permissões',
                             subtitle: 'Gerenciar acessos da equipe',
                             onTap: () => _navigateToPermissions(context),
                           ),
@@ -356,7 +356,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                         theme,
                         isDark,
                         sectionKey: 'notifications',
-                        title: 'Notificacoes',
+                        title: 'Notificações',
                         icon: LucideIcons.bell,
                         color: AppColors.warning,
                         children: [
@@ -402,7 +402,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                         theme,
                         isDark,
                         sectionKey: 'integrations',
-                        title: 'Integracoes',
+                        title: 'Integrações',
                         icon: LucideIcons.plug,
                         color: AppColors.info,
                         children: [
@@ -440,7 +440,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
 
                     const SizedBox(height: 16),
 
-                    // Avancado
+                    // Avançado
                     FadeInUp(
                       delay: const Duration(milliseconds: 350),
                       child: _buildExpandableSection(
@@ -448,7 +448,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                         theme,
                         isDark,
                         sectionKey: 'advanced',
-                        title: 'Avancado',
+                        title: 'Avançado',
                         icon: LucideIcons.settings2,
                         color: AppColors.destructive,
                         children: [
@@ -458,7 +458,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                             isDark,
                             icon: LucideIcons.hardDrive,
                             title: 'Backup',
-                            subtitle: 'Ultimo: 13/01/2026',
+                            subtitle: 'Último: 13/01/2026',
                             onTap: () => _showBackupDialog(context, isDark),
                           ),
                           _buildSettingsTile(
@@ -467,7 +467,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                             isDark,
                             icon: LucideIcons.trash2,
                             title: 'Excluir Academia',
-                            subtitle: 'Acao irreversivel',
+                            subtitle: 'Ação irreversível',
                             onTap: () => _showDeleteGymDialog(context, isDark),
                             isDestructive: true,
                             showDivider: false,
@@ -865,7 +865,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                   Icon(LucideIcons.clock, size: 24, color: AppColors.primary),
                   const SizedBox(width: 12),
                   Text(
-                    'Horario de Funcionamento',
+                    'Horário de Funcionamento',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -877,7 +877,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
               const SizedBox(height: 20),
               _buildHoursRow(context, isDark, 'Segunda a Sexta', '06:00', '22:00'),
               const SizedBox(height: 12),
-              _buildHoursRow(context, isDark, 'Sabado', '08:00', '18:00'),
+              _buildHoursRow(context, isDark, 'Sábado', '08:00', '18:00'),
               const SizedBox(height: 12),
               _buildHoursRow(context, isDark, 'Domingo', 'Fechado', ''),
               const SizedBox(height: 24),
@@ -887,7 +887,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                   onPressed: () {
                     HapticUtils.mediumImpact();
                     Navigator.pop(context);
-                    _showSuccessSnackBar(context, 'Horarios atualizados');
+                    _showSuccessSnackBar(context, 'Horários atualizados');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
@@ -984,7 +984,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Tempo maximo que um aluno pode permanecer na academia',
+                'Tempo máximo que um aluno pode permanecer na academia',
                 style: TextStyle(
                   fontSize: 14,
                   color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -1155,7 +1155,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Escolha o formato de exportacao',
+                'Escolha o formato de exportação',
                 style: TextStyle(
                   fontSize: 14,
                   color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -1314,14 +1314,14 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Ultimo backup',
+                            'Último backup',
                             style: TextStyle(
                               fontSize: 13,
                               color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                             ),
                           ),
                           Text(
-                            '13/01/2026 as 10:30',
+                            '13/01/2026 às 10:30',
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
@@ -1398,17 +1398,17 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Esta acao e irreversivel. Todos os dados serao permanentemente excluidos:',
+                'Esta ação é irreversível. Todos os dados serão permanentemente excluídos:',
                 style: TextStyle(
                   fontSize: 14,
                   color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                 ),
               ),
               const SizedBox(height: 12),
-              _buildDeleteItem(isDark, 'Dados de alunos e funcionarios'),
-              _buildDeleteItem(isDark, 'Historico de check-ins'),
+              _buildDeleteItem(isDark, 'Dados de alunos e funcionários'),
+              _buildDeleteItem(isDark, 'Histórico de check-ins'),
               _buildDeleteItem(isDark, 'Registros financeiros'),
-              _buildDeleteItem(isDark, 'Configuracoes e integracoes'),
+              _buildDeleteItem(isDark, 'Configurações e integrações'),
               const SizedBox(height: 20),
               Text(
                 'Digite EXCLUIR para confirmar:',
@@ -1556,7 +1556,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
 
     // Mock data para planos
     final plans = [
-      {'id': '1', 'name': 'Plano Basico', 'price': 89.90, 'duration': '1 mes', 'active': true, 'subscribers': 45},
+      {'id': '1', 'name': 'Plano Básico', 'price': 89.90, 'duration': '1 mês', 'active': true, 'subscribers': 45},
       {'id': '2', 'name': 'Plano Trimestral', 'price': 239.90, 'duration': '3 meses', 'active': true, 'subscribers': 32},
       {'id': '3', 'name': 'Plano Semestral', 'price': 449.90, 'duration': '6 meses', 'active': true, 'subscribers': 28},
       {'id': '4', 'name': 'Plano Anual', 'price': 799.90, 'duration': '12 meses', 'active': true, 'subscribers': 56},
@@ -1777,7 +1777,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
 
     // Mock data para precos
     final priceCategories = [
-      {'category': 'Musculacao', 'items': [
+      {'category': 'Musculação', 'items': [
         {'name': 'Acesso mensal', 'price': 89.90},
         {'name': 'Acesso trimestral', 'price': 239.90},
         {'name': 'Acesso anual', 'price': 799.90},
@@ -1788,13 +1788,13 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
         {'name': 'Aula avulsa', 'price': 25.00},
       ]},
       {'category': 'Personal Trainer', 'items': [
-        {'name': 'Sessao avulsa', 'price': 80.00},
-        {'name': 'Pacote 10 sessoes', 'price': 700.00},
-        {'name': 'Mensal (12 sessoes)', 'price': 850.00},
+        {'name': 'Sessão avulsa', 'price': 80.00},
+        {'name': 'Pacote 10 sessões', 'price': 700.00},
+        {'name': 'Mensal (12 sessões)', 'price': 850.00},
       ]},
-      {'category': 'Servicos Extras', 'items': [
-        {'name': 'Avaliacao fisica', 'price': 50.00},
-        {'name': 'Armario mensal', 'price': 30.00},
+      {'category': 'Serviços Extras', 'items': [
+        {'name': 'Avaliação física', 'price': 50.00},
+        {'name': 'Armário mensal', 'price': 30.00},
         {'name': 'Toalha', 'price': 5.00},
       ]},
     ];
@@ -1841,7 +1841,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Tabela de Precos',
+                          'Tabela de Preços',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
@@ -1849,7 +1849,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                           ),
                         ),
                         Text(
-                          'Configure os valores dos servicos',
+                          'Configure os valores dos serviços',
                           style: TextStyle(
                             fontSize: 14,
                             color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -1949,10 +1949,10 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                   onPressed: () {
                     HapticUtils.mediumImpact();
                     Navigator.pop(context);
-                    _showSuccessSnackBar(context, 'Precos atualizados com sucesso');
+                    _showSuccessSnackBar(context, 'Preços atualizados com sucesso');
                   },
                   icon: const Icon(LucideIcons.save, size: 20),
-                  label: const Text('Salvar Alteracoes'),
+                  label: const Text('Salvar Alterações'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.success,
                     foregroundColor: Colors.white,
@@ -1968,7 +1968,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
     );
   }
 
-  // 4. Navigate to Promotions - Modal de promocoes ativas
+  // 4. Navigate to Promotions - Modal de promoções ativas
   void _navigateToPromotions(BuildContext context) {
     HapticUtils.lightImpact();
     final theme = Theme.of(context);
@@ -1988,7 +1988,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
       },
       {
         'id': '2',
-        'name': 'Primeira Matricula',
+        'name': 'Primeira Matrícula',
         'discount': 50,
         'type': 'fixed',
         'validUntil': '31/12/2026',
@@ -2050,7 +2050,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Promocoes',
+                          'Promoções',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
@@ -2058,7 +2058,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                           ),
                         ),
                         Text(
-                          '${promotions.where((p) => p['active'] == true).length} promocoes ativas',
+                          '${promotions.where((p) => p['active'] == true).length} promoções ativas',
                           style: TextStyle(
                             fontSize: 14,
                             color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -2151,7 +2151,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                         const SizedBox(height: 12),
                         Row(
                           children: [
-                            _buildPromoInfo(isDark, LucideIcons.tag, 'Codigo: ${promo['code']}'),
+                            _buildPromoInfo(isDark, LucideIcons.tag, 'Código: ${promo['code']}'),
                             const SizedBox(width: 20),
                             _buildPromoInfo(isDark, LucideIcons.calendar, 'Ate ${promo['validUntil']}'),
                           ],
@@ -2199,10 +2199,10 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                   onPressed: () {
                     HapticUtils.mediumImpact();
                     Navigator.pop(context);
-                    _showSuccessSnackBar(context, 'Criar nova promocao...');
+                    _showSuccessSnackBar(context, 'Criar nova promoção...');
                   },
                   icon: const Icon(LucideIcons.plus, size: 20),
-                  label: const Text('Nova Promocao'),
+                  label: const Text('Nova Promoção'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.warning,
                     foregroundColor: Colors.white,
@@ -2298,11 +2298,11 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
 
     final permissionLabels = {
       'gerenciar_planos': 'Gerenciar Planos',
-      'gerenciar_funcionarios': 'Gerenciar Funcionarios',
+      'gerenciar_funcionarios': 'Gerenciar Funcionários',
       'gerenciar_financeiro': 'Gerenciar Financeiro',
       'gerenciar_alunos': 'Gerenciar Alunos',
-      'visualizar_relatorios': 'Visualizar Relatorios',
-      'configuracoes_avancadas': 'Configuracoes Avancadas',
+      'visualizar_relatorios': 'Visualizar Relatórios',
+      'configuracoes_avancadas': 'Configurações Avançadas',
     };
 
     showModalBottomSheet(
@@ -2348,7 +2348,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Permissoes',
+                            'Permissões',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
@@ -2463,10 +2463,10 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                     onPressed: () {
                       HapticUtils.mediumImpact();
                       Navigator.pop(context);
-                      _showSuccessSnackBar(context, 'Permissoes salvas com sucesso');
+                      _showSuccessSnackBar(context, 'Permissões salvas com sucesso');
                     },
                     icon: const Icon(LucideIcons.save, size: 20),
-                    label: const Text('Salvar Permissoes'),
+                    label: const Text('Salvar Permissões'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.accent,
                       foregroundColor: Colors.white,
@@ -2506,10 +2506,10 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
       'checkIn': {'title': 'Check-in', 'subtitle': 'Quando um aluno entrar na academia', 'icon': LucideIcons.logIn},
       'checkOut': {'title': 'Check-out', 'subtitle': 'Quando um aluno sair da academia', 'icon': LucideIcons.logOut},
       'pagamentoPendente': {'title': 'Pagamento Pendente', 'subtitle': 'Quando houver pagamentos em atraso', 'icon': LucideIcons.alertCircle},
-      'planoVencendo': {'title': 'Plano Vencendo', 'subtitle': 'Quando um plano estiver proximo do vencimento', 'icon': LucideIcons.calendarClock},
-      'avaliacaoAgendada': {'title': 'Avaliacao Agendada', 'subtitle': 'Quando uma avaliacao for agendada', 'icon': LucideIcons.clipboardCheck},
+      'planoVencendo': {'title': 'Plano Vencendo', 'subtitle': 'Quando um plano estiver próximo do vencimento', 'icon': LucideIcons.calendarClock},
+      'avaliacaoAgendada': {'title': 'Avaliação Agendada', 'subtitle': 'Quando uma avaliação for agendada', 'icon': LucideIcons.clipboardCheck},
       'metaBatida': {'title': 'Meta Batida', 'subtitle': 'Quando um aluno atingir uma meta', 'icon': LucideIcons.trophy},
-      'novaAvaliacao': {'title': 'Nova Avaliacao', 'subtitle': 'Quando uma avaliacao for concluida', 'icon': LucideIcons.star},
+      'novaAvaliacao': {'title': 'Nova Avaliação', 'subtitle': 'Quando uma avaliação for concluída', 'icon': LucideIcons.star},
     };
 
     showModalBottomSheet(
@@ -2563,7 +2563,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                             ),
                           ),
                           Text(
-                            'Escolha quais notificacoes receber',
+                            'Escolha quais notificações receber',
                             style: TextStyle(
                               fontSize: 14,
                               color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -2663,7 +2663,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                       _showSuccessSnackBar(context, 'Alertas configurados com sucesso');
                     },
                     icon: const Icon(LucideIcons.save, size: 20),
-                    label: const Text('Salvar Configuracoes'),
+                    label: const Text('Salvar Configurações'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.warning,
                       foregroundColor: Colors.white,
@@ -2691,7 +2691,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
       {
         'id': '1',
         'title': 'Lembrete de Pagamento',
-        'message': 'Ola! Seu plano vence em 3 dias. Renovar agora!',
+        'message': 'Olá! Seu plano vence em 3 dias. Renovar agora!',
         'trigger': '3 dias antes do vencimento',
         'channel': 'push',
         'active': true,
@@ -2699,7 +2699,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
       {
         'id': '2',
         'title': 'Boas-vindas',
-        'message': 'Bem-vindo a Academia FitPro! Estamos felizes em te-lo conosco.',
+        'message': 'Bem-vindo à Academia FitPro! Estamos felizes em tê-lo conosco.',
         'trigger': 'Ao se cadastrar',
         'channel': 'email',
         'active': true,
@@ -2714,17 +2714,17 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
       },
       {
         'id': '4',
-        'title': 'Aniversario',
-        'message': 'Feliz aniversario! Presenteamos voce com 10% de desconto.',
-        'trigger': 'No dia do aniversario',
+        'title': 'Aniversário',
+        'message': 'Feliz aniversário! Presenteamos você com 10% de desconto.',
+        'trigger': 'No dia do aniversário',
         'channel': 'push',
         'active': false,
       },
       {
         'id': '5',
-        'title': 'Avaliacao Fisica',
-        'message': 'Hora de fazer sua avaliacao fisica! Agende agora.',
-        'trigger': '30 dias apos ultima avaliacao',
+        'title': 'Avaliação Física',
+        'message': 'Hora de fazer sua avaliação física! Agende agora.',
+        'trigger': '30 dias após última avaliação',
         'channel': 'email',
         'active': true,
       },
@@ -2979,48 +2979,48 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
       {
         'id': '1',
         'name': 'Boas-vindas',
-        'subject': 'Bem-vindo a Academia FitPro!',
-        'preview': 'Ola {nome}! Estamos muito felizes em te-lo conosco...',
+        'subject': 'Bem-vindo à Academia FitPro!',
+        'preview': 'Olá {nome}! Estamos muito felizes em tê-lo conosco...',
         'category': 'Cadastro',
         'lastEdited': '10/01/2026',
       },
       {
         'id': '2',
-        'name': 'Confirmacao de Pagamento',
+        'name': 'Confirmação de Pagamento',
         'subject': 'Pagamento Confirmado - Academia FitPro',
-        'preview': 'Ola {nome}! Confirmamos o recebimento do seu pagamento...',
+        'preview': 'Olá {nome}! Confirmamos o recebimento do seu pagamento...',
         'category': 'Financeiro',
         'lastEdited': '08/01/2026',
       },
       {
         'id': '3',
         'name': 'Lembrete de Vencimento',
-        'subject': 'Seu plano esta vencendo!',
-        'preview': 'Ola {nome}! Seu plano vence em {dias} dias...',
+        'subject': 'Seu plano está vencendo!',
+        'preview': 'Olá {nome}! Seu plano vence em {dias} dias...',
         'category': 'Financeiro',
         'lastEdited': '05/01/2026',
       },
       {
         'id': '4',
-        'name': 'Recuperacao de Senha',
+        'name': 'Recuperação de Senha',
         'subject': 'Recuperar sua senha - Academia FitPro',
-        'preview': 'Ola {nome}! Clique no link abaixo para redefinir...',
+        'preview': 'Olá {nome}! Clique no link abaixo para redefinir...',
         'category': 'Sistema',
         'lastEdited': '01/01/2026',
       },
       {
         'id': '5',
-        'name': 'Avaliacao Agendada',
-        'subject': 'Sua avaliacao fisica foi agendada!',
-        'preview': 'Ola {nome}! Sua avaliacao foi agendada para {data}...',
+        'name': 'Avaliação Agendada',
+        'subject': 'Sua avaliação física foi agendada!',
+        'preview': 'Olá {nome}! Sua avaliação foi agendada para {data}...',
         'category': 'Agenda',
         'lastEdited': '12/01/2026',
       },
       {
         'id': '6',
-        'name': 'Aniversario',
-        'subject': 'Feliz Aniversario! Um presente especial para voce',
-        'preview': 'Ola {nome}! A Academia FitPro deseja um feliz aniversario...',
+        'name': 'Aniversário',
+        'subject': 'Feliz Aniversário! Um presente especial para você',
+        'preview': 'Olá {nome}! A Academia FitPro deseja um feliz aniversário...',
         'category': 'Marketing',
         'lastEdited': '03/01/2026',
       },
@@ -3084,7 +3084,7 @@ class _GymSettingsPageState extends ConsumerState<GymSettingsPage> {
                           ),
                         ),
                         Text(
-                          '${templates.length} templates disponiveis',
+                          '${templates.length} templates disponíveis',
                           style: TextStyle(
                             fontSize: 14,
                             color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,

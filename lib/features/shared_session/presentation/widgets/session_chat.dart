@@ -153,7 +153,7 @@ class _SessionChatState extends ConsumerState<SessionChat> {
                     ),
                     _QuickMessageChip(
                       label: '+5kg',
-                      onTap: () => _sendMessage('+5kg na proxima'),
+                      onTap: () => _sendMessage('+5kg na próxima'),
                     ),
                     _QuickMessageChip(
                       label: 'Foco!',

@@ -737,13 +737,13 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                           context: context,
                           isDark: isDark,
                           planName: 'Plano Mensal',
-                          price: 'R\$ 99,90/mes',
+                          price: 'R\$ 99,90/mês',
                           pricePerMonth: null,
                           savings: null,
                           benefits: [
-                            'Acesso ilimitado a academia',
-                            'Aulas em grupo incluidas',
-                            'Avaliacao fisica mensal',
+                            'Acesso ilimitado à academia',
+                            'Aulas em grupo incluídas',
+                            'Avaliação física mensal',
                             'Acesso ao app MyFit',
                           ],
                         );
@@ -764,14 +764,14 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                           isDark: isDark,
                           planName: 'Plano Trimestral',
                           price: 'R\$ 249,90',
-                          pricePerMonth: 'R\$ 83,30/mes',
+                          pricePerMonth: 'R\$ 83,30/mês',
                           savings: 'Economia de 16%',
                           benefits: [
-                            'Acesso ilimitado a academia',
-                            'Aulas em grupo incluidas',
-                            'Avaliacao fisica mensal',
+                            'Acesso ilimitado à academia',
+                            'Aulas em grupo incluídas',
+                            'Avaliação física mensal',
                             'Acesso ao app MyFit',
-                            'Personal trainer 1x por mes',
+                            'Personal trainer 1x por mês',
                           ],
                         );
                       },
@@ -791,15 +791,15 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                           isDark: isDark,
                           planName: 'Plano Anual',
                           price: 'R\$ 899,90',
-                          pricePerMonth: 'R\$ 74,99/mes',
+                          pricePerMonth: 'R\$ 74,99/mês',
                           savings: 'Economia de 25%',
                           benefits: [
-                            'Acesso ilimitado a academia',
-                            'Aulas em grupo incluidas',
-                            'Avaliacao fisica mensal',
+                            'Acesso ilimitado à academia',
+                            'Aulas em grupo incluídas',
+                            'Avaliação física mensal',
                             'Acesso ao app MyFit',
-                            'Personal trainer 2x por mes',
-                            'Nutricao esportiva inclusa',
+                            'Personal trainer 2x por mês',
+                            'Nutrição esportiva inclusa',
                           ],
                         );
                       },
@@ -997,7 +997,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
 
                 // Member Info
                 Text(
-                  'Informacoes do Membro',
+                  'Informações do Membro',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -1031,7 +1031,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                       _buildInfoRow(
                         isDark,
                         LucideIcons.logIn,
-                        'Ultimo check-in',
+                        'Último check-in',
                         _formatLastCheckin(member['lastCheckin'] as DateTime),
                       ),
                       const SizedBox(height: 12),
@@ -1062,9 +1062,9 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
 
                 ...List.generate(3, (index) {
                   final checkins = [
-                    ('Hoje', '07:30', 'Musculacao'),
+                    ('Hoje', '07:30', 'Musculação'),
                     ('Ontem', '08:15', 'Funcional'),
-                    ('Ter, 10 Jan', '06:45', 'Musculacao'),
+                    ('Ter, 10 Jan', '06:45', 'Musculação'),
                   ];
                   final (date, time, activity) = checkins[index];
 
@@ -1653,7 +1653,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                     isDark: isDark,
                     onTap: () {
                       messageController.text =
-                          'Ola ${member['name'].toString().split(' ').first}! Passando para lembrar sobre o vencimento do seu plano. Qualquer duvida, estamos a disposicao!';
+                          'Olá ${member['name'].toString().split(' ').first}! Passando para lembrar sobre o vencimento do seu plano. Qualquer dúvida, estamos à disposição!';
                     },
                   ),
                   _QuickMessageChip(
@@ -1661,7 +1661,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                     isDark: isDark,
                     onTap: () {
                       messageController.text =
-                          'Ola ${member['name'].toString().split(' ').first}! Seja muito bem-vindo(a) a nossa academia! Estamos felizes em ter voce conosco.';
+                          'Olá ${member['name'].toString().split(' ').first}! Seja muito bem-vindo(a) à nossa academia! Estamos felizes em ter você conosco.';
                     },
                   ),
                   _QuickMessageChip(
@@ -1669,7 +1669,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                     isDark: isDark,
                     onTap: () {
                       messageController.text =
-                          'Ola ${member['name'].toString().split(' ').first}! Sentimos sua falta por aqui! Que tal voltar aos treinos? Estamos te esperando!';
+                          'Olá ${member['name'].toString().split(' ').first}! Sentimos sua falta por aqui! Que tal voltar aos treinos? Estamos te esperando!';
                     },
                   ),
                 ],
@@ -2169,7 +2169,7 @@ class _MembersListPageState extends ConsumerState<MembersListPage>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Confirmar selecao de plano',
+                          'Confirmar seleção de plano',
                           style: TextStyle(
                             fontSize: 14,
                             color: isDark

@@ -68,7 +68,7 @@ class _RegisterMeasurementsPageState
         previousValue: 95.0,
       ),
       _MeasurementField(
-        label: 'Biceps',
+        label: 'Bíceps',
         icon: LucideIcons.zap,
         controller: _bicepsController,
         previousValue: 35.5,
@@ -310,7 +310,7 @@ class _RegisterMeasurementsPageState
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Deixe em branco os campos que nao deseja atualizar',
+                          'Deixe em branco os campos que não deseja atualizar',
                           style: TextStyle(
                             fontSize: 13,
                             color: isDark

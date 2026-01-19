@@ -20,7 +20,7 @@ class WorkoutProgressionPage extends ConsumerStatefulWidget {
 class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage> {
   // Mock current workout data
   final _CurrentWorkout _currentWorkout = _CurrentWorkout(
-    name: 'Treino A - Peito e Triceps',
+    name: 'Treino A - Peito e Tríceps',
     lastPerformed: DateTime.now().subtract(const Duration(days: 2)),
     timesPerformed: 8,
     exercises: [
@@ -49,7 +49,7 @@ class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage>
         twoWeeksAgoWeight: 12,
       ),
       _ProgressExercise(
-        name: 'Triceps Pulley',
+        name: 'Tríceps Pulley',
         currentSets: 4,
         currentReps: '10-12',
         currentWeight: 30,
@@ -57,7 +57,7 @@ class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage>
         twoWeeksAgoWeight: 25,
       ),
       _ProgressExercise(
-        name: 'Triceps Frances',
+        name: 'Tríceps Francês',
         currentSets: 3,
         currentReps: '10-12',
         currentWeight: 20,
@@ -87,7 +87,7 @@ class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage>
           id: 'technique_${exercise.name}',
           type: ProgressionType.technique,
           exerciseName: exercise.name,
-          title: 'Adicionar tecnica avancada',
+          title: 'Adicionar técnica avançada',
           description: 'Peso estagnado por 2 semanas. Tente adicionar drop sets ou rest-pause.',
           icon: LucideIcons.zap,
         ));
@@ -99,7 +99,7 @@ class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage>
           type: ProgressionType.increaseWeight,
           exerciseName: exercise.name,
           title: 'Aumentar carga',
-          description: 'Bom progresso! Aumente 2.5kg na proxima sessao.',
+          description: 'Bom progresso! Aumente 2.5kg na próxima sessão.',
           newValue: exercise.currentWeight + 2.5,
           icon: LucideIcons.trendingUp,
         ));
@@ -111,8 +111,8 @@ class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage>
       id: 'add_sets',
       type: ProgressionType.addSets,
       exerciseName: 'Supino Reto',
-      title: 'Adicionar serie',
-      description: 'Adicione 1 serie ao supino para maior volume.',
+      title: 'Adicionar série',
+      description: 'Adicione 1 série ao supino para maior volume.',
       newValue: 5,
       icon: LucideIcons.plus,
     ));
@@ -121,7 +121,7 @@ class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage>
       id: 'new_exercise',
       type: ProgressionType.newExercise,
       exerciseName: null,
-      title: 'Novo exercicio',
+      title: 'Novo exercício',
       description: 'Considere adicionar Crossover para maior isolamento do peito.',
       icon: LucideIcons.sparkles,
     ));
@@ -143,7 +143,7 @@ class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage>
       HapticUtils.heavyImpact();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Selecione pelo menos uma sugestao para aplicar', style: const TextStyle(color: Colors.white)),
+          content: Text('Selecione pelo menos uma sugestão para aplicar', style: const TextStyle(color: Colors.white)),
           backgroundColor: AppColors.warning,
         ),
       );
@@ -153,7 +153,7 @@ class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage>
     HapticUtils.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${_selectedSuggestions.length} progressoes aplicadas!', style: const TextStyle(color: Colors.white)),
+        content: Text('${_selectedSuggestions.length} progressões aplicadas!', style: const TextStyle(color: Colors.white)),
         backgroundColor: AppColors.success,
       ),
     );
@@ -214,7 +214,7 @@ class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage>
                       // Exercise Progress
                       FadeInUp(
                         delay: const Duration(milliseconds: 200),
-                        child: _buildSectionTitle(theme, isDark, 'Progresso por Exercicio', LucideIcons.activity),
+                        child: _buildSectionTitle(theme, isDark, 'Progresso por Exercício', LucideIcons.activity),
                       ),
                       const SizedBox(height: 12),
                       ..._currentWorkout.exercises.asMap().entries.map((entry) {
@@ -231,7 +231,7 @@ class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage>
                       // Progression Suggestions
                       FadeInUp(
                         delay: Duration(milliseconds: 250 + (_currentWorkout.exercises.length * 50)),
-                        child: _buildSectionTitle(theme, isDark, 'Sugestoes de Progressao', LucideIcons.lightbulb),
+                        child: _buildSectionTitle(theme, isDark, 'Sugestões de Progressão', LucideIcons.lightbulb),
                       ),
                       const SizedBox(height: 12),
                       ..._suggestions.asMap().entries.map((entry) {
@@ -288,7 +288,7 @@ class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage>
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Progressao',
+                  'Progressão',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -386,7 +386,7 @@ class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage>
                 theme,
                 isDark,
                 '${_currentWorkout.exercises.length}',
-                'exercicios',
+                'exercícios',
                 LucideIcons.listOrdered,
               ),
               const SizedBox(width: 24),
@@ -394,7 +394,7 @@ class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage>
                 theme,
                 isDark,
                 '${_currentWorkout.exercises.fold(0, (sum, e) => sum + e.currentSets)}',
-                'series',
+                'séries',
                 LucideIcons.repeat,
               ),
               const SizedBox(width: 24),
@@ -402,7 +402,7 @@ class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage>
                 theme,
                 isDark,
                 _formatDaysAgo(_currentWorkout.lastPerformed),
-                'ultimo treino',
+                'último treino',
                 LucideIcons.calendar,
               ),
             ],
@@ -824,7 +824,7 @@ class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage>
                       child: Text(
                         suggestion.type == ProgressionType.increaseWeight
                             ? '${suggestion.newValue!.toStringAsFixed(1)}kg'
-                            : '${suggestion.newValue!.toInt()} series',
+                            : '${suggestion.newValue!.toInt()} séries',
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: _getColorForType(suggestion.type, isDark),
                           fontWeight: FontWeight.w600,
@@ -904,7 +904,7 @@ class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage>
                     ),
                   ),
                   Text(
-                    'de ${_suggestions.length} sugestoes',
+                    'de ${_suggestions.length} sugestões',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                     ),
@@ -915,7 +915,7 @@ class _WorkoutProgressionPageState extends ConsumerState<WorkoutProgressionPage>
             ElevatedButton.icon(
               onPressed: _applyProgressions,
               icon: Icon(LucideIcons.check, size: 18),
-              label: const Text('Aplicar Progressoes'),
+              label: const Text('Aplicar Progressões'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _selectedSuggestions.isNotEmpty
                     ? (isDark ? AppColors.primaryDark : AppColors.primary)

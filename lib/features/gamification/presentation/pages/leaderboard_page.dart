@@ -125,21 +125,21 @@ class _RankingTab extends ConsumerWidget {
       progress = (11 - rank.clamp(1, 11)) / 10;
       pointsReward = 100;
     } else if (rank > 3) {
-      achievementName = 'Podio';
+      achievementName = 'Pódio';
       achievementIcon = LucideIcons.trophy;
-      achievementDescription = 'Alcance o podio (Top 3) para desbloquear esta conquista';
+      achievementDescription = 'Alcance o pódio (Top 3) para desbloquear esta conquista';
       progress = (4 - rank.clamp(1, 4)) / 3;
       pointsReward = 250;
     } else if (rank > 1) {
-      achievementName = 'Campeao';
+      achievementName = 'Campeão';
       achievementIcon = LucideIcons.crown;
       achievementDescription = 'Seja o primeiro lugar do ranking para desbloquear esta conquista';
       progress = (2 - rank.clamp(1, 2)) / 1;
       pointsReward = 500;
     } else {
-      achievementName = 'Lider Absoluto';
+      achievementName = 'Líder Absoluto';
       achievementIcon = LucideIcons.star;
-      achievementDescription = 'Mantenha a lideranca por 4 semanas consecutivas';
+      achievementDescription = 'Mantenha a liderança por 4 semanas consecutivas';
       progress = 0.25;
       pointsReward = 1000;
     }
@@ -469,7 +469,7 @@ class _RankingTab extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Proxima meta',
+                              'Próxima meta',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -502,13 +502,13 @@ class _RankingTab extends ConsumerWidget {
 
   String _getGoalMessage(int rank) {
     if (rank > 10) {
-      return 'Faltam ${rank - 10} posicoes para o Top 10!';
+      return 'Faltam ${rank - 10} posições para o Top 10!';
     } else if (rank > 3) {
-      return 'Faltam ${rank - 3} posicoes para o podio!';
+      return 'Faltam ${rank - 3} posições para o pódio!';
     } else if (rank > 1) {
-      return 'Voce esta quase no topo!';
+      return 'Você está quase no topo!';
     }
-    return 'Voce e o lider! Continue assim!';
+    return 'Você é o líder! Continue assim!';
   }
 }
 
@@ -901,7 +901,7 @@ class _PodiumPlace extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  'Posicao',
+                                  'Posição',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -950,7 +950,7 @@ class _PodiumPlace extends StatelessWidget {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Estatisticas',
+                        'Estatísticas',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -996,7 +996,7 @@ class _PodiumPlace extends StatelessWidget {
                                   : entry.rankChange! < 0
                                       ? LucideIcons.trendingDown
                                       : LucideIcons.minus,
-                              label: 'Variacao no ranking',
+                              label: 'Variação no ranking',
                               value: entry.rankChange! > 0
                                   ? '+${entry.rankChange}'
                                   : '${entry.rankChange}',

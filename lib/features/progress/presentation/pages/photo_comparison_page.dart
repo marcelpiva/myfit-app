@@ -143,7 +143,7 @@ class _PhotoComparisonPageState extends ConsumerState<PhotoComparisonPage>
                           HapticUtils.lightImpact();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: const Text('Compartilhando comparacao...'),
+                              content: const Text('Compartilhando comparação...'),
                               backgroundColor: AppColors.primary,
                               behavior: SnackBarBehavior.floating,
                               shape: RoundedRectangleBorder(
@@ -463,7 +463,7 @@ class _PhotoComparisonPageState extends ConsumerState<PhotoComparisonPage>
             ),
             const SizedBox(height: 8),
             Text(
-              'Voce precisa de pelo menos 2 fotos\nno mesmo angulo para comparar',
+              'Você precisa de pelo menos 2 fotos\nno mesmo ângulo para comparar',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -530,7 +530,7 @@ class _PhotoComparisonPageState extends ConsumerState<PhotoComparisonPage>
         children: [
           _buildDiffStat(
             '${diff > 0 ? '+' : ''}${diff.toStringAsFixed(1)} kg',
-            'Diferenca',
+            'Diferença',
             isLoss ? AppColors.success : AppColors.destructive,
           ),
           Container(
@@ -540,7 +540,7 @@ class _PhotoComparisonPageState extends ConsumerState<PhotoComparisonPage>
           ),
           _buildDiffStat(
             '$daysDiff dias',
-            'Periodo',
+            'Período',
             isDark ? AppColors.foregroundDark : AppColors.foreground,
           ),
         ],

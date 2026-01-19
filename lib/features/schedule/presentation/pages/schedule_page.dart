@@ -352,7 +352,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
           backgroundColor: isDark ? AppColors.primaryDark : AppColors.primary,
           icon: const Icon(LucideIcons.plus, color: Colors.white),
           label: const Text(
-            'Nova Sessao',
+            'Nova Sessão',
             style: TextStyle(
               fontWeight: FontWeight.w600,
               color: Colors.white,
@@ -480,7 +480,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                       _buildDetailRow(
                         isDark,
                         LucideIcons.clock,
-                        'Horario',
+                        'Horário',
                         '${_formatSessionTime(session['time'] as TimeOfDay)} - ${_formatDuration(session['duration'] as int)}',
                       ),
                       const SizedBox(height: 12),
@@ -703,7 +703,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                     ),
                     const SizedBox(width: 16),
                     Text(
-                      'Nova Sessao',
+                      'Nova Sessão',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
@@ -737,8 +737,8 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                   ctx,
                   isDark,
                   LucideIcons.repeat,
-                  'Sessao Recorrente',
-                  'Criar sessoes que se repetem',
+                  'Sessão Recorrente',
+                  'Criar sessões que se repetem',
                   AppColors.secondary,
                   () {
                     HapticUtils.lightImpact();
@@ -753,7 +753,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                   ctx,
                   isDark,
                   LucideIcons.users,
-                  'Sessao em Grupo',
+                  'Sessão em Grupo',
                   'Agendar para multiplos alunos',
                   AppColors.accent,
                   () {
@@ -997,7 +997,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'Agendar sessao com ${student['name']}',
+                    'Agendar sessão com ${student['name']}',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -1038,7 +1038,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            'Horario: ${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}',
+                            'Horário: ${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -1072,7 +1072,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              'Sessao criada para ${student['name']} as ${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}',
+                              'Sessão criada para ${student['name']} as ${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}',
                             ),
                             backgroundColor: AppColors.success,
                           ),
@@ -1086,7 +1086,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                         ),
                       ),
                       child: const Text(
-                        'Criar Sessao',
+                        'Criar Sessão',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -1121,7 +1121,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
           Map<String, dynamic>? selectedStudent;
 
           final frequencies = {
-            'daily': 'Diario',
+            'daily': 'Diário',
             'weekly': 'Semanal',
             'biweekly': 'Quinzenal',
             'monthly': 'Mensal',
@@ -1133,7 +1133,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
             3: 'Qua',
             4: 'Qui',
             5: 'Sex',
-            6: 'Sab',
+            6: 'Sáb',
             7: 'Dom',
           };
 
@@ -1189,7 +1189,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                         ),
                         const SizedBox(width: 16),
                         Text(
-                          'Sessao Recorrente',
+                          'Sessão Recorrente',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
@@ -1204,7 +1204,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
 
                     // Frequency selector
                     Text(
-                      'Frequencia',
+                      'Frequência',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -1334,7 +1334,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
 
                     // Time picker
                     Text(
-                      'Horario',
+                      'Horário',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -1406,7 +1406,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
 
                     // Duration selector
                     Text(
-                      'Duracao',
+                      'Duração',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -1621,7 +1621,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Previa das Sessoes',
+                            'Prévia das Sessões',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -1633,7 +1633,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                           const SizedBox(height: 8),
                           Text(
                             selectedFrequency == 'weekly'
-                                ? '${selectedWeekdays.length} sessoes por semana as ${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}'
+                                ? '${selectedWeekdays.length} sessões por semana às ${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}'
                                 : '${frequencies[selectedFrequency]} as ${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}',
                             style: TextStyle(
                               fontSize: 13,
@@ -1660,7 +1660,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      'Sessoes recorrentes criadas para ${selectedStudent!['name']}',
+                                      'Sessões recorrentes criadas para ${selectedStudent!['name']}',
                                     ),
                                     backgroundColor: AppColors.success,
                                   ),
@@ -1678,7 +1678,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                           ),
                         ),
                         child: const Text(
-                          'Criar Sessoes Recorrentes',
+                          'Criar Sessões Recorrentes',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -1762,7 +1762,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                         ),
                         const SizedBox(width: 16),
                         Text(
-                          'Sessao em Grupo',
+                          'Sessão em Grupo',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
@@ -1777,7 +1777,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
 
                     // Session name
                     Text(
-                      'Nome da Sessao',
+                      'Nome da Sessão',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -1954,7 +1954,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
 
                     // Time picker
                     Text(
-                      'Horario',
+                      'Horário',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -2026,7 +2026,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
 
                     // Duration selector
                     Text(
-                      'Duracao',
+                      'Duração',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -2183,7 +2183,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      'Sessao em grupo criada com ${selectedStudentIds.length} alunos',
+                                      'Sessão em grupo criada com ${selectedStudentIds.length} alunos',
                                     ),
                                     backgroundColor: AppColors.success,
                                   ),
@@ -2201,7 +2201,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                           ),
                         ),
                         child: const Text(
-                          'Criar Sessao em Grupo',
+                          'Criar Sessão em Grupo',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -2226,11 +2226,11 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
     final studentName = session['studentName'] as String;
 
     final quickMessages = [
-      'Lembrete de sessao',
-      'Alteracao de horario',
-      'Confirmacao de presenca',
-      'Parabens pelo progresso!',
-      'Treino disponivel',
+      'Lembrete de sessão',
+      'Alteração de horário',
+      'Confirmação de presença',
+      'Parabéns pelo progresso!',
+      'Treino disponível',
     ];
 
     showModalBottomSheet(
@@ -2312,7 +2312,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
 
                 // Quick messages
                 Text(
-                  'Mensagens Rapidas',
+                  'Mensagens Rápidas',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -2495,7 +2495,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                       ),
                       const SizedBox(width: 16),
                       Text(
-                        'Alterar Horario',
+                        'Alterar Horário',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -2523,7 +2523,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                     child: Row(
                       children: [
                         Text(
-                          'Horario atual:',
+                          'Horário atual:',
                           style: TextStyle(
                             fontSize: 14,
                             color: isDark
@@ -2582,7 +2582,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                           ),
                           const SizedBox(width: 12),
                           Text(
-                            'Novo horario: ${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}',
+                            'Novo horário: ${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -2617,7 +2617,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Horario alterado', style: const TextStyle(color: Colors.white)),
+                            content: Text('Horário alterado', style: const TextStyle(color: Colors.white)),
                             backgroundColor: AppColors.success,
                           ),
                         );
@@ -2706,7 +2706,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                         ),
                         const SizedBox(width: 16),
                         Text(
-                          'Reagendar Sessao',
+                          'Reagendar Sessão',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
@@ -2795,7 +2795,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
 
                     // Time picker
                     Text(
-                      'Novo Horario',
+                      'Novo Horário',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -2879,7 +2879,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                  'Sessao reagendada para $dateStr as $timeStr'),
+                                  'Sessão reagendada para $dateStr as $timeStr'),
                               backgroundColor: AppColors.success,
                             ),
                           );
@@ -2961,7 +2961,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                 ),
                 const SizedBox(width: 16),
                 Text(
-                  'Cancelar Sessao',
+                  'Cancelar Sessão',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -2993,7 +2993,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Tem certeza que deseja cancelar a sessao com ${session['studentName']}?',
+                      'Tem certeza que deseja cancelar a sessão com ${session['studentName']}?',
                       style: TextStyle(
                         fontSize: 14,
                         color: isDark
@@ -3092,7 +3092,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Sessao cancelada', style: const TextStyle(color: Colors.white)),
+                            content: Text('Sessão cancelada', style: const TextStyle(color: Colors.white)),
                             backgroundColor: AppColors.destructive,
                           ),
                         );
@@ -3210,7 +3210,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Editar Sessao',
+                'Editar Sessão',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
@@ -3220,7 +3220,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
               const SizedBox(height: 20),
               ListTile(
                 leading: const Icon(LucideIcons.clock),
-                title: const Text('Alterar Horario'),
+                title: const Text('Alterar Horário'),
                 onTap: () {
                   HapticUtils.lightImpact();
                   Navigator.pop(ctx);
@@ -3244,7 +3244,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Sessao confirmada', style: const TextStyle(color: Colors.white)),
+                      content: Text('Sessão confirmada', style: const TextStyle(color: Colors.white)),
                       backgroundColor: AppColors.success,
                     ),
                   );
@@ -3253,7 +3253,7 @@ class _SchedulePageState extends ConsumerState<SchedulePage>
               ListTile(
                 leading: Icon(LucideIcons.xCircle, color: AppColors.destructive),
                 title: Text(
-                  'Cancelar Sessao',
+                  'Cancelar Sessão',
                   style: TextStyle(color: AppColors.destructive),
                 ),
                 onTap: () {
@@ -3611,7 +3611,7 @@ class _DayStatsSummary extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '${sessions.length} sessoes programadas',
+                  '${sessions.length} sessões programadas',
                   style: TextStyle(
                     fontSize: 13,
                     color: isDark
@@ -3909,7 +3909,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              isWeekend ? 'Dia de descanso' : 'Nenhuma sessao agendada',
+              isWeekend ? 'Dia de descanso' : 'Nenhuma sessão agendada',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -3920,7 +3920,7 @@ class _EmptyState extends StatelessWidget {
             Text(
               isWeekend
                   ? 'Aproveite para recarregar as energias!'
-                  : 'Toque no botao abaixo para agendar uma nova sessao',
+                  : 'Toque no botão abaixo para agendar uma nova sessão',
               style: TextStyle(
                 fontSize: 14,
                 color: isDark
@@ -3952,7 +3952,7 @@ class _EmptyState extends StatelessWidget {
                           size: 18, color: Colors.white),
                       SizedBox(width: 8),
                       Text(
-                        'Agendar Sessao',
+                        'Agendar Sessão',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,

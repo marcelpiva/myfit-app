@@ -173,7 +173,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                           ),
                           const SizedBox(width: 8),
                           _buildFilterChip(
-                            'Nivel',
+                            'Nível',
                             _selectedDifficulty != null
                                 ? _getDifficultyDisplay(_selectedDifficulty!)
                                 : null,
@@ -382,9 +382,9 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
         title: 'Objetivo',
         options: [
           ('hypertrophy', 'Hipertrofia'),
-          ('strength', 'Forca'),
+          ('strength', 'Força'),
           ('fat_loss', 'Emagrecimento'),
-          ('endurance', 'Resistencia'),
+          ('endurance', 'Resistência'),
           ('functional', 'Funcional'),
         ],
         selectedValue: _selectedGoal,
@@ -404,11 +404,11 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => _FilterSheet(
-        title: 'Nivel',
+        title: 'Nível',
         options: [
           ('beginner', 'Iniciante'),
-          ('intermediate', 'Intermediario'),
-          ('advanced', 'Avancado'),
+          ('intermediate', 'Intermediário'),
+          ('advanced', 'Avançado'),
         ],
         selectedValue: _selectedDifficulty,
         onSelected: (value) {
@@ -433,7 +433,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             ),
             const SizedBox(height: 16),
             Text(
-              noPrograms ? 'Nenhum programa disponivel' : 'Nenhum programa encontrado',
+              noPrograms ? 'Nenhum programa disponível' : 'Nenhum programa encontrado',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -443,7 +443,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             const SizedBox(height: 8),
             Text(
               noPrograms
-                  ? 'Ainda nao ha programas no catalogo'
+                  ? 'Ainda não há programas no catálogo'
                   : 'Tente ajustar os filtros de busca',
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -533,7 +533,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     if (currentUser != null && createdById == currentUser.id) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Voce nao pode importar seu proprio programa'),
+          content: Text('Você não pode importar seu próprio programa'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -591,7 +591,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             ),
             const SizedBox(height: 12),
             Text(
-              'O template ficara disponivel em "Meus Programas" para voce usar com seus alunos.',
+              'O template ficará disponível em "Meus Programas" para você usar com seus alunos.',
               style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
                 color: Theme.of(ctx).colorScheme.onSurfaceVariant,
               ),
@@ -674,11 +674,11 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       case 'hypertrophy':
         return 'Hipertrofia';
       case 'strength':
-        return 'Forca';
+        return 'Força';
       case 'fat_loss':
         return 'Emagrecimento';
       case 'endurance':
-        return 'Resistencia';
+        return 'Resistência';
       case 'functional':
         return 'Funcional';
       default:
@@ -691,9 +691,9 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       case 'beginner':
         return 'Iniciante';
       case 'intermediate':
-        return 'Intermediario';
+        return 'Intermediário';
       case 'advanced':
-        return 'Avancado';
+        return 'Avançado';
       default:
         return difficulty;
     }
@@ -946,7 +946,7 @@ class _ProgramCard extends ConsumerWidget {
       case 'hypertrophy':
         return 'Hipertrofia';
       case 'strength':
-        return 'Forca';
+        return 'Força';
       case 'fat_loss':
         return 'Emagrecer';
       default:
@@ -961,7 +961,7 @@ class _ProgramCard extends ConsumerWidget {
       case 'intermediate':
         return 'Interm.';
       case 'advanced':
-        return 'Avancado';
+        return 'Avançado';
       default:
         return difficulty;
     }
@@ -1243,11 +1243,11 @@ class _CompactProgramCard extends ConsumerWidget {
       case 'hypertrophy':
         return 'Hipertrofia';
       case 'strength':
-        return 'Forca';
+        return 'Força';
       case 'fat_loss':
         return 'Emagrecer';
       case 'endurance':
-        return 'Resistencia';
+        return 'Resistência';
       case 'functional':
         return 'Funcional';
       default:
@@ -1262,9 +1262,9 @@ class _CompactProgramCard extends ConsumerWidget {
       case 'beginner':
         return 'Iniciante';
       case 'intermediate':
-        return 'Intermediario';
+        return 'Intermediário';
       case 'advanced':
-        return 'Avancado';
+        return 'Avançado';
       default:
         return difficulty;
     }
@@ -1574,7 +1574,7 @@ class _ProgramDetailSheet extends ConsumerWidget {
                   if (description != null && description.isNotEmpty) ...[
                     const SizedBox(height: 20),
                     Text(
-                      'Descricao',
+                      'Descrição',
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -1624,7 +1624,7 @@ class _ProgramDetailSheet extends ConsumerWidget {
                           onPressed: null,
                           icon: Icon(LucideIcons.check, color: AppColors.success),
                           label: Text(
-                            'Ja importado para Meus Programas',
+                            'Já importado para Meus Programas',
                             style: TextStyle(color: AppColors.success),
                           ),
                           style: OutlinedButton.styleFrom(
@@ -1652,11 +1652,11 @@ class _ProgramDetailSheet extends ConsumerWidget {
       case 'hypertrophy':
         return 'Hipertrofia';
       case 'strength':
-        return 'Forca';
+        return 'Força';
       case 'fat_loss':
         return 'Emagrecimento';
       case 'endurance':
-        return 'Resistencia';
+        return 'Resistência';
       case 'functional':
         return 'Funcional';
       default:
@@ -1669,9 +1669,9 @@ class _ProgramDetailSheet extends ConsumerWidget {
       case 'beginner':
         return 'Iniciante';
       case 'intermediate':
-        return 'Intermediario';
+        return 'Intermediário';
       case 'advanced':
-        return 'Avancado';
+        return 'Avançado';
       default:
         return difficulty;
     }

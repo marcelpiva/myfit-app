@@ -27,7 +27,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
   int _selectedFilter = 0;
   final _searchController = TextEditingController();
 
-  final _filters = ['Todos', 'Trainers', 'Recepcao', 'Outros'];
+  final _filters = ['Todos', 'Trainers', 'Recepção', 'Outros'];
 
   @override
   void initState() {
@@ -250,7 +250,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
                                   controller: _searchController,
                                   onChanged: (_) => setState(() {}),
                                   decoration: InputDecoration(
-                                    hintText: 'Buscar funcionarios...',
+                                    hintText: 'Buscar funcionários...',
                                     hintStyle: TextStyle(
                                       fontSize: 15,
                                       color: isDark
@@ -512,7 +512,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
           ),
           const SizedBox(height: 16),
           Text(
-            'Nenhum funcionario encontrado',
+            'Nenhum funcionário encontrado',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -598,7 +598,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
               const SizedBox(height: 24),
 
               Text(
-                'Convidar Funcionario',
+                'Convidar Funcionário',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w600,
@@ -662,7 +662,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
 
               // Role selector
               Text(
-                'Funcao',
+                'Função',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -688,7 +688,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
                   const SizedBox(width: 12),
                   Expanded(
                     child: _RoleOption(
-                      label: 'Recepcao',
+                      label: 'Recepção',
                       icon: LucideIcons.headphones,
                       isSelected: selectedRole == 1,
                       isDark: isDark,
@@ -925,7 +925,7 @@ class _StaffManagementPageState extends ConsumerState<StaffManagementPage>
                           ),
                           _buildDetailStat(
                             '${staff['rating']}',
-                            'Avaliacao',
+                            'Avaliação',
                             isDark,
                             icon: LucideIcons.star,
                             iconColor: Colors.amber,

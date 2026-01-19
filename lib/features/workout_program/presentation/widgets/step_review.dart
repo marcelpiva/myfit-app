@@ -112,7 +112,7 @@ class StepReview extends ConsumerWidget {
                     _StatItem(
                       icon: LucideIcons.calendar,
                       value: state.splitTypeName,
-                      label: 'Divisao',
+                      label: 'Divisão',
                       theme: theme,
                     ),
                     _StatItem(
@@ -124,7 +124,7 @@ class StepReview extends ConsumerWidget {
                     _StatItem(
                       icon: LucideIcons.repeat,
                       value: '${state.totalExerciseCount}',
-                      label: 'Exercicios',
+                      label: 'Exercícios',
                       theme: theme,
                     ),
                     if (state.durationWeeks != null)
@@ -197,7 +197,7 @@ class StepReview extends ConsumerWidget {
                               ),
                             ),
                             Text(
-                              '${workout.exercises.length} exercicios',
+                              '${workout.exercises.length} exercícios',
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: theme.colorScheme.onSurface
                                     .withValues(alpha: 0.6),
@@ -311,7 +311,7 @@ class StepReview extends ConsumerWidget {
                             ),
                             if (state.mealsPerDay != null)
                               Text(
-                                '${state.mealsPerDay} refeicoes por dia',
+                                '${state.mealsPerDay} refeições por dia',
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                                 ),
@@ -342,7 +342,7 @@ class StepReview extends ConsumerWidget {
                         if (state.proteinGrams != null)
                           _DietStat(
                             value: '${state.proteinGrams}g',
-                            label: 'Proteina',
+                            label: 'Proteína',
                             theme: theme,
                           ),
                         if (state.carbsGrams != null)

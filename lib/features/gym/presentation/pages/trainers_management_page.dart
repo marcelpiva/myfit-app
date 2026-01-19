@@ -264,7 +264,7 @@ class _TrainersManagementPageState
                           height: 30,
                           color: isDark ? AppColors.borderDark : AppColors.border,
                         ),
-                        _buildMiniStat(isDark, '4.8', 'Media',
+                        _buildMiniStat(isDark, '4.8', 'Média',
                             color: AppColors.warning),
                       ],
                     ),
@@ -469,7 +469,7 @@ class _TrainersManagementPageState
               const SizedBox(height: 8),
 
               Text(
-                'Envie um convite por email ou compartilhe o codigo',
+                'Envie um convite por email ou compartilhe o código',
                 style: TextStyle(
                   fontSize: 14,
                   color: isDark
@@ -521,7 +521,7 @@ class _TrainersManagementPageState
 
               // Role selector
               Text(
-                'Funcao',
+                'Função',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -901,7 +901,7 @@ class _TrainersManagementPageState
                     children: [
                       _buildDetailStat(
                           '${trainer['students']}', 'Alunos', isDark),
-                      _buildDetailStat('${trainer['rating']}', 'Avaliacao', isDark),
+                      _buildDetailStat('${trainer['rating']}', 'Avaliação', isDark),
                       _buildDetailStat(trainer['since'], 'Desde', isDark),
                     ],
                   ),
@@ -911,7 +911,7 @@ class _TrainersManagementPageState
 
                 // Contact info
                 Text(
-                  'Informacoes de Contato',
+                  'Informações de Contato',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -935,7 +935,7 @@ class _TrainersManagementPageState
 
                 // Schedule
                 Text(
-                  'Horarios',
+                  'Horários',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -994,7 +994,7 @@ class _TrainersManagementPageState
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Lista de alunos sera exibida aqui',
+                          'Lista de alunos será exibida aqui',
                           style: TextStyle(
                             fontSize: 13,
                             color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,

@@ -132,13 +132,13 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
 
   String get _selectionHint {
     if (widget.minCount != null && widget.maxCount != null && widget.minCount != widget.maxCount) {
-      // Range display (e.g., "Selecione 2-3 exercicios")
-      return 'Selecione ${widget.minCount}-${widget.maxCount} exercicios';
+      // Range display (e.g., "Selecione 2-3 exercícios")
+      return 'Selecione ${widget.minCount}-${widget.maxCount} exercícios';
     }
     if (widget.minCount != null) {
-      return 'Selecione ${widget.minCount}+ exercicios';
+      return 'Selecione ${widget.minCount}+ exercícios';
     }
-    return 'Selecione ${widget.requiredCount} exercicios';
+    return 'Selecione ${widget.requiredCount} exercícios';
   }
 
   String get _selectionStatus {
@@ -334,7 +334,7 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Buscar exercicio...',
+                hintText: 'Buscar exercício...',
                 prefixIcon: const Icon(LucideIcons.search, size: 20),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
@@ -421,7 +421,7 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Erro ao carregar exercicios',
+                        'Erro ao carregar exercícios',
                         style: theme.textTheme.titleMedium,
                       ),
                     ],
@@ -460,7 +460,7 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'Nenhum exercicio encontrado',
+                            'Nenhum exercício encontrado',
                             style: theme.textTheme.titleMedium?.copyWith(
                               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
@@ -495,8 +495,8 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
                           // Show validation message for blocked muscle group
                           HapticUtils.vibrate();
                           final message = widget.technique == TechniqueType.superset
-                              ? 'Para Super-Set, selecione um exercicio de ${_requiredMuscleGroupForSuperset?.displayName ?? "grupo oposto"}.'
-                              : '${exercise.muscleGroup.displayName} e grupo antagonico.\nUse Super-Set para combinar grupos opostos.';
+                              ? 'Para Super-Set, selecione um exercício de ${_requiredMuscleGroupForSuperset?.displayName ?? "grupo oposto"}.'
+                              : '${exercise.muscleGroup.displayName} é grupo antagônico.\nUse Super-Set para combinar grupos opostos.';
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(message),
@@ -545,7 +545,7 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Selecione um exercicio de ${_requiredMuscleGroupForSuperset!.displayName}',
+                      'Selecione um exercício de ${_requiredMuscleGroupForSuperset!.displayName}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: Colors.green.shade700,
                         fontWeight: FontWeight.w500,
@@ -578,7 +578,7 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Grupos antagonicos bloqueados: ${_blockedMuscleGroups.map((g) => g.displayName).join(", ")}',
+                      'Grupos antagônicos bloqueados: ${_blockedMuscleGroups.map((g) => g.displayName).join(", ")}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: Colors.blue.shade700,
                         fontWeight: FontWeight.w500,
@@ -617,7 +617,7 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
                       : null,
                   icon: const Icon(LucideIcons.check, size: 18),
                   label: Text(_canConfirm
-                      ? 'Confirmar ${_selectedExercises.length} Exercicios'
+                      ? 'Confirmar ${_selectedExercises.length} Exercícios'
                       : _selectionStatus),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),

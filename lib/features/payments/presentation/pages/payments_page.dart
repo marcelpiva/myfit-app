@@ -19,24 +19,24 @@ class PaymentsPage extends ConsumerWidget {
 
     final faqs = [
       {
-        'question': 'Como funciona a cobranca?',
-        'answer': 'A cobranca e feita automaticamente no cartao cadastrado na data de renovacao do seu plano. Voce recebera um email de confirmacao apos cada pagamento.',
+        'question': 'Como funciona a cobrança?',
+        'answer': 'A cobrança é feita automaticamente no cartão cadastrado na data de renovação do seu plano. Você receberá um email de confirmação após cada pagamento.',
       },
       {
         'question': 'Posso trocar de plano?',
-        'answer': 'Sim! Voce pode fazer upgrade ou downgrade do seu plano a qualquer momento. A diferenca sera calculada proporcionalmente.',
+        'answer': 'Sim! Você pode fazer upgrade ou downgrade do seu plano a qualquer momento. A diferença será calculada proporcionalmente.',
       },
       {
         'question': 'Como cancelar minha assinatura?',
-        'answer': 'Voce pode cancelar sua assinatura a qualquer momento clicando no botao "Cancelar" no card da assinatura ativa. O acesso continua ate o fim do periodo pago.',
+        'answer': 'Você pode cancelar sua assinatura a qualquer momento clicando no botão "Cancelar" no card da assinatura ativa. O acesso continua até o fim do período pago.',
       },
       {
-        'question': 'Quais formas de pagamento sao aceitas?',
-        'answer': 'Aceitamos cartoes de credito (Visa, Mastercard, Elo, American Express) e PIX. Em breve teremos boleto bancario.',
+        'question': 'Quais formas de pagamento são aceitas?',
+        'answer': 'Aceitamos cartões de crédito (Visa, Mastercard, Elo, American Express) e PIX. Em breve teremos boleto bancário.',
       },
       {
-        'question': 'O pagamento e seguro?',
-        'answer': 'Sim! Todos os pagamentos sao processados com criptografia SSL e nao armazenamos os dados do seu cartao. Utilizamos gateways de pagamento certificados.',
+        'question': 'O pagamento é seguro?',
+        'answer': 'Sim! Todos os pagamentos são processados com criptografia SSL e não armazenamos os dados do seu cartão. Utilizamos gateways de pagamento certificados.',
       },
     ];
 
@@ -90,7 +90,7 @@ class PaymentsPage extends ConsumerWidget {
                           ),
                         ),
                         Text(
-                          'Duvidas frequentes sobre pagamentos',
+                          'Dúvidas frequentes sobre pagamentos',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                           ),
@@ -267,15 +267,15 @@ class PaymentsPage extends ConsumerWidget {
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
-                  _buildDetailItem(theme, isDark, LucideIcons.calendar, 'Data de Inicio', '15 de Outubro de 2024'),
-                  _buildDetailItem(theme, isDark, LucideIcons.refreshCw, 'Proxima Renovacao', '15 de Fevereiro de 2025'),
-                  _buildDetailItem(theme, isDark, LucideIcons.creditCard, 'Metodo de Pagamento', 'Visa **** 4242'),
+                  _buildDetailItem(theme, isDark, LucideIcons.calendar, 'Data de Início', '15 de Outubro de 2024'),
+                  _buildDetailItem(theme, isDark, LucideIcons.refreshCw, 'Próxima Renovação', '15 de Fevereiro de 2025'),
+                  _buildDetailItem(theme, isDark, LucideIcons.creditCard, 'Método de Pagamento', 'Visa **** 4242'),
                   _buildDetailItem(theme, isDark, LucideIcons.dollarSign, 'Valor Mensal', 'R\$ 250,00'),
-                  _buildDetailItem(theme, isDark, LucideIcons.clock, 'Ciclo de Cobranca', 'Mensal'),
+                  _buildDetailItem(theme, isDark, LucideIcons.clock, 'Ciclo de Cobrança', 'Mensal'),
                   _buildDetailItem(theme, isDark, LucideIcons.receipt, 'Total Pago', 'R\$ 1.000,00 (4 meses)'),
                   const SizedBox(height: 16),
                   Text(
-                    'Beneficios do Plano',
+                    'Benefícios do Plano',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -284,7 +284,7 @@ class PaymentsPage extends ConsumerWidget {
                   _buildBenefitItem(theme, isDark, 'Treinos personalizados semanais'),
                   _buildBenefitItem(theme, isDark, 'Acompanhamento via chat'),
                   _buildBenefitItem(theme, isDark, 'Ajustes ilimitados no treino'),
-                  _buildBenefitItem(theme, isDark, 'Suporte prioritario'),
+                  _buildBenefitItem(theme, isDark, 'Suporte prioritário'),
                 ],
               ),
             ),
@@ -403,7 +403,7 @@ class PaymentsPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Escolha uma opcao para gerenciar seu plano',
+                    'Escolha uma opção para gerenciar seu plano',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                     ),
@@ -448,7 +448,7 @@ class PaymentsPage extends ConsumerWidget {
               context, theme, isDark,
               LucideIcons.pauseCircle,
               'Pausar Assinatura',
-              'Pause por ate 30 dias',
+              'Pause por até 30 dias',
               isDark ? AppColors.primaryDark : AppColors.primary,
               () {
                 Navigator.pop(context);
@@ -459,13 +459,13 @@ class PaymentsPage extends ConsumerWidget {
               context, theme, isDark,
               LucideIcons.creditCard,
               'Alterar Pagamento',
-              'Mude o metodo de pagamento',
+              'Mude o método de pagamento',
               isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
               () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: const Text('Abrindo metodos de pagamento...'),
+                    content: const Text('Abrindo métodos de pagamento...'),
                     backgroundColor: isDark ? AppColors.primaryDark : AppColors.primary,
                   ),
                 );
@@ -496,12 +496,12 @@ class PaymentsPage extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Voce pode pausar sua assinatura por ate 30 dias. Durante esse periodo:',
+              'Você pode pausar sua assinatura por até 30 dias. Durante esse período:',
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 12),
-            _buildPauseInfoItem(theme, isDark, 'Nao havera cobranca'),
-            _buildPauseInfoItem(theme, isDark, 'Seu acesso sera limitado'),
+            _buildPauseInfoItem(theme, isDark, 'Não haverá cobrança'),
+            _buildPauseInfoItem(theme, isDark, 'Seu acesso será limitado'),
             _buildPauseInfoItem(theme, isDark, 'A assinatura reativa automaticamente'),
           ],
         ),
@@ -625,7 +625,7 @@ class PaymentsPage extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Tem certeza que deseja cancelar sua assinatura do plano Personal Joao?',
+              'Tem certeza que deseja cancelar sua assinatura do plano Personal João?',
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
@@ -642,7 +642,7 @@ class PaymentsPage extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Voce ainda tera acesso ate 15 de Fevereiro de 2025',
+                      'Você ainda terá acesso até 15 de Fevereiro de 2025',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: Colors.orange.shade800,
                       ),
@@ -653,7 +653,7 @@ class PaymentsPage extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Ao cancelar voce perdera:',
+              'Ao cancelar você perderá:',
               style: theme.textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -661,7 +661,7 @@ class PaymentsPage extends ConsumerWidget {
             const SizedBox(height: 8),
             _buildLossItem(theme, 'Treinos personalizados'),
             _buildLossItem(theme, 'Acompanhamento do personal'),
-            _buildLossItem(theme, 'Chat com suporte prioritario'),
+            _buildLossItem(theme, 'Chat com suporte prioritário'),
           ],
         ),
         actions: [
@@ -681,7 +681,7 @@ class PaymentsPage extends ConsumerWidget {
               HapticUtils.heavyImpact();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text('Assinatura cancelada. Acesso ate 15/02/2025.'),
+                  content: const Text('Assinatura cancelada. Acesso até 15/02/2025.'),
                   backgroundColor: AppColors.destructive,
                 ),
               );
@@ -787,14 +787,14 @@ class PaymentsPage extends ConsumerWidget {
                   const SizedBox(height: 24),
                   if (method['type'] != 'pix') ...[
                     Text(
-                      'Detalhes do Cartao',
+                      'Detalhes do Cartão',
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 12),
                     _buildPaymentDetailRow(theme, isDark, 'Bandeira', method['brand'] as String),
-                    _buildPaymentDetailRow(theme, isDark, 'Numero', '**** **** **** ${method['last4']}'),
+                    _buildPaymentDetailRow(theme, isDark, 'Número', '**** **** **** ${method['last4']}'),
                     _buildPaymentDetailRow(theme, isDark, 'Validade', method['expiry'] as String),
                     const SizedBox(height: 16),
                   ],
@@ -806,13 +806,13 @@ class PaymentsPage extends ConsumerWidget {
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('${method['brand']} definido como padrao!', style: const TextStyle(color: Colors.white)),
+                              content: Text('${method['brand']} definido como padrão!', style: const TextStyle(color: Colors.white)),
                               backgroundColor: AppColors.success,
                             ),
                           );
                         },
                         icon: const Icon(LucideIcons.star, size: 18),
-                        label: const Text('Definir como Padrao'),
+                        label: const Text('Definir como Padrão'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isDark ? AppColors.primaryDark : AppColors.primary,
                           foregroundColor: Colors.white,
@@ -900,7 +900,7 @@ class PaymentsPage extends ConsumerWidget {
               children: [
                 Icon(LucideIcons.star, size: 18, color: isDark ? AppColors.primaryDark : AppColors.primary),
                 const SizedBox(width: 12),
-                const Text('Definir como padrao'),
+                const Text('Definir como padrão'),
               ],
             ),
           ),
@@ -926,7 +926,7 @@ class PaymentsPage extends ConsumerWidget {
         case 'default':
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('${method['brand']} definido como padrao!', style: const TextStyle(color: Colors.white)),
+              content: Text('${method['brand']} definido como padrão!', style: const TextStyle(color: Colors.white)),
               backgroundColor: AppColors.success,
             ),
           );
@@ -944,7 +944,7 @@ class PaymentsPage extends ConsumerWidget {
       builder: (context) => AlertDialog(
         backgroundColor: isDark ? AppColors.cardDark : AppColors.card,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Remover Metodo'),
+        title: const Text('Remover Método'),
         content: Text(
           'Deseja remover ${method['brand']}${method['last4'] != '' ? ' **** ${method['last4']}' : ''} da sua conta?',
         ),
@@ -962,7 +962,7 @@ class PaymentsPage extends ConsumerWidget {
               HapticUtils.mediumImpact();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text('Metodo de pagamento removido!'),
+                  content: const Text('Método de pagamento removido!'),
                   backgroundColor: AppColors.destructive,
                 ),
               );
@@ -1036,7 +1036,7 @@ class PaymentsPage extends ConsumerWidget {
                   _buildPaymentOptionCard(
                     context, theme, isDark,
                     LucideIcons.creditCard,
-                    'Cartao de Credito',
+                    'Cartão de Crédito',
                     'Visa, Mastercard, Elo, Amex',
                     () {
                       Navigator.pop(context);
@@ -1063,7 +1063,7 @@ class PaymentsPage extends ConsumerWidget {
                   _buildPaymentOptionCard(
                     context, theme, isDark,
                     LucideIcons.fileText,
-                    'Boleto Bancario',
+                    'Boleto Bancário',
                     'Em breve',
                     null,
                     disabled: true,
@@ -1172,7 +1172,7 @@ class PaymentsPage extends ConsumerWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Adicionar Cartao',
+                    'Adicionar Cartão',
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -1187,9 +1187,9 @@ class PaymentsPage extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildFormField(theme, isDark, 'Numero do Cartao', '0000 0000 0000 0000', LucideIcons.creditCard),
+                    _buildFormField(theme, isDark, 'Número do Cartão', '0000 0000 0000 0000', LucideIcons.creditCard),
                     const SizedBox(height: 16),
-                    _buildFormField(theme, isDark, 'Nome no Cartao', 'Nome como no cartao', LucideIcons.user),
+                    _buildFormField(theme, isDark, 'Nome no Cartão', 'Nome como no cartão', LucideIcons.user),
                     const SizedBox(height: 16),
                     Row(
                       children: [
@@ -1209,7 +1209,7 @@ class PaymentsPage extends ConsumerWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Seus dados estao protegidos com criptografia SSL',
+                            'Seus dados estão protegidos com criptografia SSL',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                             ),
@@ -1231,7 +1231,7 @@ class PaymentsPage extends ConsumerWidget {
                     HapticUtils.mediumImpact();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: const Text('Cartao adicionado com sucesso!'),
+                        content: const Text('Cartão adicionado com sucesso!'),
                         backgroundColor: AppColors.success,
                       ),
                     );
@@ -1242,7 +1242,7 @@ class PaymentsPage extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('Salvar Cartao'),
+                  child: const Text('Salvar Cartão'),
                 ),
               ),
             ),
@@ -1345,10 +1345,10 @@ class PaymentsPage extends ConsumerWidget {
                   const SizedBox(height: 24),
                   Divider(color: isDark ? AppColors.borderDark : AppColors.border),
                   const SizedBox(height: 16),
-                  _buildTransactionDetailRow(theme, isDark, 'Descricao', transaction['description'] as String),
+                  _buildTransactionDetailRow(theme, isDark, 'Descrição', transaction['description'] as String),
                   _buildTransactionDetailRow(theme, isDark, 'Data', transaction['date'] as String),
-                  _buildTransactionDetailRow(theme, isDark, 'ID da Transacao', '#TXN${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}'),
-                  _buildTransactionDetailRow(theme, isDark, 'Metodo', 'Visa **** 4242'),
+                  _buildTransactionDetailRow(theme, isDark, 'ID da Transação', '#TXN${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}'),
+                  _buildTransactionDetailRow(theme, isDark, 'Método', 'Visa **** 4242'),
                   _buildTransactionDetailRow(theme, isDark, 'Status', 'Aprovado'),
                   const SizedBox(height: 24),
                   Row(
@@ -1550,7 +1550,7 @@ class PaymentsPage extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
                   Text(
-                    'O que esta incluso',
+                    'O que está incluso',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -1559,14 +1559,14 @@ class PaymentsPage extends ConsumerWidget {
                   ...(plan['features'] as List<String>).map((feature) => _buildFeatureItem(theme, isDark, feature)),
                   const SizedBox(height: 24),
                   Text(
-                    'Informacoes do Plano',
+                    'Informações do Plano',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildPlanInfoRow(theme, isDark, 'Ciclo de Cobranca', 'Mensal'),
-                  _buildPlanInfoRow(theme, isDark, 'Renovacao Automatica', 'Sim'),
+                  _buildPlanInfoRow(theme, isDark, 'Ciclo de Cobrança', 'Mensal'),
+                  _buildPlanInfoRow(theme, isDark, 'Renovação Automática', 'Sim'),
                   _buildPlanInfoRow(theme, isDark, 'Cancelamento', 'A qualquer momento'),
                   _buildPlanInfoRow(theme, isDark, 'Garantia', '7 dias'),
                 ],
@@ -1678,7 +1678,7 @@ class PaymentsPage extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Voce esta prestes a assinar o plano ${plan['name']}.',
+              'Você está prestes a assinar o plano ${plan['name']}.',
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 16),
@@ -1869,7 +1869,7 @@ class PaymentsPage extends ConsumerWidget {
               FadeInUp(
                 delay: const Duration(milliseconds: 200),
                 child: Text(
-                  'Historico de Pagamentos',
+                  'Histórico de Pagamentos',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -1887,7 +1887,7 @@ class PaymentsPage extends ConsumerWidget {
               FadeInUp(
                 delay: const Duration(milliseconds: 300),
                 child: Text(
-                  'Planos Disponiveis',
+                  'Planos Disponíveis',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -1996,7 +1996,7 @@ class PaymentsPage extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            '/mes',
+                            '/mês',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: Colors.white.withValues(alpha: 0.8),
                             ),
@@ -2007,7 +2007,7 @@ class PaymentsPage extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            'Proxima cobranca',
+                            'Próxima cobrança',
                             style: theme.textTheme.labelSmall?.copyWith(
                               color: Colors.white.withValues(alpha: 0.7),
                             ),
@@ -2193,7 +2193,7 @@ class PaymentsPage extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          'Padrao',
+                          'Padrão',
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: isDark ? AppColors.primaryDark : AppColors.primary,
                             fontWeight: FontWeight.w600,
@@ -2261,7 +2261,7 @@ class PaymentsPage extends ConsumerWidget {
     );
   }
 
-  // Botao 8: History Item - detalhes da transacao
+  // Botão 8: History Item - detalhes da transação
   Widget _buildBillingHistory(BuildContext context, ThemeData theme, bool isDark) {
     final history = [
       {'date': '15 Jan 2025', 'description': 'Plano Mensal - Personal Joao', 'amount': 'R\$ 250,00', 'status': 'paid'},
@@ -2372,24 +2372,24 @@ class PaymentsPage extends ConsumerWidget {
   Widget _buildAvailablePlans(BuildContext context, ThemeData theme, bool isDark) {
     final plans = [
       {
-        'name': 'Basico',
+        'name': 'Básico',
         'price': 'R\$ 99',
-        'period': '/mes',
-        'features': ['Acesso ao app', 'Treinos basicos', 'Suporte por email'],
+        'period': '/mês',
+        'features': ['Acesso ao app', 'Treinos básicos', 'Suporte por email'],
         'recommended': false,
       },
       {
         'name': 'Pro',
         'price': 'R\$ 199',
-        'period': '/mes',
-        'features': ['Tudo do Basico', 'Treinos personalizados', 'Chat com personal', 'Acompanhamento semanal'],
+        'period': '/mês',
+        'features': ['Tudo do Básico', 'Treinos personalizados', 'Chat com personal', 'Acompanhamento semanal'],
         'recommended': true,
       },
       {
         'name': 'Premium',
         'price': 'R\$ 349',
-        'period': '/mes',
-        'features': ['Tudo do Pro', 'Plano nutricional', 'Acompanhamento diario', 'Sessoes online'],
+        'period': '/mês',
+        'features': ['Tudo do Pro', 'Plano nutricional', 'Acompanhamento diário', 'Sessões online'],
         'recommended': false,
       },
     ];

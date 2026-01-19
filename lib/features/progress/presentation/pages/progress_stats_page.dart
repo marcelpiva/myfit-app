@@ -131,7 +131,7 @@ class _ProgressStatsPageState extends ConsumerState<ProgressStatsPage>
                       ),
                       const Spacer(),
                       Text(
-                        'Estatisticas',
+                        'Estatísticas',
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -276,7 +276,7 @@ class _ProgressStatsPageState extends ConsumerState<ProgressStatsPage>
         ),
         _buildStatCard(
           icon: LucideIcons.flame,
-          label: 'Maior Sequencia',
+          label: 'Maior Sequência',
           value: '${_currentStats['streak']} dias',
           color: AppColors.warning,
           isDark: isDark,
@@ -387,7 +387,7 @@ class _ProgressStatsPageState extends ConsumerState<ProgressStatsPage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Variacao de Peso',
+                      'Variação de Peso',
                       style: TextStyle(
                         fontSize: 14,
                         color: isDark
@@ -413,7 +413,7 @@ class _ProgressStatsPageState extends ConsumerState<ProgressStatsPage>
             children: [
               Expanded(
                 child: _buildWeightStatItem(
-                  'Peso Medio',
+                  'Peso Médio',
                   '${_currentStats['avg_weight']} kg',
                   isDark,
                 ),
@@ -466,7 +466,7 @@ class _ProgressStatsPageState extends ConsumerState<ProgressStatsPage>
       'chest': 'Peito',
       'waist': 'Cintura',
       'hips': 'Quadril',
-      'biceps': 'Biceps',
+      'biceps': 'Bíceps',
       'thigh': 'Coxa',
       'calf': 'Panturrilha',
     };
@@ -475,7 +475,7 @@ class _ProgressStatsPageState extends ConsumerState<ProgressStatsPage>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Variacao de Medidas',
+          'Variação de Medidas',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -601,7 +601,7 @@ class _ProgressStatsPageState extends ConsumerState<ProgressStatsPage>
               const Divider(height: 24),
               _buildActivityRow(
                 LucideIcons.trophy,
-                'Consistencia',
+                'Consistência',
                 _currentStats['streak'] as int > 7
                     ? 'Excelente'
                     : (_currentStats['streak'] as int > 3 ? 'Boa' : 'Precisa melhorar'),

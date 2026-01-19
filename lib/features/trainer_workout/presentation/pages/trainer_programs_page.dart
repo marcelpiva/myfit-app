@@ -260,7 +260,7 @@ class _ProgramsList extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Nao editavel - use como base para criar novo',
+                        'Não editável - use como base para criar novo',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                         ),
@@ -302,7 +302,7 @@ class _ProgramsList extends ConsumerWidget {
             if (description != null && description.isNotEmpty) ...[
               const SizedBox(height: 16),
               Text(
-                'Descricao',
+                'Descrição',
                 style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 8),
@@ -350,7 +350,7 @@ class _ProgramsList extends ConsumerWidget {
     final title = isImported ? 'Remover Programa' : 'Excluir Programa';
     final message = isImported
         ? 'Deseja remover "$programName" da sua lista?'
-        : 'Deseja excluir "$programName"? Esta acao nao pode ser desfeita.';
+        : 'Deseja excluir "$programName"? Esta ação não pode ser desfeita.';
     final buttonLabel = isImported ? 'Remover' : 'Excluir';
 
     final confirmed = await showDialog<bool>(
@@ -379,7 +379,7 @@ class _ProgramsList extends ConsumerWidget {
         ref.invalidate(allProgramsProvider);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Programa ${isImported ? 'removido' : 'excluido'} com sucesso')),
+            SnackBar(content: Text('Programa ${isImported ? 'removido' : 'excluído'} com sucesso')),
           );
         }
       } catch (e) {
@@ -406,11 +406,11 @@ class _ProgramsList extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(isPublic ? 'Despublicar do Catalogo' : 'Publicar no Catalogo'),
+        title: Text(isPublic ? 'Despublicar do Catálogo' : 'Publicar no Catálogo'),
         content: Text(
           isPublic
-              ? 'Deseja remover "$programName" do catalogo? Outros usuarios nao poderao mais importa-lo.'
-              : 'Deseja publicar "$programName" no catalogo? Outros Personal Trainers poderao importa-lo.',
+              ? 'Deseja remover "$programName" do catálogo? Outros usuários não poderão mais importá-lo.'
+              : 'Deseja publicar "$programName" no catálogo? Outros Personal Trainers poderão importá-lo.',
         ),
         actions: [
           TextButton(
@@ -893,11 +893,11 @@ String _getGoalDisplay(String goal) {
     case 'hypertrophy':
       return 'Hipertrofia';
     case 'strength':
-      return 'Forca';
+      return 'Força';
     case 'fat_loss':
       return 'Emagrecimento';
     case 'endurance':
-      return 'Resistencia';
+      return 'Resistência';
     case 'functional':
       return 'Funcional';
     case 'general_fitness':
@@ -912,9 +912,9 @@ String _getDifficultyDisplay(String difficulty) {
     case 'beginner':
       return 'Iniciante';
     case 'intermediate':
-      return 'Intermediario';
+      return 'Intermediário';
     case 'advanced':
-      return 'Avancado';
+      return 'Avançado';
     default:
       return difficulty;
   }

@@ -64,7 +64,7 @@ class _AssignProgramSheetState extends ConsumerState<AssignProgramSheet> {
                 const Icon(LucideIcons.checkCircle, color: Colors.white, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text('Programa atribuido a $_selectedStudentName'),
+                  child: Text('Programa atribuído a $_selectedStudentName'),
                 ),
               ],
             ),
@@ -329,7 +329,7 @@ class _AssignProgramSheetState extends ConsumerState<AssignProgramSheet> {
                 children: [
                   Expanded(
                     child: _DateField(
-                      label: 'Inicio',
+                      label: 'Início',
                       date: _startDate,
                       onTap: () async {
                         final date = await showDatePicker(

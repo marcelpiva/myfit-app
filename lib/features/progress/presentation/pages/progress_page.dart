@@ -561,7 +561,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
                             Icon(LucideIcons.camera, size: 32, color: AppColors.primary),
                             const SizedBox(height: 8),
                             Text(
-                              'Camera',
+                              'Câmera',
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 color: isDark ? AppColors.foregroundDark : AppColors.foreground,
@@ -1004,7 +1004,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: const Text('Funcao de edicao em desenvolvimento'),
+                            content: const Text('Função de edição em desenvolvimento'),
                             backgroundColor: AppColors.primary,
                           ),
                         );
@@ -1041,7 +1041,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: const Text('Registro excluido'),
+                            content: const Text('Registro excluído'),
                             backgroundColor: AppColors.destructive,
                           ),
                         );
@@ -1249,7 +1249,7 @@ class _WeightChart extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Evolucao',
+                'Evolução',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -1617,7 +1617,7 @@ class _EntryCard extends StatelessWidget {
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: const Text('Funcao de edicao em desenvolvimento'),
+                            content: const Text('Função de edição em desenvolvimento'),
                             backgroundColor: AppColors.primary,
                           ),
                         );
@@ -1654,7 +1654,7 @@ class _EntryCard extends StatelessWidget {
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: const Text('Registro excluido'),
+                            content: const Text('Registro excluído'),
                             backgroundColor: AppColors.destructive,
                           ),
                         );
@@ -2078,9 +2078,9 @@ class _MeasurementsTab extends ConsumerWidget {
     // Mock history data for the measurement
     final mockHistory = [
       {'date': 'Hoje', 'value': value, 'change': change},
-      {'date': 'Ha 1 semana', 'value': (double.parse(value) - change).toStringAsFixed(0), 'change': -1.0},
-      {'date': 'Ha 2 semanas', 'value': (double.parse(value) - change + 1).toStringAsFixed(0), 'change': -0.5},
-      {'date': 'Ha 1 mes', 'value': (double.parse(value) - change + 1.5).toStringAsFixed(0), 'change': -1.5},
+      {'date': 'Há 1 semana', 'value': (double.parse(value) - change).toStringAsFixed(0), 'change': -1.0},
+      {'date': 'Há 2 semanas', 'value': (double.parse(value) - change + 1).toStringAsFixed(0), 'change': -0.5},
+      {'date': 'Há 1 mês', 'value': (double.parse(value) - change + 1.5).toStringAsFixed(0), 'change': -1.5},
     ];
 
     showModalBottomSheet(
@@ -2117,7 +2117,7 @@ class _MeasurementsTab extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Historico - $label',
+                        'Histórico - $label',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -2754,7 +2754,7 @@ class _PhotosTab extends ConsumerWidget {
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: const Text('Foto excluida'),
+                            content: const Text('Foto excluída'),
                             backgroundColor: AppColors.destructive,
                           ),
                         );

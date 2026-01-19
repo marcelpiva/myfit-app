@@ -34,9 +34,9 @@ class _AISuggestionPageState extends ConsumerState<AISuggestionPage>
     {'id': 'vegetarian', 'label': 'Vegetariano'},
     {'id': 'vegan', 'label': 'Vegano'},
     {'id': 'lactose_free', 'label': 'Sem lactose'},
-    {'id': 'gluten_free', 'label': 'Sem gluten'},
+    {'id': 'gluten_free', 'label': 'Sem glúten'},
     {'id': 'low_carb', 'label': 'Low carb'},
-    {'id': 'high_protein', 'label': 'Alto em proteina'},
+    {'id': 'high_protein', 'label': 'Alto em proteína'},
   ];
 
   @override
@@ -173,7 +173,7 @@ class _AISuggestionPageState extends ConsumerState<AISuggestionPage>
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Sugestao com IA',
+                          'Sugestão com IA',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
@@ -207,7 +207,7 @@ class _AISuggestionPageState extends ConsumerState<AISuggestionPage>
         children: [
           // Goal selection
           Text(
-            'Qual e seu objetivo?',
+            'Qual é seu objetivo?',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -226,7 +226,7 @@ class _AISuggestionPageState extends ConsumerState<AISuggestionPage>
 
           // Restrictions
           Text(
-            'Restricoes alimentares (opcional)',
+            'Restrições alimentares (opcional)',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -326,7 +326,7 @@ class _AISuggestionPageState extends ConsumerState<AISuggestionPage>
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Nossas sugestoes sao personalizadas com base no seu objetivo e restricoes',
+                        'Nossas sugestões são personalizadas com base no seu objetivo e restrições',
                         style: TextStyle(
                           fontSize: 13,
                           color: isDark
@@ -377,7 +377,7 @@ class _AISuggestionPageState extends ConsumerState<AISuggestionPage>
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Gerando sugestoes...',
+                      'Gerando sugestões...',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -400,7 +400,7 @@ class _AISuggestionPageState extends ConsumerState<AISuggestionPage>
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      'Gerar Sugestoes',
+                      'Gerar Sugestões',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -436,7 +436,7 @@ class _AISuggestionPageState extends ConsumerState<AISuggestionPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Sugestoes para voce',
+                    'Sugestões para você',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -542,7 +542,7 @@ class _AISuggestionPageState extends ConsumerState<AISuggestionPage>
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    'Gerar novas sugestoes',
+                    'Gerar novas sugestões',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
@@ -760,7 +760,7 @@ class _SuggestionCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 _MacroBadge(
-                  label: 'Proteina',
+                  label: 'Proteína',
                   value: '${suggestion['protein']}',
                   unit: 'g',
                   color: AppColors.primary,
@@ -945,8 +945,8 @@ class _MacroBadge extends StatelessWidget {
 // Mock data for suggestions
 final _loseSuggestions = [
   {
-    'name': 'Cafe da Manha Leve',
-    'description': 'Baixo em calorias, alto em proteina',
+    'name': 'Café da Manhã Leve',
+    'description': 'Baixo em calorias, alto em proteína',
     'icon': LucideIcons.coffee,
     'color': AppColors.warning,
     'calories': 320,
@@ -955,14 +955,14 @@ final _loseSuggestions = [
     'fat': 10,
     'foods': [
       'Omelete com 3 claras e 1 gema',
-      '1 fatia de pao integral',
+      '1 fatia de pão integral',
       'Salada de frutas (100g)',
-      'Cha verde sem acucar',
+      'Chá verde sem açúcar',
     ],
   },
   {
-    'name': 'Almoco Equilibrado',
-    'description': 'Rico em fibras e proteinas magras',
+    'name': 'Almoço Equilibrado',
+    'description': 'Rico em fibras e proteínas magras',
     'icon': LucideIcons.utensils,
     'color': AppColors.primary,
     'calories': 420,
@@ -972,13 +972,13 @@ final _loseSuggestions = [
     'foods': [
       '150g peito de frango grelhado',
       '80g arroz integral',
-      'Salada verde a vontade',
+      'Salada verde à vontade',
       'Legumes no vapor',
     ],
   },
   {
     'name': 'Jantar Leve',
-    'description': 'Facil digestao para a noite',
+    'description': 'Fácil digestão para a noite',
     'icon': LucideIcons.moon,
     'color': AppColors.secondary,
     'calories': 280,
@@ -996,8 +996,8 @@ final _loseSuggestions = [
 
 final _gainSuggestions = [
   {
-    'name': 'Cafe da Manha Forte',
-    'description': 'Alto em calorias e proteina',
+    'name': 'Café da Manhã Forte',
+    'description': 'Alto em calorias e proteína',
     'icon': LucideIcons.coffee,
     'color': AppColors.warning,
     'calories': 650,
@@ -1006,13 +1006,13 @@ final _gainSuggestions = [
     'fat': 25,
     'foods': [
       '4 ovos mexidos completos',
-      '2 fatias de pao integral com pasta de amendoim',
+      '2 fatias de pão integral com pasta de amendoim',
       '1 banana grande',
       '300ml de leite integral',
     ],
   },
   {
-    'name': 'Almoco Hipercalorico',
+    'name': 'Almoço Hipercalórico',
     'description': 'Denso em nutrientes para ganho',
     'icon': LucideIcons.utensils,
     'color': AppColors.primary,
@@ -1023,13 +1023,13 @@ final _gainSuggestions = [
     'foods': [
       '200g carne vermelha magra',
       '150g arroz branco',
-      '100g feijao',
+      '100g feijão',
       'Batata doce (100g)',
       'Azeite (2 colheres)',
     ],
   },
   {
-    'name': 'Lanche Pre-Treino',
+    'name': 'Lanche Pré-Treino',
     'description': 'Energia para o treino',
     'icon': LucideIcons.dumbbell,
     'color': AppColors.accent,
@@ -1048,8 +1048,8 @@ final _gainSuggestions = [
 
 final _maintainSuggestions = [
   {
-    'name': 'Cafe da Manha Balanceado',
-    'description': 'Equilibrio de macros',
+    'name': 'Café da Manhã Balanceado',
+    'description': 'Equilíbrio de macros',
     'icon': LucideIcons.coffee,
     'color': AppColors.warning,
     'calories': 450,
@@ -1058,13 +1058,13 @@ final _maintainSuggestions = [
     'fat': 18,
     'foods': [
       '2 ovos mexidos',
-      '2 fatias de pao integral',
-      '1 fruta media',
-      'Cafe com leite',
+      '2 fatias de pão integral',
+      '1 fruta média',
+      'Café com leite',
     ],
   },
   {
-    'name': 'Almoco Completo',
+    'name': 'Almoço Completo',
     'description': 'Todos os grupos alimentares',
     'icon': LucideIcons.utensils,
     'color': AppColors.primary,
@@ -1073,9 +1073,9 @@ final _maintainSuggestions = [
     'carbs': 55,
     'fat': 20,
     'foods': [
-      '150g proteina (frango ou peixe)',
+      '150g proteína (frango ou peixe)',
       '100g arroz',
-      '80g feijao ou lentilha',
+      '80g feijão ou lentilha',
       'Salada variada',
       'Azeite (1 colher)',
     ],
@@ -1090,7 +1090,7 @@ final _maintainSuggestions = [
     'carbs': 30,
     'fat': 18,
     'foods': [
-      '130g proteina magra',
+      '130g proteína magra',
       'Legumes variados',
       'Salada verde',
       '1/2 batata doce',

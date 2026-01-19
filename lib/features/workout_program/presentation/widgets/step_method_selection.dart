@@ -32,7 +32,7 @@ class StepMethodSelection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Escolha a opcao que melhor se adapta as suas necessidades',
+            'Escolha a opção que melhor se adapta às suas necessidades',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
@@ -45,7 +45,7 @@ class StepMethodSelection extends StatelessWidget {
             iconColor: AppColors.primary,
             title: 'Criar do Zero',
             description:
-                'Controle total sobre cada detalhe. Selecione exercicios, series e repeticoes manualmente.',
+                'Controle total sobre cada detalhe. Selecione exercícios, séries e repetições manualmente.',
             isRecommended: false,
             isDark: isDark,
             theme: theme,
@@ -62,7 +62,7 @@ class StepMethodSelection extends StatelessWidget {
             iconColor: AppColors.secondary,
             title: 'Assistido por IA',
             description:
-                'A IA sugere exercicios baseado nos seus objetivos. Voce pode ajustar como preferir.',
+                'A IA sugere exercícios baseado nos seus objetivos. Você pode ajustar como preferir.',
             isRecommended: true,
             isDark: isDark,
             theme: theme,

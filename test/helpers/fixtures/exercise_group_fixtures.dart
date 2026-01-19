@@ -23,8 +23,8 @@ class ExerciseGroupFixtures {
       id: id,
       name: name,
       muscleGroup: muscleGroup,
-      description: 'Descricao do exercicio $name',
-      instructions: 'Instrucoes para executar $name',
+      description: 'Descrição do exercício $name',
+      instructions: 'Instruções para executar $name',
     );
   }
 
@@ -95,7 +95,7 @@ class ExerciseGroupFixtures {
       reps: reps,
       restSeconds: restSeconds,
       techniqueType: TechniqueType.dropset,
-      executionInstructions: 'Execute 3 reducoes de carga sem descanso',
+      executionInstructions: 'Execute 3 reduções de carga sem descanso',
     );
   }
 
@@ -118,7 +118,7 @@ class ExerciseGroupFixtures {
       reps: reps,
       restSeconds: restSeconds,
       techniqueType: TechniqueType.restPause,
-      executionInstructions: 'Execute ate a falha, pause 15s, continue',
+      executionInstructions: 'Execute até a falha, pause 15s, continue',
     );
   }
 
@@ -175,7 +175,7 @@ class ExerciseGroupFixtures {
         techniqueType: TechniqueType.superset,
         exerciseGroupId: groupId,
         exerciseGroupOrder: 0,
-        executionInstructions: 'Sem descanso entre os exercicios',
+        executionInstructions: 'Sem descanso entre os exercícios',
       ),
       WizardExercise(
         id: wizardIds[1],
@@ -188,7 +188,7 @@ class ExerciseGroupFixtures {
         techniqueType: TechniqueType.superset,
         exerciseGroupId: groupId,
         exerciseGroupOrder: 1,
-        executionInstructions: 'Sem descanso entre os exercicios',
+        executionInstructions: 'Sem descanso entre os exercícios',
       ),
     ];
   }
@@ -219,7 +219,7 @@ class ExerciseGroupFixtures {
         techniqueType: TechniqueType.triset,
         exerciseGroupId: groupId,
         exerciseGroupOrder: index,
-        executionInstructions: 'Sem descanso entre os exercicios',
+        executionInstructions: 'Sem descanso entre os exercícios',
       );
     });
   }
@@ -238,7 +238,7 @@ class ExerciseGroupFixtures {
     final wizardIds = ids ?? List.generate(count, (i) => 'wizard-giantset-$i');
     final exIds = exerciseIds ?? List.generate(count, (i) => 'ex-giantset-$i');
     final defaultNames = ['Agachamento', 'Leg Press', 'Extensora', 'Flexora',
-                          'Panturrilha', 'Avanco', 'Stiff', 'Cadeira Abdutora'];
+                          'Panturrilha', 'Avanço', 'Stiff', 'Cadeira Abdutora'];
     final exNames = names ?? defaultNames;
 
     return List.generate(count, (index) {
@@ -253,7 +253,7 @@ class ExerciseGroupFixtures {
         techniqueType: TechniqueType.giantset,
         exerciseGroupId: groupId,
         exerciseGroupOrder: index,
-        executionInstructions: 'Execucao continua - sem descanso',
+        executionInstructions: 'Execução contínua - sem descanso',
       );
     });
   }
@@ -265,7 +265,7 @@ class ExerciseGroupFixtures {
   /// Creates a workout with mixed techniques.
   static WizardWorkout workoutWithMixedTechniques({
     String id = 'workout-mixed',
-    String name = 'Treino Avancado',
+    String name = 'Treino Avançado',
     String label = 'A',
   }) {
     return WizardWorkout(
@@ -305,7 +305,7 @@ class ExerciseGroupFixtures {
           groupId: 'triset-workout-1',
           ids: ['wizard-6', 'wizard-7', 'wizard-8'],
           exerciseIds: ['ex-6', 'ex-7', 'ex-8'],
-          names: ['Elevacao Frontal', 'Elevacao Lateral', 'Crucifixo Invertido'],
+          names: ['Elevação Frontal', 'Elevação Lateral', 'Crucifixo Invertido'],
         ),
       ],
     );
@@ -332,7 +332,7 @@ class ExerciseGroupFixtures {
           groupId: 'superset-2',
           ids: ['wizard-3', 'wizard-4'],
           exerciseIds: ['ex-3', 'ex-4'],
-          names: ['Desenvolvimento', 'Elevacao Lateral'],
+          names: ['Desenvolvimento', 'Elevação Lateral'],
         ),
         ...superset(
           groupId: 'superset-3',
@@ -466,7 +466,7 @@ class ExerciseGroupFixtures {
     String groupId = 'single-group',
     String id = 'wizard-single',
     String exerciseId = 'ex-single',
-    String name = 'Exercicio Solo',
+    String name = 'Exercício Solo',
   }) {
     return [
       WizardExercise(
@@ -508,8 +508,8 @@ class ExerciseGroupFixtures {
   static WizardExercise exerciseWithInstructions({
     String id = 'wizard-instructions',
     String exerciseId = 'ex-instructions',
-    String name = 'Exercicio com Instrucoes',
-    String instructions = 'Execute devagar, 3 segundos na excentrica',
+    String name = 'Exercício com Instruções',
+    String instructions = 'Execute devagar, 3 segundos na excêntrica',
   }) {
     return WizardExercise(
       id: id,
@@ -541,7 +541,7 @@ class ExerciseGroupFixtures {
       restSeconds: 60,
       isometricSeconds: isometricSeconds,
       techniqueType: TechniqueType.normal,
-      executionInstructions: 'Mantenha a posicao por ${isometricSeconds}s',
+      executionInstructions: 'Mantenha a posição por ${isometricSeconds}s',
     );
   }
 }

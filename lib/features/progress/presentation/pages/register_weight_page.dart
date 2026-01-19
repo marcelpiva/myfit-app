@@ -326,7 +326,7 @@ class _RegisterWeightPageState extends ConsumerState<RegisterWeightPage>
 
                         // Recent history
                         Text(
-                          'Historico Recente',
+                          'Histórico Recente',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,

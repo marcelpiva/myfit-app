@@ -81,7 +81,7 @@ class _BarcodeScannerPageState extends ConsumerState<BarcodeScannerPage>
     HapticUtils.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${_foundFood!['name']} adicionado a refeicao', style: const TextStyle(color: Colors.white)),
+        content: Text('${_foundFood!['name']} adicionado à refeição', style: const TextStyle(color: Colors.white)),
         backgroundColor: AppColors.success,
       ),
     );
@@ -149,7 +149,7 @@ class _BarcodeScannerPageState extends ConsumerState<BarcodeScannerPage>
                     ),
                     const SizedBox(width: 16),
                     Text(
-                      'Escanear Codigo de Barras',
+                      'Escanear Código de Barras',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -328,7 +328,7 @@ class _BarcodeScannerPageState extends ConsumerState<BarcodeScannerPage>
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          'Aponte a camera para o codigo de barras',
+                          'Aponte a câmera para o código de barras',
                           style: TextStyle(
                             fontSize: 14,
                             color: isDark
@@ -396,7 +396,7 @@ class _BarcodeScannerPageState extends ConsumerState<BarcodeScannerPage>
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Mantenha o codigo dentro da area marcada para melhor leitura',
+                        'Mantenha o código dentro da área marcada para melhor leitura',
                         style: TextStyle(
                           fontSize: 13,
                           color: isDark
@@ -569,7 +569,7 @@ class _BarcodeScannerPageState extends ConsumerState<BarcodeScannerPage>
                       isDark: isDark,
                     ),
                     _NutritionItem(
-                      label: 'Proteina',
+                      label: 'Proteína',
                       value: '${food['protein']}',
                       unit: 'g',
                       isDark: isDark,
@@ -592,7 +592,7 @@ class _BarcodeScannerPageState extends ConsumerState<BarcodeScannerPage>
                 const SizedBox(height: 16),
 
                 Text(
-                  'Porcao: ${food['portion']}',
+                  'Porção: ${food['portion']}',
                   style: TextStyle(
                     fontSize: 13,
                     color: isDark

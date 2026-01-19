@@ -61,20 +61,20 @@ extension DietTypeExtension on DietType {
   String get displayName {
     switch (this) {
       case DietType.cutting:
-        return 'Cutting (Definicao)';
+        return 'Cutting (Definição)';
       case DietType.bulking:
         return 'Bulking (Massa)';
       case DietType.maintenance:
-        return 'Manutencao';
+        return 'Manutenção';
     }
   }
 
   String get description {
     switch (this) {
       case DietType.cutting:
-        return 'Deficit calorico para perda de gordura';
+        return 'Déficit calórico para perda de gordura';
       case DietType.bulking:
-        return 'Superavit calorico para ganho de massa';
+        return 'Superávit calórico para ganho de massa';
       case DietType.maintenance:
         return 'Calorias para manter o peso atual';
     }
@@ -325,7 +325,7 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
           wizardExercises.add(WizardExercise(
             id: '${DateTime.now().millisecondsSinceEpoch}_${exerciseId.hashCode}',
             exerciseId: exerciseId,
-            name: exerciseData?['name'] as String? ?? 'Exercicio',
+            name: exerciseData?['name'] as String? ?? 'Exercício',
             muscleGroup: exerciseData?['muscle_group'] as String? ?? '',
             sets: exMap['sets'] as int? ?? 3,
             reps: (exMap['reps'] ?? '10-12').toString(),
@@ -398,7 +398,7 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
           wizardExercises.add(WizardExercise(
             id: '${DateTime.now().millisecondsSinceEpoch}_${exerciseId.hashCode}',
             exerciseId: exerciseId,
-            name: exMap['name'] as String? ?? 'Exercicio',
+            name: exMap['name'] as String? ?? 'Exercício',
             muscleGroup: (exMap['muscle_group'] as String? ?? '').toString(),
             sets: exMap['sets'] as int? ?? 3,
             reps: (exMap['reps'] ?? '10-12').toString(),
@@ -1620,7 +1620,7 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
     if (workout.muscleGroups.isEmpty) {
       return {
         'success': false,
-        'message': 'Selecione pelo menos um grupo muscular antes de sugerir exercicios',
+        'message': 'Selecione pelo menos um grupo muscular antes de sugerir exercícios',
         'count': 0,
       };
     }
@@ -1659,7 +1659,7 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
         state = state.copyWith(isLoading: false);
         return {
           'success': false,
-          'message': apiMessage ?? 'Nenhum exercicio encontrado. Execute o seed de exercicios no backend.',
+          'message': apiMessage ?? 'Nenhum exercício encontrado. Execute o seed de exercícios no backend.',
           'count': 0,
         };
       }
@@ -1695,14 +1695,14 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
       state = state.copyWith(workouts: workouts, isLoading: false);
       return {
         'success': true,
-        'message': apiMessage ?? '${suggestions.length} exercicios sugeridos!',
+        'message': apiMessage ?? '${suggestions.length} exercícios sugeridos!',
         'count': suggestions.length,
       };
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
       return {
         'success': false,
-        'message': 'Erro ao sugerir exercicios: ${e.toString()}',
+        'message': 'Erro ao sugerir exercícios: ${e.toString()}',
         'count': 0,
       };
     }

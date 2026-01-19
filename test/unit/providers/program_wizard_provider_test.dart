@@ -78,9 +78,9 @@ void main() {
       test('should create triset with 3 exercises', () {
         // Arrange
         setupWorkoutWithExercises([
-          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercicio 1'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-2', name: 'Exercicio 2'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-3', name: 'Exercicio 3'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercício 1'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-2', name: 'Exercício 2'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-3', name: 'Exercício 3'),
         ]);
 
         // Act
@@ -102,11 +102,11 @@ void main() {
       test('should create giantset with 4+ exercises', () {
         // Arrange
         setupWorkoutWithExercises([
-          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercicio 1'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-2', name: 'Exercicio 2'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-3', name: 'Exercicio 3'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-4', name: 'Exercicio 4'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-5', name: 'Exercicio 5'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercício 1'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-2', name: 'Exercício 2'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-3', name: 'Exercício 3'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-4', name: 'Exercício 4'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-5', name: 'Exercício 5'),
         ]);
 
         // Act
@@ -145,10 +145,10 @@ void main() {
       test('should generate unique groupId', () async {
         // Arrange
         setupWorkoutWithExercises([
-          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercicio 1'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-2', name: 'Exercicio 2'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-3', name: 'Exercicio 3'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-4', name: 'Exercicio 4'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercício 1'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-2', name: 'Exercício 2'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-3', name: 'Exercício 3'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-4', name: 'Exercício 4'),
         ]);
 
         // Act
@@ -174,9 +174,9 @@ void main() {
       test('should preserve non-grouped exercises', () {
         // Arrange
         setupWorkoutWithExercises([
-          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercicio 1'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-2', name: 'Exercicio 2'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-3', name: 'Exercicio 3'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercício 1'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-2', name: 'Exercício 2'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-3', name: 'Exercício 3'),
         ]);
 
         // Act
@@ -327,12 +327,12 @@ void main() {
         final superset1 = ExerciseGroupFixtures.superset(
           groupId: 'group-1',
           ids: ['ex-1', 'ex-2'],
-          names: ['Exercicio 1', 'Exercicio 2'],
+          names: ['Exercício 1', 'Exercício 2'],
         );
         final superset2 = ExerciseGroupFixtures.superset(
           groupId: 'group-2',
           ids: ['ex-3', 'ex-4'],
-          names: ['Exercicio 3', 'Exercicio 4'],
+          names: ['Exercício 3', 'Exercício 4'],
         );
         setupWorkoutWithExercises([...superset1, ...superset2]);
 
@@ -374,7 +374,7 @@ void main() {
         final superset = ExerciseGroupFixtures.superset(groupId: 'group-1');
         final normalExercise = ExerciseGroupFixtures.normalExercise(
           id: 'normal-1',
-          name: 'Exercicio Normal',
+          name: 'Exercício Normal',
         );
         setupWorkoutWithExercises([...superset, normalExercise]);
 
@@ -384,7 +384,7 @@ void main() {
         // Assert
         final exercises = getExercises();
 
-        expect(exercises.first.name, 'Exercicio Normal');
+        expect(exercises.first.name, 'Exercício Normal');
         expect(exercises.first.techniqueType, TechniqueType.normal);
       });
 
@@ -427,7 +427,7 @@ void main() {
 
         final newExercise = ExerciseGroupFixtures.catalogExercise(
           id: 'new-ex',
-          name: 'Novo Exercicio',
+          name: 'Novo Exercício',
         );
 
         // Act
@@ -451,7 +451,7 @@ void main() {
 
         final newExercise = ExerciseGroupFixtures.catalogExercise(
           id: 'new-ex',
-          name: 'Novo Exercicio',
+          name: 'Novo Exercício',
         );
 
         // Act
@@ -475,7 +475,7 @@ void main() {
 
         final newExercise = ExerciseGroupFixtures.catalogExercise(
           id: 'new-ex',
-          name: 'Novo Exercicio',
+          name: 'Novo Exercício',
         );
 
         // Act
@@ -500,7 +500,7 @@ void main() {
 
         final newExercise = ExerciseGroupFixtures.catalogExercise(
           id: 'new-ex',
-          name: 'Novo Exercicio',
+          name: 'Novo Exercício',
         );
 
         // Act
@@ -512,7 +512,7 @@ void main() {
 
         // Assert
         final exercises = getExercises();
-        final newGroupExercise = exercises.firstWhere((e) => e.name == 'Novo Exercicio');
+        final newGroupExercise = exercises.firstWhere((e) => e.name == 'Novo Exercício');
 
         expect(newGroupExercise.exerciseGroupOrder, 2); // Was 0 and 1, so new is 2
       });
@@ -524,7 +524,7 @@ void main() {
 
         final newExercise = ExerciseGroupFixtures.catalogExercise(
           id: 'new-ex',
-          name: 'Novo Exercicio',
+          name: 'Novo Exercício',
         );
 
         // Act
@@ -552,11 +552,11 @@ void main() {
         final superset = ExerciseGroupFixtures.superset(groupId: 'group-1');
         // Update instructions on group
         setupWorkoutWithExercises(superset.map((e) =>
-          e.copyWith(executionInstructions: 'Instrucoes do grupo')).toList());
+          e.copyWith(executionInstructions: 'Instruções do grupo')).toList());
 
         final newExercise = ExerciseGroupFixtures.catalogExercise(
           id: 'new-ex',
-          name: 'Novo Exercicio',
+          name: 'Novo Exercício',
         );
 
         // Act
@@ -568,9 +568,9 @@ void main() {
 
         // Assert
         final exercises = getExercises();
-        final newGroupExercise = exercises.firstWhere((e) => e.name == 'Novo Exercicio');
+        final newGroupExercise = exercises.firstWhere((e) => e.name == 'Novo Exercício');
 
-        expect(newGroupExercise.executionInstructions, 'Instrucoes do grupo');
+        expect(newGroupExercise.executionInstructions, 'Instruções do grupo');
       });
 
       test('should insert new exercise after last group exercise', () {
@@ -578,13 +578,13 @@ void main() {
         final superset = ExerciseGroupFixtures.superset(groupId: 'group-1');
         final normalExercise = ExerciseGroupFixtures.normalExercise(
           id: 'normal-1',
-          name: 'Exercicio Normal',
+          name: 'Exercício Normal',
         );
         setupWorkoutWithExercises([...superset, normalExercise]);
 
         final newExercise = ExerciseGroupFixtures.catalogExercise(
           id: 'new-ex',
-          name: 'Novo Exercicio',
+          name: 'Novo Exercício',
         );
 
         // Act
@@ -598,8 +598,8 @@ void main() {
         final exercises = getExercises();
 
         // New exercise should be inserted after the superset, before the normal exercise
-        expect(exercises[2].name, 'Novo Exercicio');
-        expect(exercises[3].name, 'Exercicio Normal');
+        expect(exercises[2].name, 'Novo Exercício');
+        expect(exercises[3].name, 'Exercício Normal');
       });
 
       test('should handle adding to non-existent group gracefully', () {
@@ -609,7 +609,7 @@ void main() {
 
         final newExercise = ExerciseGroupFixtures.catalogExercise(
           id: 'new-ex',
-          name: 'Novo Exercicio',
+          name: 'Novo Exercício',
         );
 
         // Act - should not throw
@@ -639,14 +639,14 @@ void main() {
         notifier.updateGroupInstructions(
           workoutId: 'workout-1',
           groupId: 'group-1',
-          instructions: 'Novas instrucoes do grupo',
+          instructions: 'Novas instruções do grupo',
         );
 
         // Assert
         final exercises = getExercises();
         final groupExercises = exercises.where((e) => e.exerciseGroupId == 'group-1').toList();
 
-        expect(groupExercises.every((e) => e.executionInstructions == 'Novas instrucoes do grupo'), isTrue);
+        expect(groupExercises.every((e) => e.executionInstructions == 'Novas instruções do grupo'), isTrue);
       });
 
       test('should not affect exercises outside the group', () {
@@ -654,7 +654,7 @@ void main() {
         final superset = ExerciseGroupFixtures.superset(groupId: 'group-1');
         final normalExercise = ExerciseGroupFixtures.normalExercise(
           id: 'normal-1',
-          executionInstructions: 'Instrucoes originais',
+          executionInstructions: 'Instruções originais',
         );
         setupWorkoutWithExercises([...superset, normalExercise]);
 
@@ -662,21 +662,21 @@ void main() {
         notifier.updateGroupInstructions(
           workoutId: 'workout-1',
           groupId: 'group-1',
-          instructions: 'Novas instrucoes',
+          instructions: 'Novas instruções',
         );
 
         // Assert
         final exercises = getExercises();
         final normalEx = exercises.firstWhere((e) => e.id == 'normal-1');
 
-        expect(normalEx.executionInstructions, 'Instrucoes originais');
+        expect(normalEx.executionInstructions, 'Instruções originais');
       });
 
       test('should clear instructions when empty string is provided', () {
         // Arrange
         final superset = ExerciseGroupFixtures.superset(groupId: 'group-1');
         setupWorkoutWithExercises(superset.map((e) =>
-          e.copyWith(executionInstructions: 'Instrucoes antigas')).toList());
+          e.copyWith(executionInstructions: 'Instruções antigas')).toList());
 
         // Act
         notifier.updateGroupInstructions(
@@ -704,7 +704,7 @@ void main() {
         notifier.updateGroupInstructions(
           workoutId: 'workout-1',
           groupId: 'non-existent-group',
-          instructions: 'Novas instrucoes',
+          instructions: 'Novas instruções',
         );
 
         // Assert - original exercise unchanged
@@ -759,7 +759,7 @@ void main() {
 
         final newExercise = ExerciseGroupFixtures.catalogExercise(
           id: 'new-ex',
-          name: 'Novo Exercicio',
+          name: 'Novo Exercício',
         );
         notifier.addExerciseToGroup(
           workoutId: 'workout-1',
@@ -885,9 +885,9 @@ void main() {
       test('should move single ungrouped exercise up', () {
         // Arrange - 3 ungrouped exercises
         setupWorkoutWithExercises([
-          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercicio 1'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-2', name: 'Exercicio 2'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-3', name: 'Exercicio 3'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercício 1'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-2', name: 'Exercício 2'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-3', name: 'Exercício 3'),
         ]);
 
         // Act - move ex-3 (UI index 2) to position 0
@@ -895,17 +895,17 @@ void main() {
 
         // Assert
         final exercises = getExercises();
-        expect(exercises[0].name, 'Exercicio 3');
-        expect(exercises[1].name, 'Exercicio 1');
-        expect(exercises[2].name, 'Exercicio 2');
+        expect(exercises[0].name, 'Exercício 3');
+        expect(exercises[1].name, 'Exercício 1');
+        expect(exercises[2].name, 'Exercício 2');
       });
 
       test('should move single ungrouped exercise down', () {
         // Arrange - 3 ungrouped exercises
         setupWorkoutWithExercises([
-          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercicio 1'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-2', name: 'Exercicio 2'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-3', name: 'Exercicio 3'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercício 1'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-2', name: 'Exercício 2'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-3', name: 'Exercício 3'),
         ]);
 
         // Act - move ex-1 (UI index 0) to position 3 (after last item)
@@ -913,9 +913,9 @@ void main() {
 
         // Assert
         final exercises = getExercises();
-        expect(exercises[0].name, 'Exercicio 2');
-        expect(exercises[1].name, 'Exercicio 3');
-        expect(exercises[2].name, 'Exercicio 1');
+        expect(exercises[0].name, 'Exercício 2');
+        expect(exercises[1].name, 'Exercício 3');
+        expect(exercises[2].name, 'Exercício 1');
       });
 
       test('should move single exercise before a group', () {
@@ -924,9 +924,9 @@ void main() {
         // Data indices: [0, 1, 2, 3]
         final superset = ExerciseGroupFixtures.superset(groupId: 'group-1');
         setupWorkoutWithExercises([
-          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercicio 1'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercício 1'),
           ...superset, // Ex 2 and 3 in group
-          ExerciseGroupFixtures.normalExercise(id: 'ex-4', name: 'Exercicio 4'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-4', name: 'Exercício 4'),
         ]);
 
         // Act - move Ex4 (UI index 2) to position 0
@@ -934,8 +934,8 @@ void main() {
 
         // Assert: [Ex4, Ex1, Group(Ex2, Ex3)]
         final exercises = getExercises();
-        expect(exercises[0].name, 'Exercicio 4');
-        expect(exercises[1].name, 'Exercicio 1');
+        expect(exercises[0].name, 'Exercício 4');
+        expect(exercises[1].name, 'Exercício 1');
         expect(exercises[2].exerciseGroupId, 'group-1'); // Group still intact
         expect(exercises[3].exerciseGroupId, 'group-1');
       });
@@ -945,9 +945,9 @@ void main() {
         // UI indices: [0, 1, 2]
         final superset = ExerciseGroupFixtures.superset(groupId: 'group-1');
         setupWorkoutWithExercises([
-          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercicio 1'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercício 1'),
           ...superset,
-          ExerciseGroupFixtures.normalExercise(id: 'ex-4', name: 'Exercicio 4'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-4', name: 'Exercício 4'),
         ]);
 
         // Act - move Ex1 (UI index 0) to position 2
@@ -957,8 +957,8 @@ void main() {
         final exercises = getExercises();
         expect(exercises[0].exerciseGroupId, 'group-1');
         expect(exercises[1].exerciseGroupId, 'group-1');
-        expect(exercises[2].name, 'Exercicio 1');
-        expect(exercises[3].name, 'Exercicio 4');
+        expect(exercises[2].name, 'Exercício 1');
+        expect(exercises[3].name, 'Exercício 4');
       });
 
       test('should move entire group up as a unit', () {
@@ -967,8 +967,8 @@ void main() {
         // Data indices: [0, 1, 2, 3]
         final superset = ExerciseGroupFixtures.superset(groupId: 'group-1');
         setupWorkoutWithExercises([
-          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercicio 1'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-2', name: 'Exercicio 2'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercício 1'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-2', name: 'Exercício 2'),
           ...superset, // Group at UI index 2
         ]);
 
@@ -979,8 +979,8 @@ void main() {
         final exercises = getExercises();
         expect(exercises[0].exerciseGroupId, 'group-1');
         expect(exercises[1].exerciseGroupId, 'group-1');
-        expect(exercises[2].name, 'Exercicio 1');
-        expect(exercises[3].name, 'Exercicio 2');
+        expect(exercises[2].name, 'Exercício 1');
+        expect(exercises[3].name, 'Exercício 2');
       });
 
       test('should move entire group down as a unit', () {
@@ -989,8 +989,8 @@ void main() {
         final superset = ExerciseGroupFixtures.superset(groupId: 'group-1');
         setupWorkoutWithExercises([
           ...superset, // Group at UI index 0
-          ExerciseGroupFixtures.normalExercise(id: 'ex-3', name: 'Exercicio 3'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-4', name: 'Exercicio 4'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-3', name: 'Exercício 3'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-4', name: 'Exercício 4'),
         ]);
 
         // Act - move group (UI index 0) to position 3 (end)
@@ -998,8 +998,8 @@ void main() {
 
         // Assert: [Ex3, Ex4, Group(Ex1, Ex2)]
         final exercises = getExercises();
-        expect(exercises[0].name, 'Exercicio 3');
-        expect(exercises[1].name, 'Exercicio 4');
+        expect(exercises[0].name, 'Exercício 3');
+        expect(exercises[1].name, 'Exercício 4');
         expect(exercises[2].exerciseGroupId, 'group-1');
         expect(exercises[3].exerciseGroupId, 'group-1');
       });
@@ -1016,7 +1016,7 @@ void main() {
 
         setupWorkoutWithExercises([
           ...superset1,
-          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercicio Solo'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercício Solo'),
           ...superset2Renamed,
         ]);
 
@@ -1029,14 +1029,14 @@ void main() {
         expect(exercises[1].exerciseGroupId, 'group-2');
         expect(exercises[2].exerciseGroupId, 'group-1');
         expect(exercises[3].exerciseGroupId, 'group-1');
-        expect(exercises[4].name, 'Exercicio Solo');
+        expect(exercises[4].name, 'Exercício Solo');
       });
 
       test('should not change state when moving to same position', () {
         // Arrange
         setupWorkoutWithExercises([
-          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercicio 1'),
-          ExerciseGroupFixtures.normalExercise(id: 'ex-2', name: 'Exercicio 2'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercício 1'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-2', name: 'Exercício 2'),
         ]);
 
         // Act - move ex-1 to same position
@@ -1044,14 +1044,14 @@ void main() {
 
         // Assert - order unchanged
         final exercises = getExercises();
-        expect(exercises[0].name, 'Exercicio 1');
-        expect(exercises[1].name, 'Exercicio 2');
+        expect(exercises[0].name, 'Exercício 1');
+        expect(exercises[1].name, 'Exercício 2');
       });
 
       test('should handle invalid indices gracefully', () {
         // Arrange
         setupWorkoutWithExercises([
-          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercicio 1'),
+          ExerciseGroupFixtures.normalExercise(id: 'ex-1', name: 'Exercício 1'),
         ]);
 
         // Act - try to reorder with invalid index
@@ -1060,7 +1060,7 @@ void main() {
         // Assert - no change
         final exercises = getExercises();
         expect(exercises.length, 1);
-        expect(exercises[0].name, 'Exercicio 1');
+        expect(exercises[0].name, 'Exercício 1');
       });
     });
 

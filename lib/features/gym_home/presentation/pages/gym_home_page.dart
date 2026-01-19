@@ -107,7 +107,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildSectionTitle(context, isDark, 'Acoes Rapidas'),
+                          _buildSectionTitle(context, isDark, 'Ações Rápidas'),
                           const SizedBox(height: 16),
                           _buildQuickActions(context, isDark),
                         ],
@@ -509,7 +509,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
     final actions = [
       (LucideIcons.userPlus, 'Novo\nMembro', AppColors.primary),
       (LucideIcons.userCheck, 'Adicionar\nTrainer', AppColors.secondary),
-      (LucideIcons.fileText, 'Gerar\nRelatorio', AppColors.accent),
+      (LucideIcons.fileText, 'Gerar\nRelatório', AppColors.accent),
     ];
 
     return Row(
@@ -1033,8 +1033,8 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
         '8'
       ),
       (
-        'Matriculas Expirando',
-        '12 matriculas expiram nos proximos 7 dias',
+        'Matrículas Expirando',
+        '12 matrículas expiram nos próximos 7 dias',
         LucideIcons.clock,
         AppColors.warning,
         '12'
@@ -1196,7 +1196,7 @@ class _GymHomePageState extends ConsumerState<GymHomePage>
             ),
             const SizedBox(height: 4),
             Text(
-              'Duracao estimada: 1h 30min',
+              'Duração estimada: 1h 30min',
               style: TextStyle(
                 fontSize: 14,
                 color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,

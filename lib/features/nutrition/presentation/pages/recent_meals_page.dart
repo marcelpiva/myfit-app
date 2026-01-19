@@ -44,7 +44,7 @@ class _RecentMealsPageState extends ConsumerState<RecentMealsPage>
     HapticUtils.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${meal['name']} adicionado ao diario', style: const TextStyle(color: Colors.white)),
+        content: Text('${meal['name']} adicionado ao diário', style: const TextStyle(color: Colors.white)),
         backgroundColor: AppColors.success,
       ),
     );
@@ -122,7 +122,7 @@ class _RecentMealsPageState extends ConsumerState<RecentMealsPage>
                     ),
                     const SizedBox(width: 16),
                     Text(
-                      'Refeicoes Recentes',
+                      'Refeições Recentes',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -173,7 +173,7 @@ class _RecentMealsPageState extends ConsumerState<RecentMealsPage>
           ),
           const SizedBox(height: 16),
           Text(
-            'Nenhuma refeicao recente',
+            'Nenhuma refeição recente',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -182,7 +182,7 @@ class _RecentMealsPageState extends ConsumerState<RecentMealsPage>
           ),
           const SizedBox(height: 8),
           Text(
-            'Suas refeicoes registradas aparecerao aqui',
+            'Suas refeições registradas aparecerão aqui',
             style: TextStyle(
               fontSize: 14,
               color: isDark
@@ -371,7 +371,7 @@ class _MealCard extends StatelessWidget {
             child: Row(
               children: [
                 _MacroBadge(
-                  label: 'Proteina',
+                  label: 'Proteína',
                   value: '${meal['protein']}g',
                   color: AppColors.primary,
                   isDark: isDark,

@@ -32,8 +32,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage>
     {'value': 'hipertrofia', 'label': 'Ganho de massa'},
     {'value': 'emagrecimento', 'label': 'Emagrecimento'},
     {'value': 'condicionamento', 'label': 'Condicionamento'},
-    {'value': 'manutencao', 'label': 'Manutencao'},
-    {'value': 'saude', 'label': 'Qualidade de vida'},
+    {'value': 'manutencao', 'label': 'Manutenção'},
+    {'value': 'saude', 'label': 'Saúde e qualidade de vida'},
   ];
 
   @override
@@ -324,7 +324,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage>
                         _buildTextArea(
                           isDark,
                           _bioController,
-                          'Conte um pouco sobre voce...',
+                          'Conte um pouco sobre você...',
                         ),
 
                         const SizedBox(height: 32),

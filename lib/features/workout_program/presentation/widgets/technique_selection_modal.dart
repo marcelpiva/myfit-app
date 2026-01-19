@@ -68,7 +68,7 @@ class _TechniqueSelectionModalState extends State<TechniqueSelectionModal> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Adicionar Exercicio',
+                      'Adicionar Exercício',
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -97,8 +97,8 @@ class _TechniqueSelectionModalState extends State<TechniqueSelectionModal> {
         _OptionTile(
           icon: LucideIcons.dumbbell,
           iconColor: AppColors.primary,
-          title: 'Exercicio Simples',
-          subtitle: 'Adicionar um exercicio individual com series e repeticoes',
+          title: 'Exercício Simples',
+          subtitle: 'Adicionar um exercício individual com séries e repetições',
           onTap: () {
             HapticUtils.selectionClick();
             Navigator.pop(context);
@@ -113,7 +113,7 @@ class _TechniqueSelectionModalState extends State<TechniqueSelectionModal> {
         _OptionTile(
           icon: LucideIcons.layers,
           iconColor: AppColors.warning,
-          title: 'Tecnica Avancada',
+          title: 'Técnica Avançada',
           subtitle: 'Bi-Set, Tri-Set, Drop Set, Rest Pause...',
           onTap: () {
             HapticUtils.selectionClick();
@@ -180,7 +180,7 @@ class _TechniqueSelectionModalState extends State<TechniqueSelectionModal> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Selecionar Tecnica',
+                  'Selecionar Técnica',
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -200,7 +200,7 @@ class _TechniqueSelectionModalState extends State<TechniqueSelectionModal> {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Text(
-            'MULTIPLOS EXERCICIOS',
+            'MÚLTIPLOS EXERCÍCIOS',
             style: theme.textTheme.labelSmall?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
               fontWeight: FontWeight.w600,
@@ -223,7 +223,7 @@ class _TechniqueSelectionModalState extends State<TechniqueSelectionModal> {
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Text(
-            'EXERCICIO UNICO',
+            'EXERCÍCIO ÚNICO',
             style: theme.textTheme.labelSmall?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
               fontWeight: FontWeight.w600,
@@ -356,11 +356,11 @@ class _TechniqueCard extends StatelessWidget {
 
   String get _exerciseCountHint {
     return switch (technique) {
-      TechniqueType.biset => '2 exercicios',
-      TechniqueType.superset => '2 exercicios',
-      TechniqueType.triset => '3 exercicios',
-      TechniqueType.giantset => '4+ exercicios',
-      _ => '1 exercicio',
+      TechniqueType.biset => '2 exercícios',
+      TechniqueType.superset => '2 exercícios',
+      TechniqueType.triset => '3 exercícios',
+      TechniqueType.giantset => '4+ exercícios',
+      _ => '1 exercício',
     };
   }
 
