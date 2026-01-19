@@ -63,8 +63,66 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
       );
     }
 
+    // Calculate total time across all workouts
+    final totalCurrentMinutes = state.workouts.fold<int>(
+      0,
+      (sum, w) => sum + w.exercises.fold<int>(
+        0,
+        (es, e) => es + e.estimatedSeconds,
+      ),
+    ) ~/ 60;
+    final targetTotalMinutes = state.estimatedWorkoutMinutes * state.workouts.length;
+    final totalIsOverTime = totalCurrentMinutes > (targetTotalMinutes * 1.2);
+
     return Column(
       children: [
+        // Total time banner
+        Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: totalIsOverTime
+                ? AppColors.warning.withAlpha(isDark ? 30 : 20)
+                : (isDark
+                    ? theme.colorScheme.surfaceContainerLow.withAlpha(150)
+                    : theme.colorScheme.surfaceContainerLow.withAlpha(200)),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: totalIsOverTime
+                  ? AppColors.warning.withAlpha(isDark ? 60 : 40)
+                  : theme.colorScheme.outline.withValues(alpha: 0.15),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                totalIsOverTime ? LucideIcons.alertTriangle : LucideIcons.clock,
+                size: 16,
+                color: totalIsOverTime
+                    ? AppColors.warning
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Tempo total: $totalCurrentMinutes / $targetTotalMinutes min',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: totalIsOverTime
+                      ? AppColors.warning
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+              Text(
+                ' (${state.workouts.length} treinos × ${state.estimatedWorkoutMinutes} min)',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+
         // Workout tabs
         Container(
           height: 48,
@@ -911,17 +969,25 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
     // Get muscle groups from the workout
     final workoutMuscleGroups = workout.muscleGroups;
 
-    // Calculate current workout time and target
-    final currentWorkoutMinutes = workout.exercises.fold<int>(
+    // Calculate TOTAL time across ALL workouts in the plan
+    final totalCurrentMinutes = state.workouts.fold<int>(
       0,
-      (sum, e) => sum + e.estimatedSeconds,
+      (sum, w) => sum + w.exercises.fold<int>(
+        0,
+        (es, e) => es + e.estimatedSeconds,
+      ),
     ) ~/ 60;
-    final targetMinutes = state.estimatedWorkoutMinutes;
+
+    // Target total = time per workout × number of workouts
+    final targetTotalMinutes = state.estimatedWorkoutMinutes * state.workouts.length;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -931,8 +997,8 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
         difficulty: difficulty,
         isDark: isDark,
         theme: theme,
-        currentWorkoutMinutes: currentWorkoutMinutes,
-        targetWorkoutMinutes: targetMinutes,
+        currentWorkoutMinutes: totalCurrentMinutes,
+        targetWorkoutMinutes: targetTotalMinutes,
         onConfirm: (selectedTechniques, selectedMuscleGroups, count) async {
           Navigator.pop(ctx);
 
@@ -5486,8 +5552,8 @@ class _AITechniqueSelectionSheetState extends State<_AITechniqueSelectionSheet> 
                   children: [
                     Text(
                       hasExercises
-                          ? 'Tempo atual: ${widget.currentWorkoutMinutes} min de ${widget.targetWorkoutMinutes} min'
-                          : 'Tempo alvo: ${widget.targetWorkoutMinutes} min',
+                          ? 'Tempo total do plano: ${widget.currentWorkoutMinutes} / ${widget.targetWorkoutMinutes} min'
+                          : 'Tempo alvo total: ${widget.targetWorkoutMinutes} min',
                       style: widget.theme.textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: AppColors.info,
