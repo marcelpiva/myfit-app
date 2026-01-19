@@ -1,6 +1,6 @@
 # MyFit App
 
-[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.2.2-blue.svg)](./CHANGELOG.md)
 [![Flutter](https://img.shields.io/badge/Flutter-3.10+-02569B.svg?logo=flutter)](https://flutter.dev)
 [![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20Android%20%7C%20Web-lightgrey.svg)](https://flutter.dev/multi-platform)
 [![Tests](https://img.shields.io/badge/tests-150+-green.svg)]()
@@ -19,6 +19,7 @@ Aplicativo Flutter multiplataforma para a plataforma MyFit.
 - Check-in via QR Code (iOS/Android)
 - Gamification system
 - **PWA Support** - Installable web app
+- **Multi-language Support** - Portuguese (pt-BR), Spanish (es), English (en)
 
 ## Platforms
 
@@ -73,6 +74,7 @@ API_BASE_URL=https://api.myfitplatform.com
 ```
 lib/
 ├── config/
+│   ├── l10n/           # Localization (ARB files, generated)
 │   ├── routes/         # App routing configuration
 │   └── theme/          # Theme tokens and exercise theme
 ├── core/               # Core utilities, services, network
