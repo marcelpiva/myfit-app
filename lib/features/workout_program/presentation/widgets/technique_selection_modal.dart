@@ -152,15 +152,16 @@ class _TechniqueSelectionModalState extends State<TechniqueSelectionModal> {
       TechniqueType.cluster,
     ];
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Handle
-        _buildHandle(theme),
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Handle
+          _buildHandle(theme),
 
-        // Header with back button
-        Padding(
+          // Header with back button
+          Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: Row(
             children: [
@@ -240,8 +241,9 @@ class _TechniqueSelectionModalState extends State<TechniqueSelectionModal> {
               isDark: isDark,
             )),
 
-        const SizedBox(height: 16),
-      ],
+          const SizedBox(height: 16),
+        ],
+      ),
     );
   }
 

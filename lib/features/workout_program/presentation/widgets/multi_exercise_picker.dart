@@ -70,6 +70,41 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
 
   String get _displayName => widget.technique.displayName;
 
+  /// Check if a muscle group would create antagonist pairing with current selection
+  /// Blocked for Bi-Set, Tri-Set, and Giant Set (only Super-Set allows antagonists)
+  bool _isBlockedMuscleGroup(MuscleGroup group) {
+    // Only Super-Set allows antagonist muscles
+    // Bi-Set, Tri-Set, and Giant Set require same area muscles
+    if (widget.technique == TechniqueType.superset) {
+      return false; // Super-Set allows all combinations
+    }
+
+    // If no exercises selected yet, nothing is blocked
+    if (_selectedExercises.isEmpty) return false;
+
+    // Check if this group is antagonist to any already selected exercise
+    for (final selected in _selectedExercises) {
+      if (MuscleGroupTechniqueDetector.isSuperSet(selected.muscleGroup, group)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// Get list of blocked muscle groups for validation display
+  Set<MuscleGroup> get _blockedMuscleGroups {
+    if (_selectedExercises.isEmpty) return {};
+
+    final blocked = <MuscleGroup>{};
+    for (final selected in _selectedExercises) {
+      final antagonist = selected.muscleGroup.antagonist;
+      if (antagonist != null) {
+        blocked.add(antagonist);
+      }
+    }
+    return blocked;
+  }
+
   String get _selectionHint {
     if (widget.minCount != null && widget.maxCount != null && widget.minCount != widget.maxCount) {
       // Range display (e.g., "Selecione 2-3 exercicios")
@@ -418,7 +453,8 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
                     final exercise = allExercises[index];
                     final isSelected = _selectedExercises.contains(exercise);
                     final selectionIndex = _selectedExercises.indexOf(exercise);
-                    final canSelect = !isSelected &&
+                    final isBlocked = _isBlockedMuscleGroup(exercise.muscleGroup);
+                    final canSelect = !isSelected && !isBlocked &&
                         (widget.maxCount == null ||
                             _selectedExercises.length < widget.maxCount!);
 
@@ -427,8 +463,24 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
                       isSelected: isSelected,
                       selectionIndex: selectionIndex,
                       canSelect: canSelect,
+                      isBlocked: isBlocked,
                       techniqueColor: _techniqueColor,
                       onTap: () {
+                        if (isBlocked) {
+                          // Show validation message for blocked muscle group
+                          HapticUtils.vibrate();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${exercise.muscleGroup.displayName} e grupo antagonico.\nUse Super-Set para combinar grupos opostos.',
+                              ),
+                              backgroundColor: Colors.orange,
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                          return;
+                        }
                         HapticUtils.selectionClick();
                         setState(() {
                           if (isSelected) {
@@ -444,6 +496,39 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
               },
             ),
           ),
+
+          // Info banner when muscle groups are blocked
+          if (_blockedMuscleGroups.isNotEmpty)
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Colors.blue.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    LucideIcons.info,
+                    color: Colors.blue,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Grupos antagonicos bloqueados: ${_blockedMuscleGroups.map((g) => g.displayName).join(", ")}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.blue.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
           // Confirm button
           Container(
@@ -497,6 +582,7 @@ class _ExerciseListTile extends StatelessWidget {
   final bool isSelected;
   final int selectionIndex;
   final bool canSelect;
+  final bool isBlocked;
   final Color techniqueColor;
   final VoidCallback onTap;
 
@@ -505,6 +591,7 @@ class _ExerciseListTile extends StatelessWidget {
     required this.isSelected,
     required this.selectionIndex,
     required this.canSelect,
+    this.isBlocked = false,
     required this.techniqueColor,
     required this.onTap,
   });
@@ -516,17 +603,23 @@ class _ExerciseListTile extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? techniqueColor.withValues(alpha: 0.08) : null,
-          border: Border(
-            left: BorderSide(
-              color: isSelected ? techniqueColor : Colors.transparent,
-              width: 3,
+      child: Opacity(
+        opacity: isBlocked ? 0.5 : 1.0,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? techniqueColor.withValues(alpha: 0.08)
+                : (isBlocked ? Colors.orange.withValues(alpha: 0.05) : null),
+            border: Border(
+              left: BorderSide(
+                color: isSelected
+                    ? techniqueColor
+                    : (isBlocked ? Colors.orange : Colors.transparent),
+                width: 3,
+              ),
             ),
           ),
-        ),
         child: Row(
           children: [
             // Selection indicator or image
@@ -595,6 +688,8 @@ class _ExerciseListTile extends StatelessWidget {
             ),
             if (isSelected)
               Icon(LucideIcons.checkCircle2, color: techniqueColor, size: 22)
+            else if (isBlocked)
+              const Icon(LucideIcons.ban, color: Colors.orange, size: 22)
             else if (canSelect)
               Icon(
                 LucideIcons.circle,
@@ -608,6 +703,7 @@ class _ExerciseListTile extends StatelessWidget {
                 size: 22,
               ),
           ],
+        ),
         ),
       ),
     );

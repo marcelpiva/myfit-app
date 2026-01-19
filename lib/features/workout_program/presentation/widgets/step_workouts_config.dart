@@ -838,6 +838,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) => TechniqueSelectionModal(
         muscleGroups: muscleGroups,
         onTechniqueSelected: (technique) {
