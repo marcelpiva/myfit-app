@@ -9,9 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Settings access in Trainer view** - Added gear icon in trainer home header for quick access to settings
-- **Leave profile functionality** - Long press on profile card in org selector to leave an organization
-  - Confirmation modal with clear warning message
-  - Automatic refresh of memberships after leaving
+- **Delete profile functionality** - Visible trash icon on profile cards in org selector
+  - Tap trash icon to delete profile with confirmation modal
+  - 7-day recovery period before permanent deletion
+  - Automatic refresh of memberships after deletion
 
 ### Changed
 - Trainer home header now shows: Avatar, Greeting, Switch Profile, Notifications, Settings

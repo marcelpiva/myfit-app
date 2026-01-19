@@ -28,11 +28,11 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
   }
 
   bool _isAccepting = false;
-  bool _isLeaving = false;
+  bool _isDeleting = false;
 
-  Future<void> _leaveProfile(OrganizationMembership membership) async {
-    if (_isLeaving) return;
-    setState(() => _isLeaving = true);
+  Future<void> _deleteProfile(OrganizationMembership membership) async {
+    if (_isDeleting) return;
+    setState(() => _isDeleting = true);
 
     try {
       final user = ref.read(currentUserProvider);
@@ -47,7 +47,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Você saiu de ${membership.organization.name}'),
+            content: Text('Perfil "${membership.organization.name}" excluído'),
             backgroundColor: AppColors.success,
           ),
         );
@@ -56,17 +56,17 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao sair do perfil: $e'),
+            content: Text('Erro ao excluir perfil: $e'),
             backgroundColor: AppColors.destructive,
           ),
         );
       }
     } finally {
-      if (mounted) setState(() => _isLeaving = false);
+      if (mounted) setState(() => _isDeleting = false);
     }
   }
 
-  void _showLeaveProfileDialog(OrganizationMembership membership) {
+  void _showDeleteProfileDialog(OrganizationMembership membership) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showModalBottomSheet(
@@ -97,14 +97,14 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
                 color: AppColors.destructive.withAlpha(20),
               ),
               child: Icon(
-                LucideIcons.userMinus,
+                LucideIcons.trash2,
                 size: 28,
                 color: AppColors.destructive,
               ),
             ),
             const SizedBox(height: 20),
             Text(
-              'Sair do Perfil',
+              'Excluir Perfil',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
@@ -113,7 +113,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Tem certeza que deseja sair de "${membership.organization.name}"?\n\nVocê perderá acesso a este perfil e precisará de um novo convite para retornar.',
+              'Tem certeza que deseja excluir o perfil "${membership.organization.name}"?\n\nVocê terá 7 dias para recuperar este perfil antes da exclusão definitiva.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 15,
@@ -141,11 +141,11 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton(
-                    onPressed: _isLeaving
+                    onPressed: _isDeleting
                         ? null
                         : () {
                             Navigator.pop(ctx);
-                            _leaveProfile(membership);
+                            _deleteProfile(membership);
                           },
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.destructive,
@@ -154,7 +154,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: _isLeaving
+                    child: _isDeleting
                         ? const SizedBox(
                             height: 20,
                             width: 20,
@@ -163,7 +163,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
                               valueColor: AlwaysStoppedAnimation(Colors.white),
                             ),
                           )
-                        : const Text('Sair do Perfil'),
+                        : const Text('Excluir Perfil'),
                   ),
                 ),
               ],
@@ -344,7 +344,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
                   membership: membership,
                   isDark: isDark,
                   onTap: () => _selectMembership(membership),
-                  onLeave: () => _showLeaveProfileDialog(membership),
+                  onLeave: () => _showDeleteProfileDialog(membership),
                 );
               },
             ),
@@ -494,7 +494,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
                 membership: membership,
                 isDark: isDark,
                 onTap: () => _selectMembership(membership),
-                onLeave: () => _showLeaveProfileDialog(membership),
+                onLeave: () => _showDeleteProfileDialog(membership),
               );
             },
           ),
@@ -774,7 +774,7 @@ class _ProfileCard extends StatelessWidget {
                         color: AppColors.destructive.withAlpha(15),
                       ),
                       child: Icon(
-                        LucideIcons.logOut,
+                        LucideIcons.trash2,
                         size: 18,
                         color: AppColors.destructive.withAlpha(180),
                       ),
