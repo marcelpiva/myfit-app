@@ -106,6 +106,7 @@ class StepReview extends ConsumerWidget {
                 const SizedBox(height: 20),
                 const Divider(color: Colors.white24),
                 const SizedBox(height: 16),
+                // First row of stats
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -136,6 +137,50 @@ class StepReview extends ConsumerWidget {
                       ),
                   ],
                 ),
+                // Second row: time stats
+                Builder(
+                  builder: (context) {
+                    final totalMinutes = state.workouts.fold<int>(
+                      0,
+                      (sum, w) => sum + w.exercises.fold<int>(
+                        0,
+                        (es, e) => es + e.estimatedSeconds,
+                      ),
+                    ) ~/ 60;
+                    final targetPerWorkout = state.estimatedWorkoutMinutes;
+
+                    // Format total time
+                    String formatTime(int minutes) {
+                      if (minutes >= 60) {
+                        final hours = minutes ~/ 60;
+                        final mins = minutes % 60;
+                        return mins > 0 ? '${hours}h${mins}m' : '${hours}h';
+                      }
+                      return '${minutes}m';
+                    }
+
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _StatItem(
+                            icon: LucideIcons.clock,
+                            value: '${targetPerWorkout}m',
+                            label: 'Por Treino',
+                            theme: theme,
+                          ),
+                          _StatItem(
+                            icon: LucideIcons.timerReset,
+                            value: formatTime(totalMinutes),
+                            label: 'Tempo Total',
+                            theme: theme,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
@@ -151,6 +196,14 @@ class StepReview extends ConsumerWidget {
           const SizedBox(height: 12),
 
           ...state.workouts.map((workout) {
+            // Calculate workout duration
+            final workoutMinutes = workout.exercises.fold<int>(
+              0,
+              (sum, e) => sum + e.estimatedSeconds,
+            ) ~/ 60;
+            final targetMinutes = state.estimatedWorkoutMinutes;
+            final isOverTime = workoutMinutes > (targetMinutes * 1.2);
+
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
@@ -196,16 +249,83 @@ class StepReview extends ConsumerWidget {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            Text(
-                              '${workout.exercises.length} exercícios',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurface
-                                    .withValues(alpha: 0.6),
-                              ),
+                            Row(
+                              children: [
+                                Text(
+                                  '${workout.exercises.length} exercícios',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.6),
+                                  ),
+                                ),
+                                if (workout.exercises.isNotEmpty) ...[
+                                  Text(
+                                    ' · ',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.colorScheme.onSurface
+                                          .withValues(alpha: 0.3),
+                                    ),
+                                  ),
+                                  Icon(
+                                    LucideIcons.clock,
+                                    size: 12,
+                                    color: isOverTime
+                                        ? AppColors.warning
+                                        : theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.6),
+                                  ),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    '$workoutMinutes min',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: isOverTime
+                                          ? AppColors.warning
+                                          : theme.colorScheme.onSurface
+                                              .withValues(alpha: 0.6),
+                                      fontWeight: isOverTime
+                                          ? FontWeight.w600
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ],
                         ),
                       ),
+                      // Time warning chip if over time
+                      if (workout.exercises.isNotEmpty && isOverTime) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.warning.withAlpha(isDark ? 40 : 25),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                LucideIcons.alertTriangle,
+                                size: 10,
+                                color: AppColors.warning,
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                '>$targetMinutes',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: AppColors.warning,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
                       Icon(
                         workout.exercises.isNotEmpty
                             ? LucideIcons.checkCircle2

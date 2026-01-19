@@ -400,6 +400,7 @@ sealed class PlanExercise with _$PlanExercise {
     @Default(TechniqueType.normal) TechniqueType techniqueType,
     String? exerciseGroupId,
     @Default(0) int exerciseGroupOrder,
+    @Default(0) int estimatedSeconds,
     PlanExerciseDetail? exercise,
   }) = _PlanExercise;
 
@@ -411,6 +412,13 @@ sealed class PlanExercise with _$PlanExercise {
 
   /// Check if this is the first exercise in a group
   bool get isGroupLeader => isGrouped && exerciseGroupOrder == 0;
+
+  /// Formatted time string (e.g., "3:30")
+  String get formattedTime {
+    final minutes = estimatedSeconds ~/ 60;
+    final seconds = estimatedSeconds % 60;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  }
 }
 
 /// Exercise detail

@@ -1,3 +1,5 @@
+import 'dart:math' show max;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -17,6 +19,8 @@ enum CreationMethod {
 /// Wizard exercise configuration
 @freezed
 sealed class WizardExercise with _$WizardExercise {
+  const WizardExercise._();
+
   const factory WizardExercise({
     required String id,
     required String exerciseId,
@@ -34,6 +38,43 @@ sealed class WizardExercise with _$WizardExercise {
     String? exerciseGroupId,
     @Default(0) int exerciseGroupOrder,
   }) = _WizardExercise;
+
+  /// Calculate estimated time for this exercise in seconds
+  int get estimatedSeconds {
+    // Base execution time per set (45s average)
+    int execTimePerSet = 45;
+
+    // Adjust for isometric holds
+    if (isometricSeconds != null && isometricSeconds! > 0) {
+      execTimePerSet = isometricSeconds! + 10; // hold + setup time
+    }
+
+    // Adjust for technique
+    int restBetween;
+    switch (techniqueType) {
+      case TechniqueType.dropset:
+        execTimePerSet = 90; // longer execution, multiple drops
+        restBetween = 0;
+      case TechniqueType.restPause:
+        execTimePerSet = 60; // includes 10-15s micro-pauses
+        restBetween = restSeconds;
+      case TechniqueType.cluster:
+        execTimePerSet = 75; // fractioned sets with intra-set rest
+        restBetween = restSeconds;
+      default:
+        restBetween = restSeconds;
+    }
+
+    // Total time: execution + rest between sets (not after last set)
+    return (sets * execTimePerSet) + ((sets - 1) * restBetween);
+  }
+
+  /// Formatted time string (e.g., "3:30")
+  String get formattedTime {
+    final minutes = estimatedSeconds ~/ 60;
+    final seconds = estimatedSeconds % 60;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
+  }
 }
 
 /// Wizard workout configuration
@@ -122,6 +163,7 @@ sealed class PlanWizardState with _$PlanWizardState {
     @Default(PlanDifficulty.intermediate) PlanDifficulty difficulty,
     @Default(SplitType.abc) SplitType splitType,
     int? durationWeeks,
+    @Default(60) int estimatedWorkoutMinutes, // Duration per workout in minutes
     @Default([]) List<WizardWorkout> workouts,
     @Default(false) bool isLoading,
     String? error,
@@ -156,7 +198,9 @@ sealed class PlanWizardState with _$PlanWizardState {
         return workouts.isNotEmpty &&
             workouts.every((w) => w.exercises.isNotEmpty);
       case 4:
-        return true; // Diet step is optional
+        // Diet step validation: if diet is included, calories must match macros
+        if (!includeDiet) return true;
+        return isCalorieMatchValid;
       case 5:
         return true; // Student assignment is optional
       case 6:
@@ -185,6 +229,36 @@ sealed class PlanWizardState with _$PlanWizardState {
       });
       return sum + (exerciseDuration ~/ 60);
     });
+  }
+
+  /// Check if daily calories match the calculated macros within tolerance
+  /// Formula: (protein × 4) + (carbs × 4) + (fat × 9)
+  /// Tolerance: ±100 kcal or ±5%, whichever is greater
+  bool get isCalorieMatchValid {
+    // If no calories set, no validation needed
+    if (dailyCalories == null) return true;
+    // If no macros set at all, no validation needed
+    if (proteinGrams == null && carbsGrams == null && fatGrams == null) {
+      return true;
+    }
+
+    final protein = proteinGrams ?? 0;
+    final carbs = carbsGrams ?? 0;
+    final fat = fatGrams ?? 0;
+    final calculated = (protein * 4) + (carbs * 4) + (fat * 9);
+    final target = dailyCalories!;
+
+    // Margin: ±100 kcal or ±5%, whichever is greater
+    final margin = max(100, (target * 0.05).round());
+    return (calculated - target).abs() <= margin;
+  }
+
+  /// Get calculated calories from macros
+  int get calculatedCalories {
+    final protein = proteinGrams ?? 0;
+    final carbs = carbsGrams ?? 0;
+    final fat = fatGrams ?? 0;
+    return (protein * 4) + (carbs * 4) + (fat * 9);
   }
 }
 
@@ -241,6 +315,10 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
 
   void setDurationWeeks(int? weeks) {
     state = state.copyWith(durationWeeks: weeks);
+  }
+
+  void setEstimatedWorkoutMinutes(int minutes) {
+    state = state.copyWith(estimatedWorkoutMinutes: minutes);
   }
 
   void setIsTemplate(bool isTemplate) {
@@ -1628,6 +1706,7 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
     String workoutId, {
     List<String>? allowedTechniques,
     List<String>? muscleGroups,
+    int count = 6,
   }) async {
     final workout = state.workouts.firstWhere((w) => w.id == workoutId);
 
@@ -1660,7 +1739,7 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
         muscleGroups: effectiveMuscleGroups,
         goal: state.goal.toApiValue(),
         difficulty: state.difficulty.toApiValue(),
-        count: 6,
+        count: count,
         excludeExerciseIds: existingIds.isNotEmpty ? existingIds : null,
         // Workout context
         workoutName: workout.name,

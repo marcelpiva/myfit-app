@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-01-19
+
+### Added
+- **Workout Duration Management**
+  - New "Duração por Treino" selector in plan creation (30, 45, 60, 90, 120 min)
+  - Time indicator in workout header showing current vs target time
+  - Warning when workout exceeds 120% of target duration
+  - Total time display in plan review summary
+
+- **Exercise Time Estimation**
+  - Automatic calculation based on sets, rest periods, and technique type
+  - Time chip displayed on each exercise (e.g., "3:30")
+  - Technique-aware timing (Drop Set, Rest-Pause, Cluster have different calculations)
+
+- **AI Suggestion with Time Awareness**
+  - Time info banner showing current workout time and remaining time
+  - Dynamic exercise count suggestion based on available time
+  - Slider for adjusting quantity (1-10 exercises)
+  - Warning when selected count may exceed target workout duration
+
+- **Calorie/Macro Validation**
+  - Automatic validation: calories = (protein × 4) + (carbs × 4) + (fat × 9)
+  - Tolerance margin: ±100 kcal or ±5%, whichever is greater
+  - Visual feedback: error (red) when mismatch, success (green) when valid
+  - Blocks advancing in diet step until calories match macros
+
+### Changed
+- AI suggestion modal now uses slider instead of fixed count chips
+- Plan review shows "Por Treino" and "Tempo Total" stats
+
 ## [1.3.3] - 2026-01-19
 
 ### Added

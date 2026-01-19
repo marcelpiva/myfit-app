@@ -137,6 +137,7 @@ _PlanExercise _$PlanExerciseFromJson(Map<String, dynamic> json) =>
           TechniqueType.normal,
       exerciseGroupId: json['exerciseGroupId'] as String?,
       exerciseGroupOrder: (json['exerciseGroupOrder'] as num?)?.toInt() ?? 0,
+      estimatedSeconds: (json['estimatedSeconds'] as num?)?.toInt() ?? 0,
       exercise: json['exercise'] == null
           ? null
           : PlanExerciseDetail.fromJson(
@@ -159,6 +160,7 @@ Map<String, dynamic> _$PlanExerciseToJson(_PlanExercise instance) =>
       'techniqueType': _$TechniqueTypeEnumMap[instance.techniqueType]!,
       'exerciseGroupId': instance.exerciseGroupId,
       'exerciseGroupOrder': instance.exerciseGroupOrder,
+      'estimatedSeconds': instance.estimatedSeconds,
       'exercise': instance.exercise,
     };
 

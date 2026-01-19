@@ -930,7 +930,15 @@ class WorkoutService {
         };
       }
 
-      final response = await _client.post(ApiEndpoints.exercisesSuggest, data: data);
+      // AI suggestion can take longer, use extended timeout
+      final response = await _client.post(
+        ApiEndpoints.exercisesSuggest,
+        data: data,
+        options: Options(
+          sendTimeout: const Duration(seconds: 90),
+          receiveTimeout: const Duration(seconds: 90),
+        ),
+      );
       if (response.statusCode == 200 && response.data != null) {
         return response.data as Map<String, dynamic>;
       }

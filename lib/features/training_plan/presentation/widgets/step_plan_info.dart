@@ -90,6 +90,10 @@ class _StepPlanInfoState extends ConsumerState<StepPlanInfo>
 
               // Duration Selection
               _buildDurationSection(theme, isDark, state, notifier),
+              const SizedBox(height: 32),
+
+              // Workout Duration Selection
+              _buildWorkoutDurationSection(theme, isDark, state, notifier),
             ],
           ),
         ),
@@ -489,6 +493,62 @@ class _StepPlanInfoState extends ConsumerState<StepPlanInfo>
     );
   }
 
+  Widget _buildWorkoutDurationSection(
+    ThemeData theme,
+    bool isDark,
+    PlanWizardState state,
+    PlanWizardNotifier notifier,
+  ) {
+    final durations = [
+      (30, '30 min'),
+      (45, '45 min'),
+      (60, '60 min'),
+      (90, '90 min'),
+      (120, '2h'),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionLabel(theme, isDark, 'Duração por Treino'),
+        const SizedBox(height: 4),
+        Text(
+          'Tempo estimado de cada sessão de treino',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: isDark
+                ? AppColors.mutedForegroundDark
+                : AppColors.mutedForeground,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: durations.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            final isSelected = state.estimatedWorkoutMinutes == item.$1;
+
+            return Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  right: index < durations.length - 1 ? 8 : 0,
+                ),
+                child: _WorkoutDurationChip(
+                  label: item.$2,
+                  isSelected: isSelected,
+                  isDark: isDark,
+                  onTap: () {
+                    HapticUtils.selectionClick();
+                    notifier.setEstimatedWorkoutMinutes(item.$1);
+                  },
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
   Widget _buildSectionLabel(
     ThemeData theme,
     bool isDark,
@@ -863,6 +923,65 @@ class _DurationChip extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// Workout Duration Chip Widget
+class _WorkoutDurationChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _WorkoutDurationChip({
+    required this.label,
+    required this.isSelected,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary
+              : (isDark ? AppColors.cardDark : Colors.white),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primary
+                : (isDark ? AppColors.borderDark : AppColors.border),
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withAlpha(isDark ? 50 : 40),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected
+                  ? Colors.white
+                  : (isDark ? AppColors.foregroundDark : AppColors.foreground),
+            ),
+          ),
         ),
       ),
     );

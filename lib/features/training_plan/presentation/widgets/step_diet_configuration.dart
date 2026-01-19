@@ -402,46 +402,133 @@ class _StepDietConfigurationState extends ConsumerState<StepDietConfiguration> {
     final protein = state.proteinGrams ?? 0;
     final carbs = state.carbsGrams ?? 0;
     final fat = state.fatGrams ?? 0;
-    final calculatedCalories = (protein * 4) + (carbs * 4) + (fat * 9);
+    final calculatedCalories = state.calculatedCalories;
+    final targetCalories = state.dailyCalories;
+    final isValid = state.isCalorieMatchValid;
 
     if (protein == 0 && carbs == 0 && fat == 0) return const SizedBox.shrink();
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isDark
-            ? theme.colorScheme.surfaceContainerLow.withAlpha(150)
-            : theme.colorScheme.surfaceContainerLow.withAlpha(200),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
+    return Column(
+      children: [
+        // Calculated calories summary
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isDark
+                ? theme.colorScheme.surfaceContainerLow.withAlpha(150)
+                : theme.colorScheme.surfaceContainerLow.withAlpha(200),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(
-                LucideIcons.calculator,
-                size: 16,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              Row(
+                children: [
+                  Icon(
+                    LucideIcons.calculator,
+                    size: 16,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Total calculado:',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
               Text(
-                'Total calculado:',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                '$calculatedCalories kcal',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: isValid ? AppColors.primary : AppColors.destructive,
                 ),
               ),
             ],
           ),
-          Text(
-            '$calculatedCalories kcal',
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: AppColors.primary,
+        ),
+        // Warning when calories don't match
+        if (targetCalories != null && !isValid) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.destructive.withAlpha(isDark ? 30 : 20),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: AppColors.destructive.withAlpha(isDark ? 80 : 50),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  LucideIcons.alertTriangle,
+                  size: 20,
+                  color: AppColors.destructive,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Calorias não conferem',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.destructive,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Esperado: ~$targetCalories kcal\nCalculado: $calculatedCalories kcal (diferença: ${(calculatedCalories - targetCalories).abs()} kcal)',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: isDark
+                              ? AppColors.foregroundDark.withAlpha(200)
+                              : AppColors.foreground.withAlpha(200),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
-      ),
+        // Success message when calories match
+        if (targetCalories != null && isValid && calculatedCalories > 0) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.success.withAlpha(isDark ? 30 : 20),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: AppColors.success.withAlpha(isDark ? 80 : 50),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  LucideIcons.checkCircle2,
+                  size: 20,
+                  color: AppColors.success,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Calorias conferem com os macros',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.success,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
     );
   }
 

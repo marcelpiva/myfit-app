@@ -634,7 +634,19 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(planWizardProvider);
     final notifier = ref.read(planWizardProvider.notifier);
+
+    // Calculate current workout duration in minutes
+    final currentWorkoutMinutes = workout.exercises.fold<int>(
+      0,
+      (sum, e) => sum + e.estimatedSeconds,
+    ) ~/ 60;
+    final targetMinutes = state.estimatedWorkoutMinutes;
+    final timePercentage = targetMinutes > 0
+        ? (currentWorkoutMinutes / targetMinutes * 100).round()
+        : 0;
+    final isOverTime = timePercentage > 120;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -714,6 +726,44 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
                       ],
                     ),
                   ),
+                  // Time indicator
+                  if (workout.exercises.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isOverTime
+                            ? AppColors.warning.withAlpha(isDark ? 40 : 25)
+                            : AppColors.success.withAlpha(isDark ? 40 : 25),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: isOverTime
+                              ? AppColors.warning.withAlpha(isDark ? 80 : 50)
+                              : AppColors.success.withAlpha(isDark ? 80 : 50),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isOverTime ? LucideIcons.alertTriangle : LucideIcons.clock,
+                            size: 12,
+                            color: isOverTime ? AppColors.warning : AppColors.success,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$currentWorkoutMinutes/$targetMinutes min',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: isOverTime ? AppColors.warning : AppColors.success,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(width: 8),
                   // Edit indicator icon
                   Icon(
                     LucideIcons.pencil,
@@ -861,6 +911,13 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
     // Get muscle groups from the workout
     final workoutMuscleGroups = workout.muscleGroups;
 
+    // Calculate current workout time and target
+    final currentWorkoutMinutes = workout.exercises.fold<int>(
+      0,
+      (sum, e) => sum + e.estimatedSeconds,
+    ) ~/ 60;
+    final targetMinutes = state.estimatedWorkoutMinutes;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -874,7 +931,9 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
         difficulty: difficulty,
         isDark: isDark,
         theme: theme,
-        onConfirm: (selectedTechniques, selectedMuscleGroups) async {
+        currentWorkoutMinutes: currentWorkoutMinutes,
+        targetWorkoutMinutes: targetMinutes,
+        onConfirm: (selectedTechniques, selectedMuscleGroups, count) async {
           Navigator.pop(ctx);
 
           // Save current workouts state before AI suggestion
@@ -891,6 +950,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
             workout.id,
             allowedTechniques: selectedTechniques.map((t) => t.toApiValue()).toList(),
             muscleGroups: selectedMuscleGroups,
+            count: count,
           );
 
           if (!context.mounted) return;
@@ -1829,6 +1889,7 @@ class _GroupedExerciseItem extends ConsumerWidget {
           final description = exerciseData['description'] as String? ?? '';
           final instructions = exerciseData['instructions'] as String? ?? '';
           final imageUrl = exerciseData['image_url'] as String?;
+          final videoUrl = exerciseData['video_url'] as String?;
           final muscleGroup = exerciseData['muscle_group'] as String? ?? '';
 
           return DraggableScrollableSheet(
@@ -1872,13 +1933,61 @@ class _GroupedExerciseItem extends ConsumerWidget {
                       ),
                       child: Text(
                         muscleGroup,
-                        style: theme.textTheme.labelSmall?.copyWith(
+                        style: theme.textTheme.labelMedium?.copyWith(
                           color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ],
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
+
+                  // Image
+                  if (imageUrl != null && imageUrl.isNotEmpty) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        imageUrl,
+                        height: 200,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.mutedDark : AppColors.muted,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Center(
+                            child: Icon(LucideIcons.image, size: 48),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+
+                  // Video button
+                  if (videoUrl != null && videoUrl.isNotEmpty) ...[
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        HapticUtils.lightImpact();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => VideoPlayerPage(
+                              videoUrl: videoUrl,
+                              title: exercise.name,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(LucideIcons.play),
+                      label: const Text('Ver Vídeo'),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 48),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
 
                   if (description.isNotEmpty) ...[
                     Text('Descrição', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
@@ -2379,6 +2488,12 @@ class _GroupedExerciseItem extends ConsumerWidget {
                           isHighlighted: true,
                           highlightColor: techniqueColor,
                         ),
+                      // Time estimate
+                      _MiniChip(
+                        label: exercise.formattedTime,
+                        icon: LucideIcons.clock,
+                        isDark: isDark,
+                      ),
                       // Compact isometric display
                       if (exercise.isometricSeconds != null && exercise.isometricSeconds! > 0)
                         _MiniChip(
@@ -3976,6 +4091,12 @@ class _ExerciseItem extends ConsumerWidget {
                                 isDark: isDark,
                                 isHighlighted: exercise.restSeconds == 0,
                               ),
+                              // Time estimate
+                              _MiniChip(
+                                label: exercise.formattedTime,
+                                icon: LucideIcons.clock,
+                                isDark: isDark,
+                              ),
                               // Compact isometric display
                               if (exercise.isometricSeconds != null && exercise.isometricSeconds! > 0)
                                 _MiniChip(
@@ -5267,7 +5388,9 @@ class _AITechniqueSelectionSheet extends StatefulWidget {
   final PlanDifficulty difficulty;
   final bool isDark;
   final ThemeData theme;
-  final void Function(Set<TechniqueType> selectedTechniques, List<String> selectedMuscleGroups) onConfirm;
+  final int currentWorkoutMinutes;
+  final int targetWorkoutMinutes;
+  final void Function(Set<TechniqueType> selectedTechniques, List<String> selectedMuscleGroups, int count) onConfirm;
 
   const _AITechniqueSelectionSheet({
     required this.initialTechniques,
@@ -5275,6 +5398,8 @@ class _AITechniqueSelectionSheet extends StatefulWidget {
     required this.difficulty,
     required this.isDark,
     required this.theme,
+    required this.currentWorkoutMinutes,
+    required this.targetWorkoutMinutes,
     required this.onConfirm,
   });
 
@@ -5285,6 +5410,10 @@ class _AITechniqueSelectionSheet extends StatefulWidget {
 class _AITechniqueSelectionSheetState extends State<_AITechniqueSelectionSheet> {
   late Set<TechniqueType> _selectedTechniques;
   late Set<String> _selectedMuscleGroups;
+  late int _selectedCount;
+
+  // Average minutes per exercise (including rest)
+  static const _avgMinutesPerExercise = 5;
 
   // Group techniques by category
   static const _simpleCategory = [TechniqueType.normal];
@@ -5303,12 +5432,19 @@ class _AITechniqueSelectionSheetState extends State<_AITechniqueSelectionSheet> 
   bool get _hasMuscleGroupsFromWorkout => widget.workoutMuscleGroups.isNotEmpty;
   bool get _canConfirm => _selectedTechniques.isNotEmpty && _selectedMuscleGroups.isNotEmpty;
 
+  // Time-based calculations
+  int get _remainingMinutes => (widget.targetWorkoutMinutes - widget.currentWorkoutMinutes).clamp(0, widget.targetWorkoutMinutes);
+  int get _suggestedCount => (_remainingMinutes / _avgMinutesPerExercise).floor().clamp(1, 10);
+  bool get _wouldExceedTime => _selectedCount > _suggestedCount;
+
   @override
   void initState() {
     super.initState();
     _selectedTechniques = Set.from(widget.initialTechniques);
     // Pre-select muscle groups from the workout, or empty if none
     _selectedMuscleGroups = Set.from(widget.workoutMuscleGroups);
+    // Set initial count based on remaining time
+    _selectedCount = _suggestedCount.clamp(4, 10);
   }
 
   String _getDifficultyLabel() {
@@ -5322,15 +5458,63 @@ class _AITechniqueSelectionSheetState extends State<_AITechniqueSelectionSheet> 
     }
   }
 
-  String _getDifficultyHint() {
-    switch (widget.difficulty) {
-      case PlanDifficulty.beginner:
-        return 'Recomendamos apenas exercícios simples';
-      case PlanDifficulty.intermediate:
-        return 'Recomendamos Bi-Set e Superset';
-      case PlanDifficulty.advanced:
-        return 'Todas as técnicas são recomendadas';
-    }
+  Widget _buildTimeInfoBanner() {
+    final hasExercises = widget.currentWorkoutMinutes > 0;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.info.withAlpha(widget.isDark ? 30 : 20),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: AppColors.info.withAlpha(widget.isDark ? 60 : 40),
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(
+                LucideIcons.clock,
+                size: 18,
+                color: AppColors.info,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      hasExercises
+                          ? 'Tempo atual: ${widget.currentWorkoutMinutes} min de ${widget.targetWorkoutMinutes} min'
+                          : 'Tempo alvo: ${widget.targetWorkoutMinutes} min',
+                      style: widget.theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.info,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Restam $_remainingMinutes min (~$_suggestedCount exercícios)',
+                      style: widget.theme.textTheme.bodySmall?.copyWith(
+                        color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Check if selected muscle groups contain antagonist pairs (for Superset validation)
+  bool _hasAntagonistPairs() {
+    return MuscleGroupTechniqueDetector.hasAntagonistPairsFromStrings(
+      _selectedMuscleGroups.toList(),
+    );
   }
 
   @override
@@ -5418,80 +5602,156 @@ class _AITechniqueSelectionSheetState extends State<_AITechniqueSelectionSheet> 
                 ],
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
 
-              // Hint based on difficulty
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withAlpha(20),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(LucideIcons.lightbulb, size: 16, color: AppColors.primary),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _getDifficultyHint(),
-                        style: widget.theme.textTheme.bodySmall?.copyWith(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              // Time info banner
+              _buildTimeInfoBanner(),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               // Muscle Groups Section
               _buildMuscleGroupsSection(),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               // Simple exercises
               _buildCategorySection(
-                'Exercícios Simples',
-                'Execução tradicional',
+                'Simples',
                 _simpleCategory,
                 LucideIcons.dumbbell,
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
               // Multi-exercise techniques
               _buildCategorySection(
-                'Técnicas com Múltiplos Exercícios',
-                'Combinam 2 ou mais exercícios',
+                'Multi-Exercícios',
                 _multiExerciseCategory,
                 LucideIcons.link,
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
 
               // Single-exercise techniques
               _buildCategorySection(
-                'Técnicas de Intensidade',
-                'Aplicadas a um único exercício',
+                'Intensidade',
                 _singleExerciseCategory,
                 LucideIcons.zap,
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+
+              // Count selection with slider
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        LucideIcons.hash,
+                        size: 16,
+                        color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Quantidade:',
+                        style: widget.theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _wouldExceedTime
+                              ? AppColors.warning.withAlpha(widget.isDark ? 40 : 25)
+                              : AppColors.primary.withAlpha(widget.isDark ? 40 : 25),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '$_selectedCount exercícios',
+                          style: widget.theme.textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: _wouldExceedTime ? AppColors.warning : AppColors.primary,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      if (_suggestedCount < 10)
+                        Text(
+                          'Sugerido: $_suggestedCount',
+                          style: widget.theme.textTheme.labelSmall?.copyWith(
+                            color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      activeTrackColor: _wouldExceedTime ? AppColors.warning : AppColors.primary,
+                      inactiveTrackColor: widget.theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                      thumbColor: _wouldExceedTime ? AppColors.warning : AppColors.primary,
+                      overlayColor: (_wouldExceedTime ? AppColors.warning : AppColors.primary).withValues(alpha: 0.2),
+                    ),
+                    child: Slider(
+                      value: _selectedCount.toDouble(),
+                      min: 1,
+                      max: 10,
+                      divisions: 9,
+                      onChanged: (value) {
+                        HapticUtils.selectionClick();
+                        setState(() => _selectedCount = value.round());
+                      },
+                    ),
+                  ),
+                  // Warning if exceeds time
+                  if (_wouldExceedTime)
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withAlpha(widget.isDark ? 30 : 20),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: AppColors.warning.withAlpha(widget.isDark ? 60 : 40),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            LucideIcons.alertTriangle,
+                            size: 16,
+                            color: AppColors.warning,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Pode ultrapassar ${widget.targetWorkoutMinutes} min de treino',
+                              style: widget.theme.textTheme.bodySmall?.copyWith(
+                                color: AppColors.warning,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
 
               // Confirm button
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
                   onPressed: _canConfirm
-                      ? () => widget.onConfirm(_selectedTechniques, _selectedMuscleGroups.toList())
+                      ? () => widget.onConfirm(_selectedTechniques, _selectedMuscleGroups.toList(), _selectedCount)
                       : null,
                   icon: const Icon(LucideIcons.sparkles, size: 18),
                   label: Text(_selectedMuscleGroups.isEmpty
                       ? 'Selecione ao menos 1 grupo muscular'
-                      : 'Gerar Exercícios'),
+                      : 'Gerar $_selectedCount Exercícios'),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
@@ -5577,6 +5837,14 @@ class _AITechniqueSelectionSheetState extends State<_AITechniqueSelectionSheet> 
                     // Always allow at least deselecting (validation happens on confirm)
                     _selectedMuscleGroups.remove(group.name);
                   }
+                  // Auto-deselect Superset if no more antagonist pairs
+                  if (!_hasAntagonistPairs() && _selectedTechniques.contains(TechniqueType.superset)) {
+                    _selectedTechniques.remove(TechniqueType.superset);
+                    // Ensure at least one technique is selected
+                    if (_selectedTechniques.isEmpty) {
+                      _selectedTechniques.add(TechniqueType.normal);
+                    }
+                  }
                 });
               },
               selectedColor: AppColors.secondary.withAlpha(40),
@@ -5596,10 +5864,11 @@ class _AITechniqueSelectionSheetState extends State<_AITechniqueSelectionSheet> 
 
   Widget _buildCategorySection(
     String title,
-    String subtitle,
     List<TechniqueType> techniques,
     IconData icon,
   ) {
+    final hasAntagonist = _hasAntagonistPairs();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -5615,13 +5884,6 @@ class _AITechniqueSelectionSheetState extends State<_AITechniqueSelectionSheet> 
             ),
           ],
         ),
-        const SizedBox(height: 2),
-        Text(
-          subtitle,
-          style: widget.theme.textTheme.bodySmall?.copyWith(
-            color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.5),
-          ),
-        ),
         const SizedBox(height: 10),
         Wrap(
           spacing: 8,
@@ -5630,37 +5892,48 @@ class _AITechniqueSelectionSheetState extends State<_AITechniqueSelectionSheet> 
             final isSelected = _selectedTechniques.contains(technique);
             final techniqueColor = ExerciseTheme.getColor(technique);
 
+            // Disable Superset if no antagonist pairs available
+            final isSuperset = technique == TechniqueType.superset;
+            final isDisabled = isSuperset && !hasAntagonist;
+
             return FilterChip(
               label: Text(technique.displayName),
-              selected: isSelected,
-              onSelected: (selected) {
-                HapticUtils.selectionClick();
-                setState(() {
-                  if (selected) {
-                    _selectedTechniques.add(technique);
-                  } else {
-                    // Don't allow deselecting all techniques
-                    if (_selectedTechniques.length > 1) {
-                      _selectedTechniques.remove(technique);
-                    }
-                  }
-                });
-              },
+              selected: isSelected && !isDisabled,
+              onSelected: isDisabled
+                  ? null
+                  : (selected) {
+                      HapticUtils.selectionClick();
+                      setState(() {
+                        if (selected) {
+                          _selectedTechniques.add(technique);
+                        } else {
+                          // Don't allow deselecting all techniques
+                          if (_selectedTechniques.length > 1) {
+                            _selectedTechniques.remove(technique);
+                          }
+                        }
+                      });
+                    },
               selectedColor: techniqueColor.withAlpha(40),
               checkmarkColor: techniqueColor,
-              avatar: isSelected
+              avatar: isSelected && !isDisabled
                   ? null
                   : Icon(
                       ExerciseTheme.getIcon(technique),
                       size: 16,
-                      color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                      color: isDisabled
+                          ? widget.theme.colorScheme.onSurface.withValues(alpha: 0.3)
+                          : widget.theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
               labelStyle: TextStyle(
-                color: isSelected
-                    ? techniqueColor
-                    : widget.theme.colorScheme.onSurface,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                color: isDisabled
+                    ? widget.theme.colorScheme.onSurface.withValues(alpha: 0.4)
+                    : isSelected
+                        ? techniqueColor
+                        : widget.theme.colorScheme.onSurface,
+                fontWeight: isSelected && !isDisabled ? FontWeight.w600 : FontWeight.normal,
               ),
+              tooltip: isDisabled ? 'Requer grupos musculares antagonistas' : null,
             );
           }).toList(),
         ),
