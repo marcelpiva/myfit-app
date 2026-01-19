@@ -53,12 +53,14 @@ enum TechniqueType {
   normal,
   @JsonValue('superset')
   superset,
-  @JsonValue('dropset')
-  dropset,
+  @JsonValue('biset')
+  biset,
   @JsonValue('triset')
   triset,
   @JsonValue('giantset')
   giantset,
+  @JsonValue('dropset')
+  dropset,
   @JsonValue('rest_pause')
   restPause,
   @JsonValue('cluster')
@@ -72,13 +74,15 @@ extension TechniqueTypeDisplay on TechniqueType {
       case TechniqueType.normal:
         return 'Normal';
       case TechniqueType.superset:
-        return 'Super Serie';
-      case TechniqueType.dropset:
-        return 'Drop Set';
+        return 'Superset';
+      case TechniqueType.biset:
+        return 'Bi-Set';
       case TechniqueType.triset:
         return 'Tri-Set';
       case TechniqueType.giantset:
         return 'Giant Set';
+      case TechniqueType.dropset:
+        return 'Drop Set';
       case TechniqueType.restPause:
         return 'Rest Pause';
       case TechniqueType.cluster:
@@ -91,13 +95,15 @@ extension TechniqueTypeDisplay on TechniqueType {
       case TechniqueType.normal:
         return 'Execucao padrao com descanso entre series';
       case TechniqueType.superset:
-        return 'Dois exercicios seguidos sem descanso';
+        return '2 exercicios de grupos opostos sem descanso';
+      case TechniqueType.biset:
+        return '2 exercicios da mesma area sem descanso';
+      case TechniqueType.triset:
+        return '3 exercicios do mesmo grupo muscular';
+      case TechniqueType.giantset:
+        return '4+ exercicios do mesmo grupo muscular';
       case TechniqueType.dropset:
         return 'Reduz o peso e continua sem descanso';
-      case TechniqueType.triset:
-        return 'Tres exercicios seguidos sem descanso';
-      case TechniqueType.giantset:
-        return 'Quatro ou mais exercicios seguidos';
       case TechniqueType.restPause:
         return 'Pausas curtas (10-15s) durante a serie';
       case TechniqueType.cluster:
@@ -111,12 +117,14 @@ extension TechniqueTypeDisplay on TechniqueType {
         return 'normal';
       case TechniqueType.superset:
         return 'superset';
-      case TechniqueType.dropset:
-        return 'dropset';
+      case TechniqueType.biset:
+        return 'biset';
       case TechniqueType.triset:
         return 'triset';
       case TechniqueType.giantset:
         return 'giantset';
+      case TechniqueType.dropset:
+        return 'dropset';
       case TechniqueType.restPause:
         return 'rest_pause';
       case TechniqueType.cluster:
@@ -131,16 +139,25 @@ extension TechniqueTypeParsing on String {
     switch (toLowerCase()) {
       case 'superset':
         return TechniqueType.superset;
-      case 'dropset':
-        return TechniqueType.dropset;
+      case 'biset':
+      case 'bi_set':
+        return TechniqueType.biset;
       case 'triset':
+      case 'tri_set':
         return TechniqueType.triset;
       case 'giantset':
+      case 'giant_set':
         return TechniqueType.giantset;
+      case 'dropset':
+        return TechniqueType.dropset;
       case 'rest_pause':
         return TechniqueType.restPause;
       case 'cluster':
         return TechniqueType.cluster;
+      case 'isometric':
+        // Isometric is not a technique type but a modifier
+        // Return normal and let isometric_seconds handle it
+        return TechniqueType.normal;
       default:
         return TechniqueType.normal;
     }

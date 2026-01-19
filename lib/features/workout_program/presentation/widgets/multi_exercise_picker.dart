@@ -177,76 +177,101 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
             ),
           ),
 
-          // Selected exercises preview
+          // Selected exercises preview - horizontal scrollable strip
           if (_selectedExercises.isNotEmpty) ...[
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: _techniqueColor.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: _techniqueColor.withValues(alpha: 0.2),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              height: 56,
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: Row(
                 children: [
-                  Row(
-                    children: [
-                      Icon(LucideIcons.listChecks, size: 16, color: _techniqueColor),
-                      const SizedBox(width: 8),
-                      Text(
-                        _selectionStatus,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: _techniqueColor,
-                          fontWeight: FontWeight.w600,
-                        ),
+                  // Selection count badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _techniqueColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      _selectionStatus,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: _techniqueColor,
+                        fontWeight: FontWeight.w600,
                       ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _selectedExercises.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final exercise = entry.value;
-                      return Chip(
-                        avatar: CircleAvatar(
-                          radius: 12,
-                          backgroundColor: _techniqueColor,
-                          child: Text(
-                            '${index + 1}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
+                  const SizedBox(width: 12),
+                  // Horizontal list of selected exercises
+                  Expanded(
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _selectedExercises.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      itemBuilder: (context, index) {
+                        final exercise = _selectedExercises[index];
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: _techniqueColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: _techniqueColor.withValues(alpha: 0.3),
                             ),
                           ),
-                        ),
-                        label: Text(
-                          exercise.name,
-                          style: theme.textTheme.bodySmall,
-                        ),
-                        deleteIcon: const Icon(LucideIcons.x, size: 14),
-                        onDeleted: () {
-                          HapticUtils.selectionClick();
-                          setState(() {
-                            _selectedExercises.remove(exercise);
-                          });
-                        },
-                        backgroundColor: theme.colorScheme.surface,
-                        side: BorderSide(
-                          color: theme.colorScheme.outline.withValues(alpha: 0.2),
-                        ),
-                      );
-                    }).toList(),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 20,
+                                height: 20,
+                                decoration: BoxDecoration(
+                                  color: _techniqueColor,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '${index + 1}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 100),
+                                child: Text(
+                                  exercise.name,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              GestureDetector(
+                                onTap: () {
+                                  HapticUtils.selectionClick();
+                                  setState(() {
+                                    _selectedExercises.remove(exercise);
+                                  });
+                                },
+                                child: Icon(
+                                  LucideIcons.x,
+                                  size: 14,
+                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 8),
           ],
 
           // Search bar

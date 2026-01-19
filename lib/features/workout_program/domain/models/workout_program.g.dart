@@ -170,9 +170,10 @@ Map<String, dynamic> _$ProgramExerciseToJson(_ProgramExercise instance) =>
 const _$TechniqueTypeEnumMap = {
   TechniqueType.normal: 'normal',
   TechniqueType.superset: 'superset',
-  TechniqueType.dropset: 'dropset',
+  TechniqueType.biset: 'biset',
   TechniqueType.triset: 'triset',
   TechniqueType.giantset: 'giantset',
+  TechniqueType.dropset: 'dropset',
   TechniqueType.restPause: 'rest_pause',
   TechniqueType.cluster: 'cluster',
 };

@@ -15,6 +15,7 @@ abstract class ExerciseTheme {
   static const Map<TechniqueType, Color> techniqueColors = {
     TechniqueType.normal: Color(0xFF6B7280), // Gray
     TechniqueType.superset: Color(0xFF9333EA), // Purple
+    TechniqueType.biset: Color(0xFFEC4899), // Pink
     TechniqueType.triset: Color(0xFFF97316), // Orange
     TechniqueType.giantset: Color(0xFFDC2626), // Red
     TechniqueType.dropset: Color(0xFF2563EB), // Blue
@@ -43,6 +44,7 @@ abstract class ExerciseTheme {
     return switch (type) {
       TechniqueType.normal => LucideIcons.dumbbell,
       TechniqueType.superset => LucideIcons.arrowRightLeft,
+      TechniqueType.biset => LucideIcons.link,
       TechniqueType.triset => LucideIcons.triangle,
       TechniqueType.giantset => LucideIcons.crown,
       TechniqueType.dropset => LucideIcons.arrowDown,
@@ -63,11 +65,13 @@ abstract class ExerciseTheme {
     return switch (type) {
       TechniqueType.normal => 'Execucao padrao do exercicio',
       TechniqueType.superset =>
-        'Dois exercicios executados em sequencia sem descanso',
+        'Dois exercicios de grupos opostos sem descanso',
+      TechniqueType.biset =>
+        'Dois exercicios da mesma area sem descanso',
       TechniqueType.triset =>
-        'Tres exercicios executados em sequencia sem descanso',
+        'Tres exercicios do mesmo grupo muscular sem descanso',
       TechniqueType.giantset =>
-        'Quatro ou mais exercicios em sequencia sem descanso',
+        'Quatro ou mais exercicios do mesmo grupo sem descanso',
       TechniqueType.dropset =>
         'Reducao progressiva de carga sem descanso entre as reducoes',
       TechniqueType.restPause =>
@@ -81,9 +85,10 @@ abstract class ExerciseTheme {
   // TECHNIQUE IDENTIFICATION
   // ============================================
 
-  /// Check if a technique is a multi-exercise group (superset, triset, giantset).
+  /// Check if a technique is a multi-exercise group (superset, biset, triset, giantset).
   static bool isGroupTechnique(TechniqueType type) {
     return type == TechniqueType.superset ||
+        type == TechniqueType.biset ||
         type == TechniqueType.triset ||
         type == TechniqueType.giantset;
   }

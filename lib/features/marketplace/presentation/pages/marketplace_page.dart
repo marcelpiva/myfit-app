@@ -615,8 +615,12 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     if (newName != null && newName.isNotEmpty && context.mounted) {
       try {
         final service = WorkoutService();
-        // Duplicate the program as a template
-        final newProgram = await service.duplicateProgram(programId, newName: newName);
+        // Duplicate the program from catalog (tracks source_template_id)
+        final newProgram = await service.duplicateProgram(
+          programId,
+          newName: newName,
+          fromCatalog: true,
+        );
         final newProgramId = newProgram['id'] as String?;
 
         // Mark as template (not navigate to wizard)

@@ -133,13 +133,20 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
       final notifier = ref.read(programWizardProvider.notifier);
       notifier.loadFromAIGenerated(result);
 
+      // Check if there was an error in loading
+      final state = ref.read(programWizardProvider);
+      if (state.error != null) {
+        throw Exception(state.error);
+      }
+
       if (mounted) {
         widget.onComplete();
       }
     } catch (e) {
       setState(() {
         _error = e.toString();
-        _isGenerating = false;
+        // Keep _isGenerating = true so error is shown in the loading screen
+        // User can tap "Voltar" to go back to questionnaire
       });
     }
   }
@@ -150,28 +157,29 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
     final isDark = theme.brightness == Brightness.dark;
 
     if (_isGenerating) {
-      return Column(
-        children: [
-          // Header with close button (also in generating state)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    HapticUtils.lightImpact();
-                    setState(() {
-                      _isGenerating = false;
-                      _error = null;
-                    });
-                  },
-                  icon: const Icon(LucideIcons.x),
-                  tooltip: 'Cancelar',
-                ),
-              ],
+      return SafeArea(
+        child: Column(
+          children: [
+            // Header with close button (also in generating state)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      HapticUtils.lightImpact();
+                      setState(() {
+                        _isGenerating = false;
+                        _error = null;
+                      });
+                    },
+                    icon: const Icon(LucideIcons.x),
+                    tooltip: 'Cancelar',
+                  ),
+                ],
+              ),
             ),
-          ),
           Expanded(
             child: Center(
               child: Column(
@@ -232,131 +240,135 @@ class _StepAIQuestionnaireState extends ConsumerState<StepAIQuestionnaire> {
               ),
             ),
           ),
-        ],
+          ],
+        ),
       );
     }
 
-    return Column(
-      children: [
-        // Header with close button
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Gerar com IA',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              IconButton(
-                onPressed: () {
-                  HapticUtils.lightImpact();
-                  if (widget.onCancel != null) {
-                    widget.onCancel!();
-                  } else {
-                    Navigator.of(context).pop();
-                  }
-                },
-                icon: const Icon(LucideIcons.x),
-                tooltip: 'Fechar',
-              ),
-            ],
-          ),
-        ),
-        // Progress indicator
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            children: List.generate(_questions.length, (index) {
-              final isActive = index <= _currentQuestion;
-              final isCurrent = index == _currentQuestion;
-              return Expanded(
-                child: Container(
-                  margin: EdgeInsets.only(right: index < _questions.length - 1 ? 4 : 0),
-                  height: 3,
-                  decoration: BoxDecoration(
-                    color: isActive
-                        ? (isCurrent
-                            ? AppColors.secondary
-                            : AppColors.secondary.withAlpha(150))
-                        : theme.colorScheme.outline.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              );
-            }),
-          ),
-        ),
-
-        // Question pages
-        Expanded(
-          child: PageView(
-            controller: _pageController,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              _buildGoalQuestion(theme, isDark),
-              _buildDifficultyQuestion(theme, isDark),
-              _buildDaysQuestion(theme, isDark),
-              _buildDurationQuestion(theme, isDark),
-              _buildEquipmentQuestion(theme, isDark),
-              _buildInjuriesQuestion(theme, isDark),
-              _buildPreferencesQuestion(theme, isDark),
-              _buildWeeksQuestion(theme, isDark),
-            ],
-          ),
-        ),
-
-        // Navigation buttons
-        SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
+    return SafeArea(
+      child: Column(
+        children: [
+          // Header with close button
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (_currentQuestion > 0)
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _previousQuestion,
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text('Voltar'),
-                    ),
+                Text(
+                  'Gerar com IA',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
-                if (_currentQuestion > 0) const SizedBox(width: 12),
-                Expanded(
-                  flex: 2,
-                  child: FilledButton.icon(
-                    onPressed: _nextQuestion,
-                    icon: Icon(
-                      _currentQuestion == _questions.length - 1
-                          ? LucideIcons.sparkles
-                          : LucideIcons.arrowRight,
-                      size: 18,
-                    ),
-                    label: Text(
-                      _currentQuestion == _questions.length - 1
-                          ? 'Gerar Programa'
-                          : 'Continuar',
-                    ),
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: AppColors.secondary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
+                ),
+                IconButton(
+                  onPressed: () {
+                    HapticUtils.lightImpact();
+                    if (widget.onCancel != null) {
+                      widget.onCancel!();
+                    } else {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  icon: const Icon(LucideIcons.x),
+                  tooltip: 'Fechar',
                 ),
               ],
             ),
           ),
-        ),
-      ],
+          // Progress indicator
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: List.generate(_questions.length, (index) {
+                final isActive = index <= _currentQuestion;
+                final isCurrent = index == _currentQuestion;
+                return Expanded(
+                  child: Container(
+                    margin: EdgeInsets.only(right: index < _questions.length - 1 ? 4 : 0),
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: isActive
+                          ? (isCurrent
+                              ? AppColors.secondary
+                              : AppColors.secondary.withAlpha(150))
+                          : theme.colorScheme.outline.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+
+          // Question pages
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                _buildGoalQuestion(theme, isDark),
+                _buildDifficultyQuestion(theme, isDark),
+                _buildDaysQuestion(theme, isDark),
+                _buildDurationQuestion(theme, isDark),
+                _buildEquipmentQuestion(theme, isDark),
+                _buildInjuriesQuestion(theme, isDark),
+                _buildPreferencesQuestion(theme, isDark),
+                _buildWeeksQuestion(theme, isDark),
+              ],
+            ),
+          ),
+
+          // Navigation buttons
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  if (_currentQuestion > 0)
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _previousQuestion,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text('Voltar'),
+                      ),
+                    ),
+                  if (_currentQuestion > 0) const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: FilledButton.icon(
+                      onPressed: _nextQuestion,
+                      icon: Icon(
+                        _currentQuestion == _questions.length - 1
+                            ? LucideIcons.sparkles
+                            : LucideIcons.arrowRight,
+                        size: 18,
+                      ),
+                      label: Text(
+                        _currentQuestion == _questions.length - 1
+                            ? 'Gerar Programa'
+                            : 'Continuar',
+                      ),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: AppColors.secondary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

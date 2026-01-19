@@ -27,7 +27,8 @@ sealed class WizardExercise with _$WizardExercise {
     @Default(60) int restSeconds,
     @Default('') String notes,
     // Advanced technique fields
-    @Default('') String executionInstructions,
+    @Default('') String executionInstructions, // Individual exercise instructions
+    @Default('') String groupInstructions,     // Group instructions (for bi-set, tri-set, etc.)
     int? isometricSeconds,
     @Default(TechniqueType.normal) TechniqueType techniqueType,
     String? exerciseGroupId,
@@ -332,6 +333,7 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
             notes: exMap['notes'] as String? ?? '',
             // Advanced technique fields
             executionInstructions: exMap['execution_instructions'] as String? ?? '',
+            groupInstructions: exMap['group_instructions'] as String? ?? '',
             isometricSeconds: exMap['isometric_seconds'] as int?,
             techniqueType: (exMap['technique_type'] as String?)?.toTechniqueType() ?? TechniqueType.normal,
             exerciseGroupId: exMap['exercise_group_id'] as String?,
@@ -402,8 +404,20 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
             reps: (exMap['reps'] ?? '10-12').toString(),
             restSeconds: exMap['rest_seconds'] as int? ?? 60,
             notes: exMap['reason'] as String? ?? '',
+            // Advanced technique fields
+            executionInstructions: exMap['execution_instructions'] as String? ?? '',
+            groupInstructions: exMap['group_instructions'] as String? ?? '',
+            isometricSeconds: exMap['isometric_seconds'] as int?,
+            techniqueType: (exMap['technique_type'] as String?)?.toTechniqueType() ?? TechniqueType.normal,
+            exerciseGroupId: exMap['exercise_group_id'] as String?,
+            exerciseGroupOrder: exMap['exercise_group_order'] as int? ?? 0,
           ));
         }
+
+        // Parse target muscles from AI workout
+        final targetMuscles = (wMap['target_muscles'] as List<dynamic>?)
+            ?.map((e) => e.toString())
+            .toList() ?? [];
 
         workouts.add(WizardWorkout(
           id: label,
@@ -411,7 +425,7 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
           name: workoutName,
           order: wMap['order'] as int? ?? workouts.length,
           exercises: wizardExercises,
-          muscleGroups: [],
+          muscleGroups: targetMuscles,
         ));
       }
 
@@ -425,6 +439,7 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
         method: CreationMethod.ai,
         isTemplate: false,
         error: null,
+        currentStep: 2, // Go directly to workouts config step
       );
     } catch (e) {
       state = state.copyWith(error: 'Erro ao processar programa IA: $e');
@@ -480,6 +495,7 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
             notes: exMap['notes'] as String? ?? '',
             // Advanced technique fields
             executionInstructions: exMap['execution_instructions'] as String? ?? '',
+            groupInstructions: exMap['group_instructions'] as String? ?? '',
             isometricSeconds: exMap['isometric_seconds'] as int?,
             techniqueType: (exMap['technique_type'] as String?)?.toTechniqueType() ?? TechniqueType.normal,
             exerciseGroupId: exMap['exercise_group_id'] as String?,
@@ -769,15 +785,41 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
   }
 
   void addExerciseToWorkout(String workoutId, Exercise exercise) {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
     final workouts = state.workouts.map((w) {
       if (w.id == workoutId) {
         final wizardExercise = WizardExercise(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          id: '${timestamp}_${exercise.id.hashCode}',
           exerciseId: exercise.id,
           name: exercise.name,
           muscleGroup: exercise.muscleGroupName,
         );
         return w.copyWith(exercises: [...w.exercises, wizardExercise]);
+      }
+      return w;
+    }).toList();
+    state = state.copyWith(workouts: workouts);
+  }
+
+  /// Add multiple exercises to a workout in a single state update.
+  /// This ensures all exercises are added atomically with unique IDs.
+  void addExercisesToWorkout(String workoutId, List<Exercise> exercises) {
+    if (exercises.isEmpty) return;
+
+    final baseTimestamp = DateTime.now().millisecondsSinceEpoch;
+    final workouts = state.workouts.map((w) {
+      if (w.id == workoutId) {
+        final newExercises = exercises.asMap().entries.map((entry) {
+          final index = entry.key;
+          final exercise = entry.value;
+          return WizardExercise(
+            id: '${baseTimestamp}_${index}_${exercise.id.hashCode}',
+            exerciseId: exercise.id,
+            name: exercise.name,
+            muscleGroup: exercise.muscleGroupName,
+          );
+        }).toList();
+        return w.copyWith(exercises: [...w.exercises, ...newExercises]);
       }
       return w;
     }).toList();
@@ -1171,14 +1213,36 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
     );
   }
 
-  /// Create an exercise group for techniques like superset, triset, etc.
+  /// Create an exercise group for techniques like biset, superset, triset, giantset.
+  /// Automatically determines the technique type based on exercise count:
+  /// - 2 exercises → keeps user's choice (biset or superset), defaults to biset
+  /// - 3 exercises → triset
+  /// - 4+ exercises → giantset
   /// Returns the group ID if successful
   String? createExerciseGroup({
     required String workoutId,
     required List<String> exerciseIds,
-    required TechniqueType techniqueType,
+    TechniqueType? techniqueType,
   }) {
     if (exerciseIds.length < 2) return null;
+
+    // Determine technique type based on exercise count
+    // For 2 exercises: keep user's choice (biset or superset), default to biset
+    // For 3 exercises: always triset
+    // For 4+ exercises: always giantset
+    TechniqueType finalTechniqueType;
+    if (exerciseIds.length == 2) {
+      // Keep biset or superset if specified, default to biset
+      if (techniqueType == TechniqueType.biset || techniqueType == TechniqueType.superset) {
+        finalTechniqueType = techniqueType!;
+      } else {
+        finalTechniqueType = TechniqueType.biset;
+      }
+    } else if (exerciseIds.length == 3) {
+      finalTechniqueType = TechniqueType.triset;
+    } else {
+      finalTechniqueType = TechniqueType.giantset;
+    }
 
     // Generate a unique group ID
     final groupId = 'group_${DateTime.now().millisecondsSinceEpoch}';
@@ -1191,7 +1255,7 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
             final updated = e.copyWith(
               exerciseGroupId: groupId,
               exerciseGroupOrder: groupOrder++,
-              techniqueType: techniqueType,
+              techniqueType: finalTechniqueType,
             );
             return updated;
           }
@@ -1224,6 +1288,7 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
               exerciseGroupId: null,
               exerciseGroupOrder: 0,
               techniqueType: TechniqueType.normal,
+              groupInstructions: '', // Clear group instructions
               restSeconds: 60, // Reset rest to default
             );
           }
@@ -1252,6 +1317,7 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
               exerciseGroupId: null,
               exerciseGroupOrder: 0,
               techniqueType: TechniqueType.normal,
+              groupInstructions: '', // Clear group instructions
             );
           }
           return e;
@@ -1288,23 +1354,32 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
         final groupExercises = w.exercises.where((e) => e.exerciseGroupId == groupId).toList();
         if (groupExercises.isEmpty) return w;
 
-        // Get technique type and instructions from existing group members
+        // Get technique type from existing group members
         final techniqueType = groupExercises.first.techniqueType;
-        final groupInstructions = groupExercises.first.executionInstructions;
         final nextOrder = groupExercises.map((e) => e.exerciseGroupOrder).reduce((a, b) => a > b ? a : b) + 1;
 
         // Update technique type based on new group size
+        // 2 exercises → keep biset or superset (preserve user choice)
+        // 3 exercises → triset
+        // 4+ exercises → giantset
         final newGroupSize = groupExercises.length + 1;
-        TechniqueType newTechniqueType = techniqueType;
+        final currentType = techniqueType;
+        TechniqueType newTechniqueType;
         if (newGroupSize == 2) {
-          newTechniqueType = TechniqueType.superset;
+          // Keep biset or superset
+          if (currentType == TechniqueType.biset || currentType == TechniqueType.superset) {
+            newTechniqueType = currentType;
+          } else {
+            newTechniqueType = TechniqueType.biset;
+          }
         } else if (newGroupSize == 3) {
           newTechniqueType = TechniqueType.triset;
-        } else if (newGroupSize >= 4) {
+        } else {
           newTechniqueType = TechniqueType.giantset;
         }
 
         // Create new WizardExercise with group fields
+        // Note: Don't copy group instructions - they stay on the leader only
         final newExercise = WizardExercise(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           exerciseId: exercise.id,
@@ -1313,7 +1388,8 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
           techniqueType: newTechniqueType,
           exerciseGroupId: groupId,
           exerciseGroupOrder: nextOrder,
-          executionInstructions: groupInstructions,
+          // Keep individual exercise instructions empty (don't copy group instructions)
+          executionInstructions: '',
           // Rest is 0 for non-last exercises in group
           restSeconds: 0,
         );
@@ -1345,7 +1421,90 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
     state = state.copyWith(workouts: workouts);
   }
 
-  /// Update execution instructions for all exercises in a group
+  /// Move an existing exercise from the workout into a group
+  void addExistingExerciseToGroup({
+    required String workoutId,
+    required String groupId,
+    required String exerciseId,
+  }) {
+    final workouts = state.workouts.map((w) {
+      if (w.id == workoutId) {
+        // Find the exercise to move
+        final exerciseIndex = w.exercises.indexWhere((e) => e.id == exerciseId);
+        if (exerciseIndex == -1) return w;
+
+        final exerciseToMove = w.exercises[exerciseIndex];
+
+        // Find the group's exercises to determine the next order
+        final groupExercises = w.exercises.where((e) => e.exerciseGroupId == groupId).toList();
+        if (groupExercises.isEmpty) return w;
+
+        // Get technique type from existing group members
+        final nextOrder = groupExercises.map((e) => e.exerciseGroupOrder).reduce((a, b) => a > b ? a : b) + 1;
+
+        // Update technique type based on new group size
+        // 2 exercises → keep biset or superset (preserve user choice)
+        // 3 exercises → triset
+        // 4+ exercises → giantset
+        final newGroupSize = groupExercises.length + 1;
+        final currentType = groupExercises.first.techniqueType;
+        TechniqueType newTechniqueType;
+        if (newGroupSize == 2) {
+          // Keep biset or superset
+          if (currentType == TechniqueType.biset || currentType == TechniqueType.superset) {
+            newTechniqueType = currentType;
+          } else {
+            newTechniqueType = TechniqueType.biset;
+          }
+        } else if (newGroupSize == 3) {
+          newTechniqueType = TechniqueType.triset;
+        } else {
+          newTechniqueType = TechniqueType.giantset;
+        }
+
+        // Update the exercise with group fields
+        // Copy groupInstructions from existing group, keep individual executionInstructions
+        final existingGroupInstructions = groupExercises.first.groupInstructions;
+        final updatedExercise = exerciseToMove.copyWith(
+          techniqueType: newTechniqueType,
+          exerciseGroupId: groupId,
+          exerciseGroupOrder: nextOrder,
+          groupInstructions: existingGroupInstructions, // Copy group instructions
+          // Keep the exercise's own executionInstructions intact
+          restSeconds: 60, // Last exercise in group gets rest
+        );
+
+        // Remove the exercise from its current position
+        final updatedExercises = List<WizardExercise>.from(w.exercises);
+        updatedExercises.removeAt(exerciseIndex);
+
+        // Update existing group exercises technique type and fix rest times
+        for (var i = 0; i < updatedExercises.length; i++) {
+          if (updatedExercises[i].exerciseGroupId == groupId) {
+            updatedExercises[i] = updatedExercises[i].copyWith(
+              techniqueType: newTechniqueType,
+              restSeconds: 0, // All existing will have 0 rest
+            );
+          }
+        }
+
+        // Find the position of the last group exercise and insert after it
+        final lastGroupExerciseIndex = updatedExercises.lastIndexWhere((e) => e.exerciseGroupId == groupId);
+        if (lastGroupExerciseIndex >= 0) {
+          updatedExercises.insert(lastGroupExerciseIndex + 1, updatedExercise);
+        } else {
+          updatedExercises.add(updatedExercise);
+        }
+
+        return w.copyWith(exercises: updatedExercises);
+      }
+      return w;
+    }).toList();
+
+    state = state.copyWith(workouts: workouts);
+  }
+
+  /// Update group instructions for all exercises in the group
   void updateGroupInstructions({
     required String workoutId,
     required String groupId,
@@ -1353,9 +1512,10 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
   }) {
     final workouts = state.workouts.map((w) {
       if (w.id == workoutId) {
+        // Update groupInstructions on ALL exercises in the group
         final exercises = w.exercises.map((e) {
           if (e.exerciseGroupId == groupId) {
-            return e.copyWith(executionInstructions: instructions);
+            return e.copyWith(groupInstructions: instructions);
           }
           return e;
         }).toList();
@@ -1390,9 +1550,18 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
     }
 
     // Update technique type based on remaining group size
+    // 2 exercises → keep biset or superset (preserve user choice)
+    // 3 exercises → triset
+    // 4+ exercises → giantset
+    final currentType = exercises.firstWhere((e) => e.exerciseGroupId == groupId).techniqueType;
     TechniqueType newTechniqueType;
     if (groupCount == 2) {
-      newTechniqueType = TechniqueType.superset;
+      // Keep biset or superset if already set, otherwise default to biset
+      if (currentType == TechniqueType.biset || currentType == TechniqueType.superset) {
+        newTechniqueType = currentType;
+      } else {
+        newTechniqueType = TechniqueType.biset;
+      }
     } else if (groupCount == 3) {
       newTechniqueType = TechniqueType.triset;
     } else {
@@ -1438,6 +1607,7 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
   /// Check if a technique type requires grouping
   static bool techniqueRequiresGrouping(TechniqueType type) {
     return type == TechniqueType.superset ||
+        type == TechniqueType.biset ||
         type == TechniqueType.triset ||
         type == TechniqueType.giantset;
   }
@@ -1460,16 +1630,26 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
     try {
       final workoutService = WorkoutService();
 
-      // Get existing exercise IDs to exclude
+      // Get existing exercise IDs and names to exclude
       final existingIds = workout.exercises.map((e) => e.exerciseId).toList();
+      final existingNames = workout.exercises.map((e) => e.name).toList();
 
-      // Call the API to get suggestions
+      // Call the API to get suggestions with workout context
       final response = await workoutService.suggestExercises(
         muscleGroups: workout.muscleGroups,
         goal: state.goal.toApiValue(),
         difficulty: state.difficulty.toApiValue(),
         count: 6,
         excludeExerciseIds: existingIds.isNotEmpty ? existingIds : null,
+        // Workout context
+        workoutName: workout.name,
+        workoutLabel: workout.label,
+        programName: state.programName,
+        programGoal: state.goal.toApiValue(),
+        programSplitType: state.splitType.toApiValue(),
+        existingExercises: existingNames.isNotEmpty ? existingNames : null,
+        existingExerciseCount: workout.exercises.length,
+        allowAdvancedTechniques: state.difficulty != ProgramDifficulty.beginner,
       );
 
       final suggestions = (response['suggestions'] as List<dynamic>?) ?? [];
@@ -1488,6 +1668,9 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
         if (w.id == workoutId) {
           final wizardExercises = suggestions.map((s) {
             final sMap = s as Map<String, dynamic>;
+            // Parse technique type from API response using the extension method
+            final techniqueStr = sMap['technique_type'] as String? ?? 'normal';
+            final techniqueType = techniqueStr.toTechniqueType();
             return WizardExercise(
               id: DateTime.now().millisecondsSinceEpoch.toString() + (sMap['exercise_id'] as String? ?? ''),
               exerciseId: sMap['exercise_id'] as String? ?? '',
@@ -1496,6 +1679,12 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
               sets: sMap['sets'] as int? ?? 3,
               reps: sMap['reps'] as String? ?? '10-12',
               restSeconds: sMap['rest_seconds'] as int? ?? 60,
+              // Advanced technique fields from AI
+              techniqueType: techniqueType,
+              exerciseGroupId: sMap['exercise_group_id'] as String?,
+              exerciseGroupOrder: sMap['exercise_group_order'] as int? ?? 0,
+              executionInstructions: sMap['execution_instructions'] as String? ?? '',
+              isometricSeconds: sMap['isometric_seconds'] as int?,
             );
           }).toList();
           return w.copyWith(exercises: [...w.exercises, ...wizardExercises]);
@@ -1531,6 +1720,7 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
           'label': w.label,
           'workout_name': w.name,
           'order': w.order,
+          'muscle_groups': w.muscleGroups,
           'workout_exercises': w.exercises.map((e) {
             return {
               'exercise_id': e.exerciseId,
@@ -1540,6 +1730,7 @@ class ProgramWizardNotifier extends StateNotifier<ProgramWizardState> {
               'notes': e.notes,
               // Advanced technique fields
               'execution_instructions': e.executionInstructions.isNotEmpty ? e.executionInstructions : null,
+              'group_instructions': e.groupInstructions.isNotEmpty ? e.groupInstructions : null,
               'isometric_seconds': e.isometricSeconds,
               'technique_type': e.techniqueType.toApiValue(),
               'exercise_group_id': e.exerciseGroupId,

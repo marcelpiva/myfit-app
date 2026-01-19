@@ -64,6 +64,9 @@
 	<string>MyFit usa sua localização para check-in automático na academia</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>MyFit usa sua localização para check-in automático na academia</string>
+	<!-- Local network access for development -->
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>MyFit precisa acessar a rede local para conectar ao servidor de desenvolvimento</string>
 	<!-- Allow HTTP connections for development -->
 	<key>NSAppTransportSecurity</key>
 	<dict>

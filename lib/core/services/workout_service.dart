@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../error/api_exceptions.dart';
 import '../network/api_client.dart';
@@ -545,25 +546,41 @@ class WorkoutService {
       if (search != null) params['search'] = search;
       if (studentId != null) params['student_id'] = studentId;
 
+      debugPrint('getPrograms: Fetching from ${ApiEndpoints.programs} with params: $params');
       final response = await _client.get(ApiEndpoints.programs, queryParameters: params);
+      debugPrint('getPrograms: Response status: ${response.statusCode}');
+      debugPrint('getPrograms: Response data type: ${response.data?.runtimeType}');
+
       if (response.statusCode == 200 && response.data != null) {
         // Handle both array response and paginated response formats
         final data = response.data;
         if (data is List) {
+          debugPrint('getPrograms: Data is List with ${data.length} items');
           return data.cast<Map<String, dynamic>>();
         } else if (data is Map && data['data'] is List) {
+          debugPrint('getPrograms: Data is Map with data[] key');
           return (data['data'] as List).cast<Map<String, dynamic>>();
         } else if (data is Map && data['items'] is List) {
+          debugPrint('getPrograms: Data is Map with items[] key');
           return (data['items'] as List).cast<Map<String, dynamic>>();
         } else if (data is Map && data['results'] is List) {
+          debugPrint('getPrograms: Data is Map with results[] key');
           return (data['results'] as List).cast<Map<String, dynamic>>();
+        } else {
+          debugPrint('getPrograms: Unexpected data format: $data');
         }
       }
       return [];
     } on DioException catch (e) {
+      debugPrint('getPrograms DioException: ${e.message}');
+      debugPrint('getPrograms response: ${e.response?.data}');
       throw e.error is ApiException
           ? e.error as ApiException
-          : UnknownApiException(e.message ?? 'Erro ao carregar programas', e);
+          : UnknownApiException(e.response?.data?['detail'] ?? e.message ?? 'Erro ao carregar programas', e);
+    } catch (e, stackTrace) {
+      debugPrint('getPrograms Error: $e');
+      debugPrint('getPrograms StackTrace: $stackTrace');
+      rethrow;
     }
   }
 
@@ -586,15 +603,41 @@ class WorkoutService {
       if (difficulty != null) params['difficulty'] = difficulty;
       if (splitType != null) params['split_type'] = splitType;
 
+      debugPrint('getCatalogTemplates: Fetching from ${ApiEndpoints.programsCatalog} with params: $params');
       final response = await _client.get(ApiEndpoints.programsCatalog, queryParameters: params);
+      debugPrint('getCatalogTemplates: Response status: ${response.statusCode}');
+      debugPrint('getCatalogTemplates: Response data type: ${response.data?.runtimeType}');
+
       if (response.statusCode == 200 && response.data != null) {
-        return (response.data as List).cast<Map<String, dynamic>>();
+        // Handle both array response and paginated response formats
+        final data = response.data;
+        if (data is List) {
+          debugPrint('getCatalogTemplates: Data is List with ${data.length} items');
+          return data.cast<Map<String, dynamic>>();
+        } else if (data is Map && data['data'] is List) {
+          debugPrint('getCatalogTemplates: Data is Map with data[] key');
+          return (data['data'] as List).cast<Map<String, dynamic>>();
+        } else if (data is Map && data['items'] is List) {
+          debugPrint('getCatalogTemplates: Data is Map with items[] key');
+          return (data['items'] as List).cast<Map<String, dynamic>>();
+        } else if (data is Map && data['results'] is List) {
+          debugPrint('getCatalogTemplates: Data is Map with results[] key');
+          return (data['results'] as List).cast<Map<String, dynamic>>();
+        } else {
+          debugPrint('getCatalogTemplates: Unexpected data format: $data');
+        }
       }
       return [];
     } on DioException catch (e) {
+      debugPrint('getCatalogTemplates DioException: ${e.message}');
+      debugPrint('getCatalogTemplates response: ${e.response?.data}');
       throw e.error is ApiException
           ? e.error as ApiException
-          : UnknownApiException(e.message ?? 'Erro ao carregar catálogo', e);
+          : UnknownApiException(e.response?.data?['detail'] ?? e.message ?? 'Erro ao carregar catálogo', e);
+    } catch (e, stackTrace) {
+      debugPrint('getCatalogTemplates Error: $e');
+      debugPrint('getCatalogTemplates StackTrace: $stackTrace');
+      rethrow;
     }
   }
 
@@ -656,11 +699,14 @@ class WorkoutService {
       if (response.statusCode == 201 && response.data != null) {
         return (response.data as Map<String, dynamic>)['id'] as String;
       }
-      throw const ServerException('Erro ao criar programa');
+      debugPrint('createProgram: Unexpected response - status: ${response.statusCode}, data: ${response.data}');
+      throw ServerException('Erro ao criar programa (status: ${response.statusCode})');
     } on DioException catch (e) {
+      debugPrint('createProgram DioException: ${e.message}');
+      debugPrint('createProgram response: ${e.response?.data}');
       throw e.error is ApiException
           ? e.error as ApiException
-          : UnknownApiException(e.message ?? 'Erro ao criar programa', e);
+          : UnknownApiException(e.response?.data?['detail'] ?? e.message ?? 'Erro ao criar programa', e);
     }
   }
 
@@ -728,13 +774,16 @@ class WorkoutService {
   }
 
   /// Duplicate workout program
+  /// If [fromCatalog] is true, tracks the original program as source_template_id
   Future<Map<String, dynamic>> duplicateProgram(String programId, {
     bool duplicateWorkouts = true,
     String? newName,
+    bool fromCatalog = false,
   }) async {
     try {
       final params = <String, dynamic>{
         'duplicate_workouts': duplicateWorkouts,
+        'from_catalog': fromCatalog,
       };
       if (newName != null) params['new_name'] = newName;
       final response = await _client.post(
@@ -829,13 +878,22 @@ class WorkoutService {
 
   // ==================== AI Exercise Suggestions ====================
 
-  /// Suggest exercises based on muscle groups and training goal
+  /// Suggest exercises based on muscle groups, training goal, and workout context
   Future<Map<String, dynamic>> suggestExercises({
     required List<String> muscleGroups,
     String goal = 'hypertrophy',
     String difficulty = 'intermediate',
     int count = 6,
     List<String>? excludeExerciseIds,
+    // Workout context parameters
+    String? workoutName,
+    String? workoutLabel,
+    String? programName,
+    String? programGoal,
+    String? programSplitType,
+    List<String>? existingExercises,
+    int existingExerciseCount = 0,
+    bool allowAdvancedTechniques = true,
   }) async {
     try {
       final data = <String, dynamic>{
@@ -843,9 +901,29 @@ class WorkoutService {
         'goal': goal,
         'difficulty': difficulty,
         'count': count,
+        'allow_advanced_techniques': allowAdvancedTechniques,
       };
       if (excludeExerciseIds != null && excludeExerciseIds.isNotEmpty) {
         data['exclude_exercise_ids'] = excludeExerciseIds;
+      }
+
+      // Build context if any context parameter is provided
+      if (workoutName != null ||
+          workoutLabel != null ||
+          programName != null ||
+          programGoal != null ||
+          programSplitType != null ||
+          (existingExercises != null && existingExercises.isNotEmpty)) {
+        data['context'] = <String, dynamic>{
+          if (workoutName != null) 'workout_name': workoutName,
+          if (workoutLabel != null) 'workout_label': workoutLabel,
+          if (programName != null) 'program_name': programName,
+          if (programGoal != null) 'program_goal': programGoal,
+          if (programSplitType != null) 'program_split_type': programSplitType,
+          if (existingExercises != null && existingExercises.isNotEmpty)
+            'existing_exercises': existingExercises,
+          'existing_exercise_count': existingExerciseCount,
+        };
       }
 
       final response = await _client.post(ApiEndpoints.exercisesSuggest, data: data);
@@ -885,7 +963,15 @@ class WorkoutService {
         data['injuries'] = injuries;
       }
 
-      final response = await _client.post(ApiEndpoints.programsGenerateAI, data: data);
+      // AI generation can take longer, use extended timeout
+      final response = await _client.post(
+        ApiEndpoints.programsGenerateAI,
+        data: data,
+        options: Options(
+          sendTimeout: const Duration(seconds: 120),
+          receiveTimeout: const Duration(seconds: 120),
+        ),
+      );
       if (response.statusCode == 200 && response.data != null) {
         return response.data as Map<String, dynamic>;
       }

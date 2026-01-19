@@ -15,7 +15,9 @@ T _$identity<T>(T value) => value;
 mixin _$WizardExercise {
 
  String get id; String get exerciseId; String get name; String get muscleGroup; int get sets; String get reps; int get restSeconds; String get notes;// Advanced technique fields
- String get executionInstructions; int? get isometricSeconds; TechniqueType get techniqueType; String? get exerciseGroupId; int get exerciseGroupOrder;
+ String get executionInstructions;// Individual exercise instructions
+ String get groupInstructions;// Group instructions (for bi-set, tri-set, etc.)
+ int? get isometricSeconds; TechniqueType get techniqueType; String? get exerciseGroupId; int get exerciseGroupOrder;
 /// Create a copy of WizardExercise
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +28,16 @@ $WizardExerciseCopyWith<WizardExercise> get copyWith => _$WizardExerciseCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WizardExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.name, name) || other.name == name)&&(identical(other.muscleGroup, muscleGroup) || other.muscleGroup == muscleGroup)&&(identical(other.sets, sets) || other.sets == sets)&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.restSeconds, restSeconds) || other.restSeconds == restSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.executionInstructions, executionInstructions) || other.executionInstructions == executionInstructions)&&(identical(other.isometricSeconds, isometricSeconds) || other.isometricSeconds == isometricSeconds)&&(identical(other.techniqueType, techniqueType) || other.techniqueType == techniqueType)&&(identical(other.exerciseGroupId, exerciseGroupId) || other.exerciseGroupId == exerciseGroupId)&&(identical(other.exerciseGroupOrder, exerciseGroupOrder) || other.exerciseGroupOrder == exerciseGroupOrder));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WizardExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.name, name) || other.name == name)&&(identical(other.muscleGroup, muscleGroup) || other.muscleGroup == muscleGroup)&&(identical(other.sets, sets) || other.sets == sets)&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.restSeconds, restSeconds) || other.restSeconds == restSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.executionInstructions, executionInstructions) || other.executionInstructions == executionInstructions)&&(identical(other.groupInstructions, groupInstructions) || other.groupInstructions == groupInstructions)&&(identical(other.isometricSeconds, isometricSeconds) || other.isometricSeconds == isometricSeconds)&&(identical(other.techniqueType, techniqueType) || other.techniqueType == techniqueType)&&(identical(other.exerciseGroupId, exerciseGroupId) || other.exerciseGroupId == exerciseGroupId)&&(identical(other.exerciseGroupOrder, exerciseGroupOrder) || other.exerciseGroupOrder == exerciseGroupOrder));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,exerciseId,name,muscleGroup,sets,reps,restSeconds,notes,executionInstructions,isometricSeconds,techniqueType,exerciseGroupId,exerciseGroupOrder);
+int get hashCode => Object.hash(runtimeType,id,exerciseId,name,muscleGroup,sets,reps,restSeconds,notes,executionInstructions,groupInstructions,isometricSeconds,techniqueType,exerciseGroupId,exerciseGroupOrder);
 
 @override
 String toString() {
-  return 'WizardExercise(id: $id, exerciseId: $exerciseId, name: $name, muscleGroup: $muscleGroup, sets: $sets, reps: $reps, restSeconds: $restSeconds, notes: $notes, executionInstructions: $executionInstructions, isometricSeconds: $isometricSeconds, techniqueType: $techniqueType, exerciseGroupId: $exerciseGroupId, exerciseGroupOrder: $exerciseGroupOrder)';
+  return 'WizardExercise(id: $id, exerciseId: $exerciseId, name: $name, muscleGroup: $muscleGroup, sets: $sets, reps: $reps, restSeconds: $restSeconds, notes: $notes, executionInstructions: $executionInstructions, groupInstructions: $groupInstructions, isometricSeconds: $isometricSeconds, techniqueType: $techniqueType, exerciseGroupId: $exerciseGroupId, exerciseGroupOrder: $exerciseGroupOrder)';
 }
 
 
@@ -46,7 +48,7 @@ abstract mixin class $WizardExerciseCopyWith<$Res>  {
   factory $WizardExerciseCopyWith(WizardExercise value, $Res Function(WizardExercise) _then) = _$WizardExerciseCopyWithImpl;
 @useResult
 $Res call({
- String id, String exerciseId, String name, String muscleGroup, int sets, String reps, int restSeconds, String notes, String executionInstructions, int? isometricSeconds, TechniqueType techniqueType, String? exerciseGroupId, int exerciseGroupOrder
+ String id, String exerciseId, String name, String muscleGroup, int sets, String reps, int restSeconds, String notes, String executionInstructions, String groupInstructions, int? isometricSeconds, TechniqueType techniqueType, String? exerciseGroupId, int exerciseGroupOrder
 });
 
 
@@ -63,7 +65,7 @@ class _$WizardExerciseCopyWithImpl<$Res>
 
 /// Create a copy of WizardExercise
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? exerciseId = null,Object? name = null,Object? muscleGroup = null,Object? sets = null,Object? reps = null,Object? restSeconds = null,Object? notes = null,Object? executionInstructions = null,Object? isometricSeconds = freezed,Object? techniqueType = null,Object? exerciseGroupId = freezed,Object? exerciseGroupOrder = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? exerciseId = null,Object? name = null,Object? muscleGroup = null,Object? sets = null,Object? reps = null,Object? restSeconds = null,Object? notes = null,Object? executionInstructions = null,Object? groupInstructions = null,Object? isometricSeconds = freezed,Object? techniqueType = null,Object? exerciseGroupId = freezed,Object? exerciseGroupOrder = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,exerciseId: null == exerciseId ? _self.exerciseId : exerciseId // ignore: cast_nullable_to_non_nullable
@@ -74,6 +76,7 @@ as int,reps: null == reps ? _self.reps : reps // ignore: cast_nullable_to_non_nu
 as String,restSeconds: null == restSeconds ? _self.restSeconds : restSeconds // ignore: cast_nullable_to_non_nullable
 as int,notes: null == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String,executionInstructions: null == executionInstructions ? _self.executionInstructions : executionInstructions // ignore: cast_nullable_to_non_nullable
+as String,groupInstructions: null == groupInstructions ? _self.groupInstructions : groupInstructions // ignore: cast_nullable_to_non_nullable
 as String,isometricSeconds: freezed == isometricSeconds ? _self.isometricSeconds : isometricSeconds // ignore: cast_nullable_to_non_nullable
 as int?,techniqueType: null == techniqueType ? _self.techniqueType : techniqueType // ignore: cast_nullable_to_non_nullable
 as TechniqueType,exerciseGroupId: freezed == exerciseGroupId ? _self.exerciseGroupId : exerciseGroupId // ignore: cast_nullable_to_non_nullable
@@ -160,10 +163,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String exerciseId,  String name,  String muscleGroup,  int sets,  String reps,  int restSeconds,  String notes,  String executionInstructions,  int? isometricSeconds,  TechniqueType techniqueType,  String? exerciseGroupId,  int exerciseGroupOrder)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String exerciseId,  String name,  String muscleGroup,  int sets,  String reps,  int restSeconds,  String notes,  String executionInstructions,  String groupInstructions,  int? isometricSeconds,  TechniqueType techniqueType,  String? exerciseGroupId,  int exerciseGroupOrder)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WizardExercise() when $default != null:
-return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.executionInstructions,_that.isometricSeconds,_that.techniqueType,_that.exerciseGroupId,_that.exerciseGroupOrder);case _:
+return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.executionInstructions,_that.groupInstructions,_that.isometricSeconds,_that.techniqueType,_that.exerciseGroupId,_that.exerciseGroupOrder);case _:
   return orElse();
 
 }
@@ -181,10 +184,10 @@ return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.set
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String exerciseId,  String name,  String muscleGroup,  int sets,  String reps,  int restSeconds,  String notes,  String executionInstructions,  int? isometricSeconds,  TechniqueType techniqueType,  String? exerciseGroupId,  int exerciseGroupOrder)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String exerciseId,  String name,  String muscleGroup,  int sets,  String reps,  int restSeconds,  String notes,  String executionInstructions,  String groupInstructions,  int? isometricSeconds,  TechniqueType techniqueType,  String? exerciseGroupId,  int exerciseGroupOrder)  $default,) {final _that = this;
 switch (_that) {
 case _WizardExercise():
-return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.executionInstructions,_that.isometricSeconds,_that.techniqueType,_that.exerciseGroupId,_that.exerciseGroupOrder);}
+return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.executionInstructions,_that.groupInstructions,_that.isometricSeconds,_that.techniqueType,_that.exerciseGroupId,_that.exerciseGroupOrder);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -198,10 +201,10 @@ return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.set
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String exerciseId,  String name,  String muscleGroup,  int sets,  String reps,  int restSeconds,  String notes,  String executionInstructions,  int? isometricSeconds,  TechniqueType techniqueType,  String? exerciseGroupId,  int exerciseGroupOrder)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String exerciseId,  String name,  String muscleGroup,  int sets,  String reps,  int restSeconds,  String notes,  String executionInstructions,  String groupInstructions,  int? isometricSeconds,  TechniqueType techniqueType,  String? exerciseGroupId,  int exerciseGroupOrder)?  $default,) {final _that = this;
 switch (_that) {
 case _WizardExercise() when $default != null:
-return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.executionInstructions,_that.isometricSeconds,_that.techniqueType,_that.exerciseGroupId,_that.exerciseGroupOrder);case _:
+return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.executionInstructions,_that.groupInstructions,_that.isometricSeconds,_that.techniqueType,_that.exerciseGroupId,_that.exerciseGroupOrder);case _:
   return null;
 
 }
@@ -213,7 +216,7 @@ return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.set
 
 
 class _WizardExercise implements WizardExercise {
-  const _WizardExercise({required this.id, required this.exerciseId, required this.name, required this.muscleGroup, this.sets = 3, this.reps = '10-12', this.restSeconds = 60, this.notes = '', this.executionInstructions = '', this.isometricSeconds, this.techniqueType = TechniqueType.normal, this.exerciseGroupId, this.exerciseGroupOrder = 0});
+  const _WizardExercise({required this.id, required this.exerciseId, required this.name, required this.muscleGroup, this.sets = 3, this.reps = '10-12', this.restSeconds = 60, this.notes = '', this.executionInstructions = '', this.groupInstructions = '', this.isometricSeconds, this.techniqueType = TechniqueType.normal, this.exerciseGroupId, this.exerciseGroupOrder = 0});
   
 
 @override final  String id;
@@ -226,6 +229,9 @@ class _WizardExercise implements WizardExercise {
 @override@JsonKey() final  String notes;
 // Advanced technique fields
 @override@JsonKey() final  String executionInstructions;
+// Individual exercise instructions
+@override@JsonKey() final  String groupInstructions;
+// Group instructions (for bi-set, tri-set, etc.)
 @override final  int? isometricSeconds;
 @override@JsonKey() final  TechniqueType techniqueType;
 @override final  String? exerciseGroupId;
@@ -241,16 +247,16 @@ _$WizardExerciseCopyWith<_WizardExercise> get copyWith => __$WizardExerciseCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WizardExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.name, name) || other.name == name)&&(identical(other.muscleGroup, muscleGroup) || other.muscleGroup == muscleGroup)&&(identical(other.sets, sets) || other.sets == sets)&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.restSeconds, restSeconds) || other.restSeconds == restSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.executionInstructions, executionInstructions) || other.executionInstructions == executionInstructions)&&(identical(other.isometricSeconds, isometricSeconds) || other.isometricSeconds == isometricSeconds)&&(identical(other.techniqueType, techniqueType) || other.techniqueType == techniqueType)&&(identical(other.exerciseGroupId, exerciseGroupId) || other.exerciseGroupId == exerciseGroupId)&&(identical(other.exerciseGroupOrder, exerciseGroupOrder) || other.exerciseGroupOrder == exerciseGroupOrder));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WizardExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.name, name) || other.name == name)&&(identical(other.muscleGroup, muscleGroup) || other.muscleGroup == muscleGroup)&&(identical(other.sets, sets) || other.sets == sets)&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.restSeconds, restSeconds) || other.restSeconds == restSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.executionInstructions, executionInstructions) || other.executionInstructions == executionInstructions)&&(identical(other.groupInstructions, groupInstructions) || other.groupInstructions == groupInstructions)&&(identical(other.isometricSeconds, isometricSeconds) || other.isometricSeconds == isometricSeconds)&&(identical(other.techniqueType, techniqueType) || other.techniqueType == techniqueType)&&(identical(other.exerciseGroupId, exerciseGroupId) || other.exerciseGroupId == exerciseGroupId)&&(identical(other.exerciseGroupOrder, exerciseGroupOrder) || other.exerciseGroupOrder == exerciseGroupOrder));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,exerciseId,name,muscleGroup,sets,reps,restSeconds,notes,executionInstructions,isometricSeconds,techniqueType,exerciseGroupId,exerciseGroupOrder);
+int get hashCode => Object.hash(runtimeType,id,exerciseId,name,muscleGroup,sets,reps,restSeconds,notes,executionInstructions,groupInstructions,isometricSeconds,techniqueType,exerciseGroupId,exerciseGroupOrder);
 
 @override
 String toString() {
-  return 'WizardExercise(id: $id, exerciseId: $exerciseId, name: $name, muscleGroup: $muscleGroup, sets: $sets, reps: $reps, restSeconds: $restSeconds, notes: $notes, executionInstructions: $executionInstructions, isometricSeconds: $isometricSeconds, techniqueType: $techniqueType, exerciseGroupId: $exerciseGroupId, exerciseGroupOrder: $exerciseGroupOrder)';
+  return 'WizardExercise(id: $id, exerciseId: $exerciseId, name: $name, muscleGroup: $muscleGroup, sets: $sets, reps: $reps, restSeconds: $restSeconds, notes: $notes, executionInstructions: $executionInstructions, groupInstructions: $groupInstructions, isometricSeconds: $isometricSeconds, techniqueType: $techniqueType, exerciseGroupId: $exerciseGroupId, exerciseGroupOrder: $exerciseGroupOrder)';
 }
 
 
@@ -261,7 +267,7 @@ abstract mixin class _$WizardExerciseCopyWith<$Res> implements $WizardExerciseCo
   factory _$WizardExerciseCopyWith(_WizardExercise value, $Res Function(_WizardExercise) _then) = __$WizardExerciseCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String exerciseId, String name, String muscleGroup, int sets, String reps, int restSeconds, String notes, String executionInstructions, int? isometricSeconds, TechniqueType techniqueType, String? exerciseGroupId, int exerciseGroupOrder
+ String id, String exerciseId, String name, String muscleGroup, int sets, String reps, int restSeconds, String notes, String executionInstructions, String groupInstructions, int? isometricSeconds, TechniqueType techniqueType, String? exerciseGroupId, int exerciseGroupOrder
 });
 
 
@@ -278,7 +284,7 @@ class __$WizardExerciseCopyWithImpl<$Res>
 
 /// Create a copy of WizardExercise
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? exerciseId = null,Object? name = null,Object? muscleGroup = null,Object? sets = null,Object? reps = null,Object? restSeconds = null,Object? notes = null,Object? executionInstructions = null,Object? isometricSeconds = freezed,Object? techniqueType = null,Object? exerciseGroupId = freezed,Object? exerciseGroupOrder = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? exerciseId = null,Object? name = null,Object? muscleGroup = null,Object? sets = null,Object? reps = null,Object? restSeconds = null,Object? notes = null,Object? executionInstructions = null,Object? groupInstructions = null,Object? isometricSeconds = freezed,Object? techniqueType = null,Object? exerciseGroupId = freezed,Object? exerciseGroupOrder = null,}) {
   return _then(_WizardExercise(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,exerciseId: null == exerciseId ? _self.exerciseId : exerciseId // ignore: cast_nullable_to_non_nullable
@@ -289,6 +295,7 @@ as int,reps: null == reps ? _self.reps : reps // ignore: cast_nullable_to_non_nu
 as String,restSeconds: null == restSeconds ? _self.restSeconds : restSeconds // ignore: cast_nullable_to_non_nullable
 as int,notes: null == notes ? _self.notes : notes // ignore: cast_nullable_to_non_nullable
 as String,executionInstructions: null == executionInstructions ? _self.executionInstructions : executionInstructions // ignore: cast_nullable_to_non_nullable
+as String,groupInstructions: null == groupInstructions ? _self.groupInstructions : groupInstructions // ignore: cast_nullable_to_non_nullable
 as String,isometricSeconds: freezed == isometricSeconds ? _self.isometricSeconds : isometricSeconds // ignore: cast_nullable_to_non_nullable
 as int?,techniqueType: null == techniqueType ? _self.techniqueType : techniqueType // ignore: cast_nullable_to_non_nullable
 as TechniqueType,exerciseGroupId: freezed == exerciseGroupId ? _self.exerciseGroupId : exerciseGroupId // ignore: cast_nullable_to_non_nullable

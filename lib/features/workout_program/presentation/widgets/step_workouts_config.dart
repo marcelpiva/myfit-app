@@ -279,24 +279,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
                 subtitle: const Text('Alterar titulo, label e grupos musculares'),
                 onTap: () {
                   Navigator.pop(context);
-                  _showEditWorkoutDialog(context, workout, notifier);
-                },
-              ),
-              ListTile(
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withAlpha(20),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(LucideIcons.pencil, color: AppColors.primary, size: 20),
-                ),
-                title: const Text('Renomear'),
-                subtitle: const Text('Alterar apenas o nome'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _showRenameDialog(context, workout, notifier);
+                  _showEditWorkoutDialogState(context, workout, notifier);
                 },
               ),
               if (totalWorkouts > 1)
@@ -325,7 +308,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
     );
   }
 
-  void _showEditWorkoutDialog(
+  void _showEditWorkoutDialogState(
     BuildContext context,
     WizardWorkout workout,
     ProgramWizardNotifier notifier,
@@ -557,7 +540,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
             onPressed: () {
               Navigator.pop(dialogContext);
               // Re-open edit dialog
-              _showEditWorkoutDialog(context, workout, notifier);
+              _showEditWorkoutDialogState(context, workout, notifier);
             },
             child: const Text('Voltar'),
           ),
@@ -575,54 +558,6 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
               backgroundColor: Colors.orange,
             ),
             child: const Text('Remover e Salvar'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showRenameDialog(
-    BuildContext context,
-    WizardWorkout workout,
-    ProgramWizardNotifier notifier,
-  ) {
-    final controller = TextEditingController(text: workout.name);
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Renomear Treino ${workout.label}'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(
-            labelText: 'Nome do treino',
-            hintText: 'Ex: Peito e Triceps',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          onSubmitted: (value) {
-            if (value.trim().isNotEmpty) {
-              Navigator.pop(context);
-              notifier.renameWorkout(workout.id, value.trim());
-            }
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final newName = controller.text.trim();
-              if (newName.isNotEmpty) {
-                Navigator.pop(context);
-                notifier.renameWorkout(workout.id, newName);
-              }
-            },
-            child: const Text('Salvar'),
           ),
         ],
       ),
@@ -670,7 +605,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
   }
 }
 
-class _WorkoutConfigCard extends ConsumerWidget {
+class _WorkoutConfigCard extends ConsumerStatefulWidget {
   final WizardWorkout workout;
   final bool isDark;
   final ThemeData theme;
@@ -682,7 +617,19 @@ class _WorkoutConfigCard extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_WorkoutConfigCard> createState() => _WorkoutConfigCardState();
+}
+
+class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
+  bool _isSuggestingAI = false;
+
+  // Getters for easy access to widget properties in methods
+  WizardWorkout get workout => widget.workout;
+  bool get isDark => widget.isDark;
+  ThemeData get theme => widget.theme;
+
+  @override
+  Widget build(BuildContext context) {
     final notifier = ref.read(programWizardProvider.notifier);
 
     return Container(
@@ -700,51 +647,76 @@ class _WorkoutConfigCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Workout header
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withAlpha(30),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Text(
-                    workout.label,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+          // Workout header - tappable to edit
+          InkWell(
+            onTap: () {
+              HapticUtils.selectionClick();
+              _showEditWorkoutDialog(context, ref);
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withAlpha(30),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      workout.name,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (workout.muscleGroups.isNotEmpty)
-                      Text(
-                        workout.muscleGroups
-                            .map((g) => g.toMuscleGroup().displayName)
-                            .join(', '),
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.6),
+                    child: Center(
+                      child: Text(
+                        workout.label,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          workout.name,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (workout.muscleGroups.isNotEmpty)
+                          Text(
+                            workout.muscleGroups
+                                .map((g) => g.toMuscleGroup().displayName)
+                                .join(', '),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
+                            ),
+                          )
+                        else
+                          Text(
+                            'Toque para configurar',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.4),
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  // Edit indicator icon
+                  Icon(
+                    LucideIcons.pencil,
+                    size: 16,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
           const SizedBox(height: 16),
           const Divider(),
@@ -795,40 +767,61 @@ class _WorkoutConfigCard extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: FilledButton.icon(
-                  onPressed: () async {
-                    HapticUtils.mediumImpact();
-                    final result = await notifier.suggestExercisesForWorkout(workout.id);
-                    if (!context.mounted) return;
+                  onPressed: _isSuggestingAI
+                      ? null
+                      : () async {
+                          HapticUtils.mediumImpact();
+                          setState(() {
+                            _isSuggestingAI = true;
+                          });
 
-                    final success = result['success'] as bool? ?? false;
-                    final message = result['message'] as String? ?? '';
+                          final result = await notifier.suggestExercisesForWorkout(workout.id);
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Row(
-                          children: [
-                            Icon(
-                              success ? LucideIcons.checkCircle : LucideIcons.alertCircle,
-                              color: Colors.white,
-                              size: 20,
+                          if (!context.mounted) return;
+
+                          setState(() {
+                            _isSuggestingAI = false;
+                          });
+
+                          final success = result['success'] as bool? ?? false;
+                          final message = result['message'] as String? ?? '';
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: [
+                                  Icon(
+                                    success ? LucideIcons.checkCircle : LucideIcons.alertCircle,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(child: Text(message)),
+                                ],
+                              ),
+                              backgroundColor: success ? AppColors.success : AppColors.destructive,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              duration: Duration(seconds: success ? 2 : 4),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(child: Text(message)),
-                          ],
-                        ),
-                        backgroundColor: success ? AppColors.success : AppColors.destructive,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        duration: Duration(seconds: success ? 2 : 4),
-                      ),
-                    );
-                  },
-                  icon: const Icon(LucideIcons.sparkles, size: 18),
-                  label: const Text('Sugerir IA'),
+                          );
+                        },
+                  icon: _isSuggestingAI
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Icon(LucideIcons.sparkles, size: 18),
+                  label: Text(_isSuggestingAI ? 'Gerando...' : 'Sugerir IA'),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
+                    backgroundColor: _isSuggestingAI ? AppColors.secondary : null,
                   ),
                 ),
               ),
@@ -985,6 +978,8 @@ class _WorkoutConfigCard extends ConsumerWidget {
 
   void _showExercisePicker(
       BuildContext context, WidgetRef ref, String workoutId, List<String> muscleGroups) {
+    final notifier = ref.read(programWizardProvider.notifier);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -994,12 +989,192 @@ class _WorkoutConfigCard extends ConsumerWidget {
         minChildSize: 0.5,
         maxChildSize: 0.95,
         builder: (context, scrollController) {
-          return _ExercisePickerSheet(
-            workoutId: workoutId,
-            scrollController: scrollController,
+          return MultiExercisePicker(
+            technique: TechniqueType.normal,
+            requiredCount: 1,
+            minCount: 1,
+            maxCount: 20, // Allow selecting many exercises
             allowedMuscleGroups: muscleGroups,
+            onExercisesSelected: (exercises, _) {
+              for (final exercise in exercises) {
+                notifier.addExerciseToWorkout(workoutId, exercise);
+              }
+              // MultiExercisePicker already pops itself
+            },
           );
         },
+      ),
+    );
+  }
+
+  /// Show dialog to edit workout settings (label, name, muscle groups)
+  void _showEditWorkoutDialog(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(programWizardProvider.notifier);
+    final labelController = TextEditingController(text: workout.label);
+    final nameController = TextEditingController(text: workout.name);
+    final selectedMuscleGroups = List<String>.from(workout.muscleGroups);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) => SafeArea(
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 8,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Drag handle
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                // Header
+                Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withAlpha(30),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(LucideIcons.settings2, color: AppColors.primary, size: 18),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Configurar Treino',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      icon: const Icon(LucideIcons.x),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // Label field
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 80,
+                      child: TextField(
+                        controller: labelController,
+                        maxLength: 10,
+                        textAlign: TextAlign.center,
+                        decoration: InputDecoration(
+                          labelText: 'Label',
+                          hintText: 'A',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          counterText: '',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextField(
+                        controller: nameController,
+                        decoration: InputDecoration(
+                          labelText: 'Nome do Treino',
+                          hintText: 'Ex: Peito e Triceps',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                // Muscle groups
+                Text(
+                  'Grupos Musculares',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Selecione os grupos trabalhados neste treino',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: MuscleGroup.values.map((group) {
+                    final isSelected = selectedMuscleGroups.contains(group.name);
+                    return FilterChip(
+                      label: Text(group.displayName),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        setState(() {
+                          if (selected) {
+                            selectedMuscleGroups.add(group.name);
+                          } else {
+                            selectedMuscleGroups.remove(group.name);
+                          }
+                        });
+                      },
+                      selectedColor: AppColors.primary.withAlpha(40),
+                      checkmarkColor: AppColors.primary,
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 24),
+                // Save button
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () {
+                      final newLabel = labelController.text.trim();
+                      final newName = nameController.text.trim();
+                      if (newLabel.isNotEmpty && newName.isNotEmpty) {
+                        Navigator.pop(ctx);
+                        notifier.updateWorkout(
+                          workoutId: workout.id,
+                          label: newLabel,
+                          name: newName,
+                          muscleGroups: selectedMuscleGroups,
+                        );
+                        HapticUtils.lightImpact();
+                      }
+                    },
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text('Salvar'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -1098,7 +1273,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
     final leader = exercises.first;
     final techniqueType = leader.techniqueType;
     final techniqueColor = ExerciseTheme.getColor(techniqueType);
-    final groupInstructions = leader.executionInstructions;
+    final groupInstructions = leader.groupInstructions;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1106,10 +1281,12 @@ class _ExerciseGroupCard extends ConsumerWidget {
         color: isDark
             ? theme.colorScheme.surfaceContainerLow.withAlpha(100)
             : theme.colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: techniqueColor.withValues(alpha: 0.4),
-          width: 1.5,
+        borderRadius: BorderRadius.circular(8),
+        border: Border(
+          left: BorderSide(
+            color: techniqueColor,
+            width: 3,
+          ),
         ),
       ),
       child: Column(
@@ -1119,100 +1296,110 @@ class _ExerciseGroupCard extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: techniqueColor.withValues(alpha: 0.12),
+              color: techniqueColor.withValues(alpha: 0.15),
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
+                topLeft: Radius.circular(8),
+                topRight: Radius.circular(8),
               ),
             ),
             child: Row(
               children: [
+                // Compact badge (icon + name + count)
                 Icon(
                   ExerciseTheme.getIcon(techniqueType),
-                  size: 18,
+                  size: 14,
                   color: techniqueColor,
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        techniqueType.displayName,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: techniqueColor,
-                        ),
-                      ),
-                      Text(
-                        '${exercises.length} exercicios',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Add exercise to group button
-                IconButton(
-                  icon: Icon(
-                    LucideIcons.plus,
-                    size: 18,
+                const SizedBox(width: 6),
+                Text(
+                  '${techniqueType.displayName} (${exercises.length})',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
                     color: techniqueColor,
                   ),
-                  tooltip: 'Adicionar exercicio ao grupo',
-                  onPressed: () => _showAddExerciseToGroup(context, ref, techniqueColor),
-                  visualDensity: VisualDensity.compact,
                 ),
-                // Edit group instructions button
-                IconButton(
-                  icon: Icon(
-                    LucideIcons.fileText,
-                    size: 18,
-                    color: groupInstructions.isNotEmpty
-                        ? techniqueColor
-                        : theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                const Spacer(),
+                // Action icons
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _showAddExerciseToGroup(context, ref, techniqueColor),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(LucideIcons.plus, size: 20, color: techniqueColor),
                   ),
-                  tooltip: groupInstructions.isNotEmpty
-                      ? 'Editar instrucoes'
-                      : 'Adicionar instrucoes',
-                  onPressed: () => _showEditGroupInstructions(context, ref, groupInstructions),
-                  visualDensity: VisualDensity.compact,
                 ),
-                // Disband group button
-                IconButton(
-                  icon: Icon(
-                    LucideIcons.unlink,
-                    size: 18,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _showEditGroupInstructions(context, ref, groupInstructions),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(
+                      LucideIcons.fileText,
+                      size: 20,
+                      color: groupInstructions.isNotEmpty
+                          ? techniqueColor
+                          : theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                    ),
                   ),
-                  tooltip: 'Desfazer grupo',
-                  onPressed: () {
-                    HapticUtils.lightImpact();
-                    notifier.disbandExerciseGroup(workoutId, groupId);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('Grupo desfeito'),
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                ),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    HapticUtils.selectionClick();
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Desfazer Grupo'),
+                        content: Text(
+                          'Deseja desfazer o grupo "${techniqueType.displayName}"? Os exercícios serão mantidos individualmente.',
                         ),
-                        duration: const Duration(seconds: 2),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: const Text('Cancelar'),
+                          ),
+                          FilledButton(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              HapticUtils.lightImpact();
+                              notifier.disbandExerciseGroup(workoutId, groupId);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Text('Grupo desfeito'),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            child: const Text('Desfazer'),
+                          ),
+                        ],
                       ),
                     );
                   },
-                  visualDensity: VisualDensity.compact,
-                ),
-                // Delete entire group button
-                IconButton(
-                  icon: Icon(
-                    LucideIcons.trash2,
-                    size: 18,
-                    color: Colors.red.withValues(alpha: 0.7),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(
+                      LucideIcons.unlink,
+                      size: 20,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
                   ),
-                  tooltip: 'Excluir grupo',
-                  onPressed: () => _showDeleteGroupConfirmation(context, ref, techniqueType),
-                  visualDensity: VisualDensity.compact,
+                ),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _showDeleteGroupConfirmation(context, ref, techniqueType),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(
+                      LucideIcons.trash2,
+                      size: 20,
+                      color: Colors.red.withValues(alpha: 0.6),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -1227,6 +1414,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
                 return _GroupedExerciseItem(
                   exercise: exercise,
                   workoutId: workoutId,
+                  groupId: groupId,
                   orderInGroup: index,
                   totalInGroup: exercises.length,
                   techniqueColor: techniqueColor,
@@ -1247,8 +1435,8 @@ class _ExerciseGroupCard extends ConsumerWidget {
     HapticUtils.selectionClick();
 
     // Get exercises already in this group
-    final groupExerciseIds =
-        exercises.map((e) => e.exerciseId).toSet();
+    final groupExerciseIds = exercises.map((e) => e.exerciseId).toSet();
+    final currentGroupSize = exercises.length;
 
     showModalBottomSheet(
       context: context,
@@ -1257,172 +1445,33 @@ class _ExerciseGroupCard extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.85,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (context, scrollController) {
-          final service = WorkoutService();
-
-          return FutureBuilder<List<Map<String, dynamic>>>(
-            future: service.getExercises(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (snapshot.hasError || !snapshot.hasData) {
-                return Center(
-                  child: Text(
-                    'Erro ao carregar exercicios',
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                );
-              }
-
-              final allExercises = snapshot.data!;
-              // Filter out exercises already in the group
-              final availableExercises = allExercises
-                  .where((e) => !groupExerciseIds.contains(e['id']?.toString()))
-                  .toList();
-
-              return Column(
-                children: [
-                  // Header
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                          color: theme.dividerColor.withValues(alpha: 0.3),
-                        ),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(LucideIcons.plus, color: techniqueColor, size: 22),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Adicionar ao Grupo',
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                'Selecione um exercicio para adicionar',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onSurface
-                                      .withValues(alpha: 0.6),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(LucideIcons.x),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Exercise list
-                  Expanded(
-                    child: availableExercises.isEmpty
-                        ? Center(
-                            child: Text(
-                              'Todos os exercicios ja estao no grupo',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurface
-                                    .withValues(alpha: 0.6),
-                              ),
-                            ),
-                          )
-                        : ListView.builder(
-                            controller: scrollController,
-                            padding: const EdgeInsets.all(16),
-                            itemCount: availableExercises.length,
-                            itemBuilder: (context, index) {
-                              final exerciseData = availableExercises[index];
-                              final exerciseName =
-                                  exerciseData['name']?.toString() ?? '';
-                              final muscleGroup =
-                                  exerciseData['muscle_group']?.toString() ??
-                                      exerciseData['muscleGroup']?.toString() ??
-                                      '';
-                              // Convert to Exercise model for the provider
-                              final exercise = Exercise(
-                                id: exerciseData['id']?.toString() ?? '',
-                                name: exerciseName,
-                                muscleGroup: muscleGroup.toMuscleGroup(),
-                                description: exerciseData['description']?.toString(),
-                                instructions: exerciseData['instructions']?.toString(),
-                                imageUrl: exerciseData['image_url']?.toString() ??
-                                    exerciseData['imageUrl']?.toString(),
-                              );
-
-                              return Card(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                child: ListTile(
-                                  leading: Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      color: techniqueColor.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Icon(
-                                      LucideIcons.dumbbell,
-                                      color: techniqueColor,
-                                    ),
-                                  ),
-                                  title: Text(
-                                    exerciseName,
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    muscleGroup,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.colorScheme.onSurface
-                                          .withValues(alpha: 0.6),
-                                    ),
-                                  ),
-                                  onTap: () {
-                                    HapticUtils.selectionClick();
-                                    Navigator.pop(context);
-                                    ref
-                                        .read(programWizardProvider.notifier)
-                                        .addExerciseToGroup(
-                                          workoutId: workoutId,
-                                          groupId: groupId,
-                                          exercise: exercise,
-                                        );
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                            '$exerciseName adicionado ao grupo'),
-                                        behavior: SnackBarBehavior.floating,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                        duration: const Duration(seconds: 2),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                ],
-              );
-            },
+      builder: (ctx) => _AddToGroupExercisePicker(
+        techniqueColor: techniqueColor,
+        excludedExerciseIds: groupExerciseIds,
+        currentGroupSize: currentGroupSize,
+        maxGroupSize: 8,
+        onExercisesSelected: (exercisesList) {
+          final notifier = ref.read(programWizardProvider.notifier);
+          for (final exercise in exercisesList) {
+            notifier.addExerciseToGroup(
+              workoutId: workoutId,
+              groupId: groupId,
+              exercise: exercise,
+            );
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                exercisesList.length == 1
+                    ? '${exercisesList.first.name} adicionado ao grupo'
+                    : '${exercisesList.length} exercicios adicionados ao grupo',
+              ),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              duration: const Duration(seconds: 2),
+            ),
           );
         },
       ),
@@ -1577,6 +1626,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
 class _GroupedExerciseItem extends ConsumerWidget {
   final WizardExercise exercise;
   final String workoutId;
+  final String groupId;
   final int orderInGroup;
   final int totalInGroup;
   final Color techniqueColor;
@@ -1587,6 +1637,7 @@ class _GroupedExerciseItem extends ConsumerWidget {
   const _GroupedExerciseItem({
     required this.exercise,
     required this.workoutId,
+    required this.groupId,
     required this.orderInGroup,
     required this.totalInGroup,
     required this.techniqueColor,
@@ -1716,6 +1767,7 @@ class _GroupedExerciseItem extends ConsumerWidget {
     int restSeconds = exercise.restSeconds;
     String executionInstructions = exercise.executionInstructions;
     int? isometricSeconds = exercise.isometricSeconds;
+    bool showAdvancedOptions = false;
 
     final repsController = TextEditingController(text: reps);
     final instructionsController = TextEditingController(text: executionInstructions);
@@ -1726,6 +1778,9 @@ class _GroupedExerciseItem extends ConsumerWidget {
       backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) => Padding(
@@ -1955,94 +2010,121 @@ class _GroupedExerciseItem extends ConsumerWidget {
                 ],
                 const SizedBox(height: 16),
 
-                // Isometric Hold
-                Text('Isometria (hold)', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 4),
-                Text(
-                  'Tempo de pausa estatica durante o movimento',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    IconButton.filled(
-                      onPressed: isometricSeconds != null && isometricSeconds! > 0
-                          ? () => setState(() {
-                                isometricSeconds = isometricSeconds! - 1;
-                                if (isometricSeconds == 0) isometricSeconds = null;
-                              })
-                          : null,
-                      icon: Icon(LucideIcons.minus, size: 18, color: isDark ? Colors.white : Colors.black87),
-                      style: IconButton.styleFrom(
-                        backgroundColor: isDark ? AppColors.mutedDark : AppColors.muted,
+                // Advanced Options Toggle (same as simple exercise)
+                InkWell(
+                  onTap: () => setState(() => showAdvancedOptions = !showAdvancedOptions),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? theme.colorScheme.surfaceContainerLow.withAlpha(150)
+                          : theme.colorScheme.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: showAdvancedOptions
+                            ? techniqueColor.withAlpha(50)
+                            : theme.colorScheme.outline.withValues(alpha: 0.2),
                       ),
                     ),
-                    Expanded(
-                      child: Center(
-                        child: Text(
-                          isometricSeconds != null ? '${isometricSeconds}s' : 'Nenhuma',
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: isometricSeconds != null ? AppColors.primary : theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                    child: Row(
+                      children: [
+                        Icon(
+                          LucideIcons.settings2,
+                          size: 18,
+                          color: showAdvancedOptions ? techniqueColor : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Tecnicas Avancadas',
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: showAdvancedOptions ? techniqueColor : null,
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    IconButton.filled(
-                      onPressed: (isometricSeconds ?? 0) < 60
-                          ? () => setState(() => isometricSeconds = (isometricSeconds ?? 0) + 1)
-                          : null,
-                      icon: const Icon(LucideIcons.plus, size: 18, color: Colors.white),
-                      style: IconButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  children: [0, 5, 10, 15, 30].map((sec) {
-                    final isSelected = (isometricSeconds ?? 0) == sec;
-                    return ChoiceChip(
-                      label: Text(
-                        sec == 0 ? 'Nenhuma' : '${sec}s',
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : null,
+                        Icon(
+                          showAdvancedOptions ? LucideIcons.chevronUp : LucideIcons.chevronDown,
+                          size: 18,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                         ),
-                      ),
-                      selected: isSelected,
-                      selectedColor: AppColors.primary,
-                      onSelected: (_) => setState(() => isometricSeconds = sec == 0 ? null : sec),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 16),
-
-                // Execution Instructions
-                Text('Instrucoes de Execucao', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 4),
-                Text(
-                  'Orientacoes especificas para este exercicio',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: instructionsController,
-                  maxLines: 3,
-                  decoration: InputDecoration(
-                    hintText: 'Ex: Manter cotovelos a 45 graus...',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      ],
                     ),
                   ),
-                  onChanged: (value) => executionInstructions = value,
                 ),
 
+                // Advanced Options Content
+                if (showAdvancedOptions) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? theme.colorScheme.surfaceContainerLow.withAlpha(100)
+                          : theme.colorScheme.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: theme.colorScheme.outline.withValues(alpha: 0.1),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Isometric Hold - simplified to single row
+                        Text('Isometria', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [0, 15, 30, 45, 60].map((sec) {
+                            final isSelected = (isometricSeconds ?? 0) == sec;
+                            return Expanded(
+                              child: Padding(
+                                padding: EdgeInsets.only(right: sec < 60 ? 8 : 0),
+                                child: ChoiceChip(
+                                  label: Text(
+                                    sec == 0 ? 'Nenhuma' : '${sec}s',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isSelected ? Colors.white : null,
+                                    ),
+                                  ),
+                                  selected: isSelected,
+                                  selectedColor: techniqueColor,
+                                  padding: EdgeInsets.zero,
+                                  labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                                  onSelected: (_) => setState(() => isometricSeconds = sec == 0 ? null : sec),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Execution Instructions
+                        Text('Instrucoes de Execucao', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Orientacoes especificas para este exercicio no treino',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: instructionsController,
+                          maxLines: 3,
+                          decoration: InputDecoration(
+                            hintText: 'Ex: Manter cotovelos a 45 graus...',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          onChanged: (value) => executionInstructions = value,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 24),
 
                 // Save button
@@ -2119,7 +2201,7 @@ class _GroupedExerciseItem extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 10),
-            // Exercise name
+            // Exercise name (colored with technique color)
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -2128,6 +2210,7 @@ class _GroupedExerciseItem extends ConsumerWidget {
                     exercise.name,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w500,
+                      color: techniqueColor,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -2167,6 +2250,57 @@ class _GroupedExerciseItem extends ConsumerWidget {
                 ],
               ),
             ),
+            // Reorder buttons (up/down)
+            if (totalInGroup > 1) ...[
+              IconButton(
+                icon: Icon(
+                  LucideIcons.chevronUp,
+                  size: 16,
+                  color: orderInGroup > 0
+                      ? techniqueColor
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                ),
+                onPressed: orderInGroup > 0
+                    ? () {
+                        HapticUtils.selectionClick();
+                        notifier.reorderWithinGroup(
+                          workoutId,
+                          groupId,
+                          orderInGroup,
+                          orderInGroup - 1,
+                        );
+                      }
+                    : null,
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                tooltip: 'Mover para cima',
+              ),
+              IconButton(
+                icon: Icon(
+                  LucideIcons.chevronDown,
+                  size: 16,
+                  color: orderInGroup < totalInGroup - 1
+                      ? techniqueColor
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                ),
+                onPressed: orderInGroup < totalInGroup - 1
+                    ? () {
+                        HapticUtils.selectionClick();
+                        notifier.reorderWithinGroup(
+                          workoutId,
+                          groupId,
+                          orderInGroup,
+                          orderInGroup + 1,
+                        );
+                      }
+                    : null,
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                tooltip: 'Mover para baixo',
+              ),
+            ],
             // Info button
             IconButton(
               icon: Icon(
@@ -2426,36 +2560,52 @@ class _ExerciseItem extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setState) => Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        exercise.name,
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
+      builder: (ctx) => SafeArea(
+        child: StatefulBuilder(
+          builder: (context, setState) => Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 8,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Drag handle
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(2),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      icon: const Icon(LucideIcons.x),
-                    ),
-                  ],
-                ),
+                  ),
+                  // Header
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          exercise.name,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: const Icon(LucideIcons.x),
+                      ),
+                    ],
+                  ),
                 if (exercise.muscleGroup.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Container(
@@ -2673,116 +2823,30 @@ class _ExerciseItem extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Technique Type
-                        Text('Tecnica', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 8),
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: theme.colorScheme.outline.withValues(alpha: 0.2),
-                            ),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<TechniqueType>(
-                              value: techniqueType,
-                              isExpanded: true,
-                              borderRadius: BorderRadius.circular(8),
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              items: TechniqueType.values.map((type) {
-                                return DropdownMenuItem<TechniqueType>(
-                                  value: type,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(type.displayName),
-                                      if (type != TechniqueType.normal)
-                                        Text(
-                                          type.description,
-                                          style: theme.textTheme.labelSmall?.copyWith(
-                                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                );
-                              }).toList(),
-                              onChanged: (value) async {
-                                if (value != null) {
-                                  setState(() => techniqueType = value);
-                                  // Show grouping dialog for group-based techniques
-                                  if (ProgramWizardNotifier.techniqueRequiresGrouping(value)) {
-                                    await _showGroupingDialog(context, ref, value);
-                                  }
-                                }
-                              },
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Isometric Hold
-                        Text('Isometria (hold)', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Tempo de pausa estatica durante o movimento',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                          ),
-                        ),
+                        // Isometric Hold - simplified to single row
+                        Text('Isometria', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 8),
                         Row(
-                          children: [
-                            IconButton.filled(
-                              onPressed: isometricSeconds != null && isometricSeconds! > 0
-                                  ? () => setState(() {
-                                        isometricSeconds = isometricSeconds! - 1;
-                                        if (isometricSeconds == 0) isometricSeconds = null;
-                                      })
-                                  : null,
-                              icon: Icon(LucideIcons.minus, size: 18, color: isDark ? Colors.white : Colors.black87),
-                              style: IconButton.styleFrom(
-                                backgroundColor: isDark ? AppColors.mutedDark : AppColors.muted,
-                              ),
-                            ),
-                            Expanded(
-                              child: Center(
-                                child: Text(
-                                  isometricSeconds != null ? '${isometricSeconds}s' : 'Nenhuma',
-                                  style: theme.textTheme.headlineSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: isometricSeconds != null ? AppColors.primary : theme.colorScheme.onSurface.withValues(alpha: 0.4),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            IconButton.filled(
-                              onPressed: (isometricSeconds ?? 0) < 60
-                                  ? () => setState(() => isometricSeconds = (isometricSeconds ?? 0) + 1)
-                                  : null,
-                              icon: const Icon(LucideIcons.plus, size: 18, color: Colors.white),
-                              style: IconButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          children: [0, 5, 10, 15, 30, 45, 60].map((sec) {
+                          children: [0, 15, 30, 45, 60].map((sec) {
                             final isSelected = (isometricSeconds ?? 0) == sec;
-                            return ChoiceChip(
-                              label: Text(
-                                sec == 0 ? 'Nenhuma' : '${sec}s',
-                                style: TextStyle(
-                                  color: isSelected ? Colors.white : null,
+                            return Expanded(
+                              child: Padding(
+                                padding: EdgeInsets.only(right: sec < 60 ? 8 : 0),
+                                child: ChoiceChip(
+                                  label: Text(
+                                    sec == 0 ? 'Nenhuma' : '${sec}s',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isSelected ? Colors.white : null,
+                                    ),
+                                  ),
+                                  selected: isSelected,
+                                  selectedColor: AppColors.primary,
+                                  padding: EdgeInsets.zero,
+                                  labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+                                  onSelected: (_) => setState(() => isometricSeconds = sec == 0 ? null : sec),
                                 ),
                               ),
-                              selected: isSelected,
-                              selectedColor: AppColors.primary,
-                              onSelected: (_) => setState(() => isometricSeconds = sec == 0 ? null : sec),
                             );
                           }).toList(),
                         ),
@@ -2844,6 +2908,324 @@ class _ExerciseItem extends ConsumerWidget {
             ),
           ),
         ),
+        ),
+      ),
+    );
+  }
+
+  /// Show dialog to edit execution instructions (same style as group instructions)
+  void _showInstructionsDialog(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(programWizardProvider.notifier);
+    final controller = TextEditingController(text: exercise.executionInstructions);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(LucideIcons.fileText, color: AppColors.primary, size: 20),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Text('Instrucoes do Exercicio'),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                exercise.name,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Adicione instrucoes especificas para este exercicio.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                maxLines: 4,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: 'Ex: Manter cotovelos a 45 graus, pausar no topo...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              final updated = exercise.copyWith(
+                executionInstructions: controller.text.trim(),
+              );
+              notifier.updateExercise(workoutId, exercise.id, updated);
+              HapticUtils.lightImpact();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Instrucoes atualizadas'),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            },
+            child: const Text('Salvar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Show dialog to select technique category
+  void _showTechniqueSelectionDialog(BuildContext context, WidgetRef ref) {
+    final state = ref.read(programWizardProvider);
+    final workout = state.workouts.firstWhere((w) => w.id == workoutId);
+
+    // Check if there are other truly simple exercises available for grouping
+    // (no technique and no group)
+    final otherSimpleExercises = workout.exercises
+        .where((e) =>
+            e.id != exercise.id &&
+            e.exerciseGroupId == null &&
+            e.techniqueType == TechniqueType.normal)
+        .toList();
+    final hasOtherExercises = otherSimpleExercises.isNotEmpty;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Aplicar Técnica',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Opção 1: Exercício Único
+              ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(LucideIcons.target, color: AppColors.primary, size: 20),
+                ),
+                title: const Text('Exercício Único'),
+                subtitle: Text('Dropset, Rest-Pause, Cluster', style: theme.textTheme.bodySmall),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showSingleExerciseTechniques(context, ref);
+                },
+              ),
+              // Opção 2: Múltiplos Exercícios (only if there are other exercises)
+              if (hasOtherExercises)
+                ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: ExerciseTheme.getColor(TechniqueType.superset).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(LucideIcons.users, color: ExerciseTheme.getColor(TechniqueType.superset), size: 20),
+                  ),
+                  title: const Text('Múltiplos Exercícios'),
+                  subtitle: Text('Bi-Set, Tri-Set, Giant Set', style: theme.textTheme.bodySmall),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showGroupTechniques(context, ref);
+                  },
+                ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Show single exercise techniques (Dropset, Rest-Pause, Cluster)
+  void _showSingleExerciseTechniques(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(programWizardProvider.notifier);
+    final singleTechniques = [
+      TechniqueType.dropset,
+      TechniqueType.restPause,
+      TechniqueType.cluster,
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Técnica de Exercício Único',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ...singleTechniques.map((technique) {
+                final color = ExerciseTheme.getColor(technique);
+                final icon = ExerciseTheme.getIcon(technique);
+                final description = switch (technique) {
+                  TechniqueType.dropset => 'Reduz peso sem descanso',
+                  TechniqueType.restPause => 'Pausas curtas entre reps',
+                  TechniqueType.cluster => 'Mini-sets com pausas',
+                  _ => '',
+                };
+
+                return ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(icon, color: color, size: 20),
+                  ),
+                  title: Text(technique.displayName),
+                  subtitle: Text(description, style: theme.textTheme.bodySmall),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    HapticUtils.lightImpact();
+                    final updated = exercise.copyWith(techniqueType: technique);
+                    notifier.updateExercise(workoutId, exercise.id, updated);
+                  },
+                );
+              }),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Show group techniques (Bi-Set/Tri-Set, Giant Set)
+  void _showGroupTechniques(BuildContext context, WidgetRef ref) {
+    final state = ref.read(programWizardProvider);
+    final workout = state.workouts.firstWhere((w) => w.id == workoutId);
+
+    // Count other truly simple exercises available for grouping
+    // (no technique and no group)
+    final otherSimpleExercises = workout.exercises
+        .where((e) =>
+            e.id != exercise.id &&
+            e.exerciseGroupId == null &&
+            e.techniqueType == TechniqueType.normal)
+        .toList();
+    final otherCount = otherSimpleExercises.length;
+
+    // Need at least 3 other exercises for Giant Set (4+ total)
+    final canShowGiantSet = otherCount >= 3;
+
+    final supersetColor = ExerciseTheme.getColor(TechniqueType.superset);
+    final giantsetColor = ExerciseTheme.getColor(TechniqueType.giantset);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Agrupar com outros exercícios',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Bi-Set / Tri-Set (2-3 exercises)
+              ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: supersetColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(ExerciseTheme.getIcon(TechniqueType.superset), color: supersetColor, size: 20),
+                ),
+                title: const Text('Bi-Set / Tri-Set'),
+                subtitle: Text('2-3 exercícios sem descanso', style: theme.textTheme.bodySmall),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _showGroupingDialog(context, ref, TechniqueType.superset);
+                },
+              ),
+              // Giant Set (4+ exercises) - only show if enough exercises available
+              if (canShowGiantSet)
+                ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: giantsetColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(ExerciseTheme.getIcon(TechniqueType.giantset), color: giantsetColor, size: 20),
+                  ),
+                  title: const Text('Giant Set'),
+                  subtitle: Text('4+ exercícios sem descanso', style: theme.textTheme.bodySmall),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showGroupingDialog(context, ref, TechniqueType.giantset);
+                  },
+                ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -2856,9 +3238,13 @@ class _ExerciseItem extends ConsumerWidget {
     // Get the current workout
     final workout = state.workouts.firstWhere((w) => w.id == workoutId);
 
-    // Get other exercises in the workout (excluding current exercise and already grouped ones)
+    // Get other truly simple exercises in the workout
+    // (no technique and no group)
     final availableExercises = workout.exercises
-        .where((e) => e.id != exercise.id && e.exerciseGroupId == null)
+        .where((e) =>
+            e.id != exercise.id &&
+            e.exerciseGroupId == null &&
+            e.techniqueType == TechniqueType.normal)
         .toList();
 
     if (availableExercises.isEmpty) {
@@ -2874,86 +3260,307 @@ class _ExerciseItem extends ConsumerWidget {
     }
 
     // Determine how many exercises can be selected based on technique
-    final maxSelections = switch (techniqueType) {
-      TechniqueType.superset => 1, // 2 total (current + 1)
-      TechniqueType.triset => 2,   // 3 total (current + 2)
-      TechniqueType.giantset => 4, // 5 total (current + 4)
-      _ => 0,
+    // Bi-Set: exactly 1 additional = 2 total
+    // Superset: 1-2 additional = 2-3 total
+    // Triset: 2 additional = 3 total
+    // Giant Set: 3-7 additional = 4-8 total
+    final (minSelections, maxSelections) = switch (techniqueType) {
+      TechniqueType.biset => (1, 1),    // Bi-Set: exactly 2 total
+      TechniqueType.superset => (1, 2), // Superset: 2-3 total
+      TechniqueType.triset => (2, 2),   // Tri-Set: exactly 3 total
+      TechniqueType.giantset => (3, 7), // Giant Set: 4-8 total
+      _ => (1, 1),
     };
 
-    final selectedIds = <String>{};
+    final selectedExercises = <WizardExercise>[];
+    final techniqueColor = ExerciseTheme.getColor(techniqueType);
 
-    await showDialog<void>(
+    await showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
       builder: (ctx) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text('Criar ${techniqueType.displayName}'),
-          content: SizedBox(
-            width: double.maxFinite,
+        builder: (context, setState) {
+          // Calculate current group type based on selection
+          final totalExercises = selectedExercises.length + 1;
+          final currentGroupType = switch (totalExercises) {
+            1 => 'Selecione exercícios',
+            2 => techniqueType.displayName, // Show user's selection (Bi-Set or Super-Set)
+            3 => 'Tri-Set',
+            _ => 'Giant Set ($totalExercises)',
+          };
+          final canCreate = selectedExercises.length >= minSelections;
+
+          return SafeArea(
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Selecione ${maxSelections == 1 ? "1 exercicio" : "ate $maxSelections exercicios"} para agrupar com "${exercise.name}"',
-                  style: Theme.of(context).textTheme.bodySmall,
+                // Drag handle
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(top: 12, bottom: 8),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-                const SizedBox(height: 16),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 300),
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: availableExercises.length,
-                    itemBuilder: (context, index) {
-                      final ex = availableExercises[index];
-                      final isSelected = selectedIds.contains(ex.id);
-                      return CheckboxListTile(
-                        title: Text(ex.name),
-                        subtitle: Text('${ex.sets} series x ${ex.reps}'),
-                        value: isSelected,
-                        onChanged: (value) {
-                          setState(() {
-                            if (value == true && selectedIds.length < maxSelections) {
-                              selectedIds.add(ex.id);
-                            } else {
-                              selectedIds.remove(ex.id);
-                            }
-                          });
-                        },
-                      );
-                    },
+                // Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: techniqueColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          ExerciseTheme.getIcon(techniqueType),
+                          color: techniqueColor,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Criar Grupo',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              currentGroupType,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: techniqueColor,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: const Icon(LucideIcons.x),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                // Selected exercises area (fixed height, scrollable if needed)
+                Container(
+                  width: double.infinity,
+                  constraints: const BoxConstraints(maxHeight: 120),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: techniqueColor.withValues(alpha: 0.05),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Exercícios no grupo:',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                          ),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: techniqueColor,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '$totalExercises',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Flexible(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              // Leader exercise (current exercise - cannot be removed)
+                              _GroupExerciseChip(
+                                name: exercise.name,
+                                number: 1,
+                                color: techniqueColor,
+                                canRemove: false,
+                              ),
+                              // Selected exercises (can be removed)
+                              ...selectedExercises.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final ex = entry.value;
+                                return _GroupExerciseChip(
+                                  name: ex.name,
+                                  number: index + 2,
+                                  color: techniqueColor,
+                                  canRemove: true,
+                                  onRemove: () {
+                                    setState(() => selectedExercises.remove(ex));
+                                    HapticUtils.selectionClick();
+                                  },
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Available exercises list
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                        child: Text(
+                          'Toque para adicionar:',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          itemCount: availableExercises.length,
+                          itemBuilder: (context, index) {
+                            final ex = availableExercises[index];
+                            final isSelected = selectedExercises.any((s) => s.id == ex.id);
+                            final canAdd = !isSelected && selectedExercises.length < maxSelections;
+
+                            return ListTile(
+                              leading: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? techniqueColor.withValues(alpha: 0.15)
+                                      : theme.colorScheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(
+                                  isSelected ? LucideIcons.check : LucideIcons.dumbbell,
+                                  color: isSelected
+                                      ? techniqueColor
+                                      : theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                  size: 20,
+                                ),
+                              ),
+                              title: Text(
+                                ex.name,
+                                style: TextStyle(
+                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                  color: isSelected ? techniqueColor : null,
+                                ),
+                              ),
+                              subtitle: Text('${ex.sets} series x ${ex.reps}'),
+                              trailing: isSelected
+                                  ? Icon(LucideIcons.checkCircle2, color: techniqueColor)
+                                  : canAdd
+                                      ? Icon(LucideIcons.plusCircle, color: theme.colorScheme.onSurface.withValues(alpha: 0.3))
+                                      : null,
+                              onTap: () {
+                                HapticUtils.selectionClick();
+                                setState(() {
+                                  if (isSelected) {
+                                    selectedExercises.removeWhere((s) => s.id == ex.id);
+                                  } else if (canAdd) {
+                                    selectedExercises.add(ex);
+                                  }
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Bottom action bar
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.cardDark : AppColors.card,
+                    border: Border(
+                      top: BorderSide(
+                        color: theme.colorScheme.outline.withValues(alpha: 0.1),
+                      ),
+                    ),
+                  ),
+                  child: SafeArea(
+                    top: false,
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: canCreate
+                            ? () {
+                                // For 2 exercises, preserve user's choice (biset or superset)
+                                // For 3+, auto-detect based on count
+                                final actualTechniqueType = switch (totalExercises) {
+                                  2 => techniqueType, // Keep user's choice (biset or superset)
+                                  3 => TechniqueType.triset,
+                                  _ => TechniqueType.giantset,
+                                };
+                                final groupLabel = actualTechniqueType.displayName;
+
+                                // Create the group with current exercise + selected exercises
+                                notifier.createExerciseGroup(
+                                  workoutId: workoutId,
+                                  exerciseIds: [exercise.id, ...selectedExercises.map((e) => e.id)],
+                                  techniqueType: actualTechniqueType,
+                                );
+                                Navigator.pop(ctx);
+                                HapticUtils.lightImpact();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('$groupLabel criado com $totalExercises exercícios'),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
+                            : null,
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: techniqueColor,
+                        ),
+                        child: Text(
+                          canCreate
+                              ? 'Criar $currentGroupType'
+                              : 'Selecione pelo menos $minSelections exercício${minSelections > 1 ? 's' : ''}',
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: selectedIds.isEmpty
-                  ? null
-                  : () {
-                      // Create the group with current exercise + selected exercises
-                      notifier.createExerciseGroup(
-                        workoutId: workoutId,
-                        exerciseIds: [exercise.id, ...selectedIds],
-                        techniqueType: techniqueType,
-                      );
-                      Navigator.pop(ctx);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${techniqueType.displayName} criado com ${selectedIds.length + 1} exercicios'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    },
-              child: const Text('Criar Grupo'),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -2968,114 +3575,230 @@ class _ExerciseItem extends ConsumerWidget {
     final techniqueColor = ExerciseTheme.getColor(exercise.techniqueType);
     final hasTechnique = exercise.techniqueType != TechniqueType.normal;
 
-    return GestureDetector(
-      onTap: () {
-        HapticUtils.selectionClick();
-        _showEditExerciseDialog(context, ref);
-      },
-      child: Container(
+    return Container(
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
           color: isDark
               ? theme.colorScheme.surfaceContainerLow.withAlpha(150)
               : theme.colorScheme.surfaceContainerLow.withAlpha(200),
           borderRadius: BorderRadius.circular(8),
-          // Add colored left border for technique exercises
-          border: hasTechnique
-              ? Border(
-                  left: BorderSide(
-                    color: techniqueColor,
-                    width: 3,
-                  ),
-                )
-              : null,
+          // Left border for all exercises (colored for techniques, neutral for simple)
+          border: Border(
+            left: BorderSide(
+              color: hasTechnique
+                  ? techniqueColor
+                  : theme.colorScheme.outline.withValues(alpha: 0.3),
+              width: 3,
+            ),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Technique badge for single-exercise techniques (dropset, rest-pause, etc.)
-            if (hasTechnique)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: techniqueColor.withValues(alpha: 0.15),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(8),
-                    topRight: Radius.circular(8),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      ExerciseTheme.getIcon(exercise.techniqueType),
-                      size: 14,
-                      color: techniqueColor,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      exercise.techniqueType.displayName,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: techniqueColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+            // Header for all exercises
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: hasTechnique
+                    ? techniqueColor.withValues(alpha: 0.15)
+                    : theme.colorScheme.outlineVariant.withValues(alpha: 0.2),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(8),
+                  topRight: Radius.circular(8),
                 ),
               ),
-            // Main content
-            Padding(
-              padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
                   Icon(
-                    LucideIcons.gripVertical,
-                    size: 20,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                    hasTechnique
+                        ? ExerciseTheme.getIcon(exercise.techniqueType)
+                        : LucideIcons.dumbbell,
+                    size: 14,
+                    color: hasTechnique
+                        ? techniqueColor
+                        : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          exercise.name,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w500,
-                            color: hasTechnique ? techniqueColor : null,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 4,
-                          children: [
-                            _MiniChip(label: '${exercise.sets} series', isDark: isDark),
-                            _MiniChip(label: '${exercise.reps} reps', isDark: isDark),
-                            _MiniChip(
-                              label: exercise.restSeconds == 0 ? 'Sem descanso' : '${exercise.restSeconds}s',
-                              isDark: isDark,
-                              isHighlighted: exercise.restSeconds == 0,
-                            ),
-                            // Compact isometric display
-                            if (exercise.isometricSeconds != null && exercise.isometricSeconds! > 0)
-                              _MiniChip(
-                                label: '${exercise.isometricSeconds}s',
-                                icon: LucideIcons.timer,
-                                isDark: isDark,
-                                isHighlighted: true,
-                              ),
-                            if (exercise.executionInstructions.isNotEmpty)
-                              _MiniChip(
-                                label: 'Instrucoes',
-                                isDark: isDark,
-                                icon: LucideIcons.fileText,
-                              ),
-                          ],
-                        ),
-                      ],
+                  const SizedBox(width: 6),
+                  Text(
+                    hasTechnique ? exercise.techniqueType.displayName : 'Exercício',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: hasTechnique
+                          ? techniqueColor
+                          : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
+                  const Spacer(),
+                  // Link button (only for simple exercises - no technique and no group)
+                  if (exercise.exerciseGroupId == null && !hasTechnique)
+                    IconButton(
+                      onPressed: () {
+                        HapticUtils.selectionClick();
+                        _showTechniqueSelectionDialog(context, ref);
+                      },
+                      icon: Icon(
+                        LucideIcons.link2,
+                        size: 20,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                      ),
+                      padding: const EdgeInsets.all(8),
+                      constraints: const BoxConstraints(),
+                      splashRadius: 20,
+                    ),
+                  // Unlink button (only for technique exercises)
+                  if (hasTechnique)
+                    IconButton(
+                      onPressed: () {
+                        HapticUtils.selectionClick();
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Remover Técnica'),
+                            content: Text(
+                              'Deseja remover a técnica "${exercise.techniqueType.displayName}" deste exercício?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('Cancelar'),
+                              ),
+                              FilledButton(
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  HapticUtils.lightImpact();
+                                  final updated = exercise.copyWith(techniqueType: TechniqueType.normal);
+                                  notifier.updateExercise(workoutId, exercise.id, updated);
+                                },
+                                child: const Text('Remover'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      icon: Icon(
+                        LucideIcons.unlink,
+                        size: 20,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                      ),
+                      padding: const EdgeInsets.all(8),
+                      constraints: const BoxConstraints(),
+                      splashRadius: 20,
+                    ),
+                  // Info button - show exercise details
+                  IconButton(
+                    onPressed: () {
+                      HapticUtils.selectionClick();
+                      _showExerciseDetails(context, exercise.exerciseId);
+                    },
+                    icon: Icon(
+                      LucideIcons.info,
+                      size: 20,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                    padding: const EdgeInsets.all(8),
+                    constraints: const BoxConstraints(),
+                    splashRadius: 20,
+                  ),
+                  // Instructions button - edit execution instructions
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        HapticUtils.selectionClick();
+                        _showInstructionsDialog(context, ref);
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        alignment: Alignment.center,
+                        child: Icon(
+                          LucideIcons.fileText,
+                          size: 20,
+                          color: exercise.executionInstructions.isNotEmpty
+                              ? (hasTechnique ? techniqueColor : AppColors.primary)
+                              : theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Delete button (for all exercises)
+                  IconButton(
+                    onPressed: () {
+                      HapticUtils.lightImpact();
+                      notifier.removeExerciseFromWorkout(workoutId, exercise.id);
+                    },
+                    icon: Icon(
+                      LucideIcons.trash2,
+                      size: 20,
+                      color: Colors.red.withValues(alpha: 0.6),
+                    ),
+                    padding: const EdgeInsets.all(8),
+                    constraints: const BoxConstraints(),
+                    splashRadius: 20,
+                  ),
+                ],
+              ),
+            ),
+            // Main content - tappable to edit exercise
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                HapticUtils.selectionClick();
+                _showEditExerciseDialog(context, ref);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Icon(
+                      LucideIcons.gripVertical,
+                      size: 20,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            exercise.name,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: hasTechnique ? techniqueColor : null,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: [
+                              _MiniChip(label: '${exercise.sets} series', isDark: isDark),
+                              _MiniChip(label: '${exercise.reps} reps', isDark: isDark),
+                              _MiniChip(
+                                label: exercise.restSeconds == 0 ? 'Sem descanso' : '${exercise.restSeconds}s',
+                                isDark: isDark,
+                                isHighlighted: exercise.restSeconds == 0,
+                              ),
+                              // Compact isometric display
+                              if (exercise.isometricSeconds != null && exercise.isometricSeconds! > 0)
+                                _MiniChip(
+                                  label: '${exercise.isometricSeconds}s',
+                                  icon: LucideIcons.timer,
+                                  isDark: isDark,
+                                  isHighlighted: true,
+                                ),
+                              if (exercise.executionInstructions.isNotEmpty)
+                                _MiniChip(
+                                  label: 'Instrucoes',
+                                  isDark: isDark,
+                                  icon: LucideIcons.fileText,
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   // Copy to another workout
                   if (otherWorkouts.isNotEmpty)
                     PopupMenuButton<String>(
@@ -3129,24 +3852,13 @@ class _ExerciseItem extends ConsumerWidget {
                         );
                       }).toList(),
                     ),
-                  IconButton(
-                    icon: Icon(
-                      LucideIcons.trash2,
-                      size: 18,
-                      color: Colors.red.withValues(alpha: 0.7),
-                    ),
-                    onPressed: () {
-                      HapticUtils.lightImpact();
-                      notifier.removeExerciseFromWorkout(workoutId, exercise.id);
-                    },
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 }
 
@@ -3202,6 +3914,79 @@ class _MiniChip extends StatelessWidget {
               fontWeight: isHighlighted ? FontWeight.w500 : null,
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Compact chip for displaying exercises in group selection
+class _GroupExerciseChip extends StatelessWidget {
+  final String name;
+  final int number;
+  final Color color;
+  final bool canRemove;
+  final VoidCallback? onRemove;
+
+  const _GroupExerciseChip({
+    required this.name,
+    required this.number,
+    required this.color,
+    required this.canRemove,
+    this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Center(
+              child: Text(
+                '$number',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 100),
+            child: Text(
+              name,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: color,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (canRemove) ...[
+            const SizedBox(width: 4),
+            GestureDetector(
+              onTap: onRemove,
+              child: Icon(LucideIcons.x, size: 14, color: color),
+            ),
+          ],
         ],
       ),
     );
@@ -3840,6 +4625,427 @@ class _ExerciseCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Exercise picker for adding exercises to an existing group
+class _AddToGroupExercisePicker extends ConsumerStatefulWidget {
+  final Color techniqueColor;
+  final Set<String> excludedExerciseIds;
+  final Function(List<Exercise>) onExercisesSelected;
+  final int currentGroupSize;
+  final int maxGroupSize;
+
+  const _AddToGroupExercisePicker({
+    required this.techniqueColor,
+    required this.excludedExerciseIds,
+    required this.onExercisesSelected,
+    this.currentGroupSize = 0,
+    this.maxGroupSize = 8,
+  });
+
+  @override
+  ConsumerState<_AddToGroupExercisePicker> createState() => _AddToGroupExercisePickerState();
+}
+
+class _AddToGroupExercisePickerState extends ConsumerState<_AddToGroupExercisePicker> {
+  final _searchController = TextEditingController();
+  MuscleGroup? _selectedMuscleGroup;
+  String _searchQuery = '';
+  final Set<Exercise> _selectedExercises = {};
+
+  int get _remainingSlots => widget.maxGroupSize - widget.currentGroupSize - _selectedExercises.length;
+  bool get _canSelectMore => _remainingSlots > 0;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final exercisesAsync = ref.watch(exercisesByMuscleGroupProvider);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.9,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      child: Column(
+        children: [
+          // Handle
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.outline.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          // Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: widget.techniqueColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    LucideIcons.plus,
+                    color: widget.techniqueColor,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Adicionar ao Grupo',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        _selectedExercises.isEmpty
+                            ? 'Selecione ate $_remainingSlots exercicio${_remainingSlots != 1 ? 's' : ''}'
+                            : '${_selectedExercises.length} selecionado${_selectedExercises.length != 1 ? 's' : ''} ($_remainingSlots restante${_remainingSlots != 1 ? 's' : ''})',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: widget.techniqueColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(LucideIcons.x),
+                ),
+              ],
+            ),
+          ),
+
+          // Search bar
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Buscar exercicio...',
+                prefixIcon: const Icon(LucideIcons.search, size: 20),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(LucideIcons.x, size: 18),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.outline.withValues(alpha: 0.2),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: theme.colorScheme.outline.withValues(alpha: 0.2),
+                  ),
+                ),
+                filled: true,
+                fillColor: isDark
+                    ? theme.colorScheme.surfaceContainerLow
+                    : theme.colorScheme.surfaceContainerLowest,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+              onChanged: (value) => setState(() => _searchQuery = value.toLowerCase()),
+            ),
+          ),
+
+          // Muscle group filter chips
+          SizedBox(
+            height: 44,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    label: const Text('Todos'),
+                    selected: _selectedMuscleGroup == null,
+                    onSelected: (_) => setState(() => _selectedMuscleGroup = null),
+                    selectedColor: widget.techniqueColor.withAlpha(40),
+                    checkmarkColor: widget.techniqueColor,
+                  ),
+                ),
+                ...MuscleGroup.values.map((group) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        label: Text(group.displayName),
+                        selected: _selectedMuscleGroup == group,
+                        onSelected: (_) => setState(() {
+                          _selectedMuscleGroup = _selectedMuscleGroup == group ? null : group;
+                        }),
+                        selectedColor: widget.techniqueColor.withAlpha(40),
+                        checkmarkColor: widget.techniqueColor,
+                      ),
+                    )),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Divider(height: 1),
+
+          // Exercise list
+          Expanded(
+            child: exercisesAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        LucideIcons.alertCircle,
+                        size: 48,
+                        color: theme.colorScheme.error,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Erro ao carregar exercicios',
+                        style: theme.textTheme.titleMedium,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              data: (grouped) {
+                final allExercises = <Exercise>[];
+                for (final entry in grouped.entries) {
+                  final matchesMuscleFilter =
+                      _selectedMuscleGroup == null || _selectedMuscleGroup == entry.key;
+
+                  if (matchesMuscleFilter) {
+                    for (final exercise in entry.value) {
+                      // Filter out excluded exercises and apply search
+                      final isExcluded = widget.excludedExerciseIds.contains(exercise.id);
+                      final matchesSearch = _searchQuery.isEmpty ||
+                          exercise.name.toLowerCase().contains(_searchQuery);
+                      if (!isExcluded && matchesSearch) {
+                        allExercises.add(exercise);
+                      }
+                    }
+                  }
+                }
+
+                if (allExercises.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            LucideIcons.searchX,
+                            size: 48,
+                            color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Nenhum exercicio encontrado',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: allExercises.length,
+                  itemBuilder: (context, index) {
+                    final exercise = allExercises[index];
+                    final isSelected = _selectedExercises.contains(exercise);
+                    final canSelect = isSelected || _canSelectMore;
+
+                    return InkWell(
+                      onTap: canSelect
+                          ? () {
+                              HapticUtils.selectionClick();
+                              setState(() {
+                                if (isSelected) {
+                                  _selectedExercises.remove(exercise);
+                                } else {
+                                  _selectedExercises.add(exercise);
+                                }
+                              });
+                            }
+                          : null,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? widget.techniqueColor.withValues(alpha: 0.1)
+                              : null,
+                        ),
+                        child: Row(
+                          children: [
+                            // Image
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? theme.colorScheme.surfaceContainerHigh
+                                    : theme.colorScheme.surfaceContainerLow,
+                                borderRadius: BorderRadius.circular(10),
+                                border: isSelected
+                                    ? Border.all(
+                                        color: widget.techniqueColor,
+                                        width: 2,
+                                      )
+                                    : null,
+                              ),
+                              child: exercise.imageUrl != null
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(isSelected ? 8 : 10),
+                                      child: Image.network(
+                                        exercise.imageUrl!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) => Icon(
+                                          LucideIcons.dumbbell,
+                                          color: theme.colorScheme.outline,
+                                          size: 24,
+                                        ),
+                                      ),
+                                    )
+                                  : Icon(
+                                      LucideIcons.dumbbell,
+                                      color: theme.colorScheme.outline,
+                                      size: 24,
+                                    ),
+                            ),
+                            const SizedBox(width: 14),
+                            // Info
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    exercise.name,
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: !canSelect
+                                          ? theme.colorScheme.onSurface.withValues(alpha: 0.4)
+                                          : null,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    exercise.muscleGroupName,
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.colorScheme.onSurface.withValues(alpha: canSelect ? 0.6 : 0.3),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Selection indicator
+                            if (isSelected)
+                              Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: widget.techniqueColor,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  LucideIcons.check,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                              )
+                            else if (canSelect)
+                              Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                              )
+                            else
+                              Icon(
+                                LucideIcons.ban,
+                                color: theme.colorScheme.outline.withValues(alpha: 0.3),
+                                size: 22,
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          // Confirm button
+          if (_selectedExercises.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                border: Border(
+                  top: BorderSide(
+                    color: theme.colorScheme.outline.withValues(alpha: 0.2),
+                  ),
+                ),
+              ),
+              child: SafeArea(
+                child: FilledButton(
+                  onPressed: () {
+                    HapticUtils.mediumImpact();
+                    Navigator.pop(context);
+                    widget.onExercisesSelected(_selectedExercises.toList());
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: widget.techniqueColor,
+                    minimumSize: const Size.fromHeight(50),
+                  ),
+                  child: Text(
+                    'Adicionar ${_selectedExercises.length} Exercicio${_selectedExercises.length != 1 ? 's' : ''}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

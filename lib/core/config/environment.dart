@@ -50,8 +50,7 @@ class EnvironmentConfig {
       case Environment.staging:
         return 'https://api.myfitplatform.com/api/v1';
       case Environment.development:
-        // Use local network IP for both web and mobile
-        // This allows accessing from any device on the network
+        // Use Mac IP for physical device testing
         return 'http://192.168.0.102:8000/api/v1';
     }
   }

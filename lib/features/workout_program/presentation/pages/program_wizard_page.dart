@@ -205,11 +205,14 @@ class _ProgramWizardPageState extends ConsumerState<ProgramWizardPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetContext) => SizedBox(
-        height: MediaQuery.of(sheetContext).size.height * 0.9,
+        height: MediaQuery.of(sheetContext).size.height,
         child: StepAIQuestionnaire(
           onComplete: () {
             Navigator.pop(sheetContext);
-            _nextStep();
+            // AI generation sets currentStep to 2 (workouts config)
+            // Animate PageController to the correct step
+            final state = ref.read(programWizardProvider);
+            _pageController.jumpToPage(state.currentStep);
           },
           onCancel: () {
             Navigator.pop(sheetContext);
