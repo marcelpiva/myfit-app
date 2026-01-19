@@ -839,6 +839,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => TechniqueSelectionModal(
+        muscleGroups: muscleGroups,
         onTechniqueSelected: (technique) {
           _handleTechniqueSelected(context, ref, workoutId, muscleGroups, technique);
         },
@@ -1271,6 +1272,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
             workoutId: workout.id,
             isDark: isDark,
             theme: theme,
+            muscleGroups: workout.muscleGroups,
           ),
         );
         itemIndex += groupExercises.length;
@@ -1293,6 +1295,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
   final String workoutId;
   final bool isDark;
   final ThemeData theme;
+  final List<String> muscleGroups;
 
   const _ExerciseGroupCard({
     super.key,
@@ -1301,6 +1304,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
     required this.workoutId,
     required this.isDark,
     required this.theme,
+    required this.muscleGroups,
   });
 
   @override
@@ -1488,6 +1492,7 @@ class _ExerciseGroupCard extends ConsumerWidget {
         excludedExerciseIds: groupExerciseIds,
         currentGroupSize: currentGroupSize,
         maxGroupSize: 8,
+        allowedMuscleGroups: muscleGroups,
         onExercisesSelected: (exercisesList) {
           final notifier = ref.read(programWizardProvider.notifier);
           for (final exercise in exercisesList) {
@@ -4675,6 +4680,7 @@ class _AddToGroupExercisePicker extends ConsumerStatefulWidget {
   final Function(List<Exercise>) onExercisesSelected;
   final int currentGroupSize;
   final int maxGroupSize;
+  final List<String> allowedMuscleGroups;
 
   const _AddToGroupExercisePicker({
     required this.techniqueColor,
@@ -4682,6 +4688,7 @@ class _AddToGroupExercisePicker extends ConsumerStatefulWidget {
     required this.onExercisesSelected,
     this.currentGroupSize = 0,
     this.maxGroupSize = 8,
+    this.allowedMuscleGroups = const [],
   });
 
   @override
@@ -4816,24 +4823,27 @@ class _AddToGroupExercisePickerState extends ConsumerState<_AddToGroupExercisePi
             ),
           ),
 
-          // Muscle group filter chips
-          SizedBox(
-            height: 44,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: const Text('Todos'),
-                    selected: _selectedMuscleGroup == null,
-                    onSelected: (_) => setState(() => _selectedMuscleGroup = null),
-                    selectedColor: widget.techniqueColor.withAlpha(40),
-                    checkmarkColor: widget.techniqueColor,
+          // Muscle group filter chips - only show allowed groups
+          if (widget.allowedMuscleGroups.isNotEmpty)
+            SizedBox(
+              height: 44,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: FilterChip(
+                      label: const Text('Todos'),
+                      selected: _selectedMuscleGroup == null,
+                      onSelected: (_) => setState(() => _selectedMuscleGroup = null),
+                      selectedColor: widget.techniqueColor.withAlpha(40),
+                      checkmarkColor: widget.techniqueColor,
+                    ),
                   ),
-                ),
-                ...MuscleGroup.values.map((group) => Padding(
+                  ...widget.allowedMuscleGroups.map((groupStr) {
+                    final group = groupStr.toMuscleGroup();
+                    return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: FilterChip(
                         label: Text(group.displayName),
@@ -4844,10 +4854,11 @@ class _AddToGroupExercisePickerState extends ConsumerState<_AddToGroupExercisePi
                         selectedColor: widget.techniqueColor.withAlpha(40),
                         checkmarkColor: widget.techniqueColor,
                       ),
-                    )),
-              ],
+                    );
+                  }),
+                ],
+              ),
             ),
-          ),
           const SizedBox(height: 8),
           const Divider(height: 1),
 
@@ -4876,12 +4887,19 @@ class _AddToGroupExercisePickerState extends ConsumerState<_AddToGroupExercisePi
                 ),
               ),
               data: (grouped) {
+                // Convert allowed muscle groups to MuscleGroup enum
+                final allowedGroups = widget.allowedMuscleGroups.isEmpty
+                    ? MuscleGroup.values.toSet()
+                    : widget.allowedMuscleGroups.map((g) => g.toMuscleGroup()).toSet();
+
                 final allExercises = <Exercise>[];
                 for (final entry in grouped.entries) {
+                  // Filter by allowed muscle groups first
+                  final isAllowedGroup = allowedGroups.contains(entry.key);
                   final matchesMuscleFilter =
                       _selectedMuscleGroup == null || _selectedMuscleGroup == entry.key;
 
-                  if (matchesMuscleFilter) {
+                  if (isAllowedGroup && matchesMuscleFilter) {
                     for (final exercise in entry.value) {
                       // Filter out excluded exercises and apply search
                       final isExcluded = widget.excludedExerciseIds.contains(exercise.id);

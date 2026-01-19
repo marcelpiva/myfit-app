@@ -192,6 +192,26 @@ class MuscleGroupTechniqueDetector {
     if (groups.length != 2) return false;
     return isSuperSet(groups[0], groups[1]);
   }
+
+  /// Check if a list of muscle groups contains any antagonist pairs
+  /// Returns true if Super-Set is possible with these muscle groups
+  static bool hasAntagonistPairs(List<MuscleGroup> groups) {
+    // Check for chest/back pair
+    if (groups.contains(MuscleGroup.chest) && groups.contains(MuscleGroup.back)) {
+      return true;
+    }
+    // Check for biceps/triceps pair
+    if (groups.contains(MuscleGroup.biceps) && groups.contains(MuscleGroup.triceps)) {
+      return true;
+    }
+    return false;
+  }
+
+  /// Check if a list of muscle group strings contains any antagonist pairs
+  static bool hasAntagonistPairsFromStrings(List<String> groups) {
+    final muscleGroups = groups.map((g) => g.toMuscleGroup()).toList();
+    return hasAntagonistPairs(muscleGroups);
+  }
 }
 
 /// Extension to parse muscle group from string

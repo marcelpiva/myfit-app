@@ -4,6 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/exercise_theme.dart';
+import '../../../workout_builder/domain/models/exercise.dart';
 import '../../domain/models/workout_program.dart';
 
 /// Modal for selecting a training technique before adding exercises.
@@ -11,11 +12,13 @@ import '../../domain/models/workout_program.dart';
 class TechniqueSelectionModal extends StatefulWidget {
   final Function(TechniqueType) onTechniqueSelected;
   final VoidCallback onSimpleExercise;
+  final List<String> muscleGroups;
 
   const TechniqueSelectionModal({
     super.key,
     required this.onTechniqueSelected,
     required this.onSimpleExercise,
+    this.muscleGroups = const [],
   });
 
   @override
@@ -130,10 +133,15 @@ class _TechniqueSelectionModalState extends State<TechniqueSelectionModal> {
   Widget _buildTechniqueTypesView(ThemeData theme) {
     final isDark = theme.brightness == Brightness.dark;
 
+    // Check if Super-Set is available (workout has antagonist muscle pairs)
+    final hasAntagonists = widget.muscleGroups.isEmpty ||
+        MuscleGroupTechniqueDetector.hasAntagonistPairsFromStrings(widget.muscleGroups);
+
     // Group techniques: Multi-exercise vs Single-exercise
+    // Filter out Super-Set if no antagonist pairs are available
     final multiExerciseTechniques = [
       TechniqueType.biset,    // 2 exercises, same area
-      TechniqueType.superset, // 2 exercises, opposite groups
+      if (hasAntagonists) TechniqueType.superset, // 2 exercises, opposite groups
       TechniqueType.triset,   // 3 exercises
       TechniqueType.giantset, // 4+ exercises
     ];
