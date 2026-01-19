@@ -858,11 +858,11 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
     TechniqueType technique,
   ) {
     // Determine required exercise count based on technique
-    // superset is used for Bi-Set/Tri-Set combined (2-3 exercises)
     final (requiredCount, minCount, maxCount) = switch (technique) {
-      TechniqueType.superset => (2, 2, 3), // Bi-Set or Tri-Set: 2-3 exercises
-      TechniqueType.triset => (3, null, 3),
-      TechniqueType.giantset => (4, 4, 8),
+      TechniqueType.biset => (2, null, 2),    // Bi-Set: exactly 2 exercises
+      TechniqueType.superset => (2, null, 2), // Super-Set: exactly 2 exercises
+      TechniqueType.triset => (3, null, 3),   // Tri-Set: exactly 3 exercises
+      TechniqueType.giantset => (4, 4, 8),    // Giant Set: 4-8 exercises
       _ => (1, null, 1), // dropset, restPause, cluster
     };
 

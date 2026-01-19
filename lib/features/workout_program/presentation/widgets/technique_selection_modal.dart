@@ -132,8 +132,10 @@ class _TechniqueSelectionModalState extends State<TechniqueSelectionModal> {
 
     // Group techniques: Multi-exercise vs Single-exercise
     final multiExerciseTechniques = [
-      TechniqueType.superset, // Bi-Set/Tri-Set combined
-      TechniqueType.giantset,
+      TechniqueType.biset,    // 2 exercises, same area
+      TechniqueType.superset, // 2 exercises, opposite groups
+      TechniqueType.triset,   // 3 exercises
+      TechniqueType.giantset, // 4+ exercises
     ];
 
     final singleExerciseTechniques = [
@@ -337,25 +339,14 @@ class _TechniqueCard extends StatelessWidget {
 
   IconData get _techniqueIcon => ExerciseTheme.getIcon(technique);
 
-  String get _displayName {
-    // Custom display name for Bi-Set/Tri-Set combined option
-    if (technique == TechniqueType.superset) {
-      return 'Bi-Set / Tri-Set';
-    }
-    return technique.displayName;
-  }
+  String get _displayName => technique.displayName;
 
-  String get _description {
-    // Custom description for Bi-Set/Tri-Set combined option
-    if (technique == TechniqueType.superset) {
-      return 'Combine 2-3 exercicios em sequencia sem descanso';
-    }
-    return technique.description;
-  }
+  String get _description => technique.description;
 
   String get _exerciseCountHint {
     return switch (technique) {
-      TechniqueType.superset => '2-3 exercicios',
+      TechniqueType.biset => '2 exercicios',
+      TechniqueType.superset => '2 exercicios',
       TechniqueType.triset => '3 exercicios',
       TechniqueType.giantset => '4+ exercicios',
       _ => '1 exercicio',

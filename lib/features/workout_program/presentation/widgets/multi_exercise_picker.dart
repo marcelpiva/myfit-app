@@ -68,13 +68,7 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
     return count == widget.requiredCount;
   }
 
-  String get _displayName {
-    // Custom display name for Bi-Set/Tri-Set
-    if (widget.technique == TechniqueType.superset) {
-      return 'Bi-Set / Tri-Set';
-    }
-    return widget.technique.displayName;
-  }
+  String get _displayName => widget.technique.displayName;
 
   String get _selectionHint {
     if (widget.minCount != null && widget.maxCount != null && widget.minCount != widget.maxCount) {
