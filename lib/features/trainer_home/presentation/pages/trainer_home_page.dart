@@ -758,6 +758,33 @@ class _HeaderSection extends StatelessWidget {
             ),
           ),
         ),
+
+        const SizedBox(width: 8),
+
+        // Settings Gear
+        GestureDetector(
+          onTap: () {
+            HapticUtils.lightImpact();
+            context.push(RouteNames.settings);
+          },
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: (isDark ? AppColors.cardDark : AppColors.card)
+                  .withAlpha(isDark ? 150 : 200),
+              border: Border.all(
+                color: isDark ? AppColors.borderDark : AppColors.border,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              LucideIcons.settings,
+              size: 20,
+              color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+            ),
+          ),
+        ),
       ],
     );
   }

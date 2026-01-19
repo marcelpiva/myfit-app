@@ -28,6 +28,152 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
   }
 
   bool _isAccepting = false;
+  bool _isLeaving = false;
+
+  Future<void> _leaveProfile(OrganizationMembership membership) async {
+    if (_isLeaving) return;
+    setState(() => _isLeaving = true);
+
+    try {
+      final user = ref.read(currentUserProvider);
+      if (user == null) throw Exception('Usuário não encontrado');
+
+      final service = OrganizationService();
+      await service.removeMember(membership.organization.id, user.id);
+
+      // Refresh memberships
+      ref.invalidate(membershipsProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Você saiu de ${membership.organization.name}'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao sair do perfil: $e'),
+            backgroundColor: AppColors.destructive,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLeaving = false);
+    }
+  }
+
+  void _showLeaveProfileDialog(OrganizationMembership membership) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? AppColors.cardDark : AppColors.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.borderDark : AppColors.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.destructive.withAlpha(20),
+              ),
+              child: Icon(
+                LucideIcons.userMinus,
+                size: 28,
+                color: AppColors.destructive,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Sair do Perfil',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Tem certeza que deseja sair de "${membership.organization.name}"?\n\nVocê perderá acesso a este perfil e precisará de um novo convite para retornar.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                height: 1.5,
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Cancelar'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: _isLeaving
+                        ? null
+                        : () {
+                            Navigator.pop(ctx);
+                            _leaveProfile(membership);
+                          },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.destructive,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: _isLeaving
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation(Colors.white),
+                            ),
+                          )
+                        : const Text('Sair do Perfil'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
 
   Future<void> _acceptInvite(PendingInvite invite) async {
     if (_isAccepting) return;
@@ -198,6 +344,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
                   membership: membership,
                   isDark: isDark,
                   onTap: () => _selectMembership(membership),
+                  onLeave: () => _showLeaveProfileDialog(membership),
                 );
               },
             ),
@@ -347,6 +494,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
                 membership: membership,
                 isDark: isDark,
                 onTap: () => _selectMembership(membership),
+                onLeave: () => _showLeaveProfileDialog(membership),
               );
             },
           ),
@@ -507,11 +655,13 @@ class _ProfileCard extends StatelessWidget {
   final OrganizationMembership membership;
   final bool isDark;
   final VoidCallback onTap;
+  final VoidCallback? onLeave;
 
   const _ProfileCard({
     required this.membership,
     required this.isDark,
     required this.onTap,
+    this.onLeave,
   });
 
   @override
@@ -613,6 +763,25 @@ class _ProfileCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (onLeave != null) ...[
+                  GestureDetector(
+                    onTap: onLeave,
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: AppColors.destructive.withAlpha(15),
+                      ),
+                      child: Icon(
+                        LucideIcons.logOut,
+                        size: 18,
+                        color: AppColors.destructive.withAlpha(180),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
                 Icon(
                   LucideIcons.chevronRight,
                   size: 20,
