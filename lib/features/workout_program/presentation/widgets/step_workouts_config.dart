@@ -931,10 +931,32 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
         allowedMuscleGroups: muscleGroups,
         techniqueConfig: config,
         onExercisesSelected: (exercises, techniqueConfig) {
+          // Auto-detect technique type for 2-exercise groups based on muscle groups
+          TechniqueType detectedTechnique = technique;
+          String? detectionInfo;
+
+          if (exercises.length == 2) {
+            final group1 = exercises[0].muscleGroup;
+            final group2 = exercises[1].muscleGroup;
+            final isSuperSet = MuscleGroupTechniqueDetector.isSuperSet(group1, group2);
+
+            if (isSuperSet) {
+              detectedTechnique = TechniqueType.superset;
+              detectionInfo = '${group1.displayName} + ${group2.displayName} = Super-Set (grupos opostos)';
+            } else {
+              detectedTechnique = TechniqueType.biset;
+              if (group1 == group2) {
+                detectionInfo = '${group1.displayName} + ${group2.displayName} = Bi-Set (mesmo grupo)';
+              } else {
+                detectionInfo = '${group1.displayName} + ${group2.displayName} = Bi-Set (mesma area)';
+              }
+            }
+          }
+
           // Add exercises using the technique group method
           notifier.addTechniqueGroup(
             workoutId: workoutId,
-            technique: technique,
+            technique: detectedTechnique,
             exercises: exercises,
             dropCount: techniqueConfig?.dropCount,
             restBetweenDrops: techniqueConfig?.restBetweenDrops,
@@ -943,23 +965,39 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
             executionInstructions: techniqueConfig?.executionInstructions,
           );
 
-          // Show success message
+          // Show success message with detection info
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Row(
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      LucideIcons.checkCircle,
-                      color: Colors.white,
-                      size: 20,
+                    Row(
+                      children: [
+                        Icon(
+                          LucideIcons.checkCircle,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            '${detectedTechnique.displayName} adicionado com ${exercises.length} exercicio${exercises.length > 1 ? 's' : ''}',
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        '${technique.displayName} adicionado com ${exercises.length} exercicio${exercises.length > 1 ? 's' : ''}',
+                    if (detectionInfo != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        detectionInfo,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white70,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
                 backgroundColor: AppColors.success,

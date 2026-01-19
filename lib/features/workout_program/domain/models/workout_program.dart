@@ -95,9 +95,9 @@ extension TechniqueTypeDisplay on TechniqueType {
       case TechniqueType.normal:
         return 'Execucao padrao com descanso entre series';
       case TechniqueType.superset:
-        return '2 exercicios de grupos opostos sem descanso';
+        return 'Peito/Costas ou Biceps/Triceps (grupos opostos)';
       case TechniqueType.biset:
-        return '2 exercicios da mesma area sem descanso';
+        return 'Peito/Ombros ou Costas/Biceps (mesma area)';
       case TechniqueType.triset:
         return '3 exercicios do mesmo grupo muscular';
       case TechniqueType.giantset:

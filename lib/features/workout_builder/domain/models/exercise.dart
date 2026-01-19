@@ -129,6 +129,71 @@ sealed class Exercise with _$Exercise {
   }
 }
 
+/// Extension for muscle group antagonist detection
+extension MuscleGroupAntagonist on MuscleGroup {
+  /// Returns the antagonist muscle group for super-set pairing
+  /// Returns null if no clear antagonist exists
+  MuscleGroup? get antagonist {
+    switch (this) {
+      case MuscleGroup.chest:
+        return MuscleGroup.back;
+      case MuscleGroup.back:
+        return MuscleGroup.chest;
+      case MuscleGroup.biceps:
+        return MuscleGroup.triceps;
+      case MuscleGroup.triceps:
+        return MuscleGroup.biceps;
+      // These don't have clear antagonists
+      case MuscleGroup.shoulders:
+      case MuscleGroup.legs:
+      case MuscleGroup.glutes:
+      case MuscleGroup.abs:
+      case MuscleGroup.cardio:
+      case MuscleGroup.fullBody:
+        return null;
+    }
+  }
+
+  /// Check if this muscle group is antagonist to another
+  bool isAntagonistTo(MuscleGroup other) {
+    return antagonist == other;
+  }
+
+  /// Check if this muscle group is in the same area as another
+  /// (for bi-set: same muscle or synergistic muscles)
+  bool isSameAreaAs(MuscleGroup other) {
+    if (this == other) return true;
+
+    // Define muscle group areas
+    const pushMuscles = {MuscleGroup.chest, MuscleGroup.shoulders, MuscleGroup.triceps};
+    const pullMuscles = {MuscleGroup.back, MuscleGroup.biceps};
+    const lowerBody = {MuscleGroup.legs, MuscleGroup.glutes};
+
+    // Check if both are in the same area
+    if (pushMuscles.contains(this) && pushMuscles.contains(other)) return true;
+    if (pullMuscles.contains(this) && pullMuscles.contains(other)) return true;
+    if (lowerBody.contains(this) && lowerBody.contains(other)) return true;
+
+    return false;
+  }
+}
+
+/// Utility to detect technique type based on muscle groups
+class MuscleGroupTechniqueDetector {
+  /// Detect if two muscle groups should be a Super-Set (antagonists) or Bi-Set (same area)
+  /// Returns true for Super-Set (antagonists), false for Bi-Set (same area)
+  static bool isSuperSet(MuscleGroup group1, MuscleGroup group2) {
+    return group1.isAntagonistTo(group2);
+  }
+
+  /// Detect technique type for a list of muscle groups
+  /// For 2 exercises: Super-Set if antagonists, Bi-Set otherwise
+  static bool shouldBeSuperSet(List<MuscleGroup> groups) {
+    if (groups.length != 2) return false;
+    return isSuperSet(groups[0], groups[1]);
+  }
+}
+
 /// Extension to parse muscle group from string
 extension MuscleGroupParsing on String {
   MuscleGroup toMuscleGroup() {

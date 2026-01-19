@@ -65,19 +65,19 @@ abstract class ExerciseTheme {
     return switch (type) {
       TechniqueType.normal => 'Execucao padrao do exercicio',
       TechniqueType.superset =>
-        'Dois exercicios de grupos opostos sem descanso',
+        'Peito/Costas ou Biceps/Triceps (grupos opostos)',
       TechniqueType.biset =>
-        'Dois exercicios da mesma area sem descanso',
+        'Peito/Ombros ou Costas/Biceps (mesma area)',
       TechniqueType.triset =>
-        'Tres exercicios do mesmo grupo muscular sem descanso',
+        'Tres exercicios do mesmo grupo muscular',
       TechniqueType.giantset =>
-        'Quatro ou mais exercicios do mesmo grupo sem descanso',
+        'Quatro ou mais exercicios do mesmo grupo',
       TechniqueType.dropset =>
-        'Reducao progressiva de carga sem descanso entre as reducoes',
+        'Reducao progressiva de carga sem descanso',
       TechniqueType.restPause =>
-        'Pequenas pausas durante a serie para prolongar o esforco',
+        'Pequenas pausas durante a serie',
       TechniqueType.cluster =>
-        'Serie dividida em mini-series com pausas curtas',
+        'Serie dividida em mini-series',
     };
   }
 
