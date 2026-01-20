@@ -278,7 +278,7 @@ as String,
 /// @nodoc
 mixin _$UserResponse {
 
- String get id; String get email; String get name; String? get phone;@JsonKey(name: 'avatar_url') String? get avatarUrl;@JsonKey(name: 'is_active') bool get isActive;@JsonKey(name: 'is_verified') bool get isVerified;
+ String get id; String get email; String get name; String? get phone;@JsonKey(name: 'avatar_url') String? get avatarUrl;@JsonKey(name: 'birth_date') String? get birthDate; String? get gender;@JsonKey(name: 'height_cm') double? get heightCm; String? get bio;@JsonKey(name: 'is_active') bool get isActive;@JsonKey(name: 'is_verified') bool get isVerified;
 /// Create a copy of UserResponse
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -291,16 +291,16 @@ $UserResponseCopyWith<UserResponse> get copyWith => _$UserResponseCopyWithImpl<U
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.name, name) || other.name == name)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.isVerified, isVerified) || other.isVerified == isVerified));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.name, name) || other.name == name)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.birthDate, birthDate) || other.birthDate == birthDate)&&(identical(other.gender, gender) || other.gender == gender)&&(identical(other.heightCm, heightCm) || other.heightCm == heightCm)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.isVerified, isVerified) || other.isVerified == isVerified));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,email,name,phone,avatarUrl,isActive,isVerified);
+int get hashCode => Object.hash(runtimeType,id,email,name,phone,avatarUrl,birthDate,gender,heightCm,bio,isActive,isVerified);
 
 @override
 String toString() {
-  return 'UserResponse(id: $id, email: $email, name: $name, phone: $phone, avatarUrl: $avatarUrl, isActive: $isActive, isVerified: $isVerified)';
+  return 'UserResponse(id: $id, email: $email, name: $name, phone: $phone, avatarUrl: $avatarUrl, birthDate: $birthDate, gender: $gender, heightCm: $heightCm, bio: $bio, isActive: $isActive, isVerified: $isVerified)';
 }
 
 
@@ -311,7 +311,7 @@ abstract mixin class $UserResponseCopyWith<$Res>  {
   factory $UserResponseCopyWith(UserResponse value, $Res Function(UserResponse) _then) = _$UserResponseCopyWithImpl;
 @useResult
 $Res call({
- String id, String email, String name, String? phone,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'is_verified') bool isVerified
+ String id, String email, String name, String? phone,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'birth_date') String? birthDate, String? gender,@JsonKey(name: 'height_cm') double? heightCm, String? bio,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'is_verified') bool isVerified
 });
 
 
@@ -328,13 +328,17 @@ class _$UserResponseCopyWithImpl<$Res>
 
 /// Create a copy of UserResponse
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = null,Object? name = null,Object? phone = freezed,Object? avatarUrl = freezed,Object? isActive = null,Object? isVerified = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? email = null,Object? name = null,Object? phone = freezed,Object? avatarUrl = freezed,Object? birthDate = freezed,Object? gender = freezed,Object? heightCm = freezed,Object? bio = freezed,Object? isActive = null,Object? isVerified = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
 as String?,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,birthDate: freezed == birthDate ? _self.birthDate : birthDate // ignore: cast_nullable_to_non_nullable
+as String?,gender: freezed == gender ? _self.gender : gender // ignore: cast_nullable_to_non_nullable
+as String?,heightCm: freezed == heightCm ? _self.heightCm : heightCm // ignore: cast_nullable_to_non_nullable
+as double?,bio: freezed == bio ? _self.bio : bio // ignore: cast_nullable_to_non_nullable
 as String?,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
 as bool,isVerified: null == isVerified ? _self.isVerified : isVerified // ignore: cast_nullable_to_non_nullable
 as bool,
@@ -419,10 +423,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String email,  String name,  String? phone, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'is_verified')  bool isVerified)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String email,  String name,  String? phone, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'birth_date')  String? birthDate,  String? gender, @JsonKey(name: 'height_cm')  double? heightCm,  String? bio, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'is_verified')  bool isVerified)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserResponse() when $default != null:
-return $default(_that.id,_that.email,_that.name,_that.phone,_that.avatarUrl,_that.isActive,_that.isVerified);case _:
+return $default(_that.id,_that.email,_that.name,_that.phone,_that.avatarUrl,_that.birthDate,_that.gender,_that.heightCm,_that.bio,_that.isActive,_that.isVerified);case _:
   return orElse();
 
 }
@@ -440,10 +444,10 @@ return $default(_that.id,_that.email,_that.name,_that.phone,_that.avatarUrl,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String email,  String name,  String? phone, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'is_verified')  bool isVerified)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String email,  String name,  String? phone, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'birth_date')  String? birthDate,  String? gender, @JsonKey(name: 'height_cm')  double? heightCm,  String? bio, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'is_verified')  bool isVerified)  $default,) {final _that = this;
 switch (_that) {
 case _UserResponse():
-return $default(_that.id,_that.email,_that.name,_that.phone,_that.avatarUrl,_that.isActive,_that.isVerified);}
+return $default(_that.id,_that.email,_that.name,_that.phone,_that.avatarUrl,_that.birthDate,_that.gender,_that.heightCm,_that.bio,_that.isActive,_that.isVerified);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -457,10 +461,10 @@ return $default(_that.id,_that.email,_that.name,_that.phone,_that.avatarUrl,_tha
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String email,  String name,  String? phone, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'is_verified')  bool isVerified)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String email,  String name,  String? phone, @JsonKey(name: 'avatar_url')  String? avatarUrl, @JsonKey(name: 'birth_date')  String? birthDate,  String? gender, @JsonKey(name: 'height_cm')  double? heightCm,  String? bio, @JsonKey(name: 'is_active')  bool isActive, @JsonKey(name: 'is_verified')  bool isVerified)?  $default,) {final _that = this;
 switch (_that) {
 case _UserResponse() when $default != null:
-return $default(_that.id,_that.email,_that.name,_that.phone,_that.avatarUrl,_that.isActive,_that.isVerified);case _:
+return $default(_that.id,_that.email,_that.name,_that.phone,_that.avatarUrl,_that.birthDate,_that.gender,_that.heightCm,_that.bio,_that.isActive,_that.isVerified);case _:
   return null;
 
 }
@@ -472,7 +476,7 @@ return $default(_that.id,_that.email,_that.name,_that.phone,_that.avatarUrl,_tha
 @JsonSerializable()
 
 class _UserResponse extends UserResponse {
-  const _UserResponse({required this.id, required this.email, required this.name, this.phone, @JsonKey(name: 'avatar_url') this.avatarUrl, @JsonKey(name: 'is_active') this.isActive = true, @JsonKey(name: 'is_verified') this.isVerified = false}): super._();
+  const _UserResponse({required this.id, required this.email, required this.name, this.phone, @JsonKey(name: 'avatar_url') this.avatarUrl, @JsonKey(name: 'birth_date') this.birthDate, this.gender, @JsonKey(name: 'height_cm') this.heightCm, this.bio, @JsonKey(name: 'is_active') this.isActive = true, @JsonKey(name: 'is_verified') this.isVerified = false}): super._();
   factory _UserResponse.fromJson(Map<String, dynamic> json) => _$UserResponseFromJson(json);
 
 @override final  String id;
@@ -480,6 +484,10 @@ class _UserResponse extends UserResponse {
 @override final  String name;
 @override final  String? phone;
 @override@JsonKey(name: 'avatar_url') final  String? avatarUrl;
+@override@JsonKey(name: 'birth_date') final  String? birthDate;
+@override final  String? gender;
+@override@JsonKey(name: 'height_cm') final  double? heightCm;
+@override final  String? bio;
 @override@JsonKey(name: 'is_active') final  bool isActive;
 @override@JsonKey(name: 'is_verified') final  bool isVerified;
 
@@ -496,16 +504,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.name, name) || other.name == name)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.isVerified, isVerified) || other.isVerified == isVerified));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserResponse&&(identical(other.id, id) || other.id == id)&&(identical(other.email, email) || other.email == email)&&(identical(other.name, name) || other.name == name)&&(identical(other.phone, phone) || other.phone == phone)&&(identical(other.avatarUrl, avatarUrl) || other.avatarUrl == avatarUrl)&&(identical(other.birthDate, birthDate) || other.birthDate == birthDate)&&(identical(other.gender, gender) || other.gender == gender)&&(identical(other.heightCm, heightCm) || other.heightCm == heightCm)&&(identical(other.bio, bio) || other.bio == bio)&&(identical(other.isActive, isActive) || other.isActive == isActive)&&(identical(other.isVerified, isVerified) || other.isVerified == isVerified));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,email,name,phone,avatarUrl,isActive,isVerified);
+int get hashCode => Object.hash(runtimeType,id,email,name,phone,avatarUrl,birthDate,gender,heightCm,bio,isActive,isVerified);
 
 @override
 String toString() {
-  return 'UserResponse(id: $id, email: $email, name: $name, phone: $phone, avatarUrl: $avatarUrl, isActive: $isActive, isVerified: $isVerified)';
+  return 'UserResponse(id: $id, email: $email, name: $name, phone: $phone, avatarUrl: $avatarUrl, birthDate: $birthDate, gender: $gender, heightCm: $heightCm, bio: $bio, isActive: $isActive, isVerified: $isVerified)';
 }
 
 
@@ -516,7 +524,7 @@ abstract mixin class _$UserResponseCopyWith<$Res> implements $UserResponseCopyWi
   factory _$UserResponseCopyWith(_UserResponse value, $Res Function(_UserResponse) _then) = __$UserResponseCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String email, String name, String? phone,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'is_verified') bool isVerified
+ String id, String email, String name, String? phone,@JsonKey(name: 'avatar_url') String? avatarUrl,@JsonKey(name: 'birth_date') String? birthDate, String? gender,@JsonKey(name: 'height_cm') double? heightCm, String? bio,@JsonKey(name: 'is_active') bool isActive,@JsonKey(name: 'is_verified') bool isVerified
 });
 
 
@@ -533,13 +541,17 @@ class __$UserResponseCopyWithImpl<$Res>
 
 /// Create a copy of UserResponse
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = null,Object? name = null,Object? phone = freezed,Object? avatarUrl = freezed,Object? isActive = null,Object? isVerified = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? email = null,Object? name = null,Object? phone = freezed,Object? avatarUrl = freezed,Object? birthDate = freezed,Object? gender = freezed,Object? heightCm = freezed,Object? bio = freezed,Object? isActive = null,Object? isVerified = null,}) {
   return _then(_UserResponse(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,phone: freezed == phone ? _self.phone : phone // ignore: cast_nullable_to_non_nullable
 as String?,avatarUrl: freezed == avatarUrl ? _self.avatarUrl : avatarUrl // ignore: cast_nullable_to_non_nullable
+as String?,birthDate: freezed == birthDate ? _self.birthDate : birthDate // ignore: cast_nullable_to_non_nullable
+as String?,gender: freezed == gender ? _self.gender : gender // ignore: cast_nullable_to_non_nullable
+as String?,heightCm: freezed == heightCm ? _self.heightCm : heightCm // ignore: cast_nullable_to_non_nullable
+as double?,bio: freezed == bio ? _self.bio : bio // ignore: cast_nullable_to_non_nullable
 as String?,isActive: null == isActive ? _self.isActive : isActive // ignore: cast_nullable_to_non_nullable
 as bool,isVerified: null == isVerified ? _self.isVerified : isVerified // ignore: cast_nullable_to_non_nullable
 as bool,

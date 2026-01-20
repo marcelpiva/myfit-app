@@ -52,8 +52,8 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage>
     final currentUser = ref.read(currentUserProvider);
     _nameController = TextEditingController(text: currentUser?.name ?? '');
     _phoneController = TextEditingController(text: currentUser?.phone ?? '');
-    _birthDateController = TextEditingController(); // TODO: Add birthDate to user model when API supports it
-    _bioController = TextEditingController(); // TODO: Add bio to user model when API supports it
+    _birthDateController = TextEditingController(text: currentUser?.birthDate ?? '');
+    _bioController = TextEditingController(text: currentUser?.bio ?? '');
   }
 
   @override

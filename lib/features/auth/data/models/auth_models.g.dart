@@ -27,6 +27,10 @@ _UserResponse _$UserResponseFromJson(Map<String, dynamic> json) =>
       name: json['name'] as String,
       phone: json['phone'] as String?,
       avatarUrl: json['avatar_url'] as String?,
+      birthDate: json['birth_date'] as String?,
+      gender: json['gender'] as String?,
+      heightCm: (json['height_cm'] as num?)?.toDouble(),
+      bio: json['bio'] as String?,
       isActive: json['is_active'] as bool? ?? true,
       isVerified: json['is_verified'] as bool? ?? false,
     );
@@ -38,6 +42,10 @@ Map<String, dynamic> _$UserResponseToJson(_UserResponse instance) =>
       'name': instance.name,
       'phone': instance.phone,
       'avatar_url': instance.avatarUrl,
+      'birth_date': instance.birthDate,
+      'gender': instance.gender,
+      'height_cm': instance.heightCm,
+      'bio': instance.bio,
       'is_active': instance.isActive,
       'is_verified': instance.isVerified,
     };
