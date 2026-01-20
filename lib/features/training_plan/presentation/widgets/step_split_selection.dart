@@ -90,34 +90,73 @@ class StepSplitSelection extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
 
-          // Split options
-          ...splits.map((item) {
+          // Info banner when editing
+          if (state.isEditing) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.amber.withAlpha(30),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.amber.withAlpha(100)),
+              ),
+              child: Row(
+                children: [
+                  Icon(LucideIcons.info, size: 18, color: Colors.amber.shade700),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'A divisão de treino não pode ser alterada ao editar um plano existente.',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: Colors.amber.shade800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          // Split options - when editing, show selected first
+          ...(() {
+            if (state.isEditing) {
+              final selected = splits.where((s) => s.$1 == state.splitType);
+              final others = splits.where((s) => s.$1 != state.splitType);
+              return [...selected, ...others];
+            }
+            return splits;
+          })().map((item) {
             final isSelected = state.splitType == item.$1;
+            final isDisabled = state.isEditing && !isSelected;
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: GestureDetector(
-                onTap: () {
-                  HapticUtils.selectionClick();
-                  notifier.selectSplit(item.$1);
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.primary.withAlpha(20)
-                        : (isDark
-                            ? theme.colorScheme.surfaceContainerLowest
-                                .withAlpha(150)
-                            : theme.colorScheme.surfaceContainerLowest
-                                .withAlpha(200)),
-                    border: Border.all(
+                onTap: state.isEditing
+                    ? null // Disable tap when editing
+                    : () {
+                        HapticUtils.selectionClick();
+                        notifier.selectSplit(item.$1);
+                      },
+                child: Opacity(
+                  opacity: isDisabled ? 0.5 : 1.0,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.primary
-                          : theme.colorScheme.outline.withValues(alpha: 0.2),
-                      width: isSelected ? 2 : 1,
+                          ? AppColors.primary.withAlpha(20)
+                          : (isDark
+                              ? theme.colorScheme.surfaceContainerLowest
+                                  .withAlpha(150)
+                              : theme.colorScheme.surfaceContainerLowest
+                                  .withAlpha(200)),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColors.primary
+                            : theme.colorScheme.outline.withValues(alpha: 0.2),
+                        width: isSelected ? 2 : 1,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -225,6 +264,7 @@ class StepSplitSelection extends ConsumerWidget {
                         ),
                       ],
                     ],
+                  ),
                   ),
                 ),
               ),

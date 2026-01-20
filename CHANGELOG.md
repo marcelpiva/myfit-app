@@ -21,9 +21,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Auto-switch to "Personalizado"** split type
   - Automatically changes training type to "Personalizado" when user modifies workouts
-  - Triggered by: adding/removing workouts, adding/removing exercises
+  - Triggered by: adding/removing workouts, changing workout name/label
+
+- **Lock split type when editing** existing plans
+  - Split selection disabled with info banner explaining restriction
+  - Selected split shown first, other options visually disabled (50% opacity)
+  - Prevents accidental restructuring of existing training plans
 
 ### Fixed
+- **ABC split default workouts** now generate automatically
+  - Previously required clicking on ABC option even when already selected
+  - Default split (ABC) now creates workouts A, B, C immediately on wizard load
 - **White text/icons on selected chips** in light mode
   - SegmentedButton now shows white text and icons when selected (on blue background)
   - All ChoiceChips now have white checkmarks when selected

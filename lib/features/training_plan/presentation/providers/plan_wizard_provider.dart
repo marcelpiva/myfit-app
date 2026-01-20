@@ -303,7 +303,10 @@ sealed class PlanWizardState with _$PlanWizardState {
 
 /// Plan wizard notifier
 class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
-  PlanWizardNotifier() : super(const PlanWizardState());
+  PlanWizardNotifier() : super(const PlanWizardState()) {
+    // Generate default workout structure based on default split type (ABC)
+    _generateWorkoutStructure();
+  }
 
   // Step navigation
   void nextStep() {
@@ -799,7 +802,8 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
   // Step 4: Workout configuration
 
   /// Marks the plan as custom split when structural changes are made.
-  /// Called when adding/removing workouts or exercises.
+  /// Called when: adding/removing workouts, changing workout name/label.
+  /// NOT called when: adding/removing exercises, changing muscle groups.
   void _markAsCustomSplit() {
     if (state.splitType != SplitType.custom) {
       state = state.copyWith(splitType: SplitType.custom);
@@ -838,6 +842,7 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
       return w;
     }).toList();
     state = state.copyWith(workouts: workouts);
+    _markAsCustomSplit();
   }
 
   /// Alias for updateWorkoutName - used by UI for clarity
@@ -854,15 +859,25 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
       return w;
     }).toList();
     state = state.copyWith(workouts: workouts);
+    _markAsCustomSplit();
   }
 
   /// Update workout completely (label, name, muscle groups)
+  /// Only marks as custom split if label or name changes (not just muscle groups)
   void updateWorkout({
     required String workoutId,
     String? label,
     String? name,
     List<String>? muscleGroups,
   }) {
+    // Check if label or name is being changed
+    final workout = state.workouts.firstWhere(
+      (w) => w.id == workoutId,
+      orElse: () => const WizardWorkout(id: '', label: '', name: ''),
+    );
+    final isLabelChanged = label != null && label != workout.label;
+    final isNameChanged = name != null && name != workout.name;
+
     final workouts = state.workouts.map((w) {
       if (w.id == workoutId) {
         return w.copyWith(
@@ -874,6 +889,11 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
       return w;
     }).toList();
     state = state.copyWith(workouts: workouts);
+
+    // Only mark as custom if label or name changed
+    if (isLabelChanged || isNameChanged) {
+      _markAsCustomSplit();
+    }
   }
 
   /// Update workout and remove exercises that don't match the new muscle groups
@@ -970,7 +990,6 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
       return w;
     }).toList();
     state = state.copyWith(workouts: workouts);
-    _markAsCustomSplit();
   }
 
   /// Add multiple exercises to a workout in a single state update.
@@ -1012,7 +1031,6 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
       return w;
     }).toList();
     state = state.copyWith(workouts: workouts);
-    _markAsCustomSplit();
   }
 
   void removeExerciseFromWorkout(String workoutId, String exerciseId) {
@@ -1038,7 +1056,6 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
       return w;
     }).toList();
     state = state.copyWith(workouts: workouts);
-    _markAsCustomSplit();
   }
 
   void updateExercise(
@@ -2030,6 +2047,8 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
   // Reset
   void reset() {
     state = const PlanWizardState();
+    // Generate default workout structure based on default split type (ABC)
+    _generateWorkoutStructure();
   }
 }
 
