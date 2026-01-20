@@ -147,7 +147,8 @@ class StepReview extends ConsumerWidget {
                         (es, e) => es + e.estimatedSeconds,
                       ),
                     ) ~/ 60;
-                    final targetPerWorkout = state.estimatedWorkoutMinutes;
+                    final targetPerWorkout = state.targetWorkoutMinutes;
+                    final hasTimeTarget = targetPerWorkout != null;
 
                     // Format total time
                     String formatTime(int minutes) {
@@ -166,7 +167,7 @@ class StepReview extends ConsumerWidget {
                         children: [
                           _StatItem(
                             icon: LucideIcons.clock,
-                            value: '${targetPerWorkout}m',
+                            value: hasTimeTarget ? '${targetPerWorkout}m' : 'Livre',
                             label: 'Por Treino',
                             theme: theme,
                           ),
@@ -201,8 +202,9 @@ class StepReview extends ConsumerWidget {
               0,
               (sum, e) => sum + e.estimatedSeconds,
             ) ~/ 60;
-            final targetMinutes = state.estimatedWorkoutMinutes;
-            final isOverTime = workoutMinutes > (targetMinutes * 1.2);
+            final targetMinutes = state.targetWorkoutMinutes;
+            final hasTimeTarget = targetMinutes != null;
+            final isOverTime = hasTimeTarget && workoutMinutes > (targetMinutes * 1.2);
 
             return Container(
               margin: const EdgeInsets.only(bottom: 12),

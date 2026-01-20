@@ -45,7 +45,16 @@ platform :ios do
 
     # Upload to TestFlight
     pilot(
-      ipa: "../build/ios/ipa/myfit_app.ipa",
+      ipa: "../build/ios/ipa/My Fit.ipa",
+      skip_waiting_for_build_processing: true
+    )
+  end
+
+  desc "Upload only - skip build"
+  lane :upload_only do
+    # Upload to TestFlight (IPA must already be built)
+    pilot(
+      ipa: "../build/ios/ipa/My Fit.ipa",
       skip_waiting_for_build_processing: true
     )
   end

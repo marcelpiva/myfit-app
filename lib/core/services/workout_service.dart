@@ -663,6 +663,7 @@ class WorkoutService {
     required String difficulty,
     required String splitType,
     int? durationWeeks,
+    int? targetWorkoutMinutes,
     bool isTemplate = false,
     List<Map<String, dynamic>>? workouts,
     // Diet fields
@@ -684,6 +685,7 @@ class WorkoutService {
         'is_template': isTemplate,
       };
       if (durationWeeks != null) data['duration_weeks'] = durationWeeks;
+      if (targetWorkoutMinutes != null) data['target_workout_minutes'] = targetWorkoutMinutes;
       if (workouts != null) data['workouts'] = workouts;
       // Diet fields
       if (includeDiet != null) data['include_diet'] = includeDiet;
@@ -717,6 +719,7 @@ class WorkoutService {
     String? difficulty,
     String? splitType,
     int? durationWeeks,
+    int? targetWorkoutMinutes,
     bool? isTemplate,
     bool? isPublic,
     List<Map<String, dynamic>>? workouts,
@@ -737,6 +740,7 @@ class WorkoutService {
       if (difficulty != null) data['difficulty'] = difficulty;
       if (splitType != null) data['split_type'] = splitType;
       if (durationWeeks != null) data['duration_weeks'] = durationWeeks;
+      if (targetWorkoutMinutes != null) data['target_workout_minutes'] = targetWorkoutMinutes;
       if (isTemplate != null) data['is_template'] = isTemplate;
       if (isPublic != null) data['is_public'] = isPublic;
       if (workouts != null) data['workouts'] = workouts;
