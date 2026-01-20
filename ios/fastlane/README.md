@@ -31,6 +31,14 @@ Push a new beta build to TestFlight
 
 Quick upload - just build and upload
 
+### ios upload_only
+
+```sh
+[bundle exec] fastlane ios upload_only
+```
+
+Upload only - skip build
+
 ### ios release
 
 ```sh
