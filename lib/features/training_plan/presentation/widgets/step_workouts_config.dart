@@ -639,7 +639,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
   ) {
     final theme = Theme.of(context);
     final groupsOutside = exercisesOutsideGroup
-        .map((e) => e.muscleGroup)
+        .map((e) => e.muscleGroup.toMuscleGroup().displayName)
         .toSet()
         .join(', ');
 
@@ -699,7 +699,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    '${e.name} (${e.muscleGroup})',
+                                    '${e.name} (${e.muscleGroup.toMuscleGroup().displayName})',
                                     style: theme.textTheme.bodySmall,
                                   ),
                                 ),
@@ -713,6 +713,13 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
           ),
         ),
         actions: [
+          TextButton(
+            onPressed: () {
+              // Close notice dialog only, don't save
+              Navigator.pop(dialogContext);
+            },
+            child: const Text('Cancelar'),
+          ),
           FilledButton(
             onPressed: () {
               // Close notice dialog
@@ -1592,7 +1599,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
     List<WizardExercise> exercisesOutsideGroup,
   ) {
     final groupsOutside = exercisesOutsideGroup
-        .map((e) => e.muscleGroup)
+        .map((e) => e.muscleGroup.toMuscleGroup().displayName)
         .toSet()
         .join(', ');
 
@@ -1652,7 +1659,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    '${e.name} (${e.muscleGroup})',
+                                    '${e.name} (${e.muscleGroup.toMuscleGroup().displayName})',
                                     style: theme.textTheme.bodySmall,
                                   ),
                                 ),
@@ -1666,6 +1673,13 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
           ),
         ),
         actions: [
+          TextButton(
+            onPressed: () {
+              // Close notice dialog only, don't save
+              Navigator.pop(dialogContext);
+            },
+            child: const Text('Cancelar'),
+          ),
           FilledButton(
             onPressed: () {
               // Close notice dialog

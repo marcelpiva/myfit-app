@@ -235,6 +235,13 @@ extension MuscleGroupParsing on String {
         return MuscleGroup.triceps;
       case 'legs':
       case 'pernas':
+      case 'quadriceps':
+      case 'quadríceps':
+      case 'hamstrings':
+      case 'isquiotibiais':
+      case 'calves':
+      case 'panturrilha':
+      case 'panturrilhas':
         return MuscleGroup.legs;
       case 'glutes':
       case 'glúteos':

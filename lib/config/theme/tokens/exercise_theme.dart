@@ -13,7 +13,7 @@ abstract class ExerciseTheme {
   /// Standard colors for each technique type.
   /// Use these consistently across all exercise displays.
   static const Map<TechniqueType, Color> techniqueColors = {
-    TechniqueType.normal: Color(0xFF6B7280), // Gray
+    TechniqueType.normal: Color(0xFF10B981), // Emerald
     TechniqueType.superset: Color(0xFF9333EA), // Purple
     TechniqueType.biset: Color(0xFFEC4899), // Pink
     TechniqueType.triset: Color(0xFFF97316), // Orange
@@ -33,7 +33,7 @@ abstract class ExerciseTheme {
   /// Colors for each exercise mode.
   /// NOTE: These colors are intentionally different from technique colors to avoid confusion.
   static const Map<ExerciseMode, Color> modeColors = {
-    ExerciseMode.strength: Color(0xFF6B7280), // Gray (same as normal technique)
+    ExerciseMode.strength: Color(0xFF10B981), // Emerald (same as normal technique)
     ExerciseMode.duration: Color(0xFF22C55E), // Green - continuous cardio
     ExerciseMode.interval: Color(0xFFF59E0B), // Amber - high intensity intervals (distinct from giantset red)
     ExerciseMode.distance: Color(0xFF06B6D4), // Cyan - distance/endurance (distinct from dropset blue)
