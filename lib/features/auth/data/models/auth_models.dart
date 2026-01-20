@@ -29,6 +29,10 @@ sealed class UserResponse with _$UserResponse {
     required String name,
     String? phone,
     @JsonKey(name: 'avatar_url') String? avatarUrl,
+    @JsonKey(name: 'birth_date') String? birthDate,
+    String? gender,
+    @JsonKey(name: 'height_cm') double? heightCm,
+    String? bio,
     @JsonKey(name: 'is_active') @Default(true) bool isActive,
     @JsonKey(name: 'is_verified') @Default(false) bool isVerified,
   }) = _UserResponse;
