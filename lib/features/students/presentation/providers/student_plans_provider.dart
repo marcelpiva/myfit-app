@@ -56,9 +56,10 @@ class StudentPlansNotifier extends StateNotifier<StudentPlansState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      // Load all assignments (active and inactive)
+      // Load all assignments (active and inactive) as trainer
       final allAssignments = await _workoutService.getPlanAssignments(
         studentId: studentUserId,
+        asTrainer: true,
         activeOnly: false,
       );
 
