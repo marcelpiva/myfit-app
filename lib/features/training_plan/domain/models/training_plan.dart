@@ -67,6 +67,76 @@ enum TechniqueType {
   cluster,
 }
 
+/// Exercise execution mode - determines field types used
+enum ExerciseMode {
+  @JsonValue('strength')
+  strength, // Traditional sets/reps (musculação)
+  @JsonValue('duration')
+  duration, // Continuous cardio (esteira, bike)
+  @JsonValue('interval')
+  interval, // HIIT, Tabata (work/rest intervals)
+  @JsonValue('distance')
+  distance, // Distance-based (running)
+}
+
+/// Extension to get display name for ExerciseMode
+extension ExerciseModeDisplay on ExerciseMode {
+  String get displayName {
+    switch (this) {
+      case ExerciseMode.strength:
+        return 'Musculação';
+      case ExerciseMode.duration:
+        return 'Cardio Contínuo';
+      case ExerciseMode.interval:
+        return 'Intervalado';
+      case ExerciseMode.distance:
+        return 'Distância';
+    }
+  }
+
+  String get description {
+    switch (this) {
+      case ExerciseMode.strength:
+        return 'Séries e repetições tradicionais';
+      case ExerciseMode.duration:
+        return 'Tempo contínuo (esteira, bike, elíptico)';
+      case ExerciseMode.interval:
+        return 'HIIT, Tabata (intervalos de trabalho/descanso)';
+      case ExerciseMode.distance:
+        return 'Corrida por distância com pace alvo';
+    }
+  }
+
+  String toApiValue() {
+    switch (this) {
+      case ExerciseMode.strength:
+        return 'strength';
+      case ExerciseMode.duration:
+        return 'duration';
+      case ExerciseMode.interval:
+        return 'interval';
+      case ExerciseMode.distance:
+        return 'distance';
+    }
+  }
+}
+
+/// Extension to parse ExerciseMode from string
+extension ExerciseModeParsing on String {
+  ExerciseMode toExerciseMode() {
+    switch (toLowerCase()) {
+      case 'duration':
+        return ExerciseMode.duration;
+      case 'interval':
+        return ExerciseMode.interval;
+      case 'distance':
+        return ExerciseMode.distance;
+      default:
+        return ExerciseMode.strength;
+    }
+  }
+}
+
 /// Extension to get display name for TechniqueType
 extension TechniqueTypeDisplay on TechniqueType {
   String get displayName {

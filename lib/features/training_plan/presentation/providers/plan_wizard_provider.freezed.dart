@@ -21,7 +21,18 @@ mixin _$WizardExercise {
  int? get dropCount;// Dropset: number of drops (2-5)
  int? get restBetweenDrops;// Dropset: seconds between drops (0, 5, 10, 15)
  int? get pauseDuration;// Rest-Pause/Cluster: pause duration in seconds
- int? get miniSetCount;
+ int? get miniSetCount;// Cluster: number of mini-sets (3-6)
+// Exercise mode (strength vs aerobic)
+ ExerciseMode get exerciseMode;// Aerobic exercise fields - Duration mode (continuous cardio)
+ int? get durationMinutes;// Total duration in minutes
+ String? get intensity;// low, moderate, high, max
+// Aerobic exercise fields - Interval mode (HIIT)
+ int? get workSeconds;// Work interval duration
+ int? get intervalRestSeconds;// Rest between intervals
+ int? get rounds;// Number of rounds
+// Aerobic exercise fields - Distance mode (running)
+ double? get distanceKm;// Distance in kilometers
+ double? get targetPaceMinPerKm;
 /// Create a copy of WizardExercise
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -32,16 +43,16 @@ $WizardExerciseCopyWith<WizardExercise> get copyWith => _$WizardExerciseCopyWith
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WizardExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.name, name) || other.name == name)&&(identical(other.muscleGroup, muscleGroup) || other.muscleGroup == muscleGroup)&&(identical(other.sets, sets) || other.sets == sets)&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.restSeconds, restSeconds) || other.restSeconds == restSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.executionInstructions, executionInstructions) || other.executionInstructions == executionInstructions)&&(identical(other.groupInstructions, groupInstructions) || other.groupInstructions == groupInstructions)&&(identical(other.isometricSeconds, isometricSeconds) || other.isometricSeconds == isometricSeconds)&&(identical(other.techniqueType, techniqueType) || other.techniqueType == techniqueType)&&(identical(other.exerciseGroupId, exerciseGroupId) || other.exerciseGroupId == exerciseGroupId)&&(identical(other.exerciseGroupOrder, exerciseGroupOrder) || other.exerciseGroupOrder == exerciseGroupOrder)&&(identical(other.dropCount, dropCount) || other.dropCount == dropCount)&&(identical(other.restBetweenDrops, restBetweenDrops) || other.restBetweenDrops == restBetweenDrops)&&(identical(other.pauseDuration, pauseDuration) || other.pauseDuration == pauseDuration)&&(identical(other.miniSetCount, miniSetCount) || other.miniSetCount == miniSetCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WizardExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.name, name) || other.name == name)&&(identical(other.muscleGroup, muscleGroup) || other.muscleGroup == muscleGroup)&&(identical(other.sets, sets) || other.sets == sets)&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.restSeconds, restSeconds) || other.restSeconds == restSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.executionInstructions, executionInstructions) || other.executionInstructions == executionInstructions)&&(identical(other.groupInstructions, groupInstructions) || other.groupInstructions == groupInstructions)&&(identical(other.isometricSeconds, isometricSeconds) || other.isometricSeconds == isometricSeconds)&&(identical(other.techniqueType, techniqueType) || other.techniqueType == techniqueType)&&(identical(other.exerciseGroupId, exerciseGroupId) || other.exerciseGroupId == exerciseGroupId)&&(identical(other.exerciseGroupOrder, exerciseGroupOrder) || other.exerciseGroupOrder == exerciseGroupOrder)&&(identical(other.dropCount, dropCount) || other.dropCount == dropCount)&&(identical(other.restBetweenDrops, restBetweenDrops) || other.restBetweenDrops == restBetweenDrops)&&(identical(other.pauseDuration, pauseDuration) || other.pauseDuration == pauseDuration)&&(identical(other.miniSetCount, miniSetCount) || other.miniSetCount == miniSetCount)&&(identical(other.exerciseMode, exerciseMode) || other.exerciseMode == exerciseMode)&&(identical(other.durationMinutes, durationMinutes) || other.durationMinutes == durationMinutes)&&(identical(other.intensity, intensity) || other.intensity == intensity)&&(identical(other.workSeconds, workSeconds) || other.workSeconds == workSeconds)&&(identical(other.intervalRestSeconds, intervalRestSeconds) || other.intervalRestSeconds == intervalRestSeconds)&&(identical(other.rounds, rounds) || other.rounds == rounds)&&(identical(other.distanceKm, distanceKm) || other.distanceKm == distanceKm)&&(identical(other.targetPaceMinPerKm, targetPaceMinPerKm) || other.targetPaceMinPerKm == targetPaceMinPerKm));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,exerciseId,name,muscleGroup,sets,reps,restSeconds,notes,executionInstructions,groupInstructions,isometricSeconds,techniqueType,exerciseGroupId,exerciseGroupOrder,dropCount,restBetweenDrops,pauseDuration,miniSetCount);
+int get hashCode => Object.hashAll([runtimeType,id,exerciseId,name,muscleGroup,sets,reps,restSeconds,notes,executionInstructions,groupInstructions,isometricSeconds,techniqueType,exerciseGroupId,exerciseGroupOrder,dropCount,restBetweenDrops,pauseDuration,miniSetCount,exerciseMode,durationMinutes,intensity,workSeconds,intervalRestSeconds,rounds,distanceKm,targetPaceMinPerKm]);
 
 @override
 String toString() {
-  return 'WizardExercise(id: $id, exerciseId: $exerciseId, name: $name, muscleGroup: $muscleGroup, sets: $sets, reps: $reps, restSeconds: $restSeconds, notes: $notes, executionInstructions: $executionInstructions, groupInstructions: $groupInstructions, isometricSeconds: $isometricSeconds, techniqueType: $techniqueType, exerciseGroupId: $exerciseGroupId, exerciseGroupOrder: $exerciseGroupOrder, dropCount: $dropCount, restBetweenDrops: $restBetweenDrops, pauseDuration: $pauseDuration, miniSetCount: $miniSetCount)';
+  return 'WizardExercise(id: $id, exerciseId: $exerciseId, name: $name, muscleGroup: $muscleGroup, sets: $sets, reps: $reps, restSeconds: $restSeconds, notes: $notes, executionInstructions: $executionInstructions, groupInstructions: $groupInstructions, isometricSeconds: $isometricSeconds, techniqueType: $techniqueType, exerciseGroupId: $exerciseGroupId, exerciseGroupOrder: $exerciseGroupOrder, dropCount: $dropCount, restBetweenDrops: $restBetweenDrops, pauseDuration: $pauseDuration, miniSetCount: $miniSetCount, exerciseMode: $exerciseMode, durationMinutes: $durationMinutes, intensity: $intensity, workSeconds: $workSeconds, intervalRestSeconds: $intervalRestSeconds, rounds: $rounds, distanceKm: $distanceKm, targetPaceMinPerKm: $targetPaceMinPerKm)';
 }
 
 
@@ -52,7 +63,7 @@ abstract mixin class $WizardExerciseCopyWith<$Res>  {
   factory $WizardExerciseCopyWith(WizardExercise value, $Res Function(WizardExercise) _then) = _$WizardExerciseCopyWithImpl;
 @useResult
 $Res call({
- String id, String exerciseId, String name, String muscleGroup, int sets, String reps, int restSeconds, String notes, String executionInstructions, String groupInstructions, int? isometricSeconds, TechniqueType techniqueType, String? exerciseGroupId, int exerciseGroupOrder, int? dropCount, int? restBetweenDrops, int? pauseDuration, int? miniSetCount
+ String id, String exerciseId, String name, String muscleGroup, int sets, String reps, int restSeconds, String notes, String executionInstructions, String groupInstructions, int? isometricSeconds, TechniqueType techniqueType, String? exerciseGroupId, int exerciseGroupOrder, int? dropCount, int? restBetweenDrops, int? pauseDuration, int? miniSetCount, ExerciseMode exerciseMode, int? durationMinutes, String? intensity, int? workSeconds, int? intervalRestSeconds, int? rounds, double? distanceKm, double? targetPaceMinPerKm
 });
 
 
@@ -69,7 +80,7 @@ class _$WizardExerciseCopyWithImpl<$Res>
 
 /// Create a copy of WizardExercise
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? exerciseId = null,Object? name = null,Object? muscleGroup = null,Object? sets = null,Object? reps = null,Object? restSeconds = null,Object? notes = null,Object? executionInstructions = null,Object? groupInstructions = null,Object? isometricSeconds = freezed,Object? techniqueType = null,Object? exerciseGroupId = freezed,Object? exerciseGroupOrder = null,Object? dropCount = freezed,Object? restBetweenDrops = freezed,Object? pauseDuration = freezed,Object? miniSetCount = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? exerciseId = null,Object? name = null,Object? muscleGroup = null,Object? sets = null,Object? reps = null,Object? restSeconds = null,Object? notes = null,Object? executionInstructions = null,Object? groupInstructions = null,Object? isometricSeconds = freezed,Object? techniqueType = null,Object? exerciseGroupId = freezed,Object? exerciseGroupOrder = null,Object? dropCount = freezed,Object? restBetweenDrops = freezed,Object? pauseDuration = freezed,Object? miniSetCount = freezed,Object? exerciseMode = null,Object? durationMinutes = freezed,Object? intensity = freezed,Object? workSeconds = freezed,Object? intervalRestSeconds = freezed,Object? rounds = freezed,Object? distanceKm = freezed,Object? targetPaceMinPerKm = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,exerciseId: null == exerciseId ? _self.exerciseId : exerciseId // ignore: cast_nullable_to_non_nullable
@@ -89,7 +100,15 @@ as int,dropCount: freezed == dropCount ? _self.dropCount : dropCount // ignore: 
 as int?,restBetweenDrops: freezed == restBetweenDrops ? _self.restBetweenDrops : restBetweenDrops // ignore: cast_nullable_to_non_nullable
 as int?,pauseDuration: freezed == pauseDuration ? _self.pauseDuration : pauseDuration // ignore: cast_nullable_to_non_nullable
 as int?,miniSetCount: freezed == miniSetCount ? _self.miniSetCount : miniSetCount // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,exerciseMode: null == exerciseMode ? _self.exerciseMode : exerciseMode // ignore: cast_nullable_to_non_nullable
+as ExerciseMode,durationMinutes: freezed == durationMinutes ? _self.durationMinutes : durationMinutes // ignore: cast_nullable_to_non_nullable
+as int?,intensity: freezed == intensity ? _self.intensity : intensity // ignore: cast_nullable_to_non_nullable
+as String?,workSeconds: freezed == workSeconds ? _self.workSeconds : workSeconds // ignore: cast_nullable_to_non_nullable
+as int?,intervalRestSeconds: freezed == intervalRestSeconds ? _self.intervalRestSeconds : intervalRestSeconds // ignore: cast_nullable_to_non_nullable
+as int?,rounds: freezed == rounds ? _self.rounds : rounds // ignore: cast_nullable_to_non_nullable
+as int?,distanceKm: freezed == distanceKm ? _self.distanceKm : distanceKm // ignore: cast_nullable_to_non_nullable
+as double?,targetPaceMinPerKm: freezed == targetPaceMinPerKm ? _self.targetPaceMinPerKm : targetPaceMinPerKm // ignore: cast_nullable_to_non_nullable
+as double?,
   ));
 }
 
@@ -171,10 +190,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String exerciseId,  String name,  String muscleGroup,  int sets,  String reps,  int restSeconds,  String notes,  String executionInstructions,  String groupInstructions,  int? isometricSeconds,  TechniqueType techniqueType,  String? exerciseGroupId,  int exerciseGroupOrder,  int? dropCount,  int? restBetweenDrops,  int? pauseDuration,  int? miniSetCount)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String exerciseId,  String name,  String muscleGroup,  int sets,  String reps,  int restSeconds,  String notes,  String executionInstructions,  String groupInstructions,  int? isometricSeconds,  TechniqueType techniqueType,  String? exerciseGroupId,  int exerciseGroupOrder,  int? dropCount,  int? restBetweenDrops,  int? pauseDuration,  int? miniSetCount,  ExerciseMode exerciseMode,  int? durationMinutes,  String? intensity,  int? workSeconds,  int? intervalRestSeconds,  int? rounds,  double? distanceKm,  double? targetPaceMinPerKm)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WizardExercise() when $default != null:
-return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.executionInstructions,_that.groupInstructions,_that.isometricSeconds,_that.techniqueType,_that.exerciseGroupId,_that.exerciseGroupOrder,_that.dropCount,_that.restBetweenDrops,_that.pauseDuration,_that.miniSetCount);case _:
+return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.executionInstructions,_that.groupInstructions,_that.isometricSeconds,_that.techniqueType,_that.exerciseGroupId,_that.exerciseGroupOrder,_that.dropCount,_that.restBetweenDrops,_that.pauseDuration,_that.miniSetCount,_that.exerciseMode,_that.durationMinutes,_that.intensity,_that.workSeconds,_that.intervalRestSeconds,_that.rounds,_that.distanceKm,_that.targetPaceMinPerKm);case _:
   return orElse();
 
 }
@@ -192,10 +211,10 @@ return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.set
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String exerciseId,  String name,  String muscleGroup,  int sets,  String reps,  int restSeconds,  String notes,  String executionInstructions,  String groupInstructions,  int? isometricSeconds,  TechniqueType techniqueType,  String? exerciseGroupId,  int exerciseGroupOrder,  int? dropCount,  int? restBetweenDrops,  int? pauseDuration,  int? miniSetCount)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String exerciseId,  String name,  String muscleGroup,  int sets,  String reps,  int restSeconds,  String notes,  String executionInstructions,  String groupInstructions,  int? isometricSeconds,  TechniqueType techniqueType,  String? exerciseGroupId,  int exerciseGroupOrder,  int? dropCount,  int? restBetweenDrops,  int? pauseDuration,  int? miniSetCount,  ExerciseMode exerciseMode,  int? durationMinutes,  String? intensity,  int? workSeconds,  int? intervalRestSeconds,  int? rounds,  double? distanceKm,  double? targetPaceMinPerKm)  $default,) {final _that = this;
 switch (_that) {
 case _WizardExercise():
-return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.executionInstructions,_that.groupInstructions,_that.isometricSeconds,_that.techniqueType,_that.exerciseGroupId,_that.exerciseGroupOrder,_that.dropCount,_that.restBetweenDrops,_that.pauseDuration,_that.miniSetCount);}
+return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.executionInstructions,_that.groupInstructions,_that.isometricSeconds,_that.techniqueType,_that.exerciseGroupId,_that.exerciseGroupOrder,_that.dropCount,_that.restBetweenDrops,_that.pauseDuration,_that.miniSetCount,_that.exerciseMode,_that.durationMinutes,_that.intensity,_that.workSeconds,_that.intervalRestSeconds,_that.rounds,_that.distanceKm,_that.targetPaceMinPerKm);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -209,10 +228,10 @@ return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.set
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String exerciseId,  String name,  String muscleGroup,  int sets,  String reps,  int restSeconds,  String notes,  String executionInstructions,  String groupInstructions,  int? isometricSeconds,  TechniqueType techniqueType,  String? exerciseGroupId,  int exerciseGroupOrder,  int? dropCount,  int? restBetweenDrops,  int? pauseDuration,  int? miniSetCount)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String exerciseId,  String name,  String muscleGroup,  int sets,  String reps,  int restSeconds,  String notes,  String executionInstructions,  String groupInstructions,  int? isometricSeconds,  TechniqueType techniqueType,  String? exerciseGroupId,  int exerciseGroupOrder,  int? dropCount,  int? restBetweenDrops,  int? pauseDuration,  int? miniSetCount,  ExerciseMode exerciseMode,  int? durationMinutes,  String? intensity,  int? workSeconds,  int? intervalRestSeconds,  int? rounds,  double? distanceKm,  double? targetPaceMinPerKm)?  $default,) {final _that = this;
 switch (_that) {
 case _WizardExercise() when $default != null:
-return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.executionInstructions,_that.groupInstructions,_that.isometricSeconds,_that.techniqueType,_that.exerciseGroupId,_that.exerciseGroupOrder,_that.dropCount,_that.restBetweenDrops,_that.pauseDuration,_that.miniSetCount);case _:
+return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.sets,_that.reps,_that.restSeconds,_that.notes,_that.executionInstructions,_that.groupInstructions,_that.isometricSeconds,_that.techniqueType,_that.exerciseGroupId,_that.exerciseGroupOrder,_that.dropCount,_that.restBetweenDrops,_that.pauseDuration,_that.miniSetCount,_that.exerciseMode,_that.durationMinutes,_that.intensity,_that.workSeconds,_that.intervalRestSeconds,_that.rounds,_that.distanceKm,_that.targetPaceMinPerKm);case _:
   return null;
 
 }
@@ -224,7 +243,7 @@ return $default(_that.id,_that.exerciseId,_that.name,_that.muscleGroup,_that.set
 
 
 class _WizardExercise extends WizardExercise {
-  const _WizardExercise({required this.id, required this.exerciseId, required this.name, required this.muscleGroup, this.sets = 3, this.reps = '10-12', this.restSeconds = 60, this.notes = '', this.executionInstructions = '', this.groupInstructions = '', this.isometricSeconds, this.techniqueType = TechniqueType.normal, this.exerciseGroupId, this.exerciseGroupOrder = 0, this.dropCount, this.restBetweenDrops, this.pauseDuration, this.miniSetCount}): super._();
+  const _WizardExercise({required this.id, required this.exerciseId, required this.name, required this.muscleGroup, this.sets = 3, this.reps = '10-12', this.restSeconds = 60, this.notes = '', this.executionInstructions = '', this.groupInstructions = '', this.isometricSeconds, this.techniqueType = TechniqueType.normal, this.exerciseGroupId, this.exerciseGroupOrder = 0, this.dropCount, this.restBetweenDrops, this.pauseDuration, this.miniSetCount, this.exerciseMode = ExerciseMode.strength, this.durationMinutes, this.intensity, this.workSeconds, this.intervalRestSeconds, this.rounds, this.distanceKm, this.targetPaceMinPerKm}): super._();
   
 
 @override final  String id;
@@ -252,6 +271,25 @@ class _WizardExercise extends WizardExercise {
 @override final  int? pauseDuration;
 // Rest-Pause/Cluster: pause duration in seconds
 @override final  int? miniSetCount;
+// Cluster: number of mini-sets (3-6)
+// Exercise mode (strength vs aerobic)
+@override@JsonKey() final  ExerciseMode exerciseMode;
+// Aerobic exercise fields - Duration mode (continuous cardio)
+@override final  int? durationMinutes;
+// Total duration in minutes
+@override final  String? intensity;
+// low, moderate, high, max
+// Aerobic exercise fields - Interval mode (HIIT)
+@override final  int? workSeconds;
+// Work interval duration
+@override final  int? intervalRestSeconds;
+// Rest between intervals
+@override final  int? rounds;
+// Number of rounds
+// Aerobic exercise fields - Distance mode (running)
+@override final  double? distanceKm;
+// Distance in kilometers
+@override final  double? targetPaceMinPerKm;
 
 /// Create a copy of WizardExercise
 /// with the given fields replaced by the non-null parameter values.
@@ -263,16 +301,16 @@ _$WizardExerciseCopyWith<_WizardExercise> get copyWith => __$WizardExerciseCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WizardExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.name, name) || other.name == name)&&(identical(other.muscleGroup, muscleGroup) || other.muscleGroup == muscleGroup)&&(identical(other.sets, sets) || other.sets == sets)&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.restSeconds, restSeconds) || other.restSeconds == restSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.executionInstructions, executionInstructions) || other.executionInstructions == executionInstructions)&&(identical(other.groupInstructions, groupInstructions) || other.groupInstructions == groupInstructions)&&(identical(other.isometricSeconds, isometricSeconds) || other.isometricSeconds == isometricSeconds)&&(identical(other.techniqueType, techniqueType) || other.techniqueType == techniqueType)&&(identical(other.exerciseGroupId, exerciseGroupId) || other.exerciseGroupId == exerciseGroupId)&&(identical(other.exerciseGroupOrder, exerciseGroupOrder) || other.exerciseGroupOrder == exerciseGroupOrder)&&(identical(other.dropCount, dropCount) || other.dropCount == dropCount)&&(identical(other.restBetweenDrops, restBetweenDrops) || other.restBetweenDrops == restBetweenDrops)&&(identical(other.pauseDuration, pauseDuration) || other.pauseDuration == pauseDuration)&&(identical(other.miniSetCount, miniSetCount) || other.miniSetCount == miniSetCount));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WizardExercise&&(identical(other.id, id) || other.id == id)&&(identical(other.exerciseId, exerciseId) || other.exerciseId == exerciseId)&&(identical(other.name, name) || other.name == name)&&(identical(other.muscleGroup, muscleGroup) || other.muscleGroup == muscleGroup)&&(identical(other.sets, sets) || other.sets == sets)&&(identical(other.reps, reps) || other.reps == reps)&&(identical(other.restSeconds, restSeconds) || other.restSeconds == restSeconds)&&(identical(other.notes, notes) || other.notes == notes)&&(identical(other.executionInstructions, executionInstructions) || other.executionInstructions == executionInstructions)&&(identical(other.groupInstructions, groupInstructions) || other.groupInstructions == groupInstructions)&&(identical(other.isometricSeconds, isometricSeconds) || other.isometricSeconds == isometricSeconds)&&(identical(other.techniqueType, techniqueType) || other.techniqueType == techniqueType)&&(identical(other.exerciseGroupId, exerciseGroupId) || other.exerciseGroupId == exerciseGroupId)&&(identical(other.exerciseGroupOrder, exerciseGroupOrder) || other.exerciseGroupOrder == exerciseGroupOrder)&&(identical(other.dropCount, dropCount) || other.dropCount == dropCount)&&(identical(other.restBetweenDrops, restBetweenDrops) || other.restBetweenDrops == restBetweenDrops)&&(identical(other.pauseDuration, pauseDuration) || other.pauseDuration == pauseDuration)&&(identical(other.miniSetCount, miniSetCount) || other.miniSetCount == miniSetCount)&&(identical(other.exerciseMode, exerciseMode) || other.exerciseMode == exerciseMode)&&(identical(other.durationMinutes, durationMinutes) || other.durationMinutes == durationMinutes)&&(identical(other.intensity, intensity) || other.intensity == intensity)&&(identical(other.workSeconds, workSeconds) || other.workSeconds == workSeconds)&&(identical(other.intervalRestSeconds, intervalRestSeconds) || other.intervalRestSeconds == intervalRestSeconds)&&(identical(other.rounds, rounds) || other.rounds == rounds)&&(identical(other.distanceKm, distanceKm) || other.distanceKm == distanceKm)&&(identical(other.targetPaceMinPerKm, targetPaceMinPerKm) || other.targetPaceMinPerKm == targetPaceMinPerKm));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,id,exerciseId,name,muscleGroup,sets,reps,restSeconds,notes,executionInstructions,groupInstructions,isometricSeconds,techniqueType,exerciseGroupId,exerciseGroupOrder,dropCount,restBetweenDrops,pauseDuration,miniSetCount);
+int get hashCode => Object.hashAll([runtimeType,id,exerciseId,name,muscleGroup,sets,reps,restSeconds,notes,executionInstructions,groupInstructions,isometricSeconds,techniqueType,exerciseGroupId,exerciseGroupOrder,dropCount,restBetweenDrops,pauseDuration,miniSetCount,exerciseMode,durationMinutes,intensity,workSeconds,intervalRestSeconds,rounds,distanceKm,targetPaceMinPerKm]);
 
 @override
 String toString() {
-  return 'WizardExercise(id: $id, exerciseId: $exerciseId, name: $name, muscleGroup: $muscleGroup, sets: $sets, reps: $reps, restSeconds: $restSeconds, notes: $notes, executionInstructions: $executionInstructions, groupInstructions: $groupInstructions, isometricSeconds: $isometricSeconds, techniqueType: $techniqueType, exerciseGroupId: $exerciseGroupId, exerciseGroupOrder: $exerciseGroupOrder, dropCount: $dropCount, restBetweenDrops: $restBetweenDrops, pauseDuration: $pauseDuration, miniSetCount: $miniSetCount)';
+  return 'WizardExercise(id: $id, exerciseId: $exerciseId, name: $name, muscleGroup: $muscleGroup, sets: $sets, reps: $reps, restSeconds: $restSeconds, notes: $notes, executionInstructions: $executionInstructions, groupInstructions: $groupInstructions, isometricSeconds: $isometricSeconds, techniqueType: $techniqueType, exerciseGroupId: $exerciseGroupId, exerciseGroupOrder: $exerciseGroupOrder, dropCount: $dropCount, restBetweenDrops: $restBetweenDrops, pauseDuration: $pauseDuration, miniSetCount: $miniSetCount, exerciseMode: $exerciseMode, durationMinutes: $durationMinutes, intensity: $intensity, workSeconds: $workSeconds, intervalRestSeconds: $intervalRestSeconds, rounds: $rounds, distanceKm: $distanceKm, targetPaceMinPerKm: $targetPaceMinPerKm)';
 }
 
 
@@ -283,7 +321,7 @@ abstract mixin class _$WizardExerciseCopyWith<$Res> implements $WizardExerciseCo
   factory _$WizardExerciseCopyWith(_WizardExercise value, $Res Function(_WizardExercise) _then) = __$WizardExerciseCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String exerciseId, String name, String muscleGroup, int sets, String reps, int restSeconds, String notes, String executionInstructions, String groupInstructions, int? isometricSeconds, TechniqueType techniqueType, String? exerciseGroupId, int exerciseGroupOrder, int? dropCount, int? restBetweenDrops, int? pauseDuration, int? miniSetCount
+ String id, String exerciseId, String name, String muscleGroup, int sets, String reps, int restSeconds, String notes, String executionInstructions, String groupInstructions, int? isometricSeconds, TechniqueType techniqueType, String? exerciseGroupId, int exerciseGroupOrder, int? dropCount, int? restBetweenDrops, int? pauseDuration, int? miniSetCount, ExerciseMode exerciseMode, int? durationMinutes, String? intensity, int? workSeconds, int? intervalRestSeconds, int? rounds, double? distanceKm, double? targetPaceMinPerKm
 });
 
 
@@ -300,7 +338,7 @@ class __$WizardExerciseCopyWithImpl<$Res>
 
 /// Create a copy of WizardExercise
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? exerciseId = null,Object? name = null,Object? muscleGroup = null,Object? sets = null,Object? reps = null,Object? restSeconds = null,Object? notes = null,Object? executionInstructions = null,Object? groupInstructions = null,Object? isometricSeconds = freezed,Object? techniqueType = null,Object? exerciseGroupId = freezed,Object? exerciseGroupOrder = null,Object? dropCount = freezed,Object? restBetweenDrops = freezed,Object? pauseDuration = freezed,Object? miniSetCount = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? exerciseId = null,Object? name = null,Object? muscleGroup = null,Object? sets = null,Object? reps = null,Object? restSeconds = null,Object? notes = null,Object? executionInstructions = null,Object? groupInstructions = null,Object? isometricSeconds = freezed,Object? techniqueType = null,Object? exerciseGroupId = freezed,Object? exerciseGroupOrder = null,Object? dropCount = freezed,Object? restBetweenDrops = freezed,Object? pauseDuration = freezed,Object? miniSetCount = freezed,Object? exerciseMode = null,Object? durationMinutes = freezed,Object? intensity = freezed,Object? workSeconds = freezed,Object? intervalRestSeconds = freezed,Object? rounds = freezed,Object? distanceKm = freezed,Object? targetPaceMinPerKm = freezed,}) {
   return _then(_WizardExercise(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,exerciseId: null == exerciseId ? _self.exerciseId : exerciseId // ignore: cast_nullable_to_non_nullable
@@ -320,7 +358,15 @@ as int,dropCount: freezed == dropCount ? _self.dropCount : dropCount // ignore: 
 as int?,restBetweenDrops: freezed == restBetweenDrops ? _self.restBetweenDrops : restBetweenDrops // ignore: cast_nullable_to_non_nullable
 as int?,pauseDuration: freezed == pauseDuration ? _self.pauseDuration : pauseDuration // ignore: cast_nullable_to_non_nullable
 as int?,miniSetCount: freezed == miniSetCount ? _self.miniSetCount : miniSetCount // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,exerciseMode: null == exerciseMode ? _self.exerciseMode : exerciseMode // ignore: cast_nullable_to_non_nullable
+as ExerciseMode,durationMinutes: freezed == durationMinutes ? _self.durationMinutes : durationMinutes // ignore: cast_nullable_to_non_nullable
+as int?,intensity: freezed == intensity ? _self.intensity : intensity // ignore: cast_nullable_to_non_nullable
+as String?,workSeconds: freezed == workSeconds ? _self.workSeconds : workSeconds // ignore: cast_nullable_to_non_nullable
+as int?,intervalRestSeconds: freezed == intervalRestSeconds ? _self.intervalRestSeconds : intervalRestSeconds // ignore: cast_nullable_to_non_nullable
+as int?,rounds: freezed == rounds ? _self.rounds : rounds // ignore: cast_nullable_to_non_nullable
+as int?,distanceKm: freezed == distanceKm ? _self.distanceKm : distanceKm // ignore: cast_nullable_to_non_nullable
+as double?,targetPaceMinPerKm: freezed == targetPaceMinPerKm ? _self.targetPaceMinPerKm : targetPaceMinPerKm // ignore: cast_nullable_to_non_nullable
+as double?,
   ));
 }
 

@@ -42,10 +42,44 @@ sealed class WizardExercise with _$WizardExercise {
     int? restBetweenDrops,    // Dropset: seconds between drops (0, 5, 10, 15)
     int? pauseDuration,       // Rest-Pause/Cluster: pause duration in seconds
     int? miniSetCount,        // Cluster: number of mini-sets (3-6)
+    // Exercise mode (strength vs aerobic)
+    @Default(ExerciseMode.strength) ExerciseMode exerciseMode,
+    // Aerobic exercise fields - Duration mode (continuous cardio)
+    int? durationMinutes,     // Total duration in minutes
+    String? intensity,        // low, moderate, high, max
+    // Aerobic exercise fields - Interval mode (HIIT)
+    int? workSeconds,         // Work interval duration
+    int? intervalRestSeconds, // Rest between intervals
+    int? rounds,              // Number of rounds
+    // Aerobic exercise fields - Distance mode (running)
+    double? distanceKm,       // Distance in kilometers
+    double? targetPaceMinPerKm, // Target pace (min/km)
   }) = _WizardExercise;
 
   /// Calculate estimated time for this exercise in seconds
   int get estimatedSeconds {
+    // Handle aerobic exercise modes
+    switch (exerciseMode) {
+      case ExerciseMode.duration:
+        // Continuous cardio - just duration
+        return (durationMinutes ?? 30) * 60;
+      case ExerciseMode.interval:
+        // HIIT - rounds of work + rest
+        final work = workSeconds ?? 30;
+        final rest = intervalRestSeconds ?? 30;
+        final numRounds = rounds ?? 10;
+        return numRounds * (work + rest);
+      case ExerciseMode.distance:
+        // Distance-based - estimate from pace or default 6 min/km
+        final distance = distanceKm ?? 5.0;
+        final pace = targetPaceMinPerKm ?? 6.0;
+        return (distance * pace * 60).toInt();
+      case ExerciseMode.strength:
+        // Fall through to strength mode logic below
+        break;
+    }
+
+    // Strength mode - original logic
     // Base execution time per set (45s average)
     int execTimePerSet = 45;
 
@@ -599,6 +633,16 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
             restBetweenDrops: exMap['rest_between_drops'] as int?,
             pauseDuration: exMap['pause_duration'] as int?,
             miniSetCount: exMap['mini_set_count'] as int?,
+            // Exercise mode (strength vs aerobic)
+            exerciseMode: (exMap['exercise_mode'] as String?)?.toExerciseMode() ?? ExerciseMode.strength,
+            // Aerobic exercise fields
+            durationMinutes: exMap['duration_minutes'] as int?,
+            intensity: exMap['intensity'] as String?,
+            workSeconds: exMap['work_seconds'] as int?,
+            intervalRestSeconds: exMap['interval_rest_seconds'] as int?,
+            rounds: exMap['rounds'] as int?,
+            distanceKm: (exMap['distance_km'] as num?)?.toDouble(),
+            targetPaceMinPerKm: (exMap['target_pace_min_per_km'] as num?)?.toDouble(),
           );
         }).toList();
 
@@ -1858,6 +1902,16 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
               'rest_between_drops': e.restBetweenDrops,
               'pause_duration': e.pauseDuration,
               'mini_set_count': e.miniSetCount,
+              // Exercise mode (strength vs aerobic)
+              'exercise_mode': e.exerciseMode.toApiValue(),
+              // Aerobic exercise fields
+              'duration_minutes': e.durationMinutes,
+              'intensity': e.intensity,
+              'work_seconds': e.workSeconds,
+              'interval_rest_seconds': e.intervalRestSeconds,
+              'rounds': e.rounds,
+              'distance_km': e.distanceKm,
+              'target_pace_min_per_km': e.targetPaceMinPerKm,
             };
           }).toList(),
         };

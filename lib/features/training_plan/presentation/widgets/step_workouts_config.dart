@@ -3002,6 +3002,18 @@ class _ExerciseItem extends ConsumerWidget {
     int? restBetweenDrops = exercise.restBetweenDrops ?? _parseRestBetweenDrops(exercise.executionInstructions);
     int? pauseDuration = exercise.pauseDuration ?? _parsePauseDuration(exercise.executionInstructions);
     int? miniSetCount = exercise.miniSetCount ?? _parseMiniSetCount(exercise.executionInstructions);
+    // Exercise mode (strength vs aerobic)
+    ExerciseMode exerciseMode = exercise.exerciseMode;
+    // Aerobic exercise fields
+    int durationMinutes = exercise.durationMinutes ?? 30;
+    String intensity = exercise.intensity ?? 'moderate';
+    int workSeconds = exercise.workSeconds ?? 30;
+    int intervalRestSeconds = exercise.intervalRestSeconds ?? 30;
+    int rounds = exercise.rounds ?? 10;
+    double distanceKm = exercise.distanceKm ?? 5.0;
+    double targetPaceMinPerKm = exercise.targetPaceMinPerKm ?? 6.0;
+    // Check if this is a cardio exercise
+    final isCardio = exercise.muscleGroup.toLowerCase() == 'cardio';
     // Extract custom instructions (without auto-generated technique text)
     String customInstructions = _extractCustomInstructions(exercise.executionInstructions);
 
@@ -3096,6 +3108,134 @@ class _ExerciseItem extends ConsumerWidget {
                 const Divider(),
                 const SizedBox(height: 16),
 
+                // Exercise Mode Selector (for cardio exercises)
+                if (isCardio) ...[
+                  Text('Tipo de Treino', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  SegmentedButton<ExerciseMode>(
+                    segments: const [
+                      ButtonSegment(value: ExerciseMode.strength, label: Text('Força')),
+                      ButtonSegment(value: ExerciseMode.duration, label: Text('Contínuo')),
+                      ButtonSegment(value: ExerciseMode.interval, label: Text('HIIT')),
+                      ButtonSegment(value: ExerciseMode.distance, label: Text('Distância')),
+                    ],
+                    selected: {exerciseMode},
+                    onSelectionChanged: (modes) => setState(() => exerciseMode = modes.first),
+                    showSelectedIcon: false,
+                    style: SegmentedButton.styleFrom(
+                      textStyle: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Duration Mode Controls
+                if (isCardio && exerciseMode == ExerciseMode.duration) ...[
+                  Text('Duração', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [15, 20, 30, 45, 60].map((m) => ChoiceChip(
+                      label: Text('$m min'),
+                      selected: durationMinutes == m,
+                      onSelected: (_) => setState(() => durationMinutes = m),
+                    )).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                  Text('Intensidade', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ('low', 'Leve'),
+                      ('moderate', 'Moderada'),
+                      ('high', 'Alta'),
+                      ('max', 'Máxima'),
+                    ].map((e) => ChoiceChip(
+                      label: Text(e.$2),
+                      selected: intensity == e.$1,
+                      onSelected: (_) => setState(() => intensity = e.$1),
+                    )).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Interval Mode Controls (HIIT)
+                if (isCardio && exerciseMode == ExerciseMode.interval) ...[
+                  Text('Trabalho', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [20, 30, 40, 45, 60].map((s) => ChoiceChip(
+                      label: Text('${s}s'),
+                      selected: workSeconds == s,
+                      onSelected: (_) => setState(() => workSeconds = s),
+                    )).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                  Text('Descanso', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [10, 20, 30, 45, 60].map((s) => ChoiceChip(
+                      label: Text('${s}s'),
+                      selected: intervalRestSeconds == s,
+                      onSelected: (_) => setState(() => intervalRestSeconds = s),
+                    )).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                  Text('Rounds', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [6, 8, 10, 12, 15, 20].map((r) => ChoiceChip(
+                      label: Text('$r'),
+                      selected: rounds == r,
+                      onSelected: (_) => setState(() => rounds = r),
+                    )).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Distance Mode Controls
+                if (isCardio && exerciseMode == ExerciseMode.distance) ...[
+                  Text('Distância', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [3.0, 5.0, 8.0, 10.0, 15.0].map((d) => ChoiceChip(
+                      label: Text('${d.toInt()} km'),
+                      selected: distanceKm == d,
+                      onSelected: (_) => setState(() => distanceKm = d),
+                    )).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                  Text('Pace Alvo (min/km)', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Slider(
+                    value: targetPaceMinPerKm,
+                    min: 4.0,
+                    max: 8.0,
+                    divisions: 8,
+                    label: '${targetPaceMinPerKm.toStringAsFixed(1)} min/km',
+                    onChanged: (v) => setState(() => targetPaceMinPerKm = v),
+                  ),
+                  Text(
+                    '${targetPaceMinPerKm.toStringAsFixed(1)} min/km',
+                    style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.primary),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Strength Mode Controls (Sets/Reps/Rest) - show only for strength mode or non-cardio
+                if (!isCardio || exerciseMode == ExerciseMode.strength) ...[
                 // Sets
                 Text('Séries', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
@@ -3220,7 +3360,7 @@ class _ExerciseItem extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Advanced Options Toggle
+                // Advanced Options Toggle (strength mode only)
                 InkWell(
                   onTap: () => setState(() => showAdvancedOptions = !showAdvancedOptions),
                   borderRadius: BorderRadius.circular(8),
@@ -3376,6 +3516,8 @@ class _ExerciseItem extends ConsumerWidget {
                     ),
                   ),
                 ],
+                ], // End of strength mode controls
+
                 const SizedBox(height: 24),
 
                 // Save button
@@ -3400,6 +3542,16 @@ class _ExerciseItem extends ConsumerWidget {
                         restBetweenDrops: techniqueType == TechniqueType.dropset ? restBetweenDrops : null,
                         pauseDuration: (techniqueType == TechniqueType.restPause || techniqueType == TechniqueType.cluster) ? pauseDuration : null,
                         miniSetCount: techniqueType == TechniqueType.cluster ? miniSetCount : null,
+                        // Exercise mode (strength vs aerobic)
+                        exerciseMode: exerciseMode,
+                        // Aerobic exercise fields
+                        durationMinutes: exerciseMode == ExerciseMode.duration ? durationMinutes : null,
+                        intensity: exerciseMode == ExerciseMode.duration ? intensity : null,
+                        workSeconds: exerciseMode == ExerciseMode.interval ? workSeconds : null,
+                        intervalRestSeconds: exerciseMode == ExerciseMode.interval ? intervalRestSeconds : null,
+                        rounds: exerciseMode == ExerciseMode.interval ? rounds : null,
+                        distanceKm: exerciseMode == ExerciseMode.distance ? distanceKm : null,
+                        targetPaceMinPerKm: exerciseMode == ExerciseMode.distance ? targetPaceMinPerKm : null,
                       );
                       notifier.updateExercise(workoutId, exercise.id, updated);
                       Navigator.pop(ctx);
