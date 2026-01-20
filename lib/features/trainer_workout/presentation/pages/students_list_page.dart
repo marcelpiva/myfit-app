@@ -594,8 +594,15 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                                                       student.adherencePercent / 100),
                                                   onTap: () {
                                                     HapticUtils.selectionClick();
-                                                    _showStudentDetailSheet(
-                                                        context, isDark, student);
+                                                    context.push(
+                                                      '/students/${student.id}/detail',
+                                                      extra: {
+                                                        'studentUserId': student.id,
+                                                        'studentName': student.name,
+                                                        'studentEmail': student.email,
+                                                        'avatarUrl': student.avatarUrl,
+                                                      },
+                                                    );
                                                   },
                                                 ),
                                               ),
