@@ -880,6 +880,64 @@ class WorkoutService {
     }
   }
 
+  /// Get plan assignments for a student or trainer
+  Future<List<Map<String, dynamic>>> getPlanAssignments({
+    String? studentId,
+    bool asTrainer = false,
+    bool activeOnly = true,
+  }) async {
+    try {
+      final params = <String, dynamic>{
+        'as_trainer': asTrainer,
+        'active_only': activeOnly,
+      };
+      if (studentId != null) params['student_id'] = studentId;
+
+      final response = await _client.get(
+        ApiEndpoints.planAssignments,
+        queryParameters: params,
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return (response.data as List).cast<Map<String, dynamic>>();
+      }
+      return [];
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao carregar atribuições', e);
+    }
+  }
+
+  /// Update a plan assignment
+  Future<Map<String, dynamic>> updatePlanAssignment(
+    String assignmentId, {
+    DateTime? startDate,
+    DateTime? endDate,
+    bool? isActive,
+    String? notes,
+  }) async {
+    try {
+      final data = <String, dynamic>{};
+      if (startDate != null) data['start_date'] = startDate.toIso8601String().split('T')[0];
+      if (endDate != null) data['end_date'] = endDate.toIso8601String().split('T')[0];
+      if (isActive != null) data['is_active'] = isActive;
+      if (notes != null) data['notes'] = notes;
+
+      final response = await _client.put(
+        '${ApiEndpoints.planAssignments}/$assignmentId',
+        data: data,
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw const ServerException('Erro ao atualizar atribuição');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao atualizar atribuição', e);
+    }
+  }
+
   // ==================== AI Exercise Suggestions ====================
 
   /// Suggest exercises based on muscle groups, training goal, and workout context
@@ -996,6 +1054,137 @@ class WorkoutService {
       throw e.error is ApiException
           ? e.error as ApiException
           : UnknownApiException(e.message ?? 'Erro ao gerar plano', e);
+    }
+  }
+
+  // ==================== Prescription Notes ====================
+
+  /// Get prescription notes for a specific context
+  Future<Map<String, dynamic>> getPrescriptionNotes({
+    required String contextType,
+    required String contextId,
+    String? organizationId,
+  }) async {
+    try {
+      final params = <String, dynamic>{
+        'context_type': contextType,
+        'context_id': contextId,
+      };
+      if (organizationId != null) params['organization_id'] = organizationId;
+
+      final response = await _client.get(
+        ApiEndpoints.prescriptionNotes,
+        queryParameters: params,
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      return {'notes': [], 'total': 0, 'unread_count': 0};
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao carregar notas', e);
+    }
+  }
+
+  /// Get a single prescription note by ID
+  Future<Map<String, dynamic>> getPrescriptionNote(String noteId) async {
+    try {
+      final response = await _client.get(ApiEndpoints.prescriptionNote(noteId));
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw const NotFoundException('Nota não encontrada');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao carregar nota', e);
+    }
+  }
+
+  /// Create a new prescription note
+  Future<Map<String, dynamic>> createPrescriptionNote({
+    required String contextType,
+    required String contextId,
+    required String content,
+    bool isPinned = false,
+    String? organizationId,
+  }) async {
+    try {
+      final data = <String, dynamic>{
+        'context_type': contextType,
+        'context_id': contextId,
+        'content': content,
+        'is_pinned': isPinned,
+      };
+      if (organizationId != null) data['organization_id'] = organizationId;
+
+      final response = await _client.post(
+        ApiEndpoints.prescriptionNotes,
+        data: data,
+      );
+      if (response.statusCode == 201 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw const ServerException('Erro ao criar nota');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao criar nota', e);
+    }
+  }
+
+  /// Update a prescription note
+  Future<Map<String, dynamic>> updatePrescriptionNote(
+    String noteId, {
+    String? content,
+    bool? isPinned,
+  }) async {
+    try {
+      final data = <String, dynamic>{};
+      if (content != null) data['content'] = content;
+      if (isPinned != null) data['is_pinned'] = isPinned;
+
+      final response = await _client.put(
+        ApiEndpoints.prescriptionNote(noteId),
+        data: data,
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw const ServerException('Erro ao atualizar nota');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao atualizar nota', e);
+    }
+  }
+
+  /// Mark a prescription note as read
+  Future<Map<String, dynamic>> markPrescriptionNoteAsRead(String noteId) async {
+    try {
+      final response = await _client.post(
+        ApiEndpoints.prescriptionNoteRead(noteId),
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw const ServerException('Erro ao marcar nota como lida');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao marcar nota como lida', e);
+    }
+  }
+
+  /// Delete a prescription note
+  Future<void> deletePrescriptionNote(String noteId) async {
+    try {
+      await _client.delete(ApiEndpoints.prescriptionNote(noteId));
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao excluir nota', e);
     }
   }
 }

@@ -69,6 +69,11 @@ class ApiEndpoints {
   static const String planAssignments = '/workouts/plans/assignments';
   static String planAssignment(String id) => '/workouts/plans/assignments/$id';
 
+  // ==================== Prescription Notes ====================
+  static const String prescriptionNotes = '/workouts/notes';
+  static String prescriptionNote(String id) => '/workouts/notes/$id';
+  static String prescriptionNoteRead(String id) => '/workouts/notes/$id/read';
+
   // ==================== Nutrition - Foods ====================
   static const String foods = '/nutrition/foods';
   static String food(String id) => '/nutrition/foods/$id';
