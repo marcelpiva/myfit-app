@@ -63,33 +63,56 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
       );
     }
 
-    // Calculate total time across all workouts
-    final totalCurrentMinutes = state.workouts.fold<int>(
+    // Calculate actual total time (sum of all exercises across all workouts)
+    final actualTotalMinutes = state.workouts.fold<int>(
       0,
       (sum, w) => sum + w.exercises.fold<int>(
         0,
         (es, e) => es + e.estimatedSeconds,
       ),
     ) ~/ 60;
-    final targetTotalMinutes = state.estimatedWorkoutMinutes * state.workouts.length;
-    final totalIsOverTime = totalCurrentMinutes > (targetTotalMinutes * 1.2);
+
+    // Target is the value selected by user (NOT multiplied by workouts)
+    final targetTotalMinutes = state.targetWorkoutMinutes;
+    final hasTimeTarget = targetTotalMinutes != null;
+
+    // Calculate progress percentage for thermometer
+    final progressPercent = hasTimeTarget && targetTotalMinutes > 0
+        ? (actualTotalMinutes / targetTotalMinutes * 100).round()
+        : 0;
+
+    // Determine color based on progress
+    Color getProgressColor() {
+      if (!hasTimeTarget) return theme.colorScheme.onSurface.withValues(alpha: 0.6);
+      if (progressPercent > 120) return AppColors.destructive; // Exceeded (red)
+      if (progressPercent >= 80) return AppColors.success; // Close/on target (green)
+      if (progressPercent >= 50) return AppColors.warning; // Getting there (yellow)
+      return AppColors.info; // Far from target (blue)
+    }
+
+    IconData getProgressIcon() {
+      if (!hasTimeTarget) return LucideIcons.clock;
+      if (progressPercent > 120) return LucideIcons.alertTriangle;
+      if (progressPercent >= 80) return LucideIcons.checkCircle;
+      return LucideIcons.clock;
+    }
 
     return Column(
       children: [
-        // Total time banner
+        // Total time banner with thermometer indicator
         Container(
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: totalIsOverTime
-                ? AppColors.warning.withAlpha(isDark ? 30 : 20)
+            color: hasTimeTarget
+                ? getProgressColor().withAlpha(isDark ? 25 : 15)
                 : (isDark
                     ? theme.colorScheme.surfaceContainerLow.withAlpha(150)
                     : theme.colorScheme.surfaceContainerLow.withAlpha(200)),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: totalIsOverTime
-                  ? AppColors.warning.withAlpha(isDark ? 60 : 40)
+              color: hasTimeTarget
+                  ? getProgressColor().withAlpha(isDark ? 60 : 40)
                   : theme.colorScheme.outline.withValues(alpha: 0.15),
             ),
           ),
@@ -97,28 +120,38 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                totalIsOverTime ? LucideIcons.alertTriangle : LucideIcons.clock,
+                getProgressIcon(),
                 size: 16,
-                color: totalIsOverTime
-                    ? AppColors.warning
-                    : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                color: getProgressColor(),
               ),
               const SizedBox(width: 8),
               Text(
-                'Tempo total: $totalCurrentMinutes / $targetTotalMinutes min',
+                hasTimeTarget
+                    ? 'Tempo total: $actualTotalMinutes / $targetTotalMinutes min'
+                    : 'Tempo total: $actualTotalMinutes min',
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: totalIsOverTime
-                      ? AppColors.warning
-                      : theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  color: getProgressColor(),
                 ),
               ),
-              Text(
-                ' (${state.workouts.length} treinos × ${state.estimatedWorkoutMinutes} min)',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+              if (hasTimeTarget) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: getProgressColor().withAlpha(isDark ? 40 : 30),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    '$progressPercent%',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: getProgressColor(),
+                      fontSize: 10,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),
@@ -171,6 +204,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
 
               final workout = state.workouts[index];
               final isSelected = index == _selectedWorkoutIndex;
+              final canDelete = state.workouts.length > 1;
 
               return Padding(
                 padding: EdgeInsets.only(right: index < state.workouts.length - 1 ? 8 : 0),
@@ -179,12 +213,11 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
                     HapticUtils.selectionClick();
                     setState(() => _selectedWorkoutIndex = index);
                   },
-                  onLongPress: () {
-                          HapticUtils.mediumImpact();
-                          _showWorkoutOptionsSheet(context, workout, notifier, index, state.workouts.length);
-                        },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: EdgeInsets.only(
+                      left: 16,
+                      right: canDelete ? 8 : 16,
+                    ),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.primary
@@ -233,6 +266,32 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
                             ),
                           ),
                         ],
+                        // Delete button (only when more than 1 workout)
+                        if (canDelete) ...[
+                          const SizedBox(width: 6),
+                          GestureDetector(
+                            onTap: () {
+                              HapticUtils.mediumImpact();
+                              _confirmDeleteWorkout(context, notifier, workout, index);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? Colors.white.withAlpha(30)
+                                    : theme.colorScheme.outline.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Icon(
+                                LucideIcons.x,
+                                size: 14,
+                                color: isSelected
+                                    ? Colors.white.withAlpha(200)
+                                    : theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -252,6 +311,52 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
           ),
         ),
       ],
+    );
+  }
+
+  void _confirmDeleteWorkout(
+    BuildContext context,
+    PlanWizardNotifier notifier,
+    WizardWorkout workout,
+    int index,
+  ) {
+    final theme = Theme.of(context);
+    final hasExercises = workout.exercises.isNotEmpty;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Excluir ${workout.label}?'),
+        content: Text(
+          hasExercises
+              ? 'Este treino tem ${workout.exercises.length} exercício(s). Tem certeza que deseja excluí-lo?'
+              : 'Tem certeza que deseja excluir este treino?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              notifier.removeWorkout(workout.id);
+              // Adjust selected index if needed
+              if (_selectedWorkoutIndex >= index && _selectedWorkoutIndex > 0) {
+                setState(() => _selectedWorkoutIndex--);
+              }
+              HapticUtils.lightImpact();
+            },
+            child: Text(
+              'Excluir',
+              style: TextStyle(color: AppColors.destructive),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -700,11 +805,6 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
       0,
       (sum, e) => sum + e.estimatedSeconds,
     ) ~/ 60;
-    final targetMinutes = state.estimatedWorkoutMinutes;
-    final timePercentage = targetMinutes > 0
-        ? (currentWorkoutMinutes / targetMinutes * 100).round()
-        : 0;
-    final isOverTime = timePercentage > 120;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -784,7 +884,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
                       ],
                     ),
                   ),
-                  // Time indicator
+                  // Time indicator (just shows total time for this workout)
                   if (workout.exercises.isNotEmpty)
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -792,29 +892,25 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: isOverTime
-                            ? AppColors.warning.withAlpha(isDark ? 40 : 25)
-                            : AppColors.success.withAlpha(isDark ? 40 : 25),
+                        color: theme.colorScheme.surfaceContainerHigh.withAlpha(isDark ? 100 : 150),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                          color: isOverTime
-                              ? AppColors.warning.withAlpha(isDark ? 80 : 50)
-                              : AppColors.success.withAlpha(isDark ? 80 : 50),
+                          color: theme.colorScheme.outline.withValues(alpha: 0.2),
                         ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            isOverTime ? LucideIcons.alertTriangle : LucideIcons.clock,
+                            LucideIcons.clock,
                             size: 12,
-                            color: isOverTime ? AppColors.warning : AppColors.success,
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '$currentWorkoutMinutes/$targetMinutes min',
+                            '$currentWorkoutMinutes min',
                             style: theme.textTheme.labelSmall?.copyWith(
-                              color: isOverTime ? AppColors.warning : AppColors.success,
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -969,7 +1065,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
     // Get muscle groups from the workout
     final workoutMuscleGroups = workout.muscleGroups;
 
-    // Calculate TOTAL time across ALL workouts in the plan
+    // Calculate TOTAL time across ALL workouts (sum of all exercises)
     final totalCurrentMinutes = state.workouts.fold<int>(
       0,
       (sum, w) => sum + w.exercises.fold<int>(
@@ -978,8 +1074,8 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
       ),
     ) ~/ 60;
 
-    // Target total = time per workout × number of workouts
-    final targetTotalMinutes = state.estimatedWorkoutMinutes * state.workouts.length;
+    // Target is already the total duration
+    final targetTotalMinutes = state.targetWorkoutMinutes;
 
     showModalBottomSheet(
       context: context,
@@ -2901,9 +2997,16 @@ class _ExerciseItem extends ConsumerWidget {
     String executionInstructions = exercise.executionInstructions;
     int? isometricSeconds = exercise.isometricSeconds;
     TechniqueType techniqueType = exercise.techniqueType;
+    // Structured technique parameters
+    int? dropCount = exercise.dropCount ?? _parseDropCount(exercise.executionInstructions);
+    int? restBetweenDrops = exercise.restBetweenDrops ?? _parseRestBetweenDrops(exercise.executionInstructions);
+    int? pauseDuration = exercise.pauseDuration ?? _parsePauseDuration(exercise.executionInstructions);
+    int? miniSetCount = exercise.miniSetCount ?? _parseMiniSetCount(exercise.executionInstructions);
+    // Extract custom instructions (without auto-generated technique text)
+    String customInstructions = _extractCustomInstructions(exercise.executionInstructions);
 
     final repsController = TextEditingController(text: reps);
-    final instructionsController = TextEditingController(text: executionInstructions);
+    final instructionsController = TextEditingController(text: customInstructions);
     bool showAdvancedOptions = executionInstructions.isNotEmpty ||
         isometricSeconds != null ||
         techniqueType != TechniqueType.normal;
@@ -3205,6 +3308,47 @@ class _ExerciseItem extends ConsumerWidget {
                             );
                           }).toList(),
                         ),
+
+                        // Technique-specific controls
+                        if (techniqueType == TechniqueType.dropset) ...[
+                          const SizedBox(height: 16),
+                          const Divider(),
+                          const SizedBox(height: 16),
+                          _buildDropsetControls(
+                            theme,
+                            isDark,
+                            dropCount ?? 3,
+                            restBetweenDrops ?? 0,
+                            (drops, rest) => setState(() {
+                              dropCount = drops;
+                              restBetweenDrops = rest;
+                            }),
+                          ),
+                        ] else if (techniqueType == TechniqueType.restPause) ...[
+                          const SizedBox(height: 16),
+                          const Divider(),
+                          const SizedBox(height: 16),
+                          _buildRestPauseControls(
+                            theme,
+                            isDark,
+                            pauseDuration ?? 15,
+                            (pause) => setState(() => pauseDuration = pause),
+                          ),
+                        ] else if (techniqueType == TechniqueType.cluster) ...[
+                          const SizedBox(height: 16),
+                          const Divider(),
+                          const SizedBox(height: 16),
+                          _buildClusterControls(
+                            theme,
+                            isDark,
+                            miniSetCount ?? 4,
+                            pauseDuration ?? 10,
+                            (miniSets, pause) => setState(() {
+                              miniSetCount = miniSets;
+                              pauseDuration = pause;
+                            }),
+                          ),
+                        ],
                         const SizedBox(height: 16),
 
                         // Execution Instructions
@@ -3239,15 +3383,23 @@ class _ExerciseItem extends ConsumerWidget {
                   width: double.infinity,
                   child: FilledButton(
                     onPressed: () {
+                      // Build execution instructions: custom text only (technique params stored separately)
+                      final finalInstructions = instructionsController.text.trim();
+
                       final updated = exercise.copyWith(
                         sets: sets,
                         reps: reps.isEmpty ? '10-12' : reps,
                         restSeconds: restSeconds,
                         notes: notes,
                         // Advanced technique fields
-                        executionInstructions: executionInstructions,
+                        executionInstructions: finalInstructions,
                         isometricSeconds: isometricSeconds,
                         techniqueType: techniqueType,
+                        // Structured technique parameters
+                        dropCount: techniqueType == TechniqueType.dropset ? dropCount : null,
+                        restBetweenDrops: techniqueType == TechniqueType.dropset ? restBetweenDrops : null,
+                        pauseDuration: (techniqueType == TechniqueType.restPause || techniqueType == TechniqueType.cluster) ? pauseDuration : null,
+                        miniSetCount: techniqueType == TechniqueType.cluster ? miniSetCount : null,
                       );
                       notifier.updateExercise(workoutId, exercise.id, updated);
                       Navigator.pop(ctx);
@@ -3265,6 +3417,235 @@ class _ExerciseItem extends ConsumerWidget {
         ),
         ),
       ),
+    );
+  }
+
+  // === Helper functions for parsing technique parameters from legacy text ===
+
+  int? _parseDropCount(String instructions) {
+    final match = RegExp(r'(\d+)\s*drops').firstMatch(instructions);
+    return match != null ? int.tryParse(match.group(1)!) : null;
+  }
+
+  int? _parseRestBetweenDrops(String instructions) {
+    if (instructions.contains('sem descanso')) return 0;
+    final match = RegExp(r'(\d+)s\s*descanso').firstMatch(instructions);
+    return match != null ? int.tryParse(match.group(1)!) : null;
+  }
+
+  int? _parsePauseDuration(String instructions) {
+    final match = RegExp(r'Pausa de (\d+)s|(\d+)s de pausa').firstMatch(instructions);
+    if (match != null) {
+      return int.tryParse(match.group(1) ?? match.group(2) ?? '');
+    }
+    return null;
+  }
+
+  int? _parseMiniSetCount(String instructions) {
+    final match = RegExp(r'(\d+)\s*mini-sets').firstMatch(instructions);
+    return match != null ? int.tryParse(match.group(1)!) : null;
+  }
+
+  String _extractCustomInstructions(String instructions) {
+    // Remove known technique patterns to get only custom text
+    return instructions
+        .replaceAll(RegExp(r'\d+\s*drops,?\s*(sem descanso|\d+s\s*descanso)'), '')
+        .replaceAll(RegExp(r'Pausa de \d+s entre mini-falhas'), '')
+        .replaceAll(RegExp(r'\d+\s*mini-sets com \d+s de pausa'), '')
+        .replaceAll(RegExp(r'^\n+|\n+$'), '') // Remove leading/trailing newlines
+        .trim();
+  }
+
+  // === Builder functions for technique-specific controls ===
+
+  Widget _buildDropsetControls(
+    ThemeData theme,
+    bool isDark,
+    int dropCount,
+    int restBetweenDrops,
+    void Function(int drops, int rest) onChanged,
+  ) {
+    final techniqueColor = ExerciseTheme.getColor(TechniqueType.dropset);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(LucideIcons.chevronDown, size: 18, color: techniqueColor),
+            const SizedBox(width: 8),
+            Text(
+              'Configuração Drop Set',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: techniqueColor,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text('Número de Drops', style: theme.textTheme.labelMedium),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: [2, 3, 4, 5].map((value) {
+            final isSelected = dropCount == value;
+            return ChoiceChip(
+              label: Text(
+                '$value drops',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isSelected ? Colors.white : null,
+                ),
+              ),
+              selected: isSelected,
+              selectedColor: techniqueColor,
+              onSelected: (_) => onChanged(value, restBetweenDrops),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 12),
+        Text('Descanso entre Drops', style: theme.textTheme.labelMedium),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: [0, 5, 10, 15].map((value) {
+            final isSelected = restBetweenDrops == value;
+            return ChoiceChip(
+              label: Text(
+                value == 0 ? 'Sem descanso' : '${value}s',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isSelected ? Colors.white : null,
+                ),
+              ),
+              selected: isSelected,
+              selectedColor: techniqueColor,
+              onSelected: (_) => onChanged(dropCount, value),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRestPauseControls(
+    ThemeData theme,
+    bool isDark,
+    int pauseDuration,
+    void Function(int pause) onChanged,
+  ) {
+    final techniqueColor = ExerciseTheme.getColor(TechniqueType.restPause);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(LucideIcons.pauseCircle, size: 18, color: techniqueColor),
+            const SizedBox(width: 8),
+            Text(
+              'Configuração Rest-Pause',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: techniqueColor,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text('Pausa entre Mini-Falhas', style: theme.textTheme.labelMedium),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: [10, 15, 20, 30].map((value) {
+            final isSelected = pauseDuration == value;
+            return ChoiceChip(
+              label: Text(
+                '${value}s',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isSelected ? Colors.white : null,
+                ),
+              ),
+              selected: isSelected,
+              selectedColor: techniqueColor,
+              onSelected: (_) => onChanged(value),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildClusterControls(
+    ThemeData theme,
+    bool isDark,
+    int miniSetCount,
+    int pauseDuration,
+    void Function(int miniSets, int pause) onChanged,
+  ) {
+    final techniqueColor = ExerciseTheme.getColor(TechniqueType.cluster);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(LucideIcons.layers, size: 18, color: techniqueColor),
+            const SizedBox(width: 8),
+            Text(
+              'Configuração Cluster',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: techniqueColor,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Text('Número de Mini-Sets', style: theme.textTheme.labelMedium),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: [3, 4, 5, 6].map((value) {
+            final isSelected = miniSetCount == value;
+            return ChoiceChip(
+              label: Text(
+                '$value mini-sets',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isSelected ? Colors.white : null,
+                ),
+              ),
+              selected: isSelected,
+              selectedColor: techniqueColor,
+              onSelected: (_) => onChanged(value, pauseDuration),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 12),
+        Text('Pausa entre Mini-Sets', style: theme.textTheme.labelMedium),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          children: [10, 15, 20, 30].map((value) {
+            final isSelected = pauseDuration == value;
+            return ChoiceChip(
+              label: Text(
+                '${value}s',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isSelected ? Colors.white : null,
+                ),
+              ),
+              selected: isSelected,
+              selectedColor: techniqueColor,
+              onSelected: (_) => onChanged(miniSetCount, value),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
@@ -5455,7 +5836,7 @@ class _AITechniqueSelectionSheet extends StatefulWidget {
   final bool isDark;
   final ThemeData theme;
   final int currentWorkoutMinutes;
-  final int targetWorkoutMinutes;
+  final int? targetWorkoutMinutes; // null = Livre (no time target)
   final void Function(Set<TechniqueType> selectedTechniques, List<String> selectedMuscleGroups, int count) onConfirm;
 
   const _AITechniqueSelectionSheet({
@@ -5498,10 +5879,15 @@ class _AITechniqueSelectionSheetState extends State<_AITechniqueSelectionSheet> 
   bool get _hasMuscleGroupsFromWorkout => widget.workoutMuscleGroups.isNotEmpty;
   bool get _canConfirm => _selectedTechniques.isNotEmpty && _selectedMuscleGroups.isNotEmpty;
 
-  // Time-based calculations
-  int get _remainingMinutes => (widget.targetWorkoutMinutes - widget.currentWorkoutMinutes).clamp(0, widget.targetWorkoutMinutes);
-  int get _suggestedCount => (_remainingMinutes / _avgMinutesPerExercise).floor().clamp(1, 10);
-  bool get _wouldExceedTime => _selectedCount > _suggestedCount;
+  // Time-based calculations (only meaningful when there's a target)
+  bool get _hasTimeTarget => widget.targetWorkoutMinutes != null;
+  int get _remainingMinutes => _hasTimeTarget
+      ? (widget.targetWorkoutMinutes! - widget.currentWorkoutMinutes).clamp(0, widget.targetWorkoutMinutes!)
+      : 0;
+  int get _suggestedCount => _hasTimeTarget
+      ? (_remainingMinutes / _avgMinutesPerExercise).floor().clamp(1, 10)
+      : 6; // Default count when no time target
+  bool get _wouldExceedTime => _hasTimeTarget && _selectedCount > _suggestedCount;
 
   @override
   void initState() {
@@ -5509,8 +5895,8 @@ class _AITechniqueSelectionSheetState extends State<_AITechniqueSelectionSheet> 
     _selectedTechniques = Set.from(widget.initialTechniques);
     // Pre-select muscle groups from the workout, or empty if none
     _selectedMuscleGroups = Set.from(widget.workoutMuscleGroups);
-    // Set initial count based on remaining time
-    _selectedCount = _suggestedCount.clamp(4, 10);
+    // Set initial count based on remaining time (or default if no target)
+    _selectedCount = _hasTimeTarget ? _suggestedCount.clamp(4, 10) : 6;
   }
 
   String _getDifficultyLabel() {
@@ -5525,6 +5911,11 @@ class _AITechniqueSelectionSheetState extends State<_AITechniqueSelectionSheet> 
   }
 
   Widget _buildTimeInfoBanner() {
+    // Don't show time banner if no time target is set (Livre mode)
+    if (!_hasTimeTarget) {
+      return const SizedBox.shrink();
+    }
+
     final hasExercises = widget.currentWorkoutMinutes > 0;
 
     return Container(
@@ -5552,7 +5943,7 @@ class _AITechniqueSelectionSheetState extends State<_AITechniqueSelectionSheet> 
                   children: [
                     Text(
                       hasExercises
-                          ? 'Tempo total do plano: ${widget.currentWorkoutMinutes} / ${widget.targetWorkoutMinutes} min'
+                          ? 'Tempo total: ${widget.currentWorkoutMinutes} / ${widget.targetWorkoutMinutes} min'
                           : 'Tempo alvo total: ${widget.targetWorkoutMinutes} min',
                       style: widget.theme.textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w600,
@@ -5561,7 +5952,7 @@ class _AITechniqueSelectionSheetState extends State<_AITechniqueSelectionSheet> 
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Restam $_remainingMinutes min (~$_suggestedCount exercícios)',
+                      'Restam $_remainingMinutes min para o plano (~$_suggestedCount exercícios)',
                       style: widget.theme.textTheme.bodySmall?.copyWith(
                         color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       ),

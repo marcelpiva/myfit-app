@@ -37,6 +37,11 @@ sealed class WizardExercise with _$WizardExercise {
     @Default(TechniqueType.normal) TechniqueType techniqueType,
     String? exerciseGroupId,
     @Default(0) int exerciseGroupOrder,
+    // Structured technique parameters (for dropset, rest-pause, cluster)
+    int? dropCount,           // Dropset: number of drops (2-5)
+    int? restBetweenDrops,    // Dropset: seconds between drops (0, 5, 10, 15)
+    int? pauseDuration,       // Rest-Pause/Cluster: pause duration in seconds
+    int? miniSetCount,        // Cluster: number of mini-sets (3-6)
   }) = _WizardExercise;
 
   /// Calculate estimated time for this exercise in seconds
@@ -163,7 +168,7 @@ sealed class PlanWizardState with _$PlanWizardState {
     @Default(PlanDifficulty.intermediate) PlanDifficulty difficulty,
     @Default(SplitType.abc) SplitType splitType,
     int? durationWeeks,
-    @Default(60) int estimatedWorkoutMinutes, // Duration per workout in minutes
+    int? targetWorkoutMinutes, // Target duration per workout in minutes (null = free/unlimited)
     @Default([]) List<WizardWorkout> workouts,
     @Default(false) bool isLoading,
     String? error,
@@ -221,8 +226,8 @@ sealed class PlanWizardState with _$PlanWizardState {
     return workouts.fold<int>(0, (sum, w) => sum + w.exercises.length);
   }
 
-  /// Get estimated total duration
-  int get estimatedTotalMinutes {
+  /// Get actual total duration calculated from exercises (in minutes)
+  int get actualTotalMinutes {
     return workouts.fold<int>(0, (sum, w) {
       final exerciseDuration = w.exercises.fold<int>(0, (es, e) {
         return es + (e.sets * 45) + (e.sets * e.restSeconds);
@@ -317,8 +322,8 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
     state = state.copyWith(durationWeeks: weeks);
   }
 
-  void setEstimatedWorkoutMinutes(int minutes) {
-    state = state.copyWith(estimatedWorkoutMinutes: minutes);
+  void setTargetWorkoutMinutes(int? minutes) {
+    state = state.copyWith(targetWorkoutMinutes: minutes);
   }
 
   void setIsTemplate(bool isTemplate) {
@@ -548,6 +553,7 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
       final difficultyStr = plan['difficulty'] as String? ?? 'intermediate';
       final splitTypeStr = plan['split_type'] as String? ?? 'abc';
       final durationWeeks = plan['duration_weeks'] as int?;
+      final targetWorkoutMinutes = plan['target_workout_minutes'] as int?;
       final isTemplate = plan['is_template'] as bool? ?? false;
       final planWorkouts = (plan['plan_workouts'] as List<dynamic>?) ?? [];
 
@@ -588,6 +594,11 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
             techniqueType: (exMap['technique_type'] as String?)?.toTechniqueType() ?? TechniqueType.normal,
             exerciseGroupId: exMap['exercise_group_id'] as String?,
             exerciseGroupOrder: exMap['exercise_group_order'] as int? ?? 0,
+            // Structured technique parameters
+            dropCount: exMap['drop_count'] as int?,
+            restBetweenDrops: exMap['rest_between_drops'] as int?,
+            pauseDuration: exMap['pause_duration'] as int?,
+            miniSetCount: exMap['mini_set_count'] as int?,
           );
         }).toList();
 
@@ -610,6 +621,7 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
         difficulty: difficultyStr.toPlanDifficulty(),
         splitType: splitTypeStr.toSplitType(),
         durationWeeks: durationWeeks,
+        targetWorkoutMinutes: targetWorkoutMinutes,
         isTemplate: isTemplate,
         workouts: workouts,
         // Diet data
@@ -1262,6 +1274,11 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
         executionInstructions: instructions,
         // For supersets/trisets, rest only after the last exercise
         restSeconds: groupId != null && index < exercises.length - 1 ? 0 : 60,
+        // Store structured technique parameters
+        dropCount: technique == TechniqueType.dropset ? dropCount : null,
+        restBetweenDrops: technique == TechniqueType.dropset ? restBetweenDrops : null,
+        pauseDuration: (technique == TechniqueType.restPause || technique == TechniqueType.cluster) ? pauseDuration : null,
+        miniSetCount: technique == TechniqueType.cluster ? miniSetCount : null,
       );
     }).toList();
 
@@ -1836,6 +1853,11 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
               'technique_type': e.techniqueType.toApiValue(),
               'exercise_group_id': e.exerciseGroupId,
               'exercise_group_order': e.exerciseGroupOrder,
+              // Structured technique parameters
+              'drop_count': e.dropCount,
+              'rest_between_drops': e.restBetweenDrops,
+              'pause_duration': e.pauseDuration,
+              'mini_set_count': e.miniSetCount,
             };
           }).toList(),
         };
@@ -1852,6 +1874,7 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
           difficulty: state.difficulty.toApiValue(),
           splitType: state.splitType.toApiValue(),
           durationWeeks: state.durationWeeks,
+          targetWorkoutMinutes: state.targetWorkoutMinutes,
           isTemplate: state.isTemplate,
           workouts: workoutsData, // Include workouts data
           // Diet fields
@@ -1873,6 +1896,7 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
           difficulty: state.difficulty.toApiValue(),
           splitType: state.splitType.toApiValue(),
           durationWeeks: state.durationWeeks,
+          targetWorkoutMinutes: state.targetWorkoutMinutes,
           isTemplate: state.isTemplate,
           workouts: workoutsData,
           // Diet fields

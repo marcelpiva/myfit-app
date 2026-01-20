@@ -441,7 +441,7 @@ class _StepPlanInfoState extends ConsumerState<StepPlanInfo>
       children: [
         Row(
           children: [
-            _buildSectionLabel(theme, isDark, 'Duração'),
+            _buildSectionLabel(theme, isDark, 'Semanas'),
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -499,21 +499,26 @@ class _StepPlanInfoState extends ConsumerState<StepPlanInfo>
     PlanWizardState state,
     PlanWizardNotifier notifier,
   ) {
+    // (minutes, label) - predefined duration options
     final durations = [
-      (30, '30 min'),
-      (45, '45 min'),
-      (60, '60 min'),
-      (90, '90 min'),
-      (120, '2h'),
+      (30, '30m'),
+      (45, '45m'),
+      (60, '1h'),
+      (90, '1h30'),
     ];
+
+    // Check if current value is a custom value (not in predefined list)
+    final predefinedValues = durations.map((d) => d.$1).toSet();
+    final isCustomValue = state.targetWorkoutMinutes != null &&
+        !predefinedValues.contains(state.targetWorkoutMinutes);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionLabel(theme, isDark, 'Duração por Treino'),
+        _buildSectionLabel(theme, isDark, 'Tempo Total'),
         const SizedBox(height: 4),
         Text(
-          'Tempo estimado de cada sessão de treino',
+          'Tempo estimado para completar o plano de treino',
           style: theme.textTheme.bodySmall?.copyWith(
             color: isDark
                 ? AppColors.mutedForegroundDark
@@ -522,28 +527,39 @@ class _StepPlanInfoState extends ConsumerState<StepPlanInfo>
         ),
         const SizedBox(height: 12),
         Row(
-          children: durations.asMap().entries.map((entry) {
-            final index = entry.key;
-            final item = entry.value;
-            final isSelected = state.estimatedWorkoutMinutes == item.$1;
+          children: [
+            ...durations.asMap().entries.map((entry) {
+              final item = entry.value;
+              final isSelected = state.targetWorkoutMinutes == item.$1;
 
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  right: index < durations.length - 1 ? 8 : 0,
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: _WorkoutDurationChip(
+                    label: item.$2,
+                    isSelected: isSelected,
+                    isDark: isDark,
+                    onTap: () {
+                      HapticUtils.selectionClick();
+                      notifier.setTargetWorkoutMinutes(item.$1);
+                    },
+                  ),
                 ),
-                child: _WorkoutDurationChip(
-                  label: item.$2,
-                  isSelected: isSelected,
-                  isDark: isDark,
-                  onTap: () {
-                    HapticUtils.selectionClick();
-                    notifier.setEstimatedWorkoutMinutes(item.$1);
-                  },
-                ),
+              );
+            }),
+            // Custom duration input
+            Expanded(
+              child: _CustomDurationChip(
+                value: isCustomValue ? state.targetWorkoutMinutes : null,
+                isSelected: isCustomValue,
+                isDark: isDark,
+                onValueChanged: (minutes) {
+                  HapticUtils.selectionClick();
+                  notifier.setTargetWorkoutMinutes(minutes);
+                },
               ),
-            );
-          }).toList(),
+            ),
+          ],
         ),
       ],
     );
@@ -981,6 +997,315 @@ class _WorkoutDurationChip extends StatelessWidget {
                   ? Colors.white
                   : (isDark ? AppColors.foregroundDark : AppColors.foreground),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CustomDurationChip extends StatelessWidget {
+  final int? value;
+  final bool isSelected;
+  final bool isDark;
+  final ValueChanged<int> onValueChanged;
+
+  const _CustomDurationChip({
+    required this.value,
+    required this.isSelected,
+    required this.isDark,
+    required this.onValueChanged,
+  });
+
+  String _formatDuration(int minutes) {
+    if (minutes >= 60) {
+      final hours = minutes ~/ 60;
+      final mins = minutes % 60;
+      if (mins == 0) return '${hours}h';
+      return '${hours}h${mins}m';
+    }
+    return '${minutes}m';
+  }
+
+  Future<void> _showDurationPicker(BuildContext context) async {
+    final theme = Theme.of(context);
+    final sheetIsDark = theme.brightness == Brightness.dark;
+
+    final result = await showModalBottomSheet<int>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return _DurationPickerBottomSheet(
+          initialValue: value ?? 60,
+          isDark: sheetIsDark,
+          formatDuration: _formatDuration,
+        );
+      },
+    );
+
+    if (result != null) {
+      onValueChanged(result);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final label = isSelected && value != null ? _formatDuration(value!) : 'Outro';
+
+    return GestureDetector(
+      onTap: () => _showDurationPicker(context),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary
+              : (isDark ? AppColors.cardDark : Colors.white),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primary
+                : (isDark ? AppColors.borderDark : AppColors.border),
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withAlpha(isDark ? 50 : 40),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected
+                  ? Colors.white
+                  : (isDark ? AppColors.foregroundDark : AppColors.foreground),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Bottom sheet for selecting custom duration with chips + slider
+class _DurationPickerBottomSheet extends StatefulWidget {
+  final int initialValue;
+  final bool isDark;
+  final String Function(int) formatDuration;
+
+  const _DurationPickerBottomSheet({
+    required this.initialValue,
+    required this.isDark,
+    required this.formatDuration,
+  });
+
+  @override
+  State<_DurationPickerBottomSheet> createState() => _DurationPickerBottomSheetState();
+}
+
+class _DurationPickerBottomSheetState extends State<_DurationPickerBottomSheet> {
+  late int selectedMinutes;
+
+  // Predefined duration options in minutes
+  static const List<int> presetDurations = [15, 20, 30, 45, 60, 75, 90, 120, 150, 180];
+
+  @override
+  void initState() {
+    super.initState();
+    selectedMinutes = widget.initialValue.clamp(15, 180);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: widget.isDark ? AppColors.cardDark : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: widget.isDark
+                        ? AppColors.mutedForegroundDark.withAlpha(100)
+                        : AppColors.mutedForeground.withAlpha(80),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Title
+              Text(
+                'Tempo Personalizado',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: widget.isDark ? AppColors.foregroundDark : AppColors.foreground,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+
+              // Chips grid
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                alignment: WrapAlignment.center,
+                children: presetDurations.map((minutes) {
+                  final isSelected = selectedMinutes == minutes;
+                  return ChoiceChip(
+                    label: Text(widget.formatDuration(minutes)),
+                    selected: isSelected,
+                    onSelected: (_) {
+                      HapticUtils.selectionClick();
+                      setState(() => selectedMinutes = minutes);
+                    },
+                    selectedColor: AppColors.primary,
+                    backgroundColor: widget.isDark
+                        ? AppColors.mutedForegroundDark.withAlpha(30)
+                        : AppColors.mutedForeground.withAlpha(20),
+                    labelStyle: TextStyle(
+                      color: isSelected
+                          ? Colors.white
+                          : (widget.isDark
+                              ? AppColors.foregroundDark
+                              : AppColors.foreground),
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: BorderSide(
+                        color: isSelected
+                            ? AppColors.primary
+                            : (widget.isDark
+                                ? AppColors.borderDark
+                                : AppColors.border),
+                      ),
+                    ),
+                    showCheckmark: false,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 28),
+
+              // Slider with label
+              Text(
+                'Ajuste fino',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: widget.isDark
+                      ? AppColors.mutedForegroundDark
+                      : AppColors.mutedForeground,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              SliderTheme(
+                data: SliderThemeData(
+                  activeTrackColor: AppColors.primary,
+                  inactiveTrackColor: widget.isDark
+                      ? AppColors.mutedForegroundDark.withAlpha(50)
+                      : AppColors.mutedForeground.withAlpha(40),
+                  thumbColor: AppColors.primary,
+                  overlayColor: AppColors.primary.withAlpha(30),
+                  valueIndicatorColor: AppColors.primary,
+                  valueIndicatorTextStyle: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                child: Slider(
+                  min: 15,
+                  max: 180,
+                  divisions: 33, // Increments of 5 minutes
+                  value: selectedMinutes.toDouble(),
+                  label: widget.formatDuration(selectedMinutes),
+                  onChanged: (value) {
+                    setState(() => selectedMinutes = value.round());
+                  },
+                ),
+              ),
+
+              // Current value display
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withAlpha(widget.isDark ? 30 : 20),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      LucideIcons.clock,
+                      size: 20,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      widget.formatDuration(selectedMinutes),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    Text(
+                      ' ($selectedMinutes min)',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: widget.isDark
+                            ? AppColors.mutedForegroundDark
+                            : AppColors.mutedForeground,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Confirm button
+              FilledButton(
+                onPressed: () {
+                  HapticUtils.selectionClick();
+                  Navigator.of(context).pop(selectedMinutes);
+                },
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: const Text(
+                  'Confirmar',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

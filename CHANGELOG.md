@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2026-01-19
+
+### Added
+- **Structured Technique Parameter Editing**
+  - Dropset: visual controls for drop count (2-5) and rest between drops (0, 5, 10, 15s)
+  - Rest-Pause: visual controls for pause duration (10, 15, 20, 30s)
+  - Cluster: visual controls for mini-set count (3-6) and pause duration
+  - Parameters now persist correctly when saving and editing plans
+
+- **Custom Duration Picker**
+  - New slide-up bottom sheet replaces text input dialog
+  - Grid of preset duration chips (15m to 3h)
+  - Fine-tuning slider (15-180 min in 5-min increments)
+  - Visual display of selected duration with icon
+
+### Changed
+- Label "Duração" renamed to "Semanas" for clarity
+- Label "Duração Total" renamed to "Tempo Total"
+- Custom duration chip label changed from "+" to "Outro"
+
+### Fixed
+- Technique parameters (dropCount, restBetweenDrops, pauseDuration, miniSetCount) now persist when editing plans
+
 ## [1.4.0] - 2026-01-19
 
 ### Added
