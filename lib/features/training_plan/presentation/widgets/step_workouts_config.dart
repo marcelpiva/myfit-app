@@ -4470,6 +4470,13 @@ class _ExerciseItem extends ConsumerWidget {
     // Check if this is a single-exercise technique (dropset, rest-pause, etc.)
     final techniqueColor = ExerciseTheme.getColor(exercise.techniqueType);
     final hasTechnique = exercise.techniqueType != TechniqueType.normal;
+    final isCardio = ExerciseTheme.isCardioExercise(exercise.muscleGroup);
+    final modeColor = ExerciseTheme.getModeColor(exercise.exerciseMode);
+
+    // Determine the accent color: technique > cardio mode > neutral
+    final accentColor = hasTechnique
+        ? techniqueColor
+        : (isCardio ? modeColor : theme.colorScheme.outline.withValues(alpha: 0.3));
 
     return Container(
         margin: const EdgeInsets.only(bottom: 8),
@@ -4478,12 +4485,10 @@ class _ExerciseItem extends ConsumerWidget {
               ? theme.colorScheme.surfaceContainerLow.withAlpha(150)
               : theme.colorScheme.surfaceContainerLow.withAlpha(200),
           borderRadius: BorderRadius.circular(8),
-          // Left border for all exercises (colored for techniques, neutral for simple)
+          // Left border for all exercises (colored for techniques/cardio, neutral for simple)
           border: Border(
             left: BorderSide(
-              color: hasTechnique
-                  ? techniqueColor
-                  : theme.colorScheme.outline.withValues(alpha: 0.3),
+              color: accentColor,
               width: 3,
             ),
           ),
@@ -4497,7 +4502,7 @@ class _ExerciseItem extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: hasTechnique
                     ? techniqueColor.withValues(alpha: 0.15)
-                    : theme.colorScheme.outlineVariant.withValues(alpha: 0.2),
+                    : (isCardio ? modeColor.withValues(alpha: 0.15) : theme.colorScheme.outlineVariant.withValues(alpha: 0.2)),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(8),
                   topRight: Radius.circular(8),
@@ -4508,19 +4513,21 @@ class _ExerciseItem extends ConsumerWidget {
                   Icon(
                     hasTechnique
                         ? ExerciseTheme.getIcon(exercise.techniqueType)
-                        : LucideIcons.dumbbell,
+                        : (isCardio ? ExerciseTheme.getModeIcon(exercise.exerciseMode) : LucideIcons.dumbbell),
                     size: 14,
                     color: hasTechnique
                         ? techniqueColor
-                        : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                        : (isCardio ? modeColor : theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    hasTechnique ? exercise.techniqueType.displayName : 'Exercício',
+                    hasTechnique
+                        ? exercise.techniqueType.displayName
+                        : (isCardio ? exercise.exerciseMode.displayName : 'Exercício'),
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: hasTechnique
                           ? techniqueColor
-                          : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                          : (isCardio ? modeColor : theme.colorScheme.onSurface.withValues(alpha: 0.6)),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -4691,27 +4698,81 @@ class _ExerciseItem extends ConsumerWidget {
                             spacing: 6,
                             runSpacing: 4,
                             children: [
-                              _MiniChip(label: '${exercise.sets} series', isDark: isDark),
-                              _MiniChip(label: '${exercise.reps} reps', isDark: isDark),
-                              _MiniChip(
-                                label: exercise.restSeconds == 0 ? 'Sem descanso' : '${exercise.restSeconds}s',
-                                isDark: isDark,
-                                isHighlighted: exercise.restSeconds == 0,
-                              ),
-                              // Time estimate
+                              // Cardio-specific chips
+                              if (isCardio) ...[
+                                // Duration mode: show duration and intensity
+                                if (exercise.exerciseMode == ExerciseMode.duration) ...[
+                                  _MiniChip(
+                                    label: '${exercise.durationMinutes ?? 30} min',
+                                    icon: LucideIcons.timer,
+                                    isDark: isDark,
+                                    color: modeColor,
+                                  ),
+                                  if (exercise.intensity != null)
+                                    _MiniChip(
+                                      label: exercise.intensity!,
+                                      isDark: isDark,
+                                      color: modeColor,
+                                    ),
+                                ],
+                                // Interval mode: show work/rest/rounds
+                                if (exercise.exerciseMode == ExerciseMode.interval) ...[
+                                  _MiniChip(
+                                    label: '${exercise.workSeconds ?? 30}s trabalho',
+                                    icon: LucideIcons.zap,
+                                    isDark: isDark,
+                                    color: modeColor,
+                                  ),
+                                  _MiniChip(
+                                    label: '${exercise.intervalRestSeconds ?? 30}s descanso',
+                                    isDark: isDark,
+                                    color: modeColor,
+                                  ),
+                                  _MiniChip(
+                                    label: '${exercise.rounds ?? 10}x',
+                                    isDark: isDark,
+                                    color: modeColor,
+                                  ),
+                                ],
+                                // Distance mode: show distance and pace
+                                if (exercise.exerciseMode == ExerciseMode.distance) ...[
+                                  _MiniChip(
+                                    label: '${exercise.distanceKm ?? 5} km',
+                                    icon: LucideIcons.mapPin,
+                                    isDark: isDark,
+                                    color: modeColor,
+                                  ),
+                                  if (exercise.targetPaceMinPerKm != null)
+                                    _MiniChip(
+                                      label: '${exercise.targetPaceMinPerKm!.toStringAsFixed(1)} min/km',
+                                      isDark: isDark,
+                                      color: modeColor,
+                                    ),
+                                ],
+                              ] else ...[
+                                // Strength exercise chips (sets/reps/rest)
+                                _MiniChip(label: '${exercise.sets} series', isDark: isDark),
+                                _MiniChip(label: '${exercise.reps} reps', isDark: isDark),
+                                _MiniChip(
+                                  label: exercise.restSeconds == 0 ? 'Sem descanso' : '${exercise.restSeconds}s',
+                                  isDark: isDark,
+                                  isHighlighted: exercise.restSeconds == 0,
+                                ),
+                                // Compact isometric display
+                                if (exercise.isometricSeconds != null && exercise.isometricSeconds! > 0)
+                                  _MiniChip(
+                                    label: '${exercise.isometricSeconds}s',
+                                    icon: LucideIcons.timer,
+                                    isDark: isDark,
+                                    isHighlighted: true,
+                                  ),
+                              ],
+                              // Time estimate (for all exercises)
                               _MiniChip(
                                 label: exercise.formattedTime,
                                 icon: LucideIcons.clock,
                                 isDark: isDark,
                               ),
-                              // Compact isometric display
-                              if (exercise.isometricSeconds != null && exercise.isometricSeconds! > 0)
-                                _MiniChip(
-                                  label: '${exercise.isometricSeconds}s',
-                                  icon: LucideIcons.timer,
-                                  isDark: isDark,
-                                  isHighlighted: true,
-                                ),
                               if (exercise.executionInstructions.isNotEmpty)
                                 _MiniChip(
                                   label: 'Instruções',
@@ -4792,6 +4853,7 @@ class _MiniChip extends StatelessWidget {
   final bool isHighlighted;
   final IconData? icon;
   final Color? highlightColor;
+  final Color? color; // Color for cardio/mode styling
 
   const _MiniChip({
     required this.label,
@@ -4799,21 +4861,26 @@ class _MiniChip extends StatelessWidget {
     this.isHighlighted = false,
     this.icon,
     this.highlightColor,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     final effectiveHighlightColor = highlightColor ?? AppColors.primary;
+    final hasColor = color != null;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: isHighlighted
-            ? effectiveHighlightColor.withAlpha(isDark ? 40 : 25)
-            : (isDark
-                ? AppColors.mutedDark.withAlpha(80)
-                : AppColors.muted.withAlpha(150)),
+        color: hasColor
+            ? color!.withAlpha(isDark ? 40 : 25)
+            : (isHighlighted
+                ? effectiveHighlightColor.withAlpha(isDark ? 40 : 25)
+                : (isDark
+                    ? AppColors.mutedDark.withAlpha(80)
+                    : AppColors.muted.withAlpha(150))),
         borderRadius: BorderRadius.circular(4),
+        border: hasColor ? Border.all(color: color!.withAlpha(80), width: 0.5) : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -4822,9 +4889,11 @@ class _MiniChip extends StatelessWidget {
             Icon(
               icon,
               size: 10,
-              color: isHighlighted
-                  ? effectiveHighlightColor
-                  : (isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground),
+              color: hasColor
+                  ? color
+                  : (isHighlighted
+                      ? effectiveHighlightColor
+                      : (isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground)),
             ),
             const SizedBox(width: 3),
           ],
@@ -4832,10 +4901,12 @@ class _MiniChip extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 11,
-              color: isHighlighted
-                  ? effectiveHighlightColor
-                  : (isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground),
-              fontWeight: isHighlighted ? FontWeight.w500 : null,
+              color: hasColor
+                  ? color
+                  : (isHighlighted
+                      ? effectiveHighlightColor
+                      : (isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground)),
+              fontWeight: (isHighlighted || hasColor) ? FontWeight.w500 : null,
             ),
           ),
         ],
