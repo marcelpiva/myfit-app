@@ -106,38 +106,7 @@ class StepReview extends ConsumerWidget {
                 const SizedBox(height: 20),
                 const Divider(color: Colors.white24),
                 const SizedBox(height: 16),
-                // First row of stats
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _StatItem(
-                      icon: LucideIcons.calendar,
-                      value: state.splitTypeName,
-                      label: 'Divisão',
-                      theme: theme,
-                    ),
-                    _StatItem(
-                      icon: LucideIcons.dumbbell,
-                      value: '${state.workouts.length}',
-                      label: 'Treinos',
-                      theme: theme,
-                    ),
-                    _StatItem(
-                      icon: LucideIcons.repeat,
-                      value: '${state.totalExerciseCount}',
-                      label: 'Exercícios',
-                      theme: theme,
-                    ),
-                    if (state.durationWeeks != null)
-                      _StatItem(
-                        icon: LucideIcons.timer,
-                        value: '${state.durationWeeks}',
-                        label: 'Semanas',
-                        theme: theme,
-                      ),
-                  ],
-                ),
-                // Second row: time stats
+                // Stats Grid with mini-cards
                 Builder(
                   builder: (context) {
                     final totalMinutes = state.workouts.fold<int>(
@@ -147,10 +116,7 @@ class StepReview extends ConsumerWidget {
                         (es, e) => es + e.estimatedSeconds,
                       ),
                     ) ~/ 60;
-                    final targetPerWorkout = state.targetWorkoutMinutes;
-                    final hasTimeTarget = targetPerWorkout != null;
 
-                    // Format total time
                     String formatTime(int minutes) {
                       if (minutes >= 60) {
                         final hours = minutes ~/ 60;
@@ -160,25 +126,75 @@ class StepReview extends ConsumerWidget {
                       return '${minutes}m';
                     }
 
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _StatItem(
-                            icon: LucideIcons.clock,
-                            value: hasTimeTarget ? '${targetPerWorkout}m' : 'Livre',
-                            label: 'Por Treino',
-                            theme: theme,
-                          ),
-                          _StatItem(
-                            icon: LucideIcons.timerReset,
-                            value: formatTime(totalMinutes),
-                            label: 'Tempo Total',
-                            theme: theme,
-                          ),
-                        ],
-                      ),
+                    final hasWeeks = state.durationWeeks != null;
+                    return Column(
+                      children: [
+                        // First row: 3 cards
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _StatCard(
+                                icon: LucideIcons.layoutGrid,
+                                value: state.splitTypeName,
+                                label: 'Divisão',
+                                theme: theme,
+                                isDark: isDark,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _StatCard(
+                                icon: LucideIcons.dumbbell,
+                                value: '${state.workouts.length}',
+                                label: 'Treinos',
+                                theme: theme,
+                                isDark: isDark,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _StatCard(
+                                icon: LucideIcons.listChecks,
+                                value: '${state.totalExerciseCount}',
+                                label: 'Exercícios',
+                                theme: theme,
+                                isDark: isDark,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        // Second row: 2 cards (or 1 if no weeks)
+                        Row(
+                          children: [
+                            if (hasWeeks) ...[
+                              Expanded(
+                                child: _StatCard(
+                                  icon: LucideIcons.calendarDays,
+                                  value: '${state.durationWeeks}',
+                                  label: 'Semanas',
+                                  theme: theme,
+                                  isDark: isDark,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                            ],
+                            Expanded(
+                              child: _StatCard(
+                                icon: LucideIcons.clock,
+                                value: formatTime(totalMinutes),
+                                label: 'Tempo Total',
+                                theme: theme,
+                                isDark: isDark,
+                              ),
+                            ),
+                            if (!hasWeeks) ...[
+                              const SizedBox(width: 10),
+                              const Expanded(child: SizedBox()),
+                            ],
+                          ],
+                        ),
+                      ],
                     );
                   },
                 ),
@@ -554,41 +570,6 @@ class _Badge extends StatelessWidget {
   }
 }
 
-class _StatItem extends StatelessWidget {
-  final IconData icon;
-  final String value;
-  final String label;
-  final ThemeData theme;
-
-  const _StatItem({
-    required this.icon,
-    required this.value,
-    required this.label,
-    required this.theme,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, size: 20, color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 class _DietStat extends StatelessWidget {
   final String value;
@@ -619,6 +600,65 @@ class _DietStat extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final String label;
+  final ThemeData theme;
+  final bool isDark;
+
+  const _StatCard({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.theme,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.08)
+            : Colors.black.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: AppColors.primary.withValues(alpha: 0.8),
+          ),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                value,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                label,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  fontSize: 10,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

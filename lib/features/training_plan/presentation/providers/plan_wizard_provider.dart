@@ -797,6 +797,15 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
   }
 
   // Step 4: Workout configuration
+
+  /// Marks the plan as custom split when structural changes are made.
+  /// Called when adding/removing workouts or exercises.
+  void _markAsCustomSplit() {
+    if (state.splitType != SplitType.custom) {
+      state = state.copyWith(splitType: SplitType.custom);
+    }
+  }
+
   void addWorkout() {
     final label = String.fromCharCode(65 + state.workouts.length); // A, B, C...
     final workout = WizardWorkout(
@@ -807,6 +816,7 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
       muscleGroups: [],
     );
     state = state.copyWith(workouts: [...state.workouts, workout]);
+    _markAsCustomSplit();
   }
 
   void removeWorkout(String workoutId) {
@@ -817,6 +827,7 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
       workouts[i] = workouts[i].copyWith(order: i);
     }
     state = state.copyWith(workouts: workouts);
+    _markAsCustomSplit();
   }
 
   void updateWorkoutName(String workoutId, String name) {
@@ -959,6 +970,7 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
       return w;
     }).toList();
     state = state.copyWith(workouts: workouts);
+    _markAsCustomSplit();
   }
 
   /// Add multiple exercises to a workout in a single state update.
@@ -1000,6 +1012,7 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
       return w;
     }).toList();
     state = state.copyWith(workouts: workouts);
+    _markAsCustomSplit();
   }
 
   void removeExerciseFromWorkout(String workoutId, String exerciseId) {
@@ -1025,6 +1038,7 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
       return w;
     }).toList();
     state = state.copyWith(workouts: workouts);
+    _markAsCustomSplit();
   }
 
   void updateExercise(

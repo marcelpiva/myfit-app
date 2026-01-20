@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -14,6 +15,19 @@ import '../providers/plan_wizard_provider.dart';
 import 'multi_exercise_picker.dart';
 import 'technique_config_modal.dart';
 import 'technique_selection_modal.dart';
+
+/// Modo de execução do exercício (reps, isometria ou combinado)
+enum ExecutionMode { reps, isometric, combined }
+
+/// Determina o modo inicial baseado nos valores do exercício
+ExecutionMode getInitialExecutionMode(WizardExercise exercise) {
+  final hasReps = exercise.reps.isNotEmpty && exercise.reps != '1';
+  final hasIsometric = (exercise.isometricSeconds ?? 0) > 0;
+
+  if (hasReps && hasIsometric) return ExecutionMode.combined;
+  if (hasIsometric && !hasReps) return ExecutionMode.isometric;
+  return ExecutionMode.reps;
+}
 
 /// Step 4: Configure workouts and exercises
 class StepWorkoutsConfig extends ConsumerStatefulWidget {
@@ -485,8 +499,8 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (builderContext, setState) => AlertDialog(
           title: Row(
             children: [
               Container(
@@ -569,7 +583,7 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('Cancelar'),
             ),
             FilledButton(
@@ -577,27 +591,26 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
                 final newLabel = labelController.text.trim();
                 final newName = nameController.text.trim();
                 if (newLabel.isNotEmpty && newName.isNotEmpty) {
-                  // Check if any exercises will be removed
-                  final exercisesToRemove = notifier.getExercisesToRemove(
+                  // Check if any exercises are outside the new muscle groups
+                  final exercisesOutsideGroup = notifier.getExercisesToRemove(
                     workout.id,
                     selectedMuscleGroups,
                   );
 
-                  if (exercisesToRemove.isNotEmpty) {
-                    // Show confirmation dialog
-                    Navigator.pop(context);
-                    _showRemoveExercisesConfirmDialog(
-                      context,
+                  if (exercisesOutsideGroup.isNotEmpty) {
+                    // Show informational notice on top of this dialog
+                    _showExercisesOutsideGroupNotice(
+                      dialogContext,
                       workout,
                       notifier,
                       newLabel,
                       newName,
                       selectedMuscleGroups,
-                      exercisesToRemove,
+                      exercisesOutsideGroup,
                     );
                   } else {
-                    // No exercises to remove, save directly
-                    Navigator.pop(context);
+                    // No exercises outside group, save and close
+                    Navigator.pop(dialogContext);
                     notifier.updateWorkout(
                       workoutId: workout.id,
                       label: newLabel,
@@ -615,18 +628,17 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
     );
   }
 
-  void _showRemoveExercisesConfirmDialog(
+  void _showExercisesOutsideGroupNotice(
     BuildContext context,
     WizardWorkout workout,
     PlanWizardNotifier notifier,
     String newLabel,
     String newName,
     List<String> newMuscleGroups,
-    List<WizardExercise> exercisesToRemove,
+    List<WizardExercise> exercisesOutsideGroup,
   ) {
     final theme = Theme.of(context);
-    final exerciseNames = exercisesToRemove.map((e) => e.name).toList();
-    final groupsRemoved = exercisesToRemove
+    final groupsOutside = exercisesOutsideGroup
         .map((e) => e.muscleGroup)
         .toSet()
         .join(', ');
@@ -640,13 +652,13 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: Colors.orange.withAlpha(30),
+                color: Colors.blue.withAlpha(30),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Icon(LucideIcons.alertTriangle, color: Colors.orange, size: 18),
+              child: const Icon(LucideIcons.info, color: Colors.blue, size: 18),
             ),
             const SizedBox(width: 12),
-            const Expanded(child: Text('Exercícios serão removidos')),
+            const Expanded(child: Text('Exercícios de outros grupos')),
           ],
         ),
         content: SingleChildScrollView(
@@ -655,8 +667,15 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Ao remover os grupos "$groupsRemoved", ${exercisesToRemove.length} exercício(s) serão excluídos:',
+                'Este treino possui ${exercisesOutsideGroup.length} exercício(s) de "$groupsOutside" que não fazem parte dos grupos selecionados.',
                 style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Os exercícios serão mantidos no treino.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               const SizedBox(height: 12),
               Container(
@@ -667,20 +686,20 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: exerciseNames
-                      .map((name) => Padding(
+                  children: exercisesOutsideGroup
+                      .map((e) => Padding(
                             padding: const EdgeInsets.symmetric(vertical: 2),
                             child: Row(
                               children: [
                                 Icon(
-                                  LucideIcons.minus,
+                                  LucideIcons.dumbbell,
                                   size: 14,
-                                  color: Colors.red.shade400,
+                                  color: theme.colorScheme.primary,
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    name,
+                                    '${e.name} (${e.muscleGroup})',
                                     style: theme.textTheme.bodySmall,
                                   ),
                                 ),
@@ -690,39 +709,25 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
                       .toList(),
                 ),
               ),
-              const SizedBox(height: 12),
-              Text(
-                'Deseja continuar?',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
             ],
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              // Re-open edit dialog
-              _showEditWorkoutDialogState(context, workout, notifier);
-            },
-            child: const Text('Voltar'),
-          ),
           FilledButton(
             onPressed: () {
+              // Close notice dialog
               Navigator.pop(dialogContext);
-              notifier.updateWorkoutWithExerciseCleanup(
+              // Close edit dialog (which is behind this one)
+              Navigator.pop(context);
+              // Save using updateWorkout (keeps all exercises)
+              notifier.updateWorkout(
                 workoutId: workout.id,
                 label: newLabel,
                 name: newName,
                 muscleGroups: newMuscleGroups,
               );
             },
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.orange,
-            ),
-            child: const Text('Remover e Salvar'),
+            child: const Text('Entendi'),
           ),
         ],
       ),
@@ -1532,14 +1537,34 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
                       final newLabel = labelController.text.trim();
                       final newName = nameController.text.trim();
                       if (newLabel.isNotEmpty && newName.isNotEmpty) {
-                        Navigator.pop(ctx);
-                        notifier.updateWorkout(
-                          workoutId: workout.id,
-                          label: newLabel,
-                          name: newName,
-                          muscleGroups: selectedMuscleGroups,
+                        // Check if any exercises are outside the new muscle groups
+                        final exercisesOutsideGroup = notifier.getExercisesToRemove(
+                          workout.id,
+                          selectedMuscleGroups,
                         );
-                        HapticUtils.lightImpact();
+
+                        if (exercisesOutsideGroup.isNotEmpty) {
+                          // Show informational notice
+                          _showExercisesOutsideGroupNoticeSheet(
+                            ctx,
+                            notifier,
+                            workout.id,
+                            newLabel,
+                            newName,
+                            selectedMuscleGroups,
+                            exercisesOutsideGroup,
+                          );
+                        } else {
+                          // No exercises outside group, save and close
+                          Navigator.pop(ctx);
+                          notifier.updateWorkout(
+                            workoutId: workout.id,
+                            label: newLabel,
+                            name: newName,
+                            muscleGroups: selectedMuscleGroups,
+                          );
+                          HapticUtils.lightImpact();
+                        }
                       }
                     },
                     style: FilledButton.styleFrom(
@@ -1552,6 +1577,113 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// Show notice when exercises are outside the selected muscle groups
+  void _showExercisesOutsideGroupNoticeSheet(
+    BuildContext context,
+    PlanWizardNotifier notifier,
+    String workoutId,
+    String newLabel,
+    String newName,
+    List<String> newMuscleGroups,
+    List<WizardExercise> exercisesOutsideGroup,
+  ) {
+    final groupsOutside = exercisesOutsideGroup
+        .map((e) => e.muscleGroup)
+        .toSet()
+        .join(', ');
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.blue.withAlpha(30),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(LucideIcons.info, color: Colors.blue, size: 18),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(child: Text('Exercícios de outros grupos')),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Este treino possui ${exercisesOutsideGroup.length} exercício(s) de "$groupsOutside" que não fazem parte dos grupos selecionados.',
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Os exercícios serão mantidos no treino.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: exercisesOutsideGroup
+                      .map((e) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  LucideIcons.dumbbell,
+                                  size: 14,
+                                  color: theme.colorScheme.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    '${e.name} (${e.muscleGroup})',
+                                    style: theme.textTheme.bodySmall,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ))
+                      .toList(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () {
+              // Close notice dialog
+              Navigator.pop(dialogContext);
+              // Close the bottom sheet (which is behind this dialog)
+              Navigator.pop(context);
+              // Save using updateWorkout (keeps all exercises)
+              notifier.updateWorkout(
+                workoutId: workoutId,
+                label: newLabel,
+                name: newName,
+                muscleGroups: newMuscleGroups,
+              );
+              HapticUtils.lightImpact();
+            },
+            child: const Text('Entendi'),
+          ),
+        ],
       ),
     );
   }
@@ -2198,7 +2330,8 @@ class _GroupedExerciseItem extends ConsumerWidget {
     int restSeconds = exercise.restSeconds;
     String executionInstructions = exercise.executionInstructions;
     int? isometricSeconds = exercise.isometricSeconds;
-    bool showAdvancedOptions = false;
+    // Execution mode (reps vs isometric vs combined)
+    ExecutionMode executionMode = getInitialExecutionMode(exercise);
 
     final repsController = TextEditingController(text: reps);
     final instructionsController = TextEditingController(text: executionInstructions);
@@ -2326,43 +2459,137 @@ class _GroupedExerciseItem extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Reps
-                Text('Repetições', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                // Execution Mode Toggle
+                Text('Tipo de Execução', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
-                TextField(
-                  controller: repsController,
-                  decoration: InputDecoration(
-                    hintText: 'Ex: 10-12 ou 15',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                SegmentedButton<ExecutionMode>(
+                  segments: [
+                    ButtonSegment(
+                      value: ExecutionMode.reps,
+                      label: Text('Reps', style: TextStyle(color: executionMode == ExecutionMode.reps ? Colors.white : null)),
+                      icon: Icon(LucideIcons.repeat, size: 16, color: executionMode == ExecutionMode.reps ? Colors.white : null),
                     ),
+                    ButtonSegment(
+                      value: ExecutionMode.isometric,
+                      label: Text('Isom.', style: TextStyle(color: executionMode == ExecutionMode.isometric ? Colors.white : null)),
+                      icon: Icon(LucideIcons.timer, size: 16, color: executionMode == ExecutionMode.isometric ? Colors.white : null),
+                    ),
+                    ButtonSegment(
+                      value: ExecutionMode.combined,
+                      label: Text('Comb.', style: TextStyle(color: executionMode == ExecutionMode.combined ? Colors.white : null)),
+                      icon: Icon(LucideIcons.gitMerge, size: 16, color: executionMode == ExecutionMode.combined ? Colors.white : null),
+                    ),
+                  ],
+                  selected: {executionMode},
+                  onSelectionChanged: (selection) {
+                    setState(() {
+                      executionMode = selection.first;
+                      // Reset values based on mode
+                      switch (executionMode) {
+                        case ExecutionMode.reps:
+                          isometricSeconds = null;
+                          if (reps == '1') {
+                            reps = '10-12';
+                            repsController.text = '10-12';
+                          }
+                        case ExecutionMode.isometric:
+                          reps = '1';
+                          repsController.text = '1';
+                          isometricSeconds ??= 30;
+                        case ExecutionMode.combined:
+                          if (reps == '1') {
+                            reps = '10';
+                            repsController.text = '10';
+                          }
+                          isometricSeconds ??= 3;
+                      }
+                    });
+                  },
+                  showSelectedIcon: false,
+                  style: SegmentedButton.styleFrom(
+                    textStyle: const TextStyle(fontSize: 12),
+                    selectedBackgroundColor: AppColors.primary,
                   ),
-                  onChanged: (value) => reps = value,
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  children: ['8-10', '10-12', '12-15', '15', '20'].map((r) {
-                    final isSelected = reps == r;
-                    return ChoiceChip(
-                      label: Text(
-                        r,
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : null,
-                        ),
-                      ),
-                      selected: isSelected,
-                      selectedColor: AppColors.primary,
-                      onSelected: (_) {
-                        setState(() {
-                          reps = r;
-                          repsController.text = r;
-                        });
-                      },
-                    );
-                  }).toList(),
                 ),
                 const SizedBox(height: 16),
+
+                // Reps field (for reps and combined modes)
+                if (executionMode != ExecutionMode.isometric) ...[
+                  Text('Repetições', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: repsController,
+                    keyboardType: TextInputType.text,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9\-]')),
+                    ],
+                    decoration: InputDecoration(
+                      hintText: 'Ex: 10-12 ou 15',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onChanged: (value) => reps = value,
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: ['8-10', '10-12', '12-15', '15', '20'].map((r) {
+                      final isSelected = reps == r;
+                      return ChoiceChip(
+                        label: Text(
+                          r,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : null,
+                          ),
+                        ),
+                        selected: isSelected,
+                        selectedColor: AppColors.primary,
+                        checkmarkColor: Colors.white,
+                        onSelected: (_) {
+                          setState(() {
+                            reps = r;
+                            repsController.text = r;
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Isometric field (for isometric and combined modes)
+                if (executionMode != ExecutionMode.reps) ...[
+                  Text(
+                    executionMode == ExecutionMode.isometric
+                        ? 'Tempo de Sustentação'
+                        : 'Pausa Isométrica (por rep)',
+                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: (executionMode == ExecutionMode.isometric
+                        ? [15, 30, 45, 60, 90]  // Longer durations for pure isometric
+                        : [3, 5, 10, 15]        // Short pauses for combined
+                    ).map((sec) {
+                      final isSelected = isometricSeconds == sec;
+                      return ChoiceChip(
+                        label: Text(
+                          '${sec}s',
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : null,
+                          ),
+                        ),
+                        selected: isSelected,
+                        selectedColor: AppColors.primary,
+                        checkmarkColor: Colors.white,
+                        onSelected: (_) => setState(() => isometricSeconds = sec),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                ],
 
                 // Rest (with note about group behavior)
                 Text('Descanso (segundos)', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
@@ -2441,121 +2668,27 @@ class _GroupedExerciseItem extends ConsumerWidget {
                 ],
                 const SizedBox(height: 16),
 
-                // Advanced Options Toggle (same as simple exercise)
-                InkWell(
-                  onTap: () => setState(() => showAdvancedOptions = !showAdvancedOptions),
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? theme.colorScheme.surfaceContainerLow.withAlpha(150)
-                          : theme.colorScheme.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: showAdvancedOptions
-                            ? techniqueColor.withAlpha(50)
-                            : theme.colorScheme.outline.withValues(alpha: 0.2),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          LucideIcons.settings2,
-                          size: 18,
-                          color: showAdvancedOptions ? techniqueColor : theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Técnicas Avançadas',
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: showAdvancedOptions ? techniqueColor : null,
-                            ),
-                          ),
-                        ),
-                        Icon(
-                          showAdvancedOptions ? LucideIcons.chevronUp : LucideIcons.chevronDown,
-                          size: 18,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                        ),
-                      ],
-                    ),
+                // Execution Instructions (always visible)
+                Text('Instruções de Execução', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                const SizedBox(height: 4),
+                Text(
+                  'Orientações específicas para este exercício no treino',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                 ),
-
-                // Advanced Options Content
-                if (showAdvancedOptions) ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? theme.colorScheme.surfaceContainerLow.withAlpha(100)
-                          : theme.colorScheme.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: theme.colorScheme.outline.withValues(alpha: 0.1),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Isometric Hold - simplified to single row
-                        Text('Isometria', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [0, 15, 30, 45, 60].map((sec) {
-                            final isSelected = (isometricSeconds ?? 0) == sec;
-                            return Expanded(
-                              child: Padding(
-                                padding: EdgeInsets.only(right: sec < 60 ? 8 : 0),
-                                child: ChoiceChip(
-                                  label: Text(
-                                    sec == 0 ? 'Nenhuma' : '${sec}s',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: isSelected ? Colors.white : null,
-                                    ),
-                                  ),
-                                  selected: isSelected,
-                                  selectedColor: techniqueColor,
-                                  padding: EdgeInsets.zero,
-                                  labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                                  onSelected: (_) => setState(() => isometricSeconds = sec == 0 ? null : sec),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Execution Instructions
-                        Text('Instruções de Execução', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Orientações específicas para este exercício no treino',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: instructionsController,
-                          maxLines: 3,
-                          decoration: InputDecoration(
-                            hintText: 'Ex: Manter cotovelos a 45 graus...',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          onChanged: (value) => executionInstructions = value,
-                        ),
-                      ],
+                const SizedBox(height: 8),
+                TextField(
+                  controller: instructionsController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    hintText: 'Ex: Manter cotovelos a 45 graus...',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                ],
+                  onChanged: (value) => executionInstructions = value,
+                ),
                 const SizedBox(height: 24),
 
                 // Save button
@@ -3028,9 +3161,8 @@ class _ExerciseItem extends ConsumerWidget {
 
     final repsController = TextEditingController(text: reps);
     final instructionsController = TextEditingController(text: customInstructions);
-    bool showAdvancedOptions = executionInstructions.isNotEmpty ||
-        isometricSeconds != null ||
-        techniqueType != TechniqueType.normal;
+    // Execution mode (reps vs isometric vs combined)
+    ExecutionMode executionMode = getInitialExecutionMode(exercise);
 
     showModalBottomSheet(
       context: context,
@@ -3122,16 +3254,26 @@ class _ExerciseItem extends ConsumerWidget {
                   Text('Tipo de Treino', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   SegmentedButton<ExerciseMode>(
-                    segments: const [
-                      ButtonSegment(value: ExerciseMode.duration, label: Text('Contínuo')),
-                      ButtonSegment(value: ExerciseMode.interval, label: Text('HIIT')),
-                      ButtonSegment(value: ExerciseMode.distance, label: Text('Distância')),
+                    segments: [
+                      ButtonSegment(
+                        value: ExerciseMode.duration,
+                        label: Text('Contínuo', style: TextStyle(color: exerciseMode == ExerciseMode.duration ? Colors.white : null)),
+                      ),
+                      ButtonSegment(
+                        value: ExerciseMode.interval,
+                        label: Text('HIIT', style: TextStyle(color: exerciseMode == ExerciseMode.interval ? Colors.white : null)),
+                      ),
+                      ButtonSegment(
+                        value: ExerciseMode.distance,
+                        label: Text('Distância', style: TextStyle(color: exerciseMode == ExerciseMode.distance ? Colors.white : null)),
+                      ),
                     ],
                     selected: {exerciseMode},
                     onSelectionChanged: (modes) => setState(() => exerciseMode = modes.first),
                     showSelectedIcon: false,
                     style: SegmentedButton.styleFrom(
                       textStyle: const TextStyle(fontSize: 12),
+                      selectedBackgroundColor: AppColors.primary,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -3144,11 +3286,16 @@ class _ExerciseItem extends ConsumerWidget {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: [15, 20, 30, 45, 60].map((m) => ChoiceChip(
-                      label: Text('$m min'),
-                      selected: durationMinutes == m,
-                      onSelected: (_) => setState(() => durationMinutes = m),
-                    )).toList(),
+                    children: [15, 20, 30, 45, 60].map((m) {
+                      final isSelected = durationMinutes == m;
+                      return ChoiceChip(
+                        label: Text('$m min', style: TextStyle(color: isSelected ? Colors.white : null)),
+                        selected: isSelected,
+                        selectedColor: AppColors.primary,
+                        checkmarkColor: Colors.white,
+                        onSelected: (_) => setState(() => durationMinutes = m),
+                      );
+                    }).toList(),
                   ),
                   const SizedBox(height: 16),
                   Text('Intensidade', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
@@ -3161,11 +3308,16 @@ class _ExerciseItem extends ConsumerWidget {
                       ('moderate', 'Moderada'),
                       ('high', 'Alta'),
                       ('max', 'Máxima'),
-                    ].map((e) => ChoiceChip(
-                      label: Text(e.$2),
-                      selected: intensity == e.$1,
-                      onSelected: (_) => setState(() => intensity = e.$1),
-                    )).toList(),
+                    ].map((e) {
+                      final isSelected = intensity == e.$1;
+                      return ChoiceChip(
+                        label: Text(e.$2, style: TextStyle(color: isSelected ? Colors.white : null)),
+                        selected: isSelected,
+                        selectedColor: AppColors.primary,
+                        checkmarkColor: Colors.white,
+                        onSelected: (_) => setState(() => intensity = e.$1),
+                      );
+                    }).toList(),
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -3177,11 +3329,16 @@ class _ExerciseItem extends ConsumerWidget {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: [20, 30, 40, 45, 60].map((s) => ChoiceChip(
-                      label: Text('${s}s'),
-                      selected: workSeconds == s,
-                      onSelected: (_) => setState(() => workSeconds = s),
-                    )).toList(),
+                    children: [20, 30, 40, 45, 60].map((s) {
+                      final isSelected = workSeconds == s;
+                      return ChoiceChip(
+                        label: Text('${s}s', style: TextStyle(color: isSelected ? Colors.white : null)),
+                        selected: isSelected,
+                        selectedColor: AppColors.primary,
+                        checkmarkColor: Colors.white,
+                        onSelected: (_) => setState(() => workSeconds = s),
+                      );
+                    }).toList(),
                   ),
                   const SizedBox(height: 16),
                   Text('Descanso', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
@@ -3189,11 +3346,16 @@ class _ExerciseItem extends ConsumerWidget {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: [10, 20, 30, 45, 60].map((s) => ChoiceChip(
-                      label: Text('${s}s'),
-                      selected: intervalRestSeconds == s,
-                      onSelected: (_) => setState(() => intervalRestSeconds = s),
-                    )).toList(),
+                    children: [10, 20, 30, 45, 60].map((s) {
+                      final isSelected = intervalRestSeconds == s;
+                      return ChoiceChip(
+                        label: Text('${s}s', style: TextStyle(color: isSelected ? Colors.white : null)),
+                        selected: isSelected,
+                        selectedColor: AppColors.primary,
+                        checkmarkColor: Colors.white,
+                        onSelected: (_) => setState(() => intervalRestSeconds = s),
+                      );
+                    }).toList(),
                   ),
                   const SizedBox(height: 16),
                   Text('Rounds', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
@@ -3201,11 +3363,16 @@ class _ExerciseItem extends ConsumerWidget {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: [6, 8, 10, 12, 15, 20].map((r) => ChoiceChip(
-                      label: Text('$r'),
-                      selected: rounds == r,
-                      onSelected: (_) => setState(() => rounds = r),
-                    )).toList(),
+                    children: [6, 8, 10, 12, 15, 20].map((r) {
+                      final isSelected = rounds == r;
+                      return ChoiceChip(
+                        label: Text('$r', style: TextStyle(color: isSelected ? Colors.white : null)),
+                        selected: isSelected,
+                        selectedColor: AppColors.primary,
+                        checkmarkColor: Colors.white,
+                        onSelected: (_) => setState(() => rounds = r),
+                      );
+                    }).toList(),
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -3217,11 +3384,16 @@ class _ExerciseItem extends ConsumerWidget {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: [3.0, 5.0, 8.0, 10.0, 15.0].map((d) => ChoiceChip(
-                      label: Text('${d.toInt()} km'),
-                      selected: distanceKm == d,
-                      onSelected: (_) => setState(() => distanceKm = d),
-                    )).toList(),
+                    children: [3.0, 5.0, 8.0, 10.0, 15.0].map((d) {
+                      final isSelected = distanceKm == d;
+                      return ChoiceChip(
+                        label: Text('${d.toInt()} km', style: TextStyle(color: isSelected ? Colors.white : null)),
+                        selected: isSelected,
+                        selectedColor: AppColors.primary,
+                        checkmarkColor: Colors.white,
+                        onSelected: (_) => setState(() => distanceKm = d),
+                      );
+                    }).toList(),
                   ),
                   const SizedBox(height: 16),
                   Text('Pace Alvo (min/km)', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
@@ -3277,43 +3449,137 @@ class _ExerciseItem extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Reps
-                Text('Repetições', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                // Execution Mode Toggle
+                Text('Tipo de Execução', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
-                TextField(
-                  controller: repsController,
-                  decoration: InputDecoration(
-                    hintText: 'Ex: 10-12 ou 15',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                SegmentedButton<ExecutionMode>(
+                  segments: [
+                    ButtonSegment(
+                      value: ExecutionMode.reps,
+                      label: Text('Reps', style: TextStyle(color: executionMode == ExecutionMode.reps ? Colors.white : null)),
+                      icon: Icon(LucideIcons.repeat, size: 16, color: executionMode == ExecutionMode.reps ? Colors.white : null),
                     ),
+                    ButtonSegment(
+                      value: ExecutionMode.isometric,
+                      label: Text('Isom.', style: TextStyle(color: executionMode == ExecutionMode.isometric ? Colors.white : null)),
+                      icon: Icon(LucideIcons.timer, size: 16, color: executionMode == ExecutionMode.isometric ? Colors.white : null),
+                    ),
+                    ButtonSegment(
+                      value: ExecutionMode.combined,
+                      label: Text('Comb.', style: TextStyle(color: executionMode == ExecutionMode.combined ? Colors.white : null)),
+                      icon: Icon(LucideIcons.gitMerge, size: 16, color: executionMode == ExecutionMode.combined ? Colors.white : null),
+                    ),
+                  ],
+                  selected: {executionMode},
+                  onSelectionChanged: (selection) {
+                    setState(() {
+                      executionMode = selection.first;
+                      // Reset values based on mode
+                      switch (executionMode) {
+                        case ExecutionMode.reps:
+                          isometricSeconds = null;
+                          if (reps == '1') {
+                            reps = '10-12';
+                            repsController.text = '10-12';
+                          }
+                        case ExecutionMode.isometric:
+                          reps = '1';
+                          repsController.text = '1';
+                          isometricSeconds ??= 30;
+                        case ExecutionMode.combined:
+                          if (reps == '1') {
+                            reps = '10';
+                            repsController.text = '10';
+                          }
+                          isometricSeconds ??= 3;
+                      }
+                    });
+                  },
+                  showSelectedIcon: false,
+                  style: SegmentedButton.styleFrom(
+                    textStyle: const TextStyle(fontSize: 12),
+                    selectedBackgroundColor: AppColors.primary,
                   ),
-                  onChanged: (value) => reps = value,
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  children: ['8-10', '10-12', '12-15', '15', '20'].map((r) {
-                    final isSelected = reps == r;
-                    return ChoiceChip(
-                      label: Text(
-                        r,
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : null,
-                        ),
-                      ),
-                      selected: isSelected,
-                      selectedColor: AppColors.primary,
-                      onSelected: (_) {
-                        setState(() {
-                          reps = r;
-                          repsController.text = r;
-                        });
-                      },
-                    );
-                  }).toList(),
                 ),
                 const SizedBox(height: 16),
+
+                // Reps field (for reps and combined modes)
+                if (executionMode != ExecutionMode.isometric) ...[
+                  Text('Repetições', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: repsController,
+                    keyboardType: TextInputType.text,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9\-]')),
+                    ],
+                    decoration: InputDecoration(
+                      hintText: 'Ex: 10-12 ou 15',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    onChanged: (value) => reps = value,
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: ['8-10', '10-12', '12-15', '15', '20'].map((r) {
+                      final isSelected = reps == r;
+                      return ChoiceChip(
+                        label: Text(
+                          r,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : null,
+                          ),
+                        ),
+                        selected: isSelected,
+                        selectedColor: AppColors.primary,
+                        checkmarkColor: Colors.white,
+                        onSelected: (_) {
+                          setState(() {
+                            reps = r;
+                            repsController.text = r;
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Isometric field (for isometric and combined modes)
+                if (executionMode != ExecutionMode.reps) ...[
+                  Text(
+                    executionMode == ExecutionMode.isometric
+                        ? 'Tempo de Sustentação'
+                        : 'Pausa Isométrica (por rep)',
+                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    children: (executionMode == ExecutionMode.isometric
+                        ? [15, 30, 45, 60, 90]  // Longer durations for pure isometric
+                        : [3, 5, 10, 15]        // Short pauses for combined
+                    ).map((sec) {
+                      final isSelected = isometricSeconds == sec;
+                      return ChoiceChip(
+                        label: Text(
+                          '${sec}s',
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : null,
+                          ),
+                        ),
+                        selected: isSelected,
+                        selectedColor: AppColors.primary,
+                        checkmarkColor: Colors.white,
+                        onSelected: (_) => setState(() => isometricSeconds = sec),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                ],
 
                 // Rest
                 Text('Descanso (segundos)', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
@@ -3362,168 +3628,75 @@ class _ExerciseItem extends ConsumerWidget {
                       ),
                       selected: isSelected,
                       selectedColor: AppColors.primary,
+                      checkmarkColor: Colors.white,
                       onSelected: (_) => setState(() => restSeconds = sec),
                     );
                   }).toList(),
                 ),
                 const SizedBox(height: 16),
 
-                // Advanced Options Toggle (strength mode only)
-                InkWell(
-                  onTap: () => setState(() => showAdvancedOptions = !showAdvancedOptions),
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? theme.colorScheme.surfaceContainerLow.withAlpha(150)
-                          : theme.colorScheme.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: showAdvancedOptions
-                            ? AppColors.primary.withAlpha(50)
-                            : theme.colorScheme.outline.withValues(alpha: 0.2),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          LucideIcons.settings2,
-                          size: 18,
-                          color: showAdvancedOptions ? AppColors.primary : theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Técnicas Avançadas',
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: showAdvancedOptions ? AppColors.primary : null,
-                            ),
-                          ),
-                        ),
-                        Icon(
-                          showAdvancedOptions ? LucideIcons.chevronUp : LucideIcons.chevronDown,
-                          size: 18,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                        ),
-                      ],
-                    ),
+                // Technique-specific controls (always visible)
+                if (techniqueType == TechniqueType.dropset) ...[
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  _buildDropsetControls(
+                    theme,
+                    isDark,
+                    dropCount ?? 3,
+                    restBetweenDrops ?? 0,
+                    (drops, rest) => setState(() {
+                      dropCount = drops;
+                      restBetweenDrops = rest;
+                    }),
+                  ),
+                  const SizedBox(height: 16),
+                ] else if (techniqueType == TechniqueType.restPause) ...[
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  _buildRestPauseControls(
+                    theme,
+                    isDark,
+                    pauseDuration ?? 15,
+                    (pause) => setState(() => pauseDuration = pause),
+                  ),
+                  const SizedBox(height: 16),
+                ] else if (techniqueType == TechniqueType.cluster) ...[
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  _buildClusterControls(
+                    theme,
+                    isDark,
+                    miniSetCount ?? 4,
+                    pauseDuration ?? 10,
+                    (miniSets, pause) => setState(() {
+                      miniSetCount = miniSets;
+                      pauseDuration = pause;
+                    }),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Execution Instructions (always visible)
+                Text('Instruções de Execução', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                const SizedBox(height: 4),
+                Text(
+                  'Orientações específicas para este exercício no treino',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                 ),
-
-                // Advanced Options Content
-                if (showAdvancedOptions) ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? theme.colorScheme.surfaceContainerLow.withAlpha(100)
-                          : theme.colorScheme.surfaceContainerLowest,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: theme.colorScheme.outline.withValues(alpha: 0.1),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Isometric Hold - simplified to single row
-                        Text('Isometria', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [0, 15, 30, 45, 60].map((sec) {
-                            final isSelected = (isometricSeconds ?? 0) == sec;
-                            return Expanded(
-                              child: Padding(
-                                padding: EdgeInsets.only(right: sec < 60 ? 8 : 0),
-                                child: ChoiceChip(
-                                  label: Text(
-                                    sec == 0 ? 'Nenhuma' : '${sec}s',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: isSelected ? Colors.white : null,
-                                    ),
-                                  ),
-                                  selected: isSelected,
-                                  selectedColor: AppColors.primary,
-                                  padding: EdgeInsets.zero,
-                                  labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                                  onSelected: (_) => setState(() => isometricSeconds = sec == 0 ? null : sec),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-
-                        // Technique-specific controls
-                        if (techniqueType == TechniqueType.dropset) ...[
-                          const SizedBox(height: 16),
-                          const Divider(),
-                          const SizedBox(height: 16),
-                          _buildDropsetControls(
-                            theme,
-                            isDark,
-                            dropCount ?? 3,
-                            restBetweenDrops ?? 0,
-                            (drops, rest) => setState(() {
-                              dropCount = drops;
-                              restBetweenDrops = rest;
-                            }),
-                          ),
-                        ] else if (techniqueType == TechniqueType.restPause) ...[
-                          const SizedBox(height: 16),
-                          const Divider(),
-                          const SizedBox(height: 16),
-                          _buildRestPauseControls(
-                            theme,
-                            isDark,
-                            pauseDuration ?? 15,
-                            (pause) => setState(() => pauseDuration = pause),
-                          ),
-                        ] else if (techniqueType == TechniqueType.cluster) ...[
-                          const SizedBox(height: 16),
-                          const Divider(),
-                          const SizedBox(height: 16),
-                          _buildClusterControls(
-                            theme,
-                            isDark,
-                            miniSetCount ?? 4,
-                            pauseDuration ?? 10,
-                            (miniSets, pause) => setState(() {
-                              miniSetCount = miniSets;
-                              pauseDuration = pause;
-                            }),
-                          ),
-                        ],
-                        const SizedBox(height: 16),
-
-                        // Execution Instructions
-                        Text('Instruções de Execução', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Orientações específicas para este exercício no treino',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: instructionsController,
-                          maxLines: 3,
-                          decoration: InputDecoration(
-                            hintText: 'Ex: Manter cotovelos a 45 graus...',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          onChanged: (value) => executionInstructions = value,
-                        ),
-                      ],
+                const SizedBox(height: 8),
+                TextField(
+                  controller: instructionsController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    hintText: 'Ex: Manter cotovelos a 45 graus...',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                ],
+                  onChanged: (value) => executionInstructions = value,
+                ),
                 ], // End of strength mode controls
 
                 const SizedBox(height: 24),
@@ -3660,6 +3833,7 @@ class _ExerciseItem extends ConsumerWidget {
               ),
               selected: isSelected,
               selectedColor: techniqueColor,
+              checkmarkColor: Colors.white,
               onSelected: (_) => onChanged(value, restBetweenDrops),
             );
           }).toList(),
@@ -3681,6 +3855,7 @@ class _ExerciseItem extends ConsumerWidget {
               ),
               selected: isSelected,
               selectedColor: techniqueColor,
+              checkmarkColor: Colors.white,
               onSelected: (_) => onChanged(dropCount, value),
             );
           }).toList(),
@@ -3730,6 +3905,7 @@ class _ExerciseItem extends ConsumerWidget {
               ),
               selected: isSelected,
               selectedColor: techniqueColor,
+              checkmarkColor: Colors.white,
               onSelected: (_) => onChanged(value),
             );
           }).toList(),
@@ -3780,6 +3956,7 @@ class _ExerciseItem extends ConsumerWidget {
               ),
               selected: isSelected,
               selectedColor: techniqueColor,
+              checkmarkColor: Colors.white,
               onSelected: (_) => onChanged(value, pauseDuration),
             );
           }).toList(),
@@ -3801,6 +3978,7 @@ class _ExerciseItem extends ConsumerWidget {
               ),
               selected: isSelected,
               selectedColor: techniqueColor,
+              checkmarkColor: Colors.white,
               onSelected: (_) => onChanged(miniSetCount, value),
             );
           }).toList(),

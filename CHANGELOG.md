@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-01-20
+
+### Added
+- **ExecutionMode Toggle** for exercise configuration
+  - Three modes: Repetições (Reps), Isometria (Isometric), Combinado (Combined)
+  - Automatic mode detection when editing existing exercises
+  - Mode-specific fields: reps for strength, time for isometric, both for combined
+  - Different time presets: 15-90s for pure isometric, 3-15s for combined pause
+
+- **Exercise Group Notification** when changing workout muscle groups
+  - Shows informational alert when workout has exercises from other muscle groups
+  - Lists exercises that don't match the new muscle group selection
+  - Exercises are kept (not deleted) - just informational notice
+
+- **Auto-switch to "Personalizado"** split type
+  - Automatically changes training type to "Personalizado" when user modifies workouts
+  - Triggered by: adding/removing workouts, adding/removing exercises
+
+### Fixed
+- **White text/icons on selected chips** in light mode
+  - SegmentedButton now shows white text and icons when selected (on blue background)
+  - All ChoiceChips now have white checkmarks when selected
+  - Fixed ExecutionMode toggle, ExerciseMode toggle, and all technique controls
+
 ## [1.4.1] - 2026-01-19
 
 ### Added
