@@ -37,7 +37,7 @@ final filteredExercisesProvider = FutureProvider<List<Exercise>>((ref) async {
   final data = await service.getExercises(
     muscleGroup: muscleGroup?.name,
     query: query.isNotEmpty ? query : null,
-    limit: 100,
+    limit: 200,
   );
 
   return data.map((json) => _parseExercise(json)).toList();
@@ -47,7 +47,7 @@ final filteredExercisesProvider = FutureProvider<List<Exercise>>((ref) async {
 final exercisesByMuscleGroupProvider = FutureProvider<Map<MuscleGroup, List<Exercise>>>((ref) async {
   final service = ref.read(workoutServiceProvider);
 
-  final data = await service.getExercises(limit: 100);
+  final data = await service.getExercises(limit: 200);
   final exercises = data.map((json) => _parseExercise(json)).toList();
 
   final grouped = <MuscleGroup, List<Exercise>>{};
