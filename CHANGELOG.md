@@ -78,6 +78,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 7-day recovery period before permanent deletion
   - Automatic refresh of memberships after deletion
 
+- **LEGS Muscle Group Support**
+  - Extended `MuscleGroupParsing` to map API leg subgroups (quadriceps, hamstrings, calves) to generic `legs`
+  - Flutter app now correctly displays all leg exercises under "Pernas" category
+
 - **Muscle Group Validation for Techniques**
   - Super-Set now requires antagonist muscle groups (blocks same group)
   - Bi-Set/Tri-Set/Giant Set block antagonist muscles (only allow same area)
