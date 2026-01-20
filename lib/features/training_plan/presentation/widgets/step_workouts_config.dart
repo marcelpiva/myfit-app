@@ -2249,7 +2249,7 @@ class _GroupedExerciseItem extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        muscleGroup,
+                        muscleGroup.toMuscleGroup().displayName,
                         style: theme.textTheme.labelMedium?.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,
@@ -3030,7 +3030,7 @@ class _ExerciseItem extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        muscleGroup,
+                        muscleGroup.toMuscleGroup().displayName,
                         style: theme.textTheme.labelMedium?.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,
@@ -3240,7 +3240,7 @@ class _ExerciseItem extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      exercise.muscleGroup,
+                      exercise.muscleGroup.toMuscleGroup().displayName,
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: AppColors.primary,
                       ),
@@ -4665,10 +4665,10 @@ class _ExerciseItem extends ConsumerWidget {
     final isCardio = ExerciseTheme.isCardioExercise(exercise.muscleGroup);
     final modeColor = ExerciseTheme.getModeColor(exercise.exerciseMode);
 
-    // Determine the accent color: technique > cardio mode > neutral
+    // Determine the accent color: technique > cardio mode > simple (all use their theme color)
     final accentColor = hasTechnique
         ? techniqueColor
-        : (isCardio ? modeColor : theme.colorScheme.outline.withValues(alpha: 0.3));
+        : (isCardio ? modeColor : techniqueColor);
 
     return Container(
         margin: const EdgeInsets.only(bottom: 8),
@@ -4692,9 +4692,7 @@ class _ExerciseItem extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: hasTechnique
-                    ? techniqueColor.withValues(alpha: 0.15)
-                    : (isCardio ? modeColor.withValues(alpha: 0.15) : theme.colorScheme.outlineVariant.withValues(alpha: 0.2)),
+                color: accentColor.withValues(alpha: 0.15),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(8),
                   topRight: Radius.circular(8),
@@ -4707,19 +4705,15 @@ class _ExerciseItem extends ConsumerWidget {
                         ? ExerciseTheme.getIcon(exercise.techniqueType)
                         : (isCardio ? ExerciseTheme.getModeIcon(exercise.exerciseMode) : LucideIcons.dumbbell),
                     size: 14,
-                    color: hasTechnique
-                        ? techniqueColor
-                        : (isCardio ? modeColor : theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+                    color: accentColor,
                   ),
                   const SizedBox(width: 6),
                   Text(
                     hasTechnique
                         ? exercise.techniqueType.displayName
-                        : (isCardio ? exercise.exerciseMode.displayName : 'Exercício'),
+                        : (isCardio ? exercise.exerciseMode.displayName : 'Exercício Simples'),
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: hasTechnique
-                          ? techniqueColor
-                          : (isCardio ? modeColor : theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+                      color: accentColor,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

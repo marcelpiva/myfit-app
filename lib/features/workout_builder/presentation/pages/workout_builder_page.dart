@@ -594,7 +594,7 @@ class _WorkoutBuilderPageState extends ConsumerState<WorkoutBuilderPage> {
                         ),
                       ),
                       Text(
-                        exercise.muscleGroup,
+                        exercise.muscleGroup.toMuscleGroup().displayName,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -1109,7 +1109,7 @@ class _ExerciseEditSheetState extends State<_ExerciseEditSheet> {
               ),
             ),
             Text(
-              widget.exercise.muscleGroup,
+              widget.exercise.muscleGroup.toMuscleGroup().displayName,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

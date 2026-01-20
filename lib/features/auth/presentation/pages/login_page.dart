@@ -59,7 +59,6 @@ class _LoginPageState extends ConsumerState<LoginPage>
   }
 
   Future<void> _login() async {
-    // Validate inputs
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
@@ -85,7 +84,6 @@ class _LoginPageState extends ConsumerState<LoginPage>
       setState(() => _loading = false);
 
       if (success) {
-        // Check if we should prompt for biometric setup
         await _checkBiometricSetup(email, password);
         if (mounted) {
           context.go(RouteNames.orgSelector);
@@ -208,6 +206,14 @@ class _LoginPageState extends ConsumerState<LoginPage>
     }
   }
 
+  /// Get dynamic welcome title based on biometric status
+  String _getWelcomeTitle(bool hasBiometricCredentials) {
+    if (hasBiometricCredentials) {
+      return 'Bem-vindo\nde volta';
+    }
+    return 'Entrar';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -215,6 +221,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -239,298 +246,287 @@ class _LoginPageState extends ConsumerState<LoginPage>
             opacity: _fadeAnimation,
             child: SlideTransition(
               position: _slideAnimation,
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 16),
-
-                      // Back button
-                      GestureDetector(
-                        onTap: () {
-                          HapticUtils.lightImpact();
-                          context.go(RouteNames.welcome);
-                        },
-                        child: Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: isDark ? AppColors.cardDark : AppColors.card,
-                            border: Border.all(
-                              color: isDark ? AppColors.borderDark : AppColors.border,
-                            ),
-                          ),
-                          child: Icon(
-                            LucideIcons.arrowLeft,
-                            size: 20,
-                            color: isDark
-                                ? AppColors.foregroundDark
-                                : AppColors.foreground,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 40),
-
-                      // Header
-                      Text(
-                        'Bem-vindo\nde volta',
-                        style: theme.textTheme.displayLarge?.copyWith(
-                          height: 1.1,
-                          letterSpacing: -1,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      Text(
-                        l10n.loginSubtitle,
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: isDark
-                              ? AppColors.mutedForegroundDark
-                              : AppColors.mutedForeground,
-                        ),
-                      ),
-
-                      const SizedBox(height: 48),
-
-                      // Form card
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          color: isDark
-                              ? AppColors.cardDark.withAlpha(150)
-                              : AppColors.card.withAlpha(200),
-                          border: Border.all(
-                            color: isDark ? AppColors.borderDark : AppColors.border,
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            // Email
-                            AppTextField(
-                              controller: _emailController,
-                              focusNode: _emailFocus,
-                              label: l10n.email,
-                              hint: l10n.emailHint,
-                              keyboardType: TextInputType.emailAddress,
-                              textInputAction: TextInputAction.next,
-                              onSubmitted: (_) => _passwordFocus.requestFocus(),
-                            ),
-
-                            const SizedBox(height: 20),
-
-                            // Password
-                            AppPasswordField(
-                              controller: _passwordController,
-                              focusNode: _passwordFocus,
-                              label: l10n.password,
-                              textInputAction: TextInputAction.done,
-                              onSubmitted: (_) => _login(),
-                            ),
-
-                            const SizedBox(height: 12),
-
-                            // Forgot password
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: GestureDetector(
-                                onTap: () {
-                                  HapticUtils.lightImpact();
-                                  context.push(RouteNames.forgotPassword);
-                                },
-                                child: Text(
-                                  l10n.forgotPassword,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: AppColors.primary,
-                                  ),
-                                ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  children: [
+                    // Top section with back button
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            HapticUtils.lightImpact();
+                            context.go(RouteNames.welcome);
+                          },
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              color: isDark ? AppColors.cardDark : AppColors.card,
+                              border: Border.all(
+                                color: isDark ? AppColors.borderDark : AppColors.border,
                               ),
                             ),
-                          ],
+                            child: Icon(
+                              LucideIcons.arrowLeft,
+                              size: 20,
+                              color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
+                    ),
 
-                      const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-                      // Login button
-                      PrimaryButton(
-                        label: l10n.signIn,
-                        loading: _loading,
-                        onPressed: _login,
-                      ),
-
-                      // Biometric login button (only shows if available and enabled)
-                      Consumer(
+                    // Header - dynamic based on biometric
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Consumer(
                         builder: (context, ref, _) {
-                          final biometricAvailable = ref.watch(biometricAvailableProvider);
                           final biometricEnabled = ref.watch(biometricEnabledProvider);
+                          final hasBiometric = biometricEnabled.valueOrNull ?? false;
 
-                          return biometricAvailable.when(
-                            data: (available) {
-                              if (!available) return const SizedBox.shrink();
-
-                              return biometricEnabled.when(
-                                data: (enabled) {
-                                  if (!enabled) return const SizedBox.shrink();
-
-                                  final biometricLabel = ref.watch(biometricLabelProvider);
-
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 16),
-                                    child: OutlinedButton.icon(
-                                      onPressed: _loading ? null : _loginWithBiometric,
-                                      style: OutlinedButton.styleFrom(
-                                        minimumSize: const Size(double.infinity, 52),
-                                        side: BorderSide(
-                                          color: AppColors.primary,
-                                          width: 1.5,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
-                                        ),
-                                      ),
-                                      icon: Icon(
-                                        PlatformUtils.isIOS
-                                            ? LucideIcons.scanFace
-                                            : LucideIcons.fingerprint,
-                                        color: AppColors.primary,
-                                      ),
-                                      label: Text(
-                                        biometricLabel.when(
-                                          data: (label) => 'Entrar com $label',
-                                          loading: () => 'Entrar com biometria',
-                                          error: (_, __) => 'Entrar com biometria',
-                                        ),
-                                        style: TextStyle(
-                                          color: AppColors.primary,
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                                loading: () => const SizedBox.shrink(),
-                                error: (_, __) => const SizedBox.shrink(),
-                              );
-                            },
-                            loading: () => const SizedBox.shrink(),
-                            error: (_, __) => const SizedBox.shrink(),
+                          return Text(
+                            _getWelcomeTitle(hasBiometric),
+                            style: theme.textTheme.headlineLarge?.copyWith(
+                              height: 1.1,
+                              letterSpacing: -0.5,
+                              fontWeight: FontWeight.w700,
+                            ),
                           );
                         },
                       ),
+                    ),
 
-                      const SizedBox(height: 32),
+                    const SizedBox(height: 8),
 
-                      // Divider
-                      Row(
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        l10n.loginSubtitle,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Form card
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: isDark
+                            ? AppColors.cardDark.withAlpha(150)
+                            : AppColors.card.withAlpha(200),
+                        border: Border.all(
+                          color: isDark ? AppColors.borderDark : AppColors.border,
+                        ),
+                      ),
+                      child: Column(
                         children: [
-                          Expanded(
-                            child: Container(
-                              height: 1,
-                              color: isDark ? AppColors.borderDark : AppColors.border,
-                            ),
+                          AppTextField(
+                            controller: _emailController,
+                            focusNode: _emailFocus,
+                            label: l10n.email,
+                            hint: l10n.emailHint,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            onSubmitted: (_) => _passwordFocus.requestFocus(),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Text(
-                              l10n.or,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: isDark
-                                    ? AppColors.mutedForegroundDark
-                                    : AppColors.mutedForeground,
-                              ),
-                            ),
+                          const SizedBox(height: 16),
+                          AppPasswordField(
+                            controller: _passwordController,
+                            focusNode: _passwordFocus,
+                            label: l10n.password,
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (_) => _login(),
                           ),
-                          Expanded(
-                            child: Container(
-                              height: 1,
-                              color: isDark ? AppColors.borderDark : AppColors.border,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // Social buttons
-                      SocialButton.google(
-                        label: l10n.continueWithGoogle,
-                        onTap: () {
-                          HapticUtils.lightImpact();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text('Login com Google em desenvolvimento'),
-                              backgroundColor: AppColors.primary,
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      SocialButton.apple(
-                        label: l10n.continueWithApple,
-                        onTap: () {
-                          HapticUtils.lightImpact();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text('Login com Apple em desenvolvimento'),
-                              backgroundColor: AppColors.primary,
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 48),
-
-                      // Sign up link
-                      Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              l10n.dontHaveAccount,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: isDark
-                                    ? AppColors.mutedForegroundDark
-                                    : AppColors.mutedForeground,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            GestureDetector(
+                          const SizedBox(height: 8),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: GestureDetector(
                               onTap: () {
                                 HapticUtils.lightImpact();
-                                context.go(RouteNames.register);
+                                context.push(RouteNames.forgotPassword);
                               },
                               child: Text(
-                                l10n.createAccount,
+                                l10n.forgotPassword,
                                 style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
                                   color: AppColors.primary,
                                 ),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
+                    ),
 
-                      const SizedBox(height: 32),
-                    ],
-                  ),
+                    const SizedBox(height: 20),
+
+                    // Login button
+                    PrimaryButton(
+                      label: l10n.signIn,
+                      loading: _loading,
+                      onPressed: _login,
+                    ),
+
+                    // Biometric login button
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final biometricAvailable = ref.watch(biometricAvailableProvider);
+                        final biometricEnabled = ref.watch(biometricEnabledProvider);
+
+                        return biometricAvailable.when(
+                          data: (available) {
+                            if (!available) return const SizedBox.shrink();
+
+                            return biometricEnabled.when(
+                              data: (enabled) {
+                                if (!enabled) return const SizedBox.shrink();
+
+                                final biometricLabel = ref.watch(biometricLabelProvider);
+
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 12),
+                                  child: OutlinedButton.icon(
+                                    onPressed: _loading ? null : _loginWithBiometric,
+                                    style: OutlinedButton.styleFrom(
+                                      minimumSize: const Size(double.infinity, 48),
+                                      side: BorderSide(color: AppColors.primary, width: 1.5),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    icon: Icon(
+                                      PlatformUtils.isIOS ? LucideIcons.scanFace : LucideIcons.fingerprint,
+                                      color: AppColors.primary,
+                                    ),
+                                    label: Text(
+                                      biometricLabel.when(
+                                        data: (label) => 'Entrar com $label',
+                                        loading: () => 'Entrar com biometria',
+                                        error: (_, __) => 'Entrar com biometria',
+                                      ),
+                                      style: TextStyle(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              loading: () => const SizedBox.shrink(),
+                              error: (_, __) => const SizedBox.shrink(),
+                            );
+                          },
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, __) => const SizedBox.shrink(),
+                        );
+                      },
+                    ),
+
+                    const Spacer(),
+
+                    // Divider
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            height: 1,
+                            color: isDark ? AppColors.borderDark : AppColors.border,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            l10n.or,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            height: 1,
+                            color: isDark ? AppColors.borderDark : AppColors.border,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Social buttons
+                    SocialButton.google(
+                      label: l10n.continueWithGoogle,
+                      onTap: () {
+                        HapticUtils.lightImpact();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Login com Google em desenvolvimento'),
+                            backgroundColor: AppColors.primary,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    SocialButton.apple(
+                      label: l10n.continueWithApple,
+                      onTap: () {
+                        HapticUtils.lightImpact();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Login com Apple em desenvolvimento'),
+                            backgroundColor: AppColors.primary,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Sign up link
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          l10n.dontHaveAccount,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: () {
+                            HapticUtils.lightImpact();
+                            context.go(RouteNames.register);
+                          },
+                          child: Text(
+                            l10n.createAccount,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+                  ],
                 ),
               ),
             ),

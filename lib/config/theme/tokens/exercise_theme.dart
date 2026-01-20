@@ -13,7 +13,7 @@ abstract class ExerciseTheme {
   /// Standard colors for each technique type.
   /// Use these consistently across all exercise displays.
   static const Map<TechniqueType, Color> techniqueColors = {
-    TechniqueType.normal: Color(0xFF10B981), // Emerald
+    TechniqueType.normal: Color(0xFF64748B), // Slate (neutral for simple exercises)
     TechniqueType.superset: Color(0xFF9333EA), // Purple
     TechniqueType.biset: Color(0xFFEC4899), // Pink
     TechniqueType.triset: Color(0xFFF97316), // Orange

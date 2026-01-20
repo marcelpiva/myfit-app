@@ -7,6 +7,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../shared/presentation/components/animations/fade_in_up.dart';
 import '../../../workout/presentation/providers/workout_provider.dart';
+import '../../domain/models/exercise.dart';
 
 /// Page for browsing and selecting workout templates
 class WorkoutTemplatesPage extends ConsumerStatefulWidget {
@@ -1212,7 +1213,7 @@ class _WorkoutTemplatesPageState extends ConsumerState<WorkoutTemplatesPage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          muscle,
+                          muscle.toMuscleGroup().displayName,
                           style: theme.textTheme.bodySmall?.copyWith(
                             fontWeight: FontWeight.w500,
                             color: isDark ? AppColors.primaryDark : AppColors.primary,
