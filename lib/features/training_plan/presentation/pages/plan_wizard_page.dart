@@ -20,11 +20,22 @@ import '../widgets/template_browser_sheet.dart';
 class PlanWizardPage extends ConsumerStatefulWidget {
   final String? studentId;
   final String? planId;
+  final String? basePlanId; // For periodization: the source plan to base new plan on
+  final String? phaseType; // For periodization: 'progress', 'deload', or 'new_cycle'
 
-  const PlanWizardPage({super.key, this.studentId, this.planId});
+  const PlanWizardPage({
+    super.key,
+    this.studentId,
+    this.planId,
+    this.basePlanId,
+    this.phaseType,
+  });
 
   /// Check if this is an edit operation
   bool get isEditing => planId != null;
+
+  /// Check if this is a periodization operation
+  bool get isPeriodization => basePlanId != null && phaseType != null;
 
   @override
   ConsumerState<PlanWizardPage> createState() => _PlanWizardPageState();
@@ -42,6 +53,18 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
         ref.read(planWizardProvider.notifier).loadPlanForEdit(widget.planId!);
         // Jump to step 1 (skip method selection in edit mode)
         _pageController.jumpToPage(1);
+      }
+      // Load program for periodization if basePlanId and phaseType are provided
+      else if (widget.isPeriodization) {
+        final phase = widget.phaseType!.toPeriodizationPhase();
+        if (phase != null) {
+          ref.read(planWizardProvider.notifier).loadPlanForPeriodization(
+            widget.basePlanId!,
+            phase,
+          );
+          // Jump to step 1 (skip method selection in periodization mode)
+          _pageController.jumpToPage(1);
+        }
       }
       // Set student ID if provided
       if (widget.studentId != null) {
@@ -343,7 +366,7 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            state.isEditing ? 'Editar Plano' : 'Criar Plano',
+                            _getPageTitle(state),
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
@@ -508,6 +531,16 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
         ),
       ),
     );
+  }
+
+  String _getPageTitle(PlanWizardState state) {
+    if (state.isEditing) {
+      return 'Editar Plano';
+    }
+    if (state.phaseType != null) {
+      return state.phaseType!.displayName;
+    }
+    return 'Criar Plano';
   }
 
   String _getStepTitle(int step) {

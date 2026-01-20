@@ -1,0 +1,569 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+
+import '../../../../config/theme/app_colors.dart';
+import '../../../../core/services/workout_service.dart';
+import '../../../../core/utils/haptic_utils.dart';
+import '../providers/student_plans_provider.dart';
+
+/// Provider for trainer's plans list
+final trainerPlansListProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+  final service = WorkoutService();
+  final plans = await service.getPlans();
+  return plans;
+});
+
+/// Sheet for assigning an existing plan to a student
+class AssignExistingPlanSheet extends ConsumerStatefulWidget {
+  final String studentUserId;
+  final String studentName;
+
+  const AssignExistingPlanSheet({
+    super.key,
+    required this.studentUserId,
+    required this.studentName,
+  });
+
+  @override
+  ConsumerState<AssignExistingPlanSheet> createState() => _AssignExistingPlanSheetState();
+}
+
+class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanSheet> {
+  final _workoutService = WorkoutService();
+  final _searchController = TextEditingController();
+
+  String? _selectedPlanId;
+  String? _selectedPlanName;
+  DateTime _startDate = DateTime.now();
+  DateTime? _endDate;
+  bool _isLoading = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _assignPlan() async {
+    if (_selectedPlanId == null) return;
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      await _workoutService.createPlanAssignment(
+        planId: _selectedPlanId!,
+        studentId: widget.studentUserId,
+        startDate: _startDate,
+        endDate: _endDate,
+      );
+
+      // Refresh student plans
+      ref.invalidate(studentPlansProvider(widget.studentUserId));
+
+      if (mounted) {
+        Navigator.pop(context, true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(LucideIcons.checkCircle, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text('$_selectedPlanName atribuído a ${widget.studentName}'),
+                ),
+              ],
+            ),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final plansAsync = ref.watch(trainerPlansListProvider);
+    final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.8,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.backgroundDark : AppColors.background,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          // Handle
+          Center(
+            child: Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.borderDark : AppColors.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withAlpha(isDark ? 30 : 20),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    LucideIcons.fileSymlink,
+                    color: AppColors.primary,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Atribuir Plano Existente',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Para ${widget.studentName}',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: isDark
+                              ? AppColors.mutedForegroundDark
+                              : AppColors.mutedForeground,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(LucideIcons.x),
+                ),
+              ],
+            ),
+          ),
+
+          // Error message
+          if (_error != null)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.destructive.withAlpha(20),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    LucideIcons.alertCircle,
+                    color: AppColors.destructive,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _error!,
+                      style: TextStyle(color: AppColors.destructive),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          // Search
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Buscar plano...',
+                prefixIcon: const Icon(LucideIcons.search, size: 20),
+                filled: true,
+                fillColor: isDark ? AppColors.cardDark : AppColors.card,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+          ),
+
+          // Plans list
+          Expanded(
+            child: plansAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      LucideIcons.alertCircle,
+                      size: 48,
+                      color: AppColors.destructive,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Erro ao carregar planos',
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton.icon(
+                      onPressed: () => ref.invalidate(trainerPlansListProvider),
+                      icon: const Icon(LucideIcons.refreshCw, size: 16),
+                      label: const Text('Tentar novamente'),
+                    ),
+                  ],
+                ),
+              ),
+              data: (plans) {
+                // Filter plans by search
+                final search = _searchController.text.toLowerCase();
+                final filteredPlans = search.isEmpty
+                    ? plans
+                    : plans.where((p) {
+                        final name = (p['name'] as String? ?? '').toLowerCase();
+                        final objective = (p['objective'] as String? ?? '').toLowerCase();
+                        return name.contains(search) || objective.contains(search);
+                      }).toList();
+
+                if (filteredPlans.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          LucideIcons.clipboardList,
+                          size: 48,
+                          color: isDark
+                              ? AppColors.mutedForegroundDark
+                              : AppColors.mutedForeground,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          search.isEmpty
+                              ? 'Nenhum plano criado'
+                              : 'Nenhum plano encontrado',
+                          style: theme.textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          search.isEmpty
+                              ? 'Crie um plano primeiro para atribuir'
+                              : 'Tente uma busca diferente',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: isDark
+                                ? AppColors.mutedForegroundDark
+                                : AppColors.mutedForeground,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: filteredPlans.length,
+                  itemBuilder: (context, index) {
+                    final plan = filteredPlans[index];
+                    final planId = plan['id'] as String;
+                    final planName = plan['name'] as String? ?? 'Plano sem nome';
+                    final objective = plan['objective'] as String?;
+                    final difficulty = plan['difficulty'] as String?;
+                    final workoutsCount = (plan['workouts'] as List?)?.length ?? 0;
+                    final isSelected = _selectedPlanId == planId;
+
+                    return GestureDetector(
+                      onTap: () {
+                        HapticUtils.selectionClick();
+                        setState(() {
+                          _selectedPlanId = planId;
+                          _selectedPlanName = planName;
+                        });
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppColors.primary.withAlpha(isDark ? 30 : 20)
+                              : (isDark ? AppColors.cardDark : AppColors.card),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.primary
+                                : (isDark ? AppColors.borderDark : AppColors.border),
+                            width: isSelected ? 2 : 1,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withAlpha(isDark ? 30 : 20),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                LucideIcons.clipboardList,
+                                color: AppColors.primary,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    planName,
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  if (objective != null)
+                                    Text(
+                                      objective,
+                                      style: theme.textTheme.bodySmall?.copyWith(
+                                        color: isDark
+                                            ? AppColors.mutedForegroundDark
+                                            : AppColors.mutedForeground,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      if (difficulty != null) ...[
+                                        _PlanChip(
+                                          label: difficulty,
+                                          isDark: isDark,
+                                        ),
+                                        const SizedBox(width: 8),
+                                      ],
+                                      _PlanChip(
+                                        label: '$workoutsCount treino${workoutsCount == 1 ? '' : 's'}',
+                                        isDark: isDark,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (isSelected)
+                              Icon(
+                                LucideIcons.checkCircle,
+                                color: AppColors.primary,
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+
+          // Date selection
+          if (_selectedPlanId != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _DateField(
+                      label: 'Início',
+                      date: _startDate,
+                      isDark: isDark,
+                      onTap: () async {
+                        final date = await showDatePicker(
+                          context: context,
+                          initialDate: _startDate,
+                          firstDate: DateTime.now().subtract(const Duration(days: 30)),
+                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                        );
+                        if (date != null) {
+                          setState(() => _startDate = date);
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _DateField(
+                      label: 'Fim (opcional)',
+                      date: _endDate,
+                      isDark: isDark,
+                      onTap: () async {
+                        final date = await showDatePicker(
+                          context: context,
+                          initialDate: _endDate ?? _startDate.add(const Duration(days: 30)),
+                          firstDate: _startDate,
+                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                        );
+                        setState(() => _endDate = date);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          // Action button
+          Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 16 + bottomPadding),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _selectedPlanId != null && !_isLoading
+                    ? _assignPlan
+                    : null,
+                icon: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(LucideIcons.checkCircle, size: 20),
+                label: Text(_isLoading ? 'Atribuindo...' : 'Atribuir Plano'),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PlanChip extends StatelessWidget {
+  final String label;
+  final bool isDark;
+
+  const _PlanChip({
+    required this.label,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.mutedDark : AppColors.muted,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+        ),
+      ),
+    );
+  }
+}
+
+class _DateField extends StatelessWidget {
+  final String label;
+  final DateTime? date;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _DateField({
+    required this.label,
+    required this.date,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: () {
+        HapticUtils.selectionClick();
+        onTap();
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : AppColors.card,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.border,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(
+                  LucideIcons.calendar,
+                  size: 16,
+                  color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  date != null
+                      ? '${date!.day.toString().padLeft(2, '0')}/${date!.month.toString().padLeft(2, '0')}/${date!.year}'
+                      : '-',
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -67,6 +67,11 @@ dependencies:
   # URL launcher
   url_launcher: ^6.3.1
 
+  # PDF Generation & Sharing
+  pdf: ^3.10.0
+  printing: ^5.11.0
+  share_plus: ^10.0.0
+
   # Video player
   video_player: ^2.9.2
   chewie: ^1.8.5

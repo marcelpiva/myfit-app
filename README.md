@@ -1,6 +1,6 @@
 # MyFit App
 
-[![Version](https://img.shields.io/badge/version-1.4.1-blue.svg)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](./CHANGELOG.md)
 [![Flutter](https://img.shields.io/badge/Flutter-3.10+-02569B.svg?logo=flutter)](https://flutter.dev)
 [![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20Android%20%7C%20Web-lightgrey.svg)](https://flutter.dev/multi-platform)
 [![Tests](https://img.shields.io/badge/tests-150+-green.svg)]()
@@ -13,9 +13,14 @@ Aplicativo Flutter multiplataforma para a plataforma MyFit.
 - Workout plan management
 - **Advanced Training Techniques** - Bi-Set, Tri-Set, Giant Set, Drop Set, Rest-Pause, Cluster
 - **Exercise Group Management** - Create, edit, reorder, and manage exercise groups
+- **Periodization Flow** - Progress, deload, and new cycle phases for training plans
 - Nutrition tracking
+- **Student Diet Management** - View student diet plans, macros, and meal history
 - Progress photos and measurements
+- **Photo Gallery & Comparison** - Full-screen gallery with Before/After comparison
 - Real-time chat
+- **Trainer Communication** - Schedule sessions, add student notes
+- **PDF Reports** - Generate and share student progress reports
 - Check-in via QR Code (iOS/Android)
 - Gamification system
 - **PWA Support** - Installable web app

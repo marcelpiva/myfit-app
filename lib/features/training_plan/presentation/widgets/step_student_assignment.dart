@@ -45,7 +45,39 @@ class StepStudentAssignment extends ConsumerWidget {
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+
+          // Pre-selected student banner
+          if (state.studentId != null)
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.success.withAlpha(isDark ? 30 : 20),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: AppColors.success.withAlpha(isDark ? 60 : 40),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    LucideIcons.userCheck,
+                    size: 20,
+                    color: AppColors.success,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Aluno pré-selecionado. Você pode alterar ou pular esta etapa.',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
           // Skip option
           GestureDetector(
@@ -209,7 +241,8 @@ class StepStudentAssignment extends ConsumerWidget {
 
               return Column(
                 children: students.map((student) {
-                  final studentId = student['id'] as String?;
+                  // IMPORTANT: Use user_id (the actual user ID), not id (membership ID)
+                  final studentId = student['user_id'] as String?;
                   final studentName = student['name'] as String? ?? 'Aluno';
                   final studentEmail = student['email'] as String?;
                   final avatarUrl = student['avatar_url'] as String?;

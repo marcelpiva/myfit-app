@@ -55,6 +55,7 @@ import '../../features/gym_home/presentation/pages/gym_home_page.dart';
 import '../../features/auth/presentation/pages/invite_accept_page.dart';
 import '../../features/trainer_workout/presentation/pages/students_list_page.dart';
 import '../../features/trainer_workout/presentation/pages/student_workouts_page.dart';
+import '../../features/students/presentation/pages/student_detail_page.dart';
 import '../../features/trainer_workout/presentation/pages/trainer_student_progress_page.dart';
 import '../../features/trainer_workout/presentation/pages/trainer_plans_page.dart';
 import '../../features/schedule/presentation/pages/schedule_page.dart';
@@ -239,7 +240,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final studentId = state.uri.queryParameters['studentId'];
           final planId = state.uri.queryParameters['edit'];
-          return PlanWizardPage(studentId: studentId, planId: planId);
+          final basePlanId = state.uri.queryParameters['basePlanId'];
+          final phaseType = state.uri.queryParameters['phaseType'];
+          return PlanWizardPage(
+            studentId: studentId,
+            planId: planId,
+            basePlanId: basePlanId,
+            phaseType: phaseType,
+          );
         },
       ),
       GoRoute(
@@ -421,6 +429,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: RouteNames.students,
         name: 'students',
         builder: (context, state) => const StudentsListPage(),
+      ),
+      GoRoute(
+        path: '/students/:studentId/detail',
+        name: 'student-detail',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return StudentDetailPage(
+            studentId: state.pathParameters['studentId'] ?? '',
+            studentUserId: extra['studentUserId'] as String? ?? '',
+            studentName: extra['studentName'] as String? ?? 'Aluno',
+            studentEmail: extra['studentEmail'] as String?,
+            avatarUrl: extra['avatarUrl'] as String?,
+          );
+        },
       ),
       GoRoute(
         path: RouteNames.schedule,

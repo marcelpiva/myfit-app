@@ -5,6 +5,76 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-01-20
+
+### Added
+
+#### Student Detail Page - Trainer Features
+- **Student Diet Tab** - View student's current diet plan with macros and meals
+  - Current plan card with adherence progress
+  - Macros section (calories, protein, carbs, fat)
+  - Meals section with meal type icons
+  - Diet history and quick actions
+
+- **Progress Photo Gallery** - Full-screen photo viewer for student progress
+  - Interactive zoom with InteractiveViewer
+  - Thumbnail strip navigation
+  - Photo info overlay (angle, date, notes)
+  - **Before/After Comparison** - Side-by-side photo comparison with swipeable selection
+
+- **Session Filtering** - Enhanced workout sessions tab
+  - Filter by period (7 days, 30 days, 90 days, all)
+  - Filter by status (completed, in progress, cancelled)
+  - Combined filter support with "no results" state
+
+- **Periodization Flow** - Complete training plan evolution system
+  - `PeriodizationPhase` enum: progress, deload, newCycle
+  - `loadPlanForPeriodization()` method in PlanWizardProvider
+  - Phase-specific adjustments:
+    - Progress: +1 set per exercise
+    - Deload: ~50% sets, 1 week duration, longer rest periods
+    - New Cycle: Copy structure with fresh start notes
+  - Navigate from "Evoluir Plano" sheet with basePlanId and phaseType
+
+- **Schedule Session Sheet** - Book training sessions with students
+  - Date and time picker
+  - Duration selection (30, 45, 60, 90, 120 min)
+  - Workout type selection (strength, cardio, functional, HIIT, assessment)
+  - Optional notes field
+
+- **Student Notes Sheet** - Add and view trainer notes about students
+  - Notes list with author and timestamp
+  - Add new notes with real-time refresh
+  - Uses TrainerService.addStudentNote() API
+
+- **PDF Report Generation** - Generate and share student progress reports
+  - Added packages: `pdf`, `printing`, `share_plus`
+  - Professional PDF layout with header, summary, and data tables
+  - Period selection: week, month, quarter, semester, year, custom
+  - Weight progress table with variation calculation
+  - Measurements table with latest values
+  - Sessions/workouts table (last 20)
+  - Preview/Print via printing package
+  - Share via share_plus
+
+### Changed
+- StudentDetailPage popup menu now has functional actions instead of "Em breve!"
+- Added report generation option to student detail menu
+
+### Technical
+- New files:
+  - `lib/features/students/presentation/widgets/student_diet_tab.dart`
+  - `lib/features/students/presentation/widgets/progress_photo_gallery.dart`
+  - `lib/features/students/presentation/widgets/schedule_session_sheet.dart`
+  - `lib/features/students/presentation/widgets/student_notes_sheet.dart`
+  - `lib/features/students/presentation/widgets/student_report_sheet.dart`
+  - `lib/core/utils/pdf_report_generator.dart`
+- Modified PlanWizardState to include `basePlanId` and `phaseType` fields
+- Updated app_router.dart to parse periodization query parameters
+- Updated pubspec.yaml with pdf, printing, and share_plus dependencies
+
+---
+
 ## [Unreleased]
 
 ### Added

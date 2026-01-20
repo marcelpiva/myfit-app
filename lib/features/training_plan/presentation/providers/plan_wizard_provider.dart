@@ -189,6 +189,64 @@ extension DietTypeParsing on String? {
   }
 }
 
+/// Periodization phase type
+enum PeriodizationPhase {
+  progress,
+  deload,
+  newCycle,
+}
+
+extension PeriodizationPhaseExtension on PeriodizationPhase {
+  String get displayName {
+    switch (this) {
+      case PeriodizationPhase.progress:
+        return 'Progressão';
+      case PeriodizationPhase.deload:
+        return 'Deload';
+      case PeriodizationPhase.newCycle:
+        return 'Novo Ciclo';
+    }
+  }
+
+  String get description {
+    switch (this) {
+      case PeriodizationPhase.progress:
+        return 'Fase com cargas/volume aumentados';
+      case PeriodizationPhase.deload:
+        return 'Semana de recuperação com volume reduzido';
+      case PeriodizationPhase.newCycle:
+        return 'Novo ciclo baseado no plano anterior';
+    }
+  }
+
+  String toApiValue() {
+    switch (this) {
+      case PeriodizationPhase.progress:
+        return 'progress';
+      case PeriodizationPhase.deload:
+        return 'deload';
+      case PeriodizationPhase.newCycle:
+        return 'new_cycle';
+    }
+  }
+}
+
+extension PeriodizationPhaseParsing on String? {
+  PeriodizationPhase? toPeriodizationPhase() {
+    if (this == null) return null;
+    switch (this!.toLowerCase()) {
+      case 'progress':
+        return PeriodizationPhase.progress;
+      case 'deload':
+        return PeriodizationPhase.deload;
+      case 'new_cycle':
+        return PeriodizationPhase.newCycle;
+      default:
+        return null;
+    }
+  }
+}
+
 /// Plan wizard state
 @freezed
 sealed class PlanWizardState with _$PlanWizardState {
@@ -210,6 +268,9 @@ sealed class PlanWizardState with _$PlanWizardState {
     String? templateId,
     String? studentId,
     String? editingPlanId,
+    // Periodization fields
+    String? basePlanId, // Source plan for periodization
+    PeriodizationPhase? phaseType, // Type of periodization phase
     // Diet fields
     @Default(false) bool includeDiet,
     DietType? dietType,
@@ -683,6 +744,160 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
         // Navigation
         method: CreationMethod.scratch,
         currentStep: 1, // Skip method selection in edit mode
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  /// Load plan data for periodization (creating a new phase based on existing plan)
+  Future<void> loadPlanForPeriodization(String basePlanId, PeriodizationPhase phaseType) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final workoutService = WorkoutService();
+      final plan = await workoutService.getPlan(basePlanId);
+
+      // Parse plan data
+      final baseName = plan['name'] as String? ?? '';
+      final goalStr = plan['goal'] as String? ?? 'hypertrophy';
+      final difficultyStr = plan['difficulty'] as String? ?? 'intermediate';
+      final splitTypeStr = plan['split_type'] as String? ?? 'abc';
+      final durationWeeks = plan['duration_weeks'] as int?;
+      final targetWorkoutMinutes = plan['target_workout_minutes'] as int?;
+      final planWorkouts = (plan['plan_workouts'] as List<dynamic>?) ?? [];
+
+      // Parse diet data
+      final includeDiet = plan['include_diet'] as bool? ?? false;
+      final dietTypeStr = plan['diet_type'] as String?;
+      final dailyCalories = plan['daily_calories'] as int?;
+      final proteinGrams = plan['protein_grams'] as int?;
+      final carbsGrams = plan['carbs_grams'] as int?;
+      final fatGrams = plan['fat_grams'] as int?;
+      final mealsPerDay = plan['meals_per_day'] as int?;
+      final dietNotes = plan['diet_notes'] as String?;
+
+      // Generate new plan name based on phase type
+      String newPlanName;
+      switch (phaseType) {
+        case PeriodizationPhase.progress:
+          newPlanName = '$baseName - Progressão';
+        case PeriodizationPhase.deload:
+          newPlanName = '$baseName - Deload';
+        case PeriodizationPhase.newCycle:
+          newPlanName = '$baseName - Ciclo 2';
+      }
+
+      // Convert to wizard workouts with phase-specific adjustments
+      final workouts = planWorkouts.map((pw) {
+        final pwMap = pw as Map<String, dynamic>;
+        final label = pwMap['label'] as String? ?? '';
+        final workout = pwMap['workout'] as Map<String, dynamic>?;
+        final workoutName = workout?['name'] as String? ?? 'Treino $label';
+        final exercises = (workout?['exercises'] as List<dynamic>?) ?? [];
+
+        final wizardExercises = exercises.map((ex) {
+          final exMap = ex as Map<String, dynamic>;
+          final exerciseData = exMap['exercise'] as Map<String, dynamic>?;
+
+          // Base exercise values
+          var sets = exMap['sets'] as int? ?? 3;
+          var reps = exMap['reps'] as String? ?? '10-12';
+          var restSeconds = exMap['rest_seconds'] as int? ?? 60;
+          var notes = exMap['notes'] as String? ?? '';
+
+          // Apply phase-specific adjustments
+          switch (phaseType) {
+            case PeriodizationPhase.progress:
+              // Increase volume: +1 set, same reps
+              sets = sets + 1;
+              notes = notes.isEmpty ? 'Fase de progressão' : '$notes\nFase de progressão';
+            case PeriodizationPhase.deload:
+              // Reduce volume: ~50% sets, same reps, slightly longer rest
+              sets = (sets * 0.5).ceil().clamp(1, sets);
+              restSeconds = (restSeconds * 1.2).round();
+              notes = notes.isEmpty ? 'Semana de deload - foco em recuperação' : '$notes\nSemana de deload';
+            case PeriodizationPhase.newCycle:
+              // Reset to original structure, no changes
+              notes = notes.isEmpty ? 'Início do novo ciclo' : '$notes\nInício do novo ciclo';
+          }
+
+          return WizardExercise(
+            id: '${DateTime.now().millisecondsSinceEpoch}_${exMap['id'] ?? ''}',
+            exerciseId: exMap['exercise_id'] as String? ?? '',
+            name: exerciseData?['name'] as String? ?? '',
+            muscleGroup: exerciseData?['muscle_group'] as String? ?? '',
+            sets: sets,
+            reps: reps,
+            restSeconds: restSeconds,
+            notes: notes,
+            // Advanced technique fields
+            executionInstructions: exMap['execution_instructions'] as String? ?? '',
+            groupInstructions: exMap['group_instructions'] as String? ?? '',
+            isometricSeconds: exMap['isometric_seconds'] as int?,
+            techniqueType: (exMap['technique_type'] as String?)?.toTechniqueType() ?? TechniqueType.normal,
+            exerciseGroupId: exMap['exercise_group_id'] as String?,
+            exerciseGroupOrder: exMap['exercise_group_order'] as int? ?? 0,
+            // Structured technique parameters
+            dropCount: exMap['drop_count'] as int?,
+            restBetweenDrops: exMap['rest_between_drops'] as int?,
+            pauseDuration: exMap['pause_duration'] as int?,
+            miniSetCount: exMap['mini_set_count'] as int?,
+            // Exercise mode (strength vs aerobic)
+            exerciseMode: (exMap['exercise_mode'] as String?)?.toExerciseMode() ?? ExerciseMode.strength,
+            // Aerobic exercise fields
+            durationMinutes: exMap['duration_minutes'] as int?,
+            intensity: exMap['intensity'] as String?,
+            workSeconds: exMap['work_seconds'] as int?,
+            intervalRestSeconds: exMap['interval_rest_seconds'] as int?,
+            rounds: exMap['rounds'] as int?,
+            distanceKm: (exMap['distance_km'] as num?)?.toDouble(),
+            targetPaceMinPerKm: (exMap['target_pace_min_per_km'] as num?)?.toDouble(),
+          );
+        }).toList();
+
+        return WizardWorkout(
+          id: label,
+          label: label,
+          name: workoutName,
+          order: pwMap['order'] as int? ?? 0,
+          exercises: wizardExercises,
+          muscleGroups: (workout?['target_muscles'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ?? [],
+        );
+      }).toList();
+
+      // Adjust duration for deload (typically 1 week)
+      int? newDurationWeeks = durationWeeks;
+      if (phaseType == PeriodizationPhase.deload) {
+        newDurationWeeks = 1; // Deload is typically 1 week
+      }
+
+      state = state.copyWith(
+        basePlanId: basePlanId,
+        phaseType: phaseType,
+        planName: newPlanName,
+        goal: goalStr.toWorkoutGoal(),
+        difficulty: difficultyStr.toPlanDifficulty(),
+        splitType: splitTypeStr.toSplitType(),
+        durationWeeks: newDurationWeeks,
+        targetWorkoutMinutes: targetWorkoutMinutes,
+        isTemplate: false, // Periodized plans are not templates
+        workouts: workouts,
+        // Diet data (carry over from base plan)
+        includeDiet: includeDiet,
+        dietType: dietTypeStr.toDietType(),
+        dailyCalories: dailyCalories,
+        proteinGrams: proteinGrams,
+        carbsGrams: carbsGrams,
+        fatGrams: fatGrams,
+        mealsPerDay: mealsPerDay,
+        dietNotes: dietNotes,
+        // Navigation - skip method selection for periodization
+        method: CreationMethod.scratch,
+        currentStep: 1,
         isLoading: false,
       );
     } catch (e) {
