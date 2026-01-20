@@ -6,8 +6,12 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
+import '../../../../core/providers/context_provider.dart';
 import '../../../../core/widgets/video_player_page.dart';
 import '../../../../shared/presentation/components/components.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../training_plan/domain/models/prescription_note.dart';
+import '../../../training_plan/presentation/widgets/prescription_notes_section.dart';
 import '../providers/workout_provider.dart';
 
 class WorkoutDetailPage extends ConsumerStatefulWidget {
@@ -273,16 +277,40 @@ class _WorkoutDetailPageState extends ConsumerState<WorkoutDetailPage>
                   ),
                 ),
 
-                // Exercise list
+                // Exercise list with notes section
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.all(24),
-                    itemCount: exercises.length,
+                    itemCount: exercises.length + 1, // +1 for notes section
                     itemBuilder: (context, index) {
-                      final exercise = exercises[index];
+                      // First item is the notes section
+                      if (index == 0) {
+                        final currentUser = ref.watch(userProvider);
+                        final activeContext = ref.watch(activeContextProvider);
+
+                        if (currentUser == null) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: PrescriptionNotesSection(
+                            contextType: NoteContextType.workout,
+                            contextId: widget.workoutId,
+                            organizationId: activeContext?.organization.id,
+                            currentUserId: currentUser.id,
+                            isTrainer: activeContext?.isTrainer ?? false,
+                            title: 'Notas do Treino',
+                            initiallyExpanded: false,
+                          ),
+                        );
+                      }
+
+                      // Exercise cards (adjusted index)
+                      final exercise = exercises[index - 1];
                       return _ExerciseCard(
                         exercise: exercise,
-                        index: index + 1,
+                        index: index, // index is already 1-based due to notes section
                         isDark: isDark,
                       );
                     },

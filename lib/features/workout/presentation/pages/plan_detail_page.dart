@@ -6,6 +6,10 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
+import '../../../../core/providers/context_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../training_plan/domain/models/prescription_note.dart';
+import '../../../training_plan/presentation/widgets/prescription_notes_section.dart';
 import '../providers/workout_provider.dart';
 import '../widgets/assign_plan_sheet.dart';
 
@@ -211,6 +215,10 @@ class _PlanDetailPageState extends ConsumerState<PlanDetailPage>
                   ),
                   const SizedBox(height: 24),
                 ],
+
+                // Notes Section
+                _buildNotesSection(context),
+                const SizedBox(height: 24),
 
                 // Workouts
                 Text(
@@ -468,6 +476,25 @@ class _PlanDetailPageState extends ConsumerState<PlanDetailPage>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildNotesSection(BuildContext context) {
+    final currentUser = ref.watch(userProvider);
+    final activeContext = ref.watch(activeContextProvider);
+
+    if (currentUser == null) {
+      return const SizedBox.shrink();
+    }
+
+    return PrescriptionNotesSection(
+      contextType: NoteContextType.plan,
+      contextId: widget.planId,
+      organizationId: activeContext?.organization.id,
+      currentUserId: currentUser.id,
+      isTrainer: activeContext?.isTrainer ?? false,
+      title: 'Notas do Plano',
+      initiallyExpanded: false,
     );
   }
 
