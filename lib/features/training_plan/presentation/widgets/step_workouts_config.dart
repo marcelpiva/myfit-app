@@ -4532,8 +4532,8 @@ class _ExerciseItem extends ConsumerWidget {
                     ),
                   ),
                   const Spacer(),
-                  // Link button (only for simple exercises - no technique and no group)
-                  if (exercise.exerciseGroupId == null && !hasTechnique)
+                  // Link button (only for simple strength exercises - no technique, no group, no cardio)
+                  if (exercise.exerciseGroupId == null && !hasTechnique && !isCardio)
                     GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () {
@@ -4549,8 +4549,8 @@ class _ExerciseItem extends ConsumerWidget {
                         ),
                       ),
                     ),
-                  // Unlink button (only for technique exercises)
-                  if (hasTechnique)
+                  // Unlink button (only for technique exercises, not cardio)
+                  if (hasTechnique && !isCardio)
                     GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () {
