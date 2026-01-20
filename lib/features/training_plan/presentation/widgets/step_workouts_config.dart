@@ -3117,13 +3117,12 @@ class _ExerciseItem extends ConsumerWidget {
                 const Divider(),
                 const SizedBox(height: 16),
 
-                // Exercise Mode Selector (for cardio exercises)
+                // Exercise Mode Selector (for cardio exercises only - no strength option)
                 if (isCardio) ...[
                   Text('Tipo de Treino', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   SegmentedButton<ExerciseMode>(
                     segments: const [
-                      ButtonSegment(value: ExerciseMode.strength, label: Text('Força')),
                       ButtonSegment(value: ExerciseMode.duration, label: Text('Contínuo')),
                       ButtonSegment(value: ExerciseMode.interval, label: Text('HIIT')),
                       ButtonSegment(value: ExerciseMode.distance, label: Text('Distância')),
@@ -3243,8 +3242,8 @@ class _ExerciseItem extends ConsumerWidget {
                   const SizedBox(height: 16),
                 ],
 
-                // Strength Mode Controls (Sets/Reps/Rest) - show only for strength mode or non-cardio
-                if (!isCardio || exerciseMode == ExerciseMode.strength) ...[
+                // Strength Mode Controls (Sets/Reps/Rest) - only for non-cardio exercises
+                if (!isCardio) ...[
                 // Sets
                 Text('Séries', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),

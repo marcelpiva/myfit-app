@@ -23,6 +23,47 @@ abstract class ExerciseTheme {
     TechniqueType.cluster: Color(0xFF4F46E5), // Indigo
   };
 
+  // ============================================
+  // AEROBIC/CARDIO MODE COLORS
+  // ============================================
+
+  /// Main cardio color (green - represents energy/vitality)
+  static const Color cardioColor = Color(0xFF22C55E); // Green
+
+  /// Colors for each exercise mode.
+  static const Map<ExerciseMode, Color> modeColors = {
+    ExerciseMode.strength: Color(0xFF6B7280), // Gray (same as normal technique)
+    ExerciseMode.duration: Color(0xFF22C55E), // Green - continuous cardio
+    ExerciseMode.interval: Color(0xFFEF4444), // Red - high intensity intervals
+    ExerciseMode.distance: Color(0xFF3B82F6), // Blue - distance/endurance
+  };
+
+  /// Get the color for a specific exercise mode.
+  static Color getModeColor(ExerciseMode mode) =>
+      modeColors[mode] ?? modeColors[ExerciseMode.strength]!;
+
+  /// Get a lighter version of the mode color for backgrounds.
+  static Color getModeBackgroundColor(ExerciseMode mode, {double alpha = 0.12}) =>
+      getModeColor(mode).withValues(alpha: alpha);
+
+  /// Get a border color for the exercise mode.
+  static Color getModeBorderColor(ExerciseMode mode, {double alpha = 0.4}) =>
+      getModeColor(mode).withValues(alpha: alpha);
+
+  /// Get the icon for a specific exercise mode.
+  static IconData getModeIcon(ExerciseMode mode) {
+    return switch (mode) {
+      ExerciseMode.strength => LucideIcons.dumbbell,
+      ExerciseMode.duration => LucideIcons.timer,
+      ExerciseMode.interval => LucideIcons.zap,
+      ExerciseMode.distance => LucideIcons.mapPin,
+    };
+  }
+
+  /// Check if an exercise is cardio based on muscle group.
+  static bool isCardioExercise(String muscleGroup) =>
+      muscleGroup.toLowerCase() == 'cardio';
+
   /// Get the color for a specific technique type.
   static Color getColor(TechniqueType type) =>
       techniqueColors[type] ?? techniqueColors[TechniqueType.normal]!;

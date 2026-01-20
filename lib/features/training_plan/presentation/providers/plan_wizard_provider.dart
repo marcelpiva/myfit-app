@@ -930,14 +930,30 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
 
   void addExerciseToWorkout(String workoutId, Exercise exercise) {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final isCardio = exercise.muscleGroupName.toLowerCase() == 'cardio';
+
     final workouts = state.workouts.map((w) {
       if (w.id == workoutId) {
-        final wizardExercise = WizardExercise(
-          id: '${timestamp}_${exercise.id.hashCode}',
-          exerciseId: exercise.id,
-          name: exercise.name,
-          muscleGroup: exercise.muscleGroupName,
-        );
+        final wizardExercise = isCardio
+            ? WizardExercise(
+                id: '${timestamp}_${exercise.id.hashCode}',
+                exerciseId: exercise.id,
+                name: exercise.name,
+                muscleGroup: exercise.muscleGroupName,
+                // Cardio defaults: no sets/reps/rest, use duration mode
+                sets: 1,
+                reps: '',
+                restSeconds: 0,
+                exerciseMode: ExerciseMode.duration,
+                durationMinutes: 30,
+                intensity: 'moderate',
+              )
+            : WizardExercise(
+                id: '${timestamp}_${exercise.id.hashCode}',
+                exerciseId: exercise.id,
+                name: exercise.name,
+                muscleGroup: exercise.muscleGroupName,
+              );
         return w.copyWith(exercises: [...w.exercises, wizardExercise]);
       }
       return w;
@@ -956,12 +972,28 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
         final newExercises = exercises.asMap().entries.map((entry) {
           final index = entry.key;
           final exercise = entry.value;
-          return WizardExercise(
-            id: '${baseTimestamp}_${index}_${exercise.id.hashCode}',
-            exerciseId: exercise.id,
-            name: exercise.name,
-            muscleGroup: exercise.muscleGroupName,
-          );
+          final isCardio = exercise.muscleGroupName.toLowerCase() == 'cardio';
+
+          return isCardio
+              ? WizardExercise(
+                  id: '${baseTimestamp}_${index}_${exercise.id.hashCode}',
+                  exerciseId: exercise.id,
+                  name: exercise.name,
+                  muscleGroup: exercise.muscleGroupName,
+                  // Cardio defaults: no sets/reps/rest, use duration mode
+                  sets: 1,
+                  reps: '',
+                  restSeconds: 0,
+                  exerciseMode: ExerciseMode.duration,
+                  durationMinutes: 30,
+                  intensity: 'moderate',
+                )
+              : WizardExercise(
+                  id: '${baseTimestamp}_${index}_${exercise.id.hashCode}',
+                  exerciseId: exercise.id,
+                  name: exercise.name,
+                  muscleGroup: exercise.muscleGroupName,
+                );
         }).toList();
         return w.copyWith(exercises: [...w.exercises, ...newExercises]);
       }
