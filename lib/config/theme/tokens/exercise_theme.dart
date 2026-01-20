@@ -31,11 +31,12 @@ abstract class ExerciseTheme {
   static const Color cardioColor = Color(0xFF22C55E); // Green
 
   /// Colors for each exercise mode.
+  /// NOTE: These colors are intentionally different from technique colors to avoid confusion.
   static const Map<ExerciseMode, Color> modeColors = {
     ExerciseMode.strength: Color(0xFF6B7280), // Gray (same as normal technique)
     ExerciseMode.duration: Color(0xFF22C55E), // Green - continuous cardio
-    ExerciseMode.interval: Color(0xFFEF4444), // Red - high intensity intervals
-    ExerciseMode.distance: Color(0xFF3B82F6), // Blue - distance/endurance
+    ExerciseMode.interval: Color(0xFFF59E0B), // Amber - high intensity intervals (distinct from giantset red)
+    ExerciseMode.distance: Color(0xFF06B6D4), // Cyan - distance/endurance (distinct from dropset blue)
   };
 
   /// Get the color for a specific exercise mode.
