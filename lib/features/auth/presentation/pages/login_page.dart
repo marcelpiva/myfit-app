@@ -7,6 +7,7 @@ import '../../../../config/l10n/generated/app_localizations.dart';
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/providers/biometric_provider.dart';
+import '../../../../core/providers/context_provider.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import '../../../../core/utils/platform_utils.dart';
 import '../../../../shared/presentation/components/components.dart';
@@ -84,6 +85,10 @@ class _LoginPageState extends ConsumerState<LoginPage>
       setState(() => _loading = false);
 
       if (success) {
+        // Invalidate providers to fetch fresh data after login
+        ref.invalidate(membershipsProvider);
+        ref.invalidate(pendingInvitesForUserProvider);
+
         await _checkBiometricSetup(email, password);
         if (mounted) {
           context.go(RouteNames.orgSelector);

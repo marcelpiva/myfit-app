@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/providers/context_provider.dart';
 import '../../../../shared/presentation/components/components.dart';
 import '../providers/auth_provider.dart';
 
@@ -104,6 +105,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
       setState(() => _loading = false);
 
       if (success) {
+        // Invalidate providers to fetch fresh data after registration
+        ref.invalidate(membershipsProvider);
+        ref.invalidate(pendingInvitesForUserProvider);
+
         context.go(RouteNames.orgSelector);
       } else {
         final authState = ref.read(authProvider);
