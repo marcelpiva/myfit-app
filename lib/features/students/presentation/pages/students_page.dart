@@ -426,7 +426,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
           _onRefresh();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Aluno cadastrado com sucesso!'),
+              content: const Text('Convite enviado com sucesso! O aluno receberá um email para aceitar.'),
               backgroundColor: AppColors.success,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

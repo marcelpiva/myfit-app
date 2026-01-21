@@ -213,7 +213,22 @@ class OrganizationService {
 
   // ==================== Invites ====================
 
-  /// Get pending invites
+  /// Get pending invites for the current user
+  Future<List<Map<String, dynamic>>> getMyPendingInvites() async {
+    try {
+      final response = await _client.get(ApiEndpoints.userPendingInvites);
+      if (response.statusCode == 200 && response.data != null) {
+        return (response.data as List).cast<Map<String, dynamic>>();
+      }
+      return [];
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao carregar convites', e);
+    }
+  }
+
+  /// Get pending invites for organization (admin view)
   Future<List<Map<String, dynamic>>> getInvites(String orgId) async {
     try {
       final response = await _client.get(ApiEndpoints.organizationInvites(orgId));
