@@ -67,6 +67,7 @@ class ErrorInterceptor extends Interceptor {
       403 => ForbiddenException(message),
       404 => NotFoundException(message),
       409 => ConflictException(message),
+      429 => RateLimitException(message),
       >= 500 => ServerException(message, statusCode),
       _ => UnknownApiException(message, err),
     };

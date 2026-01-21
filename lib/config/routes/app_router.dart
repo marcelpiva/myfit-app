@@ -441,6 +441,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             studentName: extra['studentName'] as String? ?? 'Aluno',
             studentEmail: extra['studentEmail'] as String?,
             avatarUrl: extra['avatarUrl'] as String?,
+            isActive: extra['isActive'] as bool? ?? true,
           );
         },
       ),

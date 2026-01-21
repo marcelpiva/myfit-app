@@ -22,9 +22,9 @@ platform :ios do
       xcodeproj: "Runner.xcodeproj"
     )
 
-    # Build Flutter IPA
+    # Build Flutter IPA with production environment
     Dir.chdir("../..") do
-      sh("flutter build ipa --release --export-options-plist=ios/ExportOptions.plist")
+      sh("flutter build ipa --release --dart-define=ENV=prod --export-options-plist=ios/ExportOptions.plist")
     end
 
     # Upload to TestFlight
@@ -38,9 +38,9 @@ platform :ios do
 
   desc "Quick upload - just build and upload"
   lane :upload do
-    # Build Flutter IPA
+    # Build Flutter IPA with production environment
     Dir.chdir("../..") do
-      sh("flutter build ipa --release")
+      sh("flutter build ipa --release --dart-define=ENV=prod")
     end
 
     # Upload to TestFlight

@@ -83,6 +83,16 @@ class ConflictException extends ApiException {
   String toString() => 'ConflictException: $message';
 }
 
+/// 429 Too Many Requests - Rate limit exceeded
+class RateLimitException extends ApiException {
+  const RateLimitException([
+    String message = 'Muitas requisições. Aguarde um momento e tente novamente.',
+  ]) : super(message, statusCode: 429);
+
+  @override
+  String toString() => 'RateLimitException: $message';
+}
+
 /// 500+ Server Error - Backend error
 class ServerException extends ApiException {
   const ServerException([
@@ -138,6 +148,7 @@ extension ApiExceptionMessage on ApiException {
       NotFoundException() => 'Não encontrado.',
       ValidationException(message: final msg) => msg,
       ConflictException() => 'Este item já existe.',
+      RateLimitException() => 'Muitas requisições. Aguarde um momento.',
       ServerException() => 'Erro no servidor. Tente novamente.',
       NetworkException(isTimeout: true) => 'Conexão lenta. Tente novamente.',
       NetworkException() => 'Sem conexão com a internet.',

@@ -178,7 +178,7 @@ class TrainerStudentsNotifier extends StateNotifier<TrainerStudentsState> {
           email: member['email'] as String?,
           avatarUrl: member['avatar_url'] as String?,
           phone: member['phone'] as String?,
-          isActive: member['status'] == 'active',
+          isActive: member['is_active'] == true,
           joinedAt: DateTime.tryParse(member['joined_at'] as String? ?? ''),
           lastWorkoutAt: DateTime.tryParse(member['last_workout_at'] as String? ?? ''),
           currentWorkoutName: activeWorkout?['name'] as String?,

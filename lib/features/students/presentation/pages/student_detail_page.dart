@@ -5,8 +5,10 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
+import '../../../../core/providers/context_provider.dart';
 import '../../../../core/services/trainer_service.dart';
 import '../../../../core/utils/haptic_utils.dart';
+import '../../../trainer_workout/presentation/providers/trainer_students_provider.dart';
 import '../widgets/schedule_session_sheet.dart';
 import '../widgets/student_diet_tab.dart';
 import '../widgets/student_notes_sheet.dart';
@@ -105,6 +107,12 @@ class _StudentDetailPageState extends ConsumerState<StudentDetailPage>
 
     try {
       await _trainerService.updateStudentStatus(widget.studentUserId, newStatus);
+
+      // Invalidate the students provider to refresh the list when returning
+      final activeContext = ref.read(activeContextProvider);
+      if (activeContext != null) {
+        ref.invalidate(trainerStudentsNotifierProvider(activeContext.organization.id));
+      }
 
       setState(() {
         _isStudentActive = newStatus;

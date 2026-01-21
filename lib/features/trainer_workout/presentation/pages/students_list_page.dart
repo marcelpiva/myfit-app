@@ -601,6 +601,7 @@ class _StudentsListPageState extends ConsumerState<StudentsListPage>
                                                         'studentName': student.name,
                                                         'studentEmail': student.email,
                                                         'avatarUrl': student.avatarUrl,
+                                                        'isActive': student.isActive,
                                                       },
                                                     );
                                                   },
