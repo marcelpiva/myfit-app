@@ -170,6 +170,24 @@ class TrainerService {
     }
   }
 
+  /// Update student status (activate/deactivate)
+  Future<Map<String, dynamic>> updateStudentStatus(String studentUserId, bool isActive) async {
+    try {
+      final response = await _client.patch(
+        '${ApiEndpoints.trainerStudents}/$studentUserId/status',
+        queryParameters: {'is_active': isActive},
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw const ServerException('Erro ao atualizar status do aluno');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao atualizar status do aluno', e);
+    }
+  }
+
   /// Remove student
   Future<void> removeStudent(String studentId) async {
     try {

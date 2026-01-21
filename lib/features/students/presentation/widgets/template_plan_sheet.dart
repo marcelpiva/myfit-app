@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/services/workout_service.dart';
 import '../../../../core/utils/haptic_utils.dart';
+import '../../../../core/utils/workout_translations.dart';
 
 /// Provider for trainer's own templates
 final trainerTemplatesProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
@@ -471,7 +472,7 @@ class _TemplateCard extends StatelessWidget {
                       ),
                       if (goal != null)
                         Text(
-                          goal,
+                          translateGoal(goal),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: isDark
                                 ? AppColors.mutedForegroundDark
@@ -501,9 +502,9 @@ class _TemplateCard extends StatelessWidget {
               runSpacing: 6,
               children: [
                 if (difficulty != null)
-                  _Tag(label: difficulty, isDark: isDark),
+                  _Tag(label: translateDifficulty(difficulty), isDark: isDark),
                 if (splitType != null)
-                  _Tag(label: _formatSplitType(splitType), isDark: isDark),
+                  _Tag(label: translateSplitType(splitType), isDark: isDark),
                 _Tag(
                   label: '$workoutCount treino${workoutCount == 1 ? '' : 's'}',
                   isDark: isDark,
@@ -528,24 +529,6 @@ class _TemplateCard extends StatelessWidget {
     );
   }
 
-  String _formatSplitType(String splitType) {
-    switch (splitType.toLowerCase()) {
-      case 'full_body':
-        return 'Full Body';
-      case 'upper_lower':
-        return 'Upper/Lower';
-      case 'push_pull_legs':
-        return 'Push/Pull/Legs';
-      case 'abc':
-        return 'ABC';
-      case 'abcd':
-        return 'ABCD';
-      case 'abcde':
-        return 'ABCDE';
-      default:
-        return splitType;
-    }
-  }
 }
 
 class _Tag extends StatelessWidget {

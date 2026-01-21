@@ -14,6 +14,64 @@ final trainerPlansListProvider = FutureProvider.autoDispose<List<Map<String, dyn
   return plans;
 });
 
+/// Translate difficulty enum value to Portuguese
+String _translateDifficulty(String difficulty) {
+  switch (difficulty.toLowerCase()) {
+    case 'beginner':
+      return 'Iniciante';
+    case 'intermediate':
+      return 'Intermediário';
+    case 'advanced':
+      return 'Avançado';
+    default:
+      return difficulty;
+  }
+}
+
+/// Translate split type enum value to Portuguese
+String _translateSplitType(String splitType) {
+  switch (splitType.toLowerCase()) {
+    case 'abc':
+      return 'ABC';
+    case 'abcd':
+      return 'ABCD';
+    case 'abcde':
+      return 'ABCDE';
+    case 'fullbody':
+    case 'full_body':
+      return 'Full Body';
+    case 'upper_lower':
+      return 'Upper/Lower';
+    case 'push_pull_legs':
+    case 'ppl':
+      return 'Push/Pull/Legs';
+    case 'custom':
+      return 'Personalizado';
+    default:
+      return splitType.toUpperCase();
+  }
+}
+
+/// Translate goal/objective enum value to Portuguese
+String _translateGoal(String goal) {
+  switch (goal.toLowerCase()) {
+    case 'hypertrophy':
+      return 'Hipertrofia';
+    case 'strength':
+      return 'Força';
+    case 'fat_loss':
+      return 'Emagrecimento';
+    case 'endurance':
+      return 'Resistência';
+    case 'functional':
+      return 'Funcional';
+    case 'general_fitness':
+      return 'Condicionamento';
+    default:
+      return goal;
+  }
+}
+
 /// Sheet for assigning an existing plan to a student
 class AssignExistingPlanSheet extends ConsumerStatefulWidget {
   final String studentUserId;
@@ -35,10 +93,23 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
 
   String? _selectedPlanId;
   String? _selectedPlanName;
+  int? _selectedPlanDurationWeeks;
   DateTime _startDate = DateTime.now();
   DateTime? _endDate;
   bool _isLoading = false;
   String? _error;
+
+  /// Calculate end date based on start date and plan duration
+  void _updateEndDateFromDuration() {
+    setState(() {
+      if (_selectedPlanDurationWeeks != null && _selectedPlanDurationWeeks! > 0) {
+        _endDate = _startDate.add(Duration(days: _selectedPlanDurationWeeks! * 7));
+      } else {
+        // Clear end date if plan has no defined duration
+        _endDate = null;
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -298,9 +369,11 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
                     final plan = filteredPlans[index];
                     final planId = plan['id'] as String;
                     final planName = plan['name'] as String? ?? 'Plano sem nome';
-                    final objective = plan['objective'] as String?;
+                    final objective = plan['objective'] as String? ?? plan['goal'] as String?;
                     final difficulty = plan['difficulty'] as String?;
-                    final workoutsCount = (plan['workouts'] as List?)?.length ?? 0;
+                    final splitType = plan['split_type'] as String?;
+                    final workoutsCount = plan['workout_count'] as int? ?? 0;
+                    final durationWeeks = plan['duration_weeks'] as int?;
                     final isSelected = _selectedPlanId == planId;
 
                     return GestureDetector(
@@ -309,7 +382,10 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
                         setState(() {
                           _selectedPlanId = planId;
                           _selectedPlanName = planName;
+                          _selectedPlanDurationWeeks = durationWeeks;
                         });
+                        // Auto-calculate end date based on plan duration
+                        _updateEndDateFromDuration();
                       },
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 8),
@@ -353,7 +429,7 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
                                   ),
                                   if (objective != null)
                                     Text(
-                                      objective,
+                                      _translateGoal(objective),
                                       style: theme.textTheme.bodySmall?.copyWith(
                                         color: isDark
                                             ? AppColors.mutedForegroundDark
@@ -363,19 +439,29 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   const SizedBox(height: 4),
-                                  Row(
+                                  Wrap(
+                                    spacing: 6,
+                                    runSpacing: 4,
                                     children: [
-                                      if (difficulty != null) ...[
+                                      if (difficulty != null)
                                         _PlanChip(
-                                          label: difficulty,
+                                          label: _translateDifficulty(difficulty),
                                           isDark: isDark,
                                         ),
-                                        const SizedBox(width: 8),
-                                      ],
+                                      if (splitType != null)
+                                        _PlanChip(
+                                          label: _translateSplitType(splitType),
+                                          isDark: isDark,
+                                        ),
                                       _PlanChip(
                                         label: '$workoutsCount treino${workoutsCount == 1 ? '' : 's'}',
                                         isDark: isDark,
                                       ),
+                                      if (durationWeeks != null && durationWeeks > 0)
+                                        _PlanChip(
+                                          label: '$durationWeeks semana${durationWeeks == 1 ? '' : 's'}',
+                                          isDark: isDark,
+                                        ),
                                     ],
                                   ),
                                 ],
@@ -416,6 +502,8 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
                         );
                         if (date != null) {
                           setState(() => _startDate = date);
+                          // Recalculate end date based on new start date
+                          _updateEndDateFromDuration();
                         }
                       },
                     ),

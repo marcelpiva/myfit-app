@@ -58,6 +58,7 @@ class StudentPlansTab extends ConsumerWidget {
               onEditPrescription: () => _editPrescription(context, state.currentPlanId!),
               onEvolvePlan: () => _showEvolvePlanSheet(context, ref, state),
               onDeactivate: () => _confirmDeactivate(context, ref),
+              onCancel: () => _confirmCancelAssignment(context, ref, state.currentAssignmentId!),
             )
           else
             _buildNoPlanCard(context, theme, isDark),
@@ -488,6 +489,50 @@ class StudentPlansTab extends ConsumerWidget {
               backgroundColor: AppColors.destructive,
             ),
             child: const Text('Encerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmCancelAssignment(BuildContext context, WidgetRef ref, String assignmentId) {
+    HapticUtils.mediumImpact();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cancelar atribuição?'),
+        content: const Text(
+          'A atribuição pendente será cancelada e o aluno não receberá este plano.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Voltar'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final success = await ref
+                  .read(studentPlansProvider(studentUserId).notifier)
+                  .cancelAssignment(assignmentId);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success
+                          ? 'Atribuição cancelada com sucesso'
+                          : 'Erro ao cancelar atribuição',
+                    ),
+                    backgroundColor: success ? AppColors.success : AppColors.destructive,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.destructive,
+            ),
+            child: const Text('Cancelar atribuição'),
           ),
         ],
       ),

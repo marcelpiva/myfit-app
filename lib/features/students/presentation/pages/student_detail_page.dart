@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
+import '../../../../core/services/trainer_service.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import '../widgets/schedule_session_sheet.dart';
 import '../widgets/student_diet_tab.dart';
@@ -21,6 +22,7 @@ class StudentDetailPage extends ConsumerStatefulWidget {
   final String studentName;
   final String? studentEmail;
   final String? avatarUrl;
+  final bool isActive;
 
   const StudentDetailPage({
     super.key,
@@ -29,6 +31,7 @@ class StudentDetailPage extends ConsumerStatefulWidget {
     required this.studentName,
     this.studentEmail,
     this.avatarUrl,
+    this.isActive = true,
   });
 
   @override
@@ -40,6 +43,10 @@ class _StudentDetailPageState extends ConsumerState<StudentDetailPage>
   late TabController _tabController;
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
+  late bool _isStudentActive;
+  bool _isTogglingStatus = false;
+
+  final _trainerService = TrainerService();
 
   final _tabs = [
     (icon: LucideIcons.clipboardList, label: 'Planos'),
@@ -51,6 +58,7 @@ class _StudentDetailPageState extends ConsumerState<StudentDetailPage>
   @override
   void initState() {
     super.initState();
+    _isStudentActive = widget.isActive;
     _tabController = TabController(length: _tabs.length, vsync: this);
     _animController = AnimationController(
       duration: AppAnimations.entrance,
@@ -60,6 +68,83 @@ class _StudentDetailPageState extends ConsumerState<StudentDetailPage>
       CurvedAnimation(parent: _animController, curve: AppAnimations.easeOut),
     );
     _animController.forward();
+  }
+
+  Future<void> _toggleStudentStatus() async {
+    final newStatus = !_isStudentActive;
+    final action = newStatus ? 'ativar' : 'desativar';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('${newStatus ? 'Ativar' : 'Desativar'} aluno?'),
+        content: Text(
+          newStatus
+              ? 'O aluno poderá voltar a acessar seus treinos e funcionalidades.'
+              : 'O aluno será marcado como inativo e não aparecerá na lista de alunos ativos.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: newStatus ? AppColors.success : AppColors.warning,
+            ),
+            child: Text(newStatus ? 'Ativar' : 'Desativar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isTogglingStatus = true);
+
+    try {
+      await _trainerService.updateStudentStatus(widget.studentUserId, newStatus);
+
+      setState(() {
+        _isStudentActive = newStatus;
+        _isTogglingStatus = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  newStatus ? LucideIcons.checkCircle : LucideIcons.userX,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Aluno ${newStatus ? 'ativado' : 'desativado'} com sucesso',
+                ),
+              ],
+            ),
+            backgroundColor: newStatus ? AppColors.success : AppColors.warning,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => _isTogglingStatus = false);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao $action aluno: ${e.toString()}'),
+            backgroundColor: AppColors.destructive,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -229,6 +314,8 @@ class _StudentDetailPageState extends ConsumerState<StudentDetailPage>
                   _showNotesSheet(context, isDark);
                 case 'report':
                   _showReportSheet(context, isDark);
+                case 'toggle_status':
+                  _toggleStudentStatus();
               }
             },
             itemBuilder: (context) => [
@@ -269,6 +356,26 @@ class _StudentDetailPageState extends ConsumerState<StudentDetailPage>
                     Icon(LucideIcons.fileText, size: 18),
                     SizedBox(width: 12),
                     Text('Gerar relatório'),
+                  ],
+                ),
+              ),
+              const PopupMenuDivider(),
+              PopupMenuItem(
+                value: 'toggle_status',
+                child: Row(
+                  children: [
+                    Icon(
+                      _isStudentActive ? LucideIcons.userX : LucideIcons.userCheck,
+                      size: 18,
+                      color: _isStudentActive ? AppColors.warning : AppColors.success,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      _isStudentActive ? 'Desativar aluno' : 'Ativar aluno',
+                      style: TextStyle(
+                        color: _isStudentActive ? AppColors.warning : AppColors.success,
+                      ),
+                    ),
                   ],
                 ),
               ),

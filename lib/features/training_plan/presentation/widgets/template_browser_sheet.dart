@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/services/workout_service.dart';
+import '../../../../core/utils/workout_translations.dart';
 
 /// Template browser sheet for selecting a program template
 class TemplateBrowserSheet extends ConsumerStatefulWidget {
@@ -246,7 +247,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
                         theme,
                         isDark,
                         'Objetivo',
-                        _selectedGoal != null ? _getGoalName(_selectedGoal!) : null,
+                        _selectedGoal != null ? translateGoal(_selectedGoal!) : null,
                         () => _showGoalFilter(context, theme, isDark),
                       ),
                       const SizedBox(width: 8),
@@ -255,7 +256,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
                         isDark,
                         'Nível',
                         _selectedDifficulty != null
-                            ? _getDifficultyName(_selectedDifficulty!)
+                            ? translateDifficulty(_selectedDifficulty!)
                             : null,
                         () => _showDifficultyFilter(context, theme, isDark),
                       ),
@@ -264,7 +265,7 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
                         theme,
                         isDark,
                         'Divisão',
-                        _selectedSplit != null ? _getSplitName(_selectedSplit!) : null,
+                        _selectedSplit != null ? translateSplitType(_selectedSplit!) : null,
                         () => _showSplitFilter(context, theme, isDark),
                       ),
                       if (_selectedGoal != null ||
@@ -758,7 +759,7 @@ class _TemplateCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${workouts.length} treinos - ${_getSplitName(splitType)}',
+                        '${workouts.length} treinos - ${translateSplitType(splitType)}',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
@@ -777,8 +778,8 @@ class _TemplateCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _Badge(label: _getGoalName(goal), color: AppColors.primary),
-                _Badge(label: _getDifficultyName(difficulty), color: AppColors.secondary),
+                _Badge(label: translateGoal(goal), color: AppColors.primary),
+                _Badge(label: translateDifficulty(difficulty), color: AppColors.secondary),
               ],
             ),
           ],
@@ -787,56 +788,6 @@ class _TemplateCard extends StatelessWidget {
     );
   }
 
-  String _getGoalName(String goal) {
-    switch (goal.toLowerCase()) {
-      case 'hypertrophy':
-        return 'Hipertrofia';
-      case 'strength':
-        return 'Força';
-      case 'fat_loss':
-        return 'Emagrecimento';
-      case 'endurance':
-        return 'Resistência';
-      case 'functional':
-        return 'Funcional';
-      case 'general_fitness':
-        return 'Condicionamento';
-      default:
-        return goal;
-    }
-  }
-
-  String _getDifficultyName(String difficulty) {
-    switch (difficulty.toLowerCase()) {
-      case 'beginner':
-        return 'Iniciante';
-      case 'intermediate':
-        return 'Intermediário';
-      case 'advanced':
-        return 'Avançado';
-      default:
-        return difficulty;
-    }
-  }
-
-  String _getSplitName(String splitType) {
-    switch (splitType.toLowerCase()) {
-      case 'abc':
-        return 'ABC';
-      case 'abcd':
-        return 'ABCD';
-      case 'abcde':
-        return 'ABCDE';
-      case 'push_pull_legs':
-        return 'Push/Pull/Legs';
-      case 'upper_lower':
-        return 'Upper/Lower';
-      case 'full_body':
-        return 'Full Body';
-      default:
-        return splitType;
-    }
-  }
 }
 
 class _Badge extends StatelessWidget {

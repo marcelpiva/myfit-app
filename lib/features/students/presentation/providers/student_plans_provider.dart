@@ -153,6 +153,18 @@ class StudentPlansNotifier extends StateNotifier<StudentPlansState> {
     }
   }
 
+  /// Cancel/delete a pending assignment
+  Future<bool> cancelAssignment(String assignmentId) async {
+    try {
+      await _workoutService.deletePlanAssignment(assignmentId);
+      await loadAssignments();
+      return true;
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+      return false;
+    }
+  }
+
   void refresh() => loadAssignments();
 }
 

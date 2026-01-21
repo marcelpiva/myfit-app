@@ -938,6 +938,17 @@ class WorkoutService {
     }
   }
 
+  /// Delete/cancel a plan assignment (only pending assignments)
+  Future<void> deletePlanAssignment(String assignmentId) async {
+    try {
+      await _client.delete('${ApiEndpoints.planAssignments}/$assignmentId');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao cancelar atribuição', e);
+    }
+  }
+
   // ==================== AI Exercise Suggestions ====================
 
   /// Suggest exercises based on muscle groups, training goal, and workout context

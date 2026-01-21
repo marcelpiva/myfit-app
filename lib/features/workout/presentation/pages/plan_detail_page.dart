@@ -7,6 +7,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
 import '../../../../core/providers/context_provider.dart';
+import '../../../../core/utils/workout_translations.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../training_plan/domain/models/prescription_note.dart';
 import '../../../training_plan/presentation/widgets/prescription_notes_section.dart';
@@ -360,9 +361,9 @@ class _PlanDetailPageState extends ConsumerState<PlanDetailPage>
             spacing: 8,
             runSpacing: 8,
             children: [
-              _buildBadge(_getGoalName(goal), LucideIcons.target),
-              _buildBadge(_getDifficultyName(difficulty), LucideIcons.barChart),
-              _buildBadge(_getSplitName(splitType), LucideIcons.layoutGrid),
+              _buildBadge(translateGoal(goal), LucideIcons.target),
+              _buildBadge(translateDifficulty(difficulty), LucideIcons.barChart),
+              _buildBadge(translateSplitType(splitType), LucideIcons.layoutGrid),
             ],
           ),
         ],
@@ -1009,56 +1010,4 @@ class _PlanDetailPageState extends ConsumerState<PlanDetailPage>
     }
   }
 
-  String _getGoalName(String goal) {
-    switch (goal.toLowerCase()) {
-      case 'hypertrophy':
-        return 'Hipertrofia';
-      case 'strength':
-        return 'Força';
-      case 'fat_loss':
-        return 'Emagrecimento';
-      case 'endurance':
-        return 'Resistência';
-      case 'functional':
-        return 'Funcional';
-      case 'general_fitness':
-        return 'Condicionamento';
-      default:
-        return goal;
-    }
-  }
-
-  String _getDifficultyName(String difficulty) {
-    switch (difficulty.toLowerCase()) {
-      case 'beginner':
-        return 'Iniciante';
-      case 'intermediate':
-        return 'Intermediário';
-      case 'advanced':
-        return 'Avançado';
-      default:
-        return difficulty;
-    }
-  }
-
-  String _getSplitName(String splitType) {
-    switch (splitType.toLowerCase()) {
-      case 'abc':
-        return 'ABC';
-      case 'abcd':
-        return 'ABCD';
-      case 'abcde':
-        return 'ABCDE';
-      case 'push_pull_legs':
-        return 'Push/Pull/Legs';
-      case 'upper_lower':
-        return 'Upper/Lower';
-      case 'full_body':
-        return 'Full Body';
-      case 'custom':
-        return 'Personalizado';
-      default:
-        return splitType;
-    }
-  }
 }

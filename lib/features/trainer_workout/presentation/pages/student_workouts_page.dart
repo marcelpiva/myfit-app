@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/utils/workout_translations.dart';
 import '../../../../shared/presentation/components/animations/fade_in_up.dart';
 import '../../domain/models/trainer_workout.dart';
 import '../providers/trainer_workout_provider.dart';
@@ -1913,36 +1914,6 @@ class _StudentPlanCard extends StatelessWidget {
     required this.onTap,
   });
 
-  String _getDifficultyLabel(String? difficulty) {
-    switch (difficulty?.toLowerCase()) {
-      case 'beginner':
-        return 'Iniciante';
-      case 'intermediate':
-        return 'Intermediário';
-      case 'advanced':
-        return 'Avançado';
-      default:
-        return 'Intermediário';
-    }
-  }
-
-  String _getGoalLabel(String? goal) {
-    switch (goal?.toLowerCase()) {
-      case 'hypertrophy':
-        return 'Hipertrofia';
-      case 'strength':
-        return 'Força';
-      case 'weight_loss':
-        return 'Emagrecimento';
-      case 'endurance':
-        return 'Resistência';
-      case 'functional':
-        return 'Funcional';
-      default:
-        return goal ?? '';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final name = plan['name'] as String? ?? 'Plano';
@@ -2003,7 +1974,7 @@ class _StudentPlanCard extends StatelessWidget {
                       ),
                       if (goal != null)
                         Text(
-                          _getGoalLabel(goal),
+                          translateGoal(goal),
                           style: TextStyle(
                             fontSize: 13,
                             color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -2031,13 +2002,13 @@ class _StudentPlanCard extends StatelessWidget {
                 ),
                 if (splitType != null)
                   _PlanBadge(
-                    label: splitType.toUpperCase(),
+                    label: translateSplitType(splitType),
                     icon: LucideIcons.layoutGrid,
                     isDark: isDark,
                   ),
                 if (difficulty != null)
                   _PlanBadge(
-                    label: _getDifficultyLabel(difficulty),
+                    label: translateDifficulty(difficulty),
                     icon: LucideIcons.gauge,
                     isDark: isDark,
                   ),

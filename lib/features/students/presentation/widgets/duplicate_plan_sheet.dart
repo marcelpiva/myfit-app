@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/services/workout_service.dart';
 import '../../../../core/utils/haptic_utils.dart';
+import '../../../../core/utils/workout_translations.dart';
 import 'assign_existing_plan_sheet.dart' show trainerPlansListProvider;
 
 /// Sheet for duplicating an existing plan and assigning to a student
@@ -335,7 +336,7 @@ class _DuplicatePlanSheetState extends ConsumerState<DuplicatePlanSheet> {
                     final planName = plan['name'] as String? ?? 'Plano sem nome';
                     final objective = plan['objective'] as String?;
                     final difficulty = plan['difficulty'] as String?;
-                    final workoutsCount = (plan['workouts'] as List?)?.length ?? 0;
+                    final workoutsCount = plan['workout_count'] as int? ?? (plan['workouts'] as List?)?.length ?? 0;
 
                     return GestureDetector(
                       onTap: () {
@@ -379,7 +380,7 @@ class _DuplicatePlanSheetState extends ConsumerState<DuplicatePlanSheet> {
                                   ),
                                   if (objective != null)
                                     Text(
-                                      objective,
+                                      translateGoal(objective),
                                       style: theme.textTheme.bodySmall?.copyWith(
                                         color: isDark
                                             ? AppColors.mutedForegroundDark
@@ -389,15 +390,15 @@ class _DuplicatePlanSheetState extends ConsumerState<DuplicatePlanSheet> {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   const SizedBox(height: 4),
-                                  Row(
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 6,
                                     children: [
-                                      if (difficulty != null) ...[
+                                      if (difficulty != null)
                                         _PlanChip(
-                                          label: difficulty,
+                                          label: translateDifficulty(difficulty),
                                           isDark: isDark,
                                         ),
-                                        const SizedBox(width: 8),
-                                      ],
                                       _PlanChip(
                                         label: '$workoutsCount treino${workoutsCount == 1 ? '' : 's'}',
                                         isDark: isDark,
