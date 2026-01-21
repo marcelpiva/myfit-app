@@ -640,7 +640,7 @@ class _PlanDetailPageState extends ConsumerState<PlanDetailPage>
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      muscle,
+                      translateMuscleGroup(muscle),
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w500,

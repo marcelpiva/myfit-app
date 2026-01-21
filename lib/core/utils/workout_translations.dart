@@ -60,3 +60,59 @@ String translateSplitType(String? splitType) {
       return splitType.toUpperCase();
   }
 }
+
+/// Translate muscle group enum value to Portuguese
+String translateMuscleGroup(String? muscleGroup) {
+  if (muscleGroup == null || muscleGroup.isEmpty) return '';
+  switch (muscleGroup.toLowerCase()) {
+    case 'chest':
+      return 'Peito';
+    case 'back':
+      return 'Costas';
+    case 'shoulders':
+      return 'Ombros';
+    case 'biceps':
+      return 'Bíceps';
+    case 'triceps':
+      return 'Tríceps';
+    case 'forearms':
+      return 'Antebraços';
+    case 'abs':
+    case 'core':
+      return 'Abdômen';
+    case 'quadriceps':
+    case 'quads':
+      return 'Quadríceps';
+    case 'hamstrings':
+      return 'Posteriores';
+    case 'glutes':
+      return 'Glúteos';
+    case 'calves':
+      return 'Panturrilhas';
+    case 'traps':
+    case 'trapezius':
+      return 'Trapézio';
+    case 'lats':
+    case 'latissimus':
+      return 'Dorsais';
+    case 'lower_back':
+      return 'Lombar';
+    case 'hip_flexors':
+      return 'Flexores do Quadril';
+    case 'adductors':
+      return 'Adutores';
+    case 'abductors':
+      return 'Abdutores';
+    case 'full_body':
+      return 'Corpo Inteiro';
+    case 'upper_body':
+      return 'Superior';
+    case 'lower_body':
+      return 'Inferior';
+    case 'cardio':
+      return 'Cardio';
+    default:
+      // Capitalize first letter if no translation found
+      return muscleGroup[0].toUpperCase() + muscleGroup.substring(1);
+  }
+}

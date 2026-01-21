@@ -2206,6 +2206,7 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
           difficulty: state.difficulty.toApiValue(),
           splitType: state.splitType.toApiValue(),
           durationWeeks: state.durationWeeks,
+          updateDurationWeeks: true, // Always update duration (allows setting to null for continuous)
           targetWorkoutMinutes: state.targetWorkoutMinutes,
           isTemplate: state.isTemplate,
           workouts: workoutsData, // Include workouts data

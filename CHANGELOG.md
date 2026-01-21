@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.2] - 2026-01-21
+
+### Added
+- **Plan Conflict Dialog** - Smart handling when assigning plans to students with active plans
+  - "Substituir plano atual" - Deactivates current and assigns new
+  - "Adicionar como complementar" - Both plans stay active
+  - "Agendar para depois" - Schedules new plan after current ends
+- **Multi-Plan Support** - Students can now have multiple active/scheduled plans
+  - `StudentPlansState` refactored with `activePlans`, `scheduledPlans`, `historyAssignments`
+  - Scheduled plans section with warning-colored styling
+  - `deactivateAssignment(assignmentId)` method for specific plan deactivation
+- **Duplicate Plan Prevention** - Shows error dialog when trying to assign same plan twice
+- **Muscle Group Translation** - Added `translateMuscleGroup()` to centralized translations
+
+### Fixed
+- **Navigation Routes** - Fixed "Page not found" errors
+  - "Ver" button: `/plan/$id` → `/plans/$id`
+  - "Editar" button: `/plan/edit/$id` → `/plans/wizard?edit=$id`
+- **"Descartar" Button** - Fixed text color from black to white
+- **Review Step Translations** - Now uses centralized translate functions for goal, difficulty, splitType
+- **_StatCard Overflow** - Fixed "Personalizado" text overflow in review step
+- **Continuous Plan Duration** - Fixed saving when changing from weeks to "Contínuo"
+  - Now sends `clear_duration_weeks: true` to API
+
 ## [1.5.1] - 2026-01-20
 
 ### Added

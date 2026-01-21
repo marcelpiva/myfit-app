@@ -46,24 +46,66 @@ class StudentPlansTab extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Current Plan Section
-          _buildSectionHeader(theme, isDark, 'Plano Atual', LucideIcons.target),
+          // Active Plans Section
+          _buildSectionHeader(
+            theme,
+            isDark,
+            'Planos Ativos',
+            LucideIcons.target,
+            trailing: state.activePlans.length > 1
+                ? Text(
+                    '${state.activePlans.length}',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  )
+                : null,
+          ),
           const SizedBox(height: 12),
-          if (state.hasCurrentPlan)
-            CurrentPlanCard(
-              assignment: state.currentAssignment!,
-              studentUserId: studentUserId,
-              studentName: studentName,
-              onViewDetails: () => _viewPlanDetails(context, state.currentPlanId!),
-              onEditPrescription: () => _editPrescription(context, state.currentPlanId!),
-              onEvolvePlan: () => _showEvolvePlanSheet(context, ref, state),
-              onDeactivate: () => _confirmDeactivate(context, ref),
-              onCancel: () => _confirmCancelAssignment(context, ref, state.currentAssignmentId!),
-            )
+          if (state.activePlans.isEmpty)
+            _buildNoPlanCard(context, theme, isDark)
           else
-            _buildNoPlanCard(context, theme, isDark),
+            ...state.activePlans.map((assignment) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: CurrentPlanCard(
+                    assignment: assignment,
+                    studentUserId: studentUserId,
+                    studentName: studentName,
+                    onViewDetails: () => _viewPlanDetails(
+                        context, assignment['plan_id'] as String),
+                    onEditPrescription: () => _editPrescription(
+                        context, assignment['plan_id'] as String),
+                    onEvolvePlan: () =>
+                        _showEvolvePlanSheetForAssignment(context, ref, assignment),
+                    onDeactivate: () =>
+                        _confirmDeactivateAssignment(context, ref, assignment['id'] as String),
+                    onCancel: () => _confirmCancelAssignment(
+                        context, ref, assignment['id'] as String),
+                  ),
+                )),
 
           const SizedBox(height: 24),
+
+          // Scheduled Plans Section (only show if there are scheduled plans)
+          if (state.scheduledPlans.isNotEmpty) ...[
+            _buildSectionHeader(
+              theme,
+              isDark,
+              'Planos Agendados',
+              LucideIcons.calendarClock,
+              trailing: Text(
+                '${state.scheduledPlans.length}',
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: AppColors.warning,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _buildScheduledList(context, theme, isDark, state.scheduledPlans, ref),
+            const SizedBox(height: 24),
+          ],
 
           // Quick Actions Section
           _buildSectionHeader(theme, isDark, 'Ações Rápidas', LucideIcons.zap),
@@ -207,6 +249,146 @@ class StudentPlansTab extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildScheduledList(
+    BuildContext context,
+    ThemeData theme,
+    bool isDark,
+    List<Map<String, dynamic>> scheduled,
+    WidgetRef ref,
+  ) {
+    return Column(
+      children: scheduled.map((assignment) {
+        final planName = assignment['plan_name'] as String? ?? 'Plano sem nome';
+        final startDateStr = assignment['start_date'] as String?;
+        final endDateStr = assignment['end_date'] as String?;
+        final status = assignment['status'] as String?;
+
+        String dateInfo = '';
+        if (startDateStr != null) {
+          dateInfo = 'Inicia em ${_formatDate(startDateStr)}';
+          if (endDateStr != null) {
+            dateInfo += ' - Até ${_formatDate(endDateStr)}';
+          }
+        }
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.cardDark : AppColors.card,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: AppColors.warning.withAlpha(60),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withAlpha(isDark ? 30 : 20),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  LucideIcons.calendarClock,
+                  size: 18,
+                  color: AppColors.warning,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            planName,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        if (status == 'pending')
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.warning.withAlpha(20),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'Pendente',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: AppColors.warning,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    if (dateInfo.isNotEmpty)
+                      Text(
+                        dateInfo,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: isDark
+                              ? AppColors.mutedForegroundDark
+                              : AppColors.mutedForeground,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              PopupMenuButton<String>(
+                icon: Icon(
+                  LucideIcons.moreVertical,
+                  size: 18,
+                  color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                ),
+                onSelected: (value) {
+                  final assignmentId = assignment['id'] as String;
+                  final planId = assignment['plan_id'] as String;
+                  switch (value) {
+                    case 'view':
+                      _viewPlanDetails(context, planId);
+                    case 'cancel':
+                      _confirmCancelAssignment(context, ref, assignmentId);
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'view',
+                    child: Row(
+                      children: [
+                        Icon(LucideIcons.eye, size: 16),
+                        SizedBox(width: 8),
+                        Text('Ver plano'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'cancel',
+                    child: Row(
+                      children: [
+                        Icon(LucideIcons.trash2, size: 16, color: AppColors.destructive),
+                        const SizedBox(width: 8),
+                        Text('Cancelar', style: TextStyle(color: AppColors.destructive)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -388,12 +570,12 @@ class StudentPlansTab extends ConsumerWidget {
 
   void _viewPlanDetails(BuildContext context, String planId) {
     HapticUtils.lightImpact();
-    context.push('/plan/$planId');
+    context.push('/plans/$planId');
   }
 
   void _editPrescription(BuildContext context, String planId) {
     HapticUtils.lightImpact();
-    context.push('/plan/edit/$planId');
+    context.push('/plans/wizard?edit=$planId');
   }
 
   void _showPrescribeSheet(BuildContext context) {
@@ -422,12 +604,14 @@ class StudentPlansTab extends ConsumerWidget {
     );
   }
 
-  void _showEvolvePlanSheet(BuildContext context, WidgetRef ref, StudentPlansState state) {
+  void _showEvolvePlanSheetForAssignment(
+    BuildContext context,
+    WidgetRef ref,
+    Map<String, dynamic> assignment,
+  ) {
     HapticUtils.lightImpact();
 
-    if (state.currentAssignment == null) return;
-
-    final endDateStr = state.currentAssignment!['end_date'] as String?;
+    final endDateStr = assignment['end_date'] as String?;
     DateTime? endDate;
     if (endDateStr != null) {
       try {
@@ -442,22 +626,22 @@ class StudentPlansTab extends ConsumerWidget {
       builder: (context) => EvolvePlanSheet(
         studentUserId: studentUserId,
         studentName: studentName,
-        currentPlanId: state.currentPlanId!,
-        currentPlanName: state.currentPlanName ?? 'Plano atual',
-        currentAssignmentId: state.currentAssignmentId,
+        currentPlanId: assignment['plan_id'] as String,
+        currentPlanName: assignment['plan_name'] as String? ?? 'Plano atual',
+        currentAssignmentId: assignment['id'] as String?,
         currentEndDate: endDate,
       ),
     );
   }
 
-  void _confirmDeactivate(BuildContext context, WidgetRef ref) {
+  void _confirmDeactivateAssignment(BuildContext context, WidgetRef ref, String assignmentId) {
     HapticUtils.mediumImpact();
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Encerrar plano?'),
         content: const Text(
-          'O plano atual será movido para o histórico. '
+          'O plano será movido para o histórico. '
           'O aluno não terá mais acesso a este plano.',
         ),
         actions: [
@@ -470,7 +654,7 @@ class StudentPlansTab extends ConsumerWidget {
               Navigator.pop(ctx);
               final success = await ref
                   .read(studentPlansProvider(studentUserId).notifier)
-                  .deactivateCurrentPlan();
+                  .deactivateAssignment(assignmentId);
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -487,6 +671,7 @@ class StudentPlansTab extends ConsumerWidget {
             },
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.destructive,
+              foregroundColor: Colors.white,
             ),
             child: const Text('Encerrar'),
           ),

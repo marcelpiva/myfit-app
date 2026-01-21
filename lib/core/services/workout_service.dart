@@ -713,12 +713,15 @@ class WorkoutService {
   }
 
   /// Update training plan
+  /// Set [updateDurationWeeks] to true when you want to explicitly update duration
+  /// (allows setting to null for continuous plans)
   Future<Map<String, dynamic>> updatePlan(String planId, {
     String? name,
     String? goal,
     String? difficulty,
     String? splitType,
     int? durationWeeks,
+    bool updateDurationWeeks = false,
     int? targetWorkoutMinutes,
     bool? isTemplate,
     bool? isPublic,
@@ -739,7 +742,13 @@ class WorkoutService {
       if (goal != null) data['goal'] = goal;
       if (difficulty != null) data['difficulty'] = difficulty;
       if (splitType != null) data['split_type'] = splitType;
-      if (durationWeeks != null) data['duration_weeks'] = durationWeeks;
+      // Handle duration_weeks update
+      if (updateDurationWeeks && durationWeeks == null) {
+        // Clear duration (set to continuous)
+        data['clear_duration_weeks'] = true;
+      } else if (durationWeeks != null) {
+        data['duration_weeks'] = durationWeeks;
+      }
       if (targetWorkoutMinutes != null) data['target_workout_minutes'] = targetWorkoutMinutes;
       if (isTemplate != null) data['is_template'] = isTemplate;
       if (isPublic != null) data['is_public'] = isPublic;

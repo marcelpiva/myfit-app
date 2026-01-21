@@ -184,6 +184,7 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.destructive,
+              foregroundColor: Colors.white,
             ),
             child: const Text('Descartar'),
           ),

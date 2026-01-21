@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/utils/workout_translations.dart';
+import '../../domain/models/training_plan.dart';
 import '../providers/plan_wizard_provider.dart';
 
 /// Step 5: Review the program before creating
@@ -87,7 +89,7 @@ class StepReview extends ConsumerWidget {
                             spacing: 8,
                             children: [
                               _Badge(
-                                label: state.goal.name,
+                                label: state.goalName,
                                 color: AppColors.primary,
                                 isDark: isDark,
                               ),
@@ -517,26 +519,12 @@ class StepReview extends ConsumerWidget {
       ),
     );
   }
-
-  String get difficultyName {
-    return 'intermediate'; // Will be replaced with actual state value
-  }
 }
 
 extension on PlanWizardState {
-  String get splitTypeName {
-    switch (splitType) {
-      case _:
-        return splitType.name.toUpperCase();
-    }
-  }
-
-  String get difficultyName {
-    switch (difficulty) {
-      case _:
-        return difficulty.name;
-    }
-  }
+  String get splitTypeName => translateSplitType(splitType.toApiValue());
+  String get difficultyName => translateDifficulty(difficulty.toApiValue());
+  String get goalName => translateGoal(goal.toApiValue());
 }
 
 class _Badge extends StatelessWidget {
@@ -622,7 +610,7 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
         color: isDark
             ? Colors.white.withValues(alpha: 0.08)
@@ -630,32 +618,36 @@ class _StatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             icon,
-            size: 18,
+            size: 16,
             color: AppColors.primary.withValues(alpha: 0.8),
           ),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                value,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+          const SizedBox(width: 6),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  value,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              Text(
-                label,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                  fontSize: 10,
+                Text(
+                  label,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    fontSize: 10,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

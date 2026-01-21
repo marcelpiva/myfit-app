@@ -120,6 +120,296 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
   Future<void> _assignPlan() async {
     if (_selectedPlanId == null) return;
 
+    // Check if student already has an active plan
+    final plansState = ref.read(studentPlansProvider(widget.studentUserId));
+
+    // Check if selected plan is already assigned (active or scheduled)
+    final isAlreadyAssigned = _isPlanAlreadyAssigned(plansState, _selectedPlanId!);
+    if (isAlreadyAssigned) {
+      _showDuplicatePlanError();
+      return;
+    }
+
+    if (plansState.hasCurrentPlan) {
+      // Show conflict dialog
+      final action = await _showConflictDialog(plansState);
+      if (action == null) return; // User cancelled
+
+      await _executeAssignmentWithAction(action, plansState);
+    } else {
+      // No conflict, assign directly
+      await _executeAssignment();
+    }
+  }
+
+  /// Check if a plan is already assigned to the student (active or scheduled)
+  bool _isPlanAlreadyAssigned(StudentPlansState state, String planId) {
+    // Check in active plans
+    for (final assignment in state.activePlans) {
+      if (assignment['plan_id'] == planId) {
+        return true;
+      }
+    }
+    // Check in scheduled plans
+    for (final assignment in state.scheduledPlans) {
+      if (assignment['plan_id'] == planId) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// Show error when trying to assign a plan that's already assigned
+  void _showDuplicatePlanError() {
+    HapticUtils.mediumImpact();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(
+              LucideIcons.alertCircle,
+              color: AppColors.destructive,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text('Plano já atribuído'),
+            ),
+          ],
+        ),
+        content: Text(
+          'O plano "$_selectedPlanName" já está atribuído a este aluno.\n\n'
+          'Se deseja substituí-lo, primeiro encerre a atribuição atual na aba de planos.',
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Entendi'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Show dialog when student already has an active plan
+  Future<_ConflictAction?> _showConflictDialog(StudentPlansState plansState) async {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final currentPlanName = plansState.currentPlanName ?? 'Plano atual';
+    final currentEndDateStr = plansState.currentAssignment?['end_date'] as String?;
+    String endDateDisplay = '';
+    if (currentEndDateStr != null) {
+      try {
+        final date = DateTime.parse(currentEndDateStr);
+        endDateDisplay = ' (até ${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')})';
+      } catch (_) {}
+    }
+
+    return showDialog<_ConflictAction>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(
+              LucideIcons.alertTriangle,
+              color: AppColors.warning,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text('Plano ativo existente'),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Este aluno já possui um plano ativo:',
+              style: theme.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.cardDark : AppColors.muted.withAlpha(50),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    LucideIcons.clipboardList,
+                    size: 20,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '$currentPlanName$endDateDisplay',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'O que deseja fazer?',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _ConflictOptionButton(
+                icon: LucideIcons.replace,
+                label: 'Substituir plano atual',
+                description: 'Encerra o plano atual e ativa o novo',
+                isDark: isDark,
+                onTap: () => Navigator.pop(ctx, _ConflictAction.replace),
+              ),
+              const SizedBox(height: 8),
+              _ConflictOptionButton(
+                icon: LucideIcons.layers,
+                label: 'Adicionar como complementar',
+                description: 'Ambos os planos ficam ativos',
+                isDark: isDark,
+                onTap: () => Navigator.pop(ctx, _ConflictAction.addComplementary),
+              ),
+              if (currentEndDateStr != null) ...[
+                const SizedBox(height: 8),
+                _ConflictOptionButton(
+                  icon: LucideIcons.calendarPlus,
+                  label: 'Agendar para depois',
+                  description: 'Inicia quando o plano atual terminar',
+                  isDark: isDark,
+                  onTap: () => Navigator.pop(ctx, _ConflictAction.scheduleAfter),
+                ),
+              ],
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancelar'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Execute assignment based on conflict resolution action
+  Future<void> _executeAssignmentWithAction(
+    _ConflictAction action,
+    StudentPlansState plansState,
+  ) async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      switch (action) {
+        case _ConflictAction.replace:
+          // First deactivate the current plan
+          if (plansState.currentAssignmentId != null) {
+            await _workoutService.updatePlanAssignment(
+              plansState.currentAssignmentId!,
+              isActive: false,
+              endDate: DateTime.now(),
+            );
+          }
+          // Then assign the new plan
+          await _workoutService.createPlanAssignment(
+            planId: _selectedPlanId!,
+            studentId: widget.studentUserId,
+            startDate: _startDate,
+            endDate: _endDate,
+          );
+
+        case _ConflictAction.addComplementary:
+          // Just add the new plan without deactivating the current one
+          await _workoutService.createPlanAssignment(
+            planId: _selectedPlanId!,
+            studentId: widget.studentUserId,
+            startDate: _startDate,
+            endDate: _endDate,
+          );
+
+        case _ConflictAction.scheduleAfter:
+          // Schedule the new plan to start after current plan ends
+          final currentEndDateStr = plansState.currentAssignment?['end_date'] as String?;
+          DateTime newStartDate = _startDate;
+          DateTime? newEndDate = _endDate;
+
+          if (currentEndDateStr != null) {
+            try {
+              final currentEndDate = DateTime.parse(currentEndDateStr);
+              newStartDate = currentEndDate.add(const Duration(days: 1));
+
+              // Recalculate end date if plan has duration
+              if (_selectedPlanDurationWeeks != null && _selectedPlanDurationWeeks! > 0) {
+                newEndDate = newStartDate.add(Duration(days: _selectedPlanDurationWeeks! * 7));
+              }
+            } catch (_) {}
+          }
+
+          await _workoutService.createPlanAssignment(
+            planId: _selectedPlanId!,
+            studentId: widget.studentUserId,
+            startDate: newStartDate,
+            endDate: newEndDate,
+          );
+      }
+
+      // Refresh student plans
+      ref.invalidate(studentPlansProvider(widget.studentUserId));
+
+      if (mounted) {
+        Navigator.pop(context, true);
+
+        String message;
+        switch (action) {
+          case _ConflictAction.replace:
+            message = 'Plano substituído com sucesso';
+          case _ConflictAction.addComplementary:
+            message = '$_selectedPlanName adicionado como complementar';
+          case _ConflictAction.scheduleAfter:
+            message = '$_selectedPlanName agendado para após o plano atual';
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(LucideIcons.checkCircle, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                Expanded(child: Text(message)),
+              ],
+            ),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// Execute direct assignment (no conflict)
+  Future<void> _executeAssignment() async {
     setState(() {
       _isLoading = true;
       _error = null;
@@ -383,9 +673,13 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
                           _selectedPlanId = planId;
                           _selectedPlanName = planName;
                           _selectedPlanDurationWeeks = durationWeeks;
+                          // Clear end date first, then recalculate if plan has duration
+                          if (durationWeeks != null && durationWeeks > 0) {
+                            _endDate = _startDate.add(Duration(days: durationWeeks * 7));
+                          } else {
+                            _endDate = null;
+                          }
                         });
-                        // Auto-calculate end date based on plan duration
-                        _updateEndDateFromDuration();
                       },
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 8),
@@ -650,6 +944,98 @@ class _DateField extends StatelessWidget {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Enum for conflict resolution actions
+enum _ConflictAction {
+  replace,
+  addComplementary,
+  scheduleAfter,
+}
+
+/// Button widget for conflict resolution options
+class _ConflictOptionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String description;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _ConflictOptionButton({
+    required this.icon,
+    required this.label,
+    required this.description,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticUtils.selectionClick();
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: isDark ? AppColors.borderDark : AppColors.border,
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withAlpha(isDark ? 30 : 20),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  icon,
+                  size: 20,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      description,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: isDark
+                            ? AppColors.mutedForegroundDark
+                            : AppColors.mutedForeground,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                LucideIcons.chevronRight,
+                size: 20,
+                color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -4,34 +4,48 @@ import '../../../../core/services/workout_service.dart';
 
 /// State for student's plan assignments
 class StudentPlansState {
-  final Map<String, dynamic>? currentAssignment;
+  /// Currently active plans (is_active=true AND start_date <= today)
+  final List<Map<String, dynamic>> activePlans;
+
+  /// Scheduled plans (is_active=true AND start_date > today)
+  final List<Map<String, dynamic>> scheduledPlans;
+
+  /// Historical plans (is_active=false)
   final List<Map<String, dynamic>> historyAssignments;
+
   final bool isLoading;
   final String? error;
 
   const StudentPlansState({
-    this.currentAssignment,
+    this.activePlans = const [],
+    this.scheduledPlans = const [],
     this.historyAssignments = const [],
     this.isLoading = false,
     this.error,
   });
 
   StudentPlansState copyWith({
-    Map<String, dynamic>? currentAssignment,
+    List<Map<String, dynamic>>? activePlans,
+    List<Map<String, dynamic>>? scheduledPlans,
     List<Map<String, dynamic>>? historyAssignments,
     bool? isLoading,
     String? error,
-    bool clearCurrent = false,
   }) {
     return StudentPlansState(
-      currentAssignment: clearCurrent ? null : (currentAssignment ?? this.currentAssignment),
+      activePlans: activePlans ?? this.activePlans,
+      scheduledPlans: scheduledPlans ?? this.scheduledPlans,
       historyAssignments: historyAssignments ?? this.historyAssignments,
       isLoading: isLoading ?? this.isLoading,
       error: error,
     );
   }
 
-  bool get hasCurrentPlan => currentAssignment != null;
+  /// For backwards compatibility - returns first active plan
+  Map<String, dynamic>? get currentAssignment => activePlans.isNotEmpty ? activePlans.first : null;
+
+  bool get hasCurrentPlan => activePlans.isNotEmpty;
+  bool get hasScheduledPlans => scheduledPlans.isNotEmpty;
+  bool get hasMultipleActivePlans => activePlans.length > 1;
 
   String? get currentPlanName => currentAssignment?['plan_name'] as String?;
   String? get currentPlanId => currentAssignment?['plan_id'] as String?;
@@ -63,19 +77,57 @@ class StudentPlansNotifier extends StateNotifier<StudentPlansState> {
         activeOnly: false,
       );
 
-      // Separate current (active) from history (inactive)
-      Map<String, dynamic>? current;
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+
+      // Separate into: active, scheduled, and history
+      final active = <Map<String, dynamic>>[];
+      final scheduled = <Map<String, dynamic>>[];
       final history = <Map<String, dynamic>>[];
 
       for (final assignment in allAssignments) {
-        if (assignment['is_active'] == true) {
-          current = assignment;
-        } else {
+        if (assignment['is_active'] != true) {
+          // Inactive = history
           history.add(assignment);
+        } else {
+          // Active - check if scheduled for future
+          final startDateStr = assignment['start_date'] as String?;
+          if (startDateStr != null) {
+            try {
+              final startDate = DateTime.parse(startDateStr);
+              if (startDate.isAfter(today)) {
+                // Starts in the future = scheduled
+                scheduled.add(assignment);
+              } else {
+                // Already started = active
+                active.add(assignment);
+              }
+            } catch (_) {
+              active.add(assignment);
+            }
+          } else {
+            active.add(assignment);
+          }
         }
       }
 
-      // Sort history by end_date or created_at descending
+      // Sort active plans by start_date ascending (oldest first = primary)
+      active.sort((a, b) {
+        final aDate = DateTime.tryParse(a['start_date'] as String? ?? '');
+        final bDate = DateTime.tryParse(b['start_date'] as String? ?? '');
+        if (aDate == null || bDate == null) return 0;
+        return aDate.compareTo(bDate);
+      });
+
+      // Sort scheduled by start_date ascending (soonest first)
+      scheduled.sort((a, b) {
+        final aDate = DateTime.tryParse(a['start_date'] as String? ?? '');
+        final bDate = DateTime.tryParse(b['start_date'] as String? ?? '');
+        if (aDate == null || bDate == null) return 0;
+        return aDate.compareTo(bDate);
+      });
+
+      // Sort history by end_date or created_at descending (newest first)
       history.sort((a, b) {
         final aDate = DateTime.tryParse(a['end_date'] as String? ?? a['created_at'] as String? ?? '');
         final bDate = DateTime.tryParse(b['end_date'] as String? ?? b['created_at'] as String? ?? '');
@@ -84,10 +136,10 @@ class StudentPlansNotifier extends StateNotifier<StudentPlansState> {
       });
 
       state = state.copyWith(
-        currentAssignment: current,
+        activePlans: active,
+        scheduledPlans: scheduled,
         historyAssignments: history,
         isLoading: false,
-        clearCurrent: current == null,
       );
     } catch (e) {
       state = state.copyWith(
@@ -121,10 +173,14 @@ class StudentPlansNotifier extends StateNotifier<StudentPlansState> {
   /// Deactivate current assignment (move to history)
   Future<bool> deactivateCurrentPlan() async {
     if (state.currentAssignmentId == null) return false;
+    return deactivateAssignment(state.currentAssignmentId!);
+  }
 
+  /// Deactivate a specific assignment (move to history)
+  Future<bool> deactivateAssignment(String assignmentId) async {
     try {
       await _workoutService.updatePlanAssignment(
-        state.currentAssignmentId!,
+        assignmentId,
         isActive: false,
         endDate: DateTime.now(),
       );
