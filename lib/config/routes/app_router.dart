@@ -56,6 +56,7 @@ import '../../features/auth/presentation/pages/invite_accept_page.dart';
 import '../../features/trainer_workout/presentation/pages/students_list_page.dart';
 import '../../features/trainer_workout/presentation/pages/student_workouts_page.dart';
 import '../../features/students/presentation/pages/student_detail_page.dart';
+import '../../features/students/presentation/pages/student_plan_history_page.dart';
 import '../../features/trainer_workout/presentation/pages/trainer_student_progress_page.dart';
 import '../../features/trainer_workout/presentation/pages/trainer_plans_page.dart';
 import '../../features/schedule/presentation/pages/schedule_page.dart';
@@ -454,6 +455,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/students/:studentId/workouts',
         name: 'student-workouts',
         builder: (context, state) => StudentWorkoutsPage(
+          studentId: state.pathParameters['studentId'] ?? '',
+          studentName: state.uri.queryParameters['name'],
+        ),
+      ),
+      GoRoute(
+        path: '/students/:studentId/plan-history',
+        name: 'student-plan-history',
+        builder: (context, state) => StudentPlanHistoryPage(
           studentId: state.pathParameters['studentId'] ?? '',
           studentName: state.uri.queryParameters['name'],
         ),

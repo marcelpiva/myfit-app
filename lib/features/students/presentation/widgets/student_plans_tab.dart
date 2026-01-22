@@ -114,7 +114,7 @@ class StudentPlansTab extends ConsumerWidget {
 
           const SizedBox(height: 24),
 
-          // Plan History Section
+          // Plan History Section (limited to 5 items)
           _buildSectionHeader(
             theme,
             isDark,
@@ -132,8 +132,18 @@ class StudentPlansTab extends ConsumerWidget {
           const SizedBox(height: 12),
           if (state.historyAssignments.isEmpty)
             _buildEmptyHistory(theme, isDark)
-          else
-            _buildHistoryList(context, theme, isDark, state.historyAssignments),
+          else ...[
+            _buildHistoryList(
+              context,
+              theme,
+              isDark,
+              state.historyAssignments.take(5).toList(),
+            ),
+            if (state.historyAssignments.length > 5) ...[
+              const SizedBox(height: 12),
+              _buildViewMoreButton(context, theme, isDark, state.historyAssignments.length),
+            ],
+          ],
 
           const SizedBox(height: 100),
         ],
@@ -720,6 +730,56 @@ class StudentPlansTab extends ConsumerWidget {
             child: const Text('Cancelar atribuição'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildViewMoreButton(
+    BuildContext context,
+    ThemeData theme,
+    bool isDark,
+    int totalCount,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        HapticUtils.lightImpact();
+        context.push('/students/$studentUserId/plan-history');
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        decoration: BoxDecoration(
+          color: isDark
+              ? AppColors.cardDark.withAlpha(150)
+              : AppColors.card.withAlpha(200),
+          border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.border,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              LucideIcons.history,
+              size: 16,
+              color: AppColors.primary,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Ver todo o histórico ($totalCount planos)',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              LucideIcons.chevronRight,
+              size: 16,
+              color: AppColors.primary,
+            ),
+          ],
+        ),
       ),
     );
   }

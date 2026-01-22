@@ -90,6 +90,7 @@ abstract class RouteNames {
   static const students = '/students';
   static const schedule = '/schedule';
   static const studentWorkouts = '/students/:studentId/workouts';
+  static const studentPlanHistory = '/students/:studentId/plan-history';
   static const trainerPlans = '/trainer-plans';
 
   // Nutritionist routes
