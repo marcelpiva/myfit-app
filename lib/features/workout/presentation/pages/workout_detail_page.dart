@@ -317,31 +317,43 @@ class _WorkoutDetailPageState extends ConsumerState<WorkoutDetailPage>
                   ),
                 ),
 
-                // Bottom CTA
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColors.backgroundDark.withAlpha(150)
-                        : AppColors.background.withAlpha(200),
-                    border: Border(
-                      top: BorderSide(
-                        color: isDark ? AppColors.borderDark : AppColors.border,
+                // Bottom CTA - Only show for students, not trainers
+                Builder(
+                  builder: (context) {
+                    final activeContext = ref.watch(activeContextProvider);
+                    final isTrainer = activeContext?.isTrainer ?? false;
+
+                    // Trainers should not see "Iniciar Treino" button
+                    if (isTrainer) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AppColors.backgroundDark.withAlpha(150)
+                            : AppColors.background.withAlpha(200),
+                        border: Border(
+                          top: BorderSide(
+                            color: isDark ? AppColors.borderDark : AppColors.border,
+                          ),
+                        ),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(8),
+                          topRight: Radius.circular(8),
+                        ),
                       ),
-                    ),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(8),
-                      topRight: Radius.circular(8),
-                    ),
-                  ),
-                  child: PrimaryButton(
-                    label: 'Iniciar Treino',
-                    icon: LucideIcons.play,
-                    onPressed: () {
-                      HapticUtils.mediumImpact();
-                      context.push('/workouts/active/${widget.workoutId}');
-                    },
-                  ),
+                      child: PrimaryButton(
+                        label: 'Iniciar Treino',
+                        icon: LucideIcons.play,
+                        onPressed: () {
+                          HapticUtils.mediumImpact();
+                          context.push('/workouts/active/${widget.workoutId}');
+                        },
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
