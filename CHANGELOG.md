@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.4] - 2026-01-22
+
+### Changed
+- **Profile Display for Students** - Now shows organization type instead of user role
+  - Students see "Personal Trainer", "Academia", etc. instead of "Aluno"
+  - Professionals still see their role (Personal, Coach, etc.)
+- **Leave Profile vs Delete Profile** - Different UX for students vs owners
+  - Students: "Sair do Perfil" with logout icon
+  - Owners: "Excluir Perfil" with trash icon
+  - Context-appropriate confirmation messages
+
+### Removed
+- **Auto-login with Biometrics** - Removed automatic biometric login from welcome page
+  - Users now always see the welcome page and choose to login manually
+
 ## [1.5.3] - 2026-01-21
 
 ### Added

@@ -51,7 +51,7 @@ class EnvironmentConfig {
         return 'https://api.myfitplatform.com/api/v1';
       case Environment.development:
         // Use Mac IP for physical device testing
-        return 'http://192.168.15.9:8000/api/v1';
+        return 'http://172.20.10.10:8000/api/v1';
     }
   }
 

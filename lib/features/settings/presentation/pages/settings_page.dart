@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../../../app/app.dart';
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../config/theme/tokens/animations.dart';
 import '../../../../core/providers/biometric_provider.dart';
 import '../../../../core/utils/haptic_utils.dart';
@@ -408,6 +409,37 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             },
                           ),
                         ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Account section
+                  _buildSectionTitle(context, isDark, 'Conta'),
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: isDark
+                            ? AppColors.cardDark.withAlpha(150)
+                            : AppColors.card.withAlpha(200),
+                        border: Border.all(
+                          color: isDark ? AppColors.borderDark : AppColors.border,
+                        ),
+                      ),
+                      child: _buildNavTile(
+                        context,
+                        isDark,
+                        LucideIcons.logOut,
+                        'Sair',
+                        null,
+                        () {
+                          HapticUtils.mediumImpact();
+                          _showLogoutDialog(context, isDark);
+                        },
                       ),
                     ),
                   ),
@@ -1433,6 +1465,95 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context, bool isDark) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.primary.withAlpha(25),
+                    ),
+                    child: Icon(LucideIcons.logOut, size: 20, color: AppColors.primary),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Sair da conta',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Tem certeza que deseja sair? Você precisará fazer login novamente para acessar sua conta.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        HapticUtils.lightImpact();
+                        Navigator.pop(context);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text('Cancelar'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        HapticUtils.mediumImpact();
+                        Navigator.pop(context);
+
+                        await ref.read(authProvider.notifier).logout();
+
+                        if (mounted) {
+                          context.go(RouteNames.welcome);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text('Sair'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
