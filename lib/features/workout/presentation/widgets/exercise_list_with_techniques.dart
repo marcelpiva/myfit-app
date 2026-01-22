@@ -54,14 +54,16 @@ class ExerciseListWithTechniques extends StatelessWidget {
     );
   }
 
-  /// Group exercises by their group_id
+  /// Group exercises by their exercise_group_id (or group_id for backwards compatibility)
   List<List<Map<String, dynamic>>> _groupExercises(
       List<Map<String, dynamic>> exercises) {
     final groups = <List<Map<String, dynamic>>>[];
     final Map<String, List<Map<String, dynamic>>> groupMap = {};
 
     for (final exercise in exercises) {
-      final groupId = exercise['group_id'] as String?;
+      // Support both 'exercise_group_id' (new) and 'group_id' (legacy)
+      final groupId = exercise['exercise_group_id'] as String? ??
+                      exercise['group_id'] as String?;
 
       if (groupId != null && groupId.isNotEmpty) {
         groupMap.putIfAbsent(groupId, () => []);

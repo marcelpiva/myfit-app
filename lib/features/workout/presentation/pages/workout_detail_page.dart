@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/utils/haptic_utils.dart';
+import '../../../../core/widgets/dev_screen_label.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -60,17 +61,19 @@ class _WorkoutDetailPageState extends ConsumerState<WorkoutDetailPage>
     final detailState = ref.watch(workoutDetailNotifierProvider(widget.workoutId));
     final exercises = detailState.exercises;
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.primary.withAlpha(isDark ? 15 : 10),
-              AppColors.secondary.withAlpha(isDark ? 12 : 8),
-            ],
-          ),
+    return DevScreenLabel(
+      screenName: 'WorkoutDetailPage',
+      child: Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.primary.withAlpha(isDark ? 15 : 10),
+                AppColors.secondary.withAlpha(isDark ? 12 : 8),
+              ],
+            ),
         ),
         child: SafeArea(
           child: FadeTransition(
@@ -362,6 +365,7 @@ class _WorkoutDetailPageState extends ConsumerState<WorkoutDetailPage>
             ),
           ),
         ),
+      ),
       ),
     );
   }
