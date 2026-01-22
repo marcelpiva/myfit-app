@@ -46,6 +46,33 @@ class StudentPlansTab extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Pending Plans Section (read-only for trainer - awaiting student response)
+          if (state.pendingPlans.isNotEmpty) ...[
+            _buildSectionHeader(
+              theme,
+              isDark,
+              'Aguardando Resposta do Aluno',
+              LucideIcons.clock,
+              trailing: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.warning,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${state.pendingPlans.length}',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _buildPendingList(context, theme, isDark, state.pendingPlans),
+            const SizedBox(height: 24),
+          ],
+
           // Active Plans Section
           _buildSectionHeader(
             theme,
@@ -259,6 +286,151 @@ class StudentPlansTab extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  /// Builds the pending plans list for trainer view (view-only, no accept/decline)
+  Widget _buildPendingList(
+    BuildContext context,
+    ThemeData theme,
+    bool isDark,
+    List<Map<String, dynamic>> pending,
+  ) {
+    return Column(
+      children: pending.map((assignment) {
+        final planName = assignment['plan_name'] as String? ?? 'Plano sem nome';
+        final startDateStr = assignment['start_date'] as String?;
+        final notes = assignment['notes'] as String?;
+
+        String dateInfo = '';
+        if (startDateStr != null) {
+          dateInfo = 'Inicio previsto: ${_formatDate(startDateStr)}';
+        }
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.cardDark : AppColors.card,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: AppColors.warning.withAlpha(80),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withAlpha(isDark ? 30 : 20),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  LucideIcons.clock,
+                  size: 18,
+                  color: AppColors.warning,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            planName,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.warning,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'Aguardando',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (dateInfo.isNotEmpty)
+                      Text(
+                        dateInfo,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: isDark
+                              ? AppColors.mutedForegroundDark
+                              : AppColors.mutedForeground,
+                        ),
+                      ),
+                    if (notes != null && notes.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          notes.length > 50 ? '${notes.substring(0, 50)}...' : notes,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: AppColors.info,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              // View and Edit buttons
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      final planId = assignment['plan_id'] as String?;
+                      if (planId != null) {
+                        _viewPlanDetails(context, planId);
+                      }
+                    },
+                    icon: Icon(
+                      LucideIcons.eye,
+                      size: 18,
+                      color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                    ),
+                    tooltip: 'Ver plano',
+                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                    padding: EdgeInsets.zero,
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      final planId = assignment['plan_id'] as String?;
+                      if (planId != null) {
+                        _editPrescription(context, planId);
+                      }
+                    },
+                    icon: Icon(
+                      LucideIcons.pencil,
+                      size: 18,
+                      color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                    ),
+                    tooltip: 'Editar',
+                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                    padding: EdgeInsets.zero,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 
