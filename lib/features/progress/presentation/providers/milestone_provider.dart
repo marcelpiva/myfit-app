@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../domain/models/milestone.dart';
-import '../../../auth/presentation/providers/auth_state.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
 
@@ -62,7 +61,7 @@ class MilestoneNotifier extends StateNotifier<MilestoneState> {
     try {
       final response = await _api.get(ApiEndpoints.milestones);
 
-      if (response.isSuccess && response.data != null) {
+      if (response.statusCode == 200 && response.data != null) {
         final data = response.data as Map<String, dynamic>;
 
         final milestones = (data['milestones'] as List? ?? [])
@@ -84,13 +83,13 @@ class MilestoneNotifier extends StateNotifier<MilestoneState> {
       } else {
         state = state.copyWith(
           isLoading: false,
-          error: response.errorMessage ?? 'Failed to load milestones',
+          error: 'Falha ao carregar metas',
         );
       }
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: 'Error loading milestones: $e',
+        error: 'Erro ao carregar metas: $e',
       );
     }
   }
@@ -102,7 +101,7 @@ class MilestoneNotifier extends StateNotifier<MilestoneState> {
     try {
       final response = await _api.get(ApiEndpoints.aiInsights);
 
-      if (response.isSuccess && response.data != null) {
+      if (response.statusCode == 200 && response.data != null) {
         final data = response.data as Map<String, dynamic>;
 
         final insights = (data['insights'] as List? ?? [])
@@ -113,6 +112,8 @@ class MilestoneNotifier extends StateNotifier<MilestoneState> {
           insights: insights,
           isLoadingInsights: false,
         );
+      } else {
+        state = state.copyWith(isLoadingInsights: false);
       }
     } catch (e) {
       // Insights are optional, don't show error
@@ -146,11 +147,13 @@ class MilestoneNotifier extends StateNotifier<MilestoneState> {
         },
       );
 
-      if (response.isSuccess && response.data != null) {
-        final milestone = Milestone.fromJson(response.data as Map<String, dynamic>);
-        state = state.copyWith(
-          milestones: [...state.milestones, milestone],
-        );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (response.data != null) {
+          final milestone = Milestone.fromJson(response.data as Map<String, dynamic>);
+          state = state.copyWith(
+            milestones: [...state.milestones, milestone],
+          );
+        }
         return true;
       }
     } catch (e) {
@@ -170,7 +173,7 @@ class MilestoneNotifier extends StateNotifier<MilestoneState> {
         },
       );
 
-      if (response.isSuccess && response.data != null) {
+      if (response.statusCode == 200 && response.data != null) {
         final updated = Milestone.fromJson(response.data as Map<String, dynamic>);
         state = state.copyWith(
           milestones: state.milestones
@@ -192,7 +195,7 @@ class MilestoneNotifier extends StateNotifier<MilestoneState> {
         ApiEndpoints.milestoneComplete(milestoneId),
       );
 
-      if (response.isSuccess) {
+      if (response.statusCode == 200) {
         state = state.copyWith(
           milestones: state.milestones.map((m) {
             if (m.id == milestoneId) {
@@ -235,7 +238,7 @@ class MilestoneNotifier extends StateNotifier<MilestoneState> {
         ApiEndpoints.milestoneDetail(milestoneId),
       );
 
-      if (response.isSuccess) {
+      if (response.statusCode == 200 || response.statusCode == 204) {
         state = state.copyWith(
           milestones: state.milestones.where((m) => m.id != milestoneId).toList(),
         );
@@ -285,7 +288,7 @@ class MilestoneNotifier extends StateNotifier<MilestoneState> {
     try {
       final response = await _api.post(ApiEndpoints.generateInsights);
 
-      if (response.isSuccess && response.data != null) {
+      if (response.statusCode == 200 && response.data != null) {
         final data = response.data as Map<String, dynamic>;
         final insights = (data['insights'] as List? ?? [])
             .map((i) => AIInsight.fromJson(i as Map<String, dynamic>))
@@ -295,6 +298,8 @@ class MilestoneNotifier extends StateNotifier<MilestoneState> {
           insights: [...state.insights, ...insights],
           isLoadingInsights: false,
         );
+      } else {
+        state = state.copyWith(isLoadingInsights: false);
       }
     } catch (e) {
       state = state.copyWith(isLoadingInsights: false);
