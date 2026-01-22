@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.1] - 2026-01-22
+
+### Added
+- **Dev Screen Labels** - Subtle debug labels for screen identification
+  - Shows screen name in top-right corner (debug mode only)
+  - Non-intrusive design with `IgnorePointer` for touch-through
+  - Added to key screens: `WorkoutDetailPage`
+
+### Fixed
+- **Exercise Grouping Display** - Fixed technique visualization for bi-sets, tri-sets, etc.
+  - Changed field lookup from `group_id` to `exercise_group_id` (with legacy fallback)
+  - Exercises now correctly display with technique grouping badges
+
+- **Trainer Plans Tab** - Fixed UI showing accept buttons incorrectly
+  - Removed accept/decline buttons from trainer's student view
+  - Added read-only pending section "Aguardando Resposta do Aluno"
+  - Added cancel option for pending prescriptions via PopupMenuButton
+  - Added visibility for declined plans with "Recusado" badge
+
 ## [1.7.0] - 2026-01-22
 
 ### Added
