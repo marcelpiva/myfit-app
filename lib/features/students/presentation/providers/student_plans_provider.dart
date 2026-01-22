@@ -4,38 +4,48 @@ import '../../../../core/services/workout_service.dart';
 
 /// State for student's plan assignments
 class StudentPlansState {
-  /// Currently active plans (is_active=true AND start_date <= today)
+  /// Currently active plans (is_active=true AND start_date <= today AND status=accepted)
   final List<Map<String, dynamic>> activePlans;
 
-  /// Scheduled plans (is_active=true AND start_date > today)
+  /// Scheduled plans (is_active=true AND start_date > today AND status=accepted)
   final List<Map<String, dynamic>> scheduledPlans;
 
-  /// Historical plans (is_active=false)
+  /// Pending plans awaiting student response (status=pending)
+  final List<Map<String, dynamic>> pendingPlans;
+
+  /// Historical plans (is_active=false OR status=declined)
   final List<Map<String, dynamic>> historyAssignments;
 
   final bool isLoading;
+  final bool isResponding;
   final String? error;
 
   const StudentPlansState({
     this.activePlans = const [],
     this.scheduledPlans = const [],
+    this.pendingPlans = const [],
     this.historyAssignments = const [],
     this.isLoading = false,
+    this.isResponding = false,
     this.error,
   });
 
   StudentPlansState copyWith({
     List<Map<String, dynamic>>? activePlans,
     List<Map<String, dynamic>>? scheduledPlans,
+    List<Map<String, dynamic>>? pendingPlans,
     List<Map<String, dynamic>>? historyAssignments,
     bool? isLoading,
+    bool? isResponding,
     String? error,
   }) {
     return StudentPlansState(
       activePlans: activePlans ?? this.activePlans,
       scheduledPlans: scheduledPlans ?? this.scheduledPlans,
+      pendingPlans: pendingPlans ?? this.pendingPlans,
       historyAssignments: historyAssignments ?? this.historyAssignments,
       isLoading: isLoading ?? this.isLoading,
+      isResponding: isResponding ?? this.isResponding,
       error: error,
     );
   }
@@ -45,7 +55,9 @@ class StudentPlansState {
 
   bool get hasCurrentPlan => activePlans.isNotEmpty;
   bool get hasScheduledPlans => scheduledPlans.isNotEmpty;
+  bool get hasPendingPlans => pendingPlans.isNotEmpty;
   bool get hasMultipleActivePlans => activePlans.length > 1;
+  int get pendingCount => pendingPlans.length;
 
   String? get currentPlanName => currentAssignment?['plan_name'] as String?;
   String? get currentPlanId => currentAssignment?['plan_id'] as String?;
@@ -80,12 +92,27 @@ class StudentPlansNotifier extends StateNotifier<StudentPlansState> {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
 
-      // Separate into: active, scheduled, and history
+      // Separate into: pending, active, scheduled, and history
+      final pending = <Map<String, dynamic>>[];
       final active = <Map<String, dynamic>>[];
       final scheduled = <Map<String, dynamic>>[];
       final history = <Map<String, dynamic>>[];
 
       for (final assignment in allAssignments) {
+        final status = assignment['status'] as String?;
+
+        // Check if pending (awaiting student response)
+        if (status == 'pending') {
+          pending.add(assignment);
+          continue;
+        }
+
+        // Check if declined
+        if (status == 'declined') {
+          history.add(assignment);
+          continue;
+        }
+
         if (assignment['is_active'] != true) {
           // Inactive = history
           history.add(assignment);
@@ -110,6 +137,14 @@ class StudentPlansNotifier extends StateNotifier<StudentPlansState> {
           }
         }
       }
+
+      // Sort pending by created_at descending (newest first)
+      pending.sort((a, b) {
+        final aDate = DateTime.tryParse(a['created_at'] as String? ?? '');
+        final bDate = DateTime.tryParse(b['created_at'] as String? ?? '');
+        if (aDate == null || bDate == null) return 0;
+        return bDate.compareTo(aDate);
+      });
 
       // Sort active plans by start_date ascending (oldest first = primary)
       active.sort((a, b) {
@@ -136,6 +171,7 @@ class StudentPlansNotifier extends StateNotifier<StudentPlansState> {
       });
 
       state = state.copyWith(
+        pendingPlans: pending,
         activePlans: active,
         scheduledPlans: scheduled,
         historyAssignments: history,
@@ -217,6 +253,47 @@ class StudentPlansNotifier extends StateNotifier<StudentPlansState> {
       return true;
     } catch (e) {
       state = state.copyWith(error: e.toString());
+      return false;
+    }
+  }
+
+  /// Accept a pending plan assignment
+  Future<bool> acceptAssignment(String assignmentId) async {
+    try {
+      state = state.copyWith(isResponding: true, error: null);
+      await _workoutService.respondToPlanAssignment(
+        assignmentId,
+        accept: true,
+      );
+      await loadAssignments();
+      state = state.copyWith(isResponding: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isResponding: false,
+        error: e.toString(),
+      );
+      return false;
+    }
+  }
+
+  /// Decline a pending plan assignment with optional reason
+  Future<bool> declineAssignment(String assignmentId, {String? reason}) async {
+    try {
+      state = state.copyWith(isResponding: true, error: null);
+      await _workoutService.respondToPlanAssignment(
+        assignmentId,
+        accept: false,
+        declinedReason: reason,
+      );
+      await loadAssignments();
+      state = state.copyWith(isResponding: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isResponding: false,
+        error: e.toString(),
+      );
       return false;
     }
   }

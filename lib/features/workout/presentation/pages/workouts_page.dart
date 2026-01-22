@@ -513,6 +513,7 @@ class _WorkoutsList extends ConsumerWidget {
 
     final plans = plansState.plans;
     final workouts = workoutsState.workouts;
+    final hasTrainer = ref.watch(studentDashboardProvider).hasTrainer;
 
     if (plans.isEmpty && workouts.isEmpty) {
       return Center(
@@ -520,13 +521,15 @@ class _WorkoutsList extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              LucideIcons.dumbbell,
+              hasTrainer ? LucideIcons.userCheck : LucideIcons.dumbbell,
               size: 64,
               color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
             ),
             const SizedBox(height: 16),
             Text(
-              'Nenhum treino encontrado',
+              hasTrainer
+                  ? 'Aguardando prescrição'
+                  : 'Nenhum treino encontrado',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -535,12 +538,38 @@ class _WorkoutsList extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Crie seu primeiro plano de treino',
+              hasTrainer
+                  ? 'Seu Personal ainda não prescreveu um plano de treino'
+                  : 'Crie seu primeiro plano de treino',
               style: TextStyle(
                 fontSize: 14,
                 color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
               ),
+              textAlign: TextAlign.center,
             ),
+            if (hasTrainer) ...[
+              const SizedBox(height: 24),
+              GestureDetector(
+                onTap: () {
+                  HapticUtils.lightImpact();
+                  context.go(RouteNames.chat);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'Conversar com Personal',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       );
@@ -556,13 +585,13 @@ class _WorkoutsList extends ConsumerWidget {
             child: Row(
               children: [
                 Icon(
-                  LucideIcons.clipboard,
+                  hasTrainer ? LucideIcons.userCheck : LucideIcons.clipboard,
                   size: 18,
                   color: isDark ? AppColors.primaryDark : AppColors.primary,
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Planos',
+                  hasTrainer ? 'Planos Prescritos' : 'Planos',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -583,6 +612,7 @@ class _WorkoutsList extends ConsumerWidget {
           ...plans.map((plan) => _PlanCard(
                 plan: plan,
                 isDark: isDark,
+                isAssigned: plan['is_assigned'] == true,
                 onTap: () {
                   HapticUtils.lightImpact();
                   context.push('/plans/${plan['id']}');
@@ -652,11 +682,13 @@ class _WorkoutsList extends ConsumerWidget {
 class _PlanCard extends StatelessWidget {
   final Map<String, dynamic> plan;
   final bool isDark;
+  final bool isAssigned;
   final VoidCallback onTap;
 
   const _PlanCard({
     required this.plan,
     required this.isDark,
+    this.isAssigned = false,
     required this.onTap,
   });
 
@@ -668,6 +700,7 @@ class _PlanCard extends StatelessWidget {
     final splitType = plan['split_type'] as String?;
     final workoutsCount = (plan['workouts'] as List?)?.length ?? 0;
     final durationWeeks = plan['duration_weeks'] as int?;
+    final trainerNotes = plan['trainer_notes'] as String?;
 
     return GestureDetector(
       onTap: onTap,
@@ -742,6 +775,36 @@ class _PlanCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
+                if (isAssigned)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withAlpha(30),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: AppColors.success.withAlpha(50),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          LucideIcons.userCheck,
+                          size: 12,
+                          color: AppColors.success,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Prescrito',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.success,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 _PlanBadge(
                   label: '$workoutsCount treinos',
                   icon: LucideIcons.dumbbell,
@@ -767,6 +830,44 @@ class _PlanCard extends StatelessWidget {
                   ),
               ],
             ),
+            // Trainer notes if assigned
+            if (isAssigned && trainerNotes != null && trainerNotes.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.info.withAlpha(isDark ? 20 : 15),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppColors.info.withAlpha(30),
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      LucideIcons.messageSquare,
+                      size: 14,
+                      color: AppColors.info,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        trainerNotes,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark
+                              ? AppColors.foregroundDark.withAlpha(200)
+                              : AppColors.foreground.withAlpha(200),
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),

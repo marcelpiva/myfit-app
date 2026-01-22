@@ -22,6 +22,7 @@ import '../../features/progress/presentation/pages/weight_goal_page.dart';
 import '../../features/progress/presentation/pages/progress_stats_page.dart';
 import '../../features/progress/presentation/pages/photo_comparison_page.dart';
 import '../../features/progress/presentation/pages/progress_comparison_page.dart';
+import '../../features/progress/presentation/pages/progress_report_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/workout/presentation/pages/workout_detail_page.dart';
 import '../../features/workout/presentation/pages/workouts_page.dart';
@@ -48,6 +49,7 @@ import '../../features/legal/presentation/pages/about_page.dart';
 import '../../features/legal/presentation/pages/privacy_page.dart';
 import '../../features/legal/presentation/pages/terms_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
+import '../../features/social/presentation/pages/activity_feed_page.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/organization/presentation/pages/create_org_page.dart';
 import '../../features/organization/presentation/pages/join_org_page.dart';
@@ -335,6 +337,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const MarketplacePage(),
       ),
       GoRoute(
+        path: RouteNames.activityFeed,
+        name: 'activity-feed',
+        builder: (context, state) => const ActivityFeedPage(),
+      ),
+      GoRoute(
         path: RouteNames.help,
         name: 'help',
         builder: (context, state) => const HelpPage(),
@@ -370,6 +377,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: RouteNames.progressComparison,
         name: 'progress-comparison',
         builder: (context, state) => const ProgressComparisonPage(),
+      ),
+      GoRoute(
+        path: RouteNames.progressReport,
+        name: 'progress-report',
+        builder: (context, state) => const ProgressReportPage(),
       ),
 
       // Active workout

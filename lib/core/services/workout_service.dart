@@ -958,6 +958,36 @@ class WorkoutService {
     }
   }
 
+  /// Respond to a plan assignment (accept or decline)
+  /// Only the assigned student can respond to their own assignments
+  Future<Map<String, dynamic>> respondToPlanAssignment(
+    String assignmentId, {
+    required bool accept,
+    String? declinedReason,
+  }) async {
+    try {
+      final data = <String, dynamic>{
+        'accept': accept,
+      };
+      if (!accept && declinedReason != null) {
+        data['declined_reason'] = declinedReason;
+      }
+
+      final response = await _client.post(
+        '${ApiEndpoints.planAssignments}/$assignmentId/respond',
+        data: data,
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw ServerException(accept ? 'Erro ao aceitar plano' : 'Erro ao recusar plano');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? (accept ? 'Erro ao aceitar plano' : 'Erro ao recusar plano'), e);
+    }
+  }
+
   // ==================== AI Exercise Suggestions ====================
 
   /// Suggest exercises based on muscle groups, training goal, and workout context

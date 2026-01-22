@@ -52,7 +52,7 @@ class MilestoneNotifier extends StateNotifier<MilestoneState> {
     loadMilestones();
   }
 
-  ApiClient get _api => _ref.read(apiClientProvider);
+  ApiClient get _api => ApiClient.instance;
 
   /// Load all milestones for the current user
   Future<void> loadMilestones() async {

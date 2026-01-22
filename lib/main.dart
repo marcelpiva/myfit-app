@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 import 'app/app.dart';
 import 'core/config/environment.dart';
@@ -42,6 +43,9 @@ void main() async {
 
     // Initialize token storage
     await TokenStorage.init();
+
+    // Configure timeago locales
+    timeago.setLocaleMessages('pt_BR', timeago.PtBrMessages());
 
     // Set preferred orientations (not supported on web)
     if (!kIsWeb) {

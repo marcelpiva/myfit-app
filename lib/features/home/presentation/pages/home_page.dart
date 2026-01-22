@@ -87,6 +87,10 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
 
     // Watch dashboard state
     final dashboardState = ref.watch(studentDashboardProvider);
+    // Watch pending plans (only if student has a trainer)
+    final pendingPlansState = dashboardState.hasTrainer
+        ? ref.watch(studentPendingPlansProvider)
+        : null;
 
     return Scaffold(
       body: Container(
@@ -99,6 +103,9 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                 : RefreshIndicator(
                     onRefresh: () async {
                       ref.read(studentDashboardProvider.notifier).refresh();
+                      if (dashboardState.hasTrainer) {
+                        ref.read(studentPendingPlansProvider.notifier).refresh();
+                      }
                     },
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
@@ -117,6 +124,12 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                             // Trainer Info Card (if has trainer)
                             if (dashboardState.hasTrainer) ...[
                               _buildTrainerCard(context, isDark, dashboardState.trainer!),
+                              const SizedBox(height: 24),
+                            ],
+
+                            // Pending Plans Notification (if has pending plans)
+                            if (pendingPlansState != null && pendingPlansState.hasPendingPlans) ...[
+                              _buildPendingPlansCard(context, isDark, pendingPlansState),
                               const SizedBox(height: 24),
                             ],
 
@@ -645,6 +658,218 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
     );
   }
 
+  Widget _buildPendingPlansCard(
+    BuildContext context,
+    bool isDark,
+    StudentPendingPlansState pendingState,
+  ) {
+    final count = pendingState.pendingCount;
+    final firstPlan = pendingState.pendingPlans.first;
+    final planName = firstPlan['plan_name'] as String? ?? 'Novo Plano';
+    final trainerName = firstPlan['trainer_name'] as String?;
+
+    return GestureDetector(
+      onTap: () {
+        HapticUtils.lightImpact();
+        _showRespondPlanSheet(context, firstPlan);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.warning.withAlpha(isDark ? 40 : 30),
+              AppColors.warning.withAlpha(isDark ? 20 : 15),
+            ],
+          ),
+          border: Border.all(
+            color: AppColors.warning.withAlpha(100),
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.warning.withAlpha(20),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Icon container
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.warning.withAlpha(30),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Center(
+                child: Icon(
+                  LucideIcons.bellRing,
+                  size: 24,
+                  color: AppColors.warning,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.warning,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          count > 1 ? '$count PENDENTES' : 'NOVO PLANO',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    count > 1
+                        ? 'Voce tem $count planos aguardando resposta'
+                        : planName,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (count == 1 && trainerName != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      'Prescrito por $trainerName',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark
+                            ? AppColors.mutedForegroundDark
+                            : AppColors.mutedForeground,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            // Action indicator
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.success,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Responder',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(
+                    LucideIcons.chevronRight,
+                    size: 14,
+                    color: Colors.white,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showRespondPlanSheet(BuildContext context, Map<String, dynamic> assignment) {
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _StudentRespondPlanSheet(
+        assignment: assignment,
+        onAccept: () async {
+          HapticUtils.mediumImpact();
+          final success = await ref
+              .read(studentPendingPlansProvider.notifier)
+              .acceptPlan(assignment['id'] as String);
+          if (ctx.mounted) {
+            Navigator.of(ctx).pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    Icon(
+                      success ? LucideIcons.checkCircle : LucideIcons.alertCircle,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(success ? 'Plano aceito com sucesso!' : 'Erro ao aceitar plano'),
+                  ],
+                ),
+                backgroundColor: success ? AppColors.success : AppColors.destructive,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+            // Refresh dashboard to update UI
+            ref.read(studentDashboardProvider.notifier).refresh();
+          }
+        },
+        onDecline: (reason) async {
+          HapticUtils.mediumImpact();
+          final success = await ref
+              .read(studentPendingPlansProvider.notifier)
+              .declinePlan(assignment['id'] as String, reason: reason);
+          if (ctx.mounted) {
+            Navigator.of(ctx).pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    Icon(
+                      success ? LucideIcons.info : LucideIcons.alertCircle,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(success ? 'Plano recusado' : 'Erro ao recusar plano'),
+                  ],
+                ),
+                backgroundColor: success ? AppColors.mutedForeground : AppColors.destructive,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        },
+      ),
+    );
+  }
+
   Widget _buildSectionHeader(
     BuildContext context,
     bool isDark,
@@ -894,9 +1119,9 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
         HapticUtils.lightImpact();
         context.push(RouteNames.checkin);
       }),
-      (LucideIcons.trophy, 'Ranking', AppColors.accent, () {
+      (LucideIcons.users, 'Feed', AppColors.accent, () {
         HapticUtils.lightImpact();
-        context.push(RouteNames.leaderboard);
+        context.push(RouteNames.activityFeed);
       }),
       (LucideIcons.messageCircle, 'Chat', AppColors.success, () {
         HapticUtils.lightImpact();
@@ -1509,6 +1734,385 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Bottom sheet for student to respond to a pending plan assignment
+class _StudentRespondPlanSheet extends StatefulWidget {
+  final Map<String, dynamic> assignment;
+  final VoidCallback onAccept;
+  final void Function(String? reason) onDecline;
+
+  const _StudentRespondPlanSheet({
+    required this.assignment,
+    required this.onAccept,
+    required this.onDecline,
+  });
+
+  @override
+  State<_StudentRespondPlanSheet> createState() => _StudentRespondPlanSheetState();
+}
+
+class _StudentRespondPlanSheetState extends State<_StudentRespondPlanSheet> {
+  final _reasonController = TextEditingController();
+  bool _showDeclineReason = false;
+  bool _isProcessing = false;
+
+  String get _planName => widget.assignment['plan_name'] as String? ?? 'Plano de Treino';
+  String? get _trainerName => widget.assignment['trainer_name'] as String?;
+  String? get _notes => widget.assignment['notes'] as String?;
+  String? get _startDateStr => widget.assignment['start_date'] as String?;
+  String? get _endDateStr => widget.assignment['end_date'] as String?;
+  String? get _goal => widget.assignment['plan']?['goal'] as String?;
+
+  @override
+  void dispose() {
+    _reasonController.dispose();
+    super.dispose();
+  }
+
+  String _formatDate(String? dateStr) {
+    if (dateStr == null) return '--';
+    try {
+      final date = DateTime.parse(dateStr);
+      return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    } catch (_) {
+      return dateStr;
+    }
+  }
+
+  String _translateGoal(String? goal) {
+    if (goal == null) return '--';
+    switch (goal.toLowerCase()) {
+      case 'hypertrophy':
+        return 'Hipertrofia';
+      case 'strength':
+        return 'Forca';
+      case 'fat_loss':
+        return 'Emagrecimento';
+      case 'endurance':
+        return 'Resistencia';
+      case 'functional':
+        return 'Funcional';
+      default:
+        return goal;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.backgroundDark : AppColors.background,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Drag handle
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.borderDark : AppColors.border,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          // Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+            child: Column(
+              children: [
+                // Pending badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withAlpha(20),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.warning.withAlpha(50)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(LucideIcons.clock, size: 14, color: AppColors.warning),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Aguardando sua resposta',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.warning,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Plan name
+                Text(
+                  _planName,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                if (_trainerName != null) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        LucideIcons.user,
+                        size: 14,
+                        color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Prescrito por $_trainerName',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Plan details
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.cardDark : AppColors.card,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDark ? AppColors.borderDark : AppColors.border,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildDetailItem(
+                      context,
+                      isDark,
+                      LucideIcons.calendar,
+                      'Inicio',
+                      _formatDate(_startDateStr),
+                    ),
+                  ),
+                  Expanded(
+                    child: _buildDetailItem(
+                      context,
+                      isDark,
+                      LucideIcons.calendarCheck,
+                      'Termino',
+                      _endDateStr != null ? _formatDate(_endDateStr) : 'Continuo',
+                    ),
+                  ),
+                  if (_goal != null)
+                    Expanded(
+                      child: _buildDetailItem(
+                        context,
+                        isDark,
+                        LucideIcons.target,
+                        'Objetivo',
+                        _translateGoal(_goal),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+
+          // Trainer notes
+          if (_notes != null && _notes!.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.info.withAlpha(15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.info.withAlpha(40)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(LucideIcons.messageSquare, size: 16, color: AppColors.info),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Nota do Personal',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.info,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _notes!,
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+
+          // Decline reason input
+          if (_showDeclineReason) ...[
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: TextField(
+                controller: _reasonController,
+                maxLines: 2,
+                maxLength: 500,
+                decoration: InputDecoration(
+                  labelText: 'Motivo da recusa (opcional)',
+                  hintText: 'Ex: Prefiro outro tipo de treino...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  prefixIcon: const Icon(LucideIcons.messageCircle),
+                ),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 24),
+
+          // Action buttons
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            child: Row(
+              children: [
+                // Decline button
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _isProcessing
+                        ? null
+                        : () {
+                            if (!_showDeclineReason) {
+                              setState(() => _showDeclineReason = true);
+                            } else {
+                              setState(() => _isProcessing = true);
+                              widget.onDecline(_reasonController.text.trim().isNotEmpty
+                                  ? _reasonController.text.trim()
+                                  : null);
+                            }
+                          },
+                    icon: Icon(
+                      _showDeclineReason ? LucideIcons.send : LucideIcons.x,
+                      size: 18,
+                    ),
+                    label: Text(_showDeclineReason ? 'Confirmar' : 'Recusar'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.destructive,
+                      side: const BorderSide(color: AppColors.destructive),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Accept button
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton.icon(
+                    onPressed: _isProcessing
+                        ? null
+                        : () {
+                            setState(() => _isProcessing = true);
+                            widget.onAccept();
+                          },
+                    icon: _isProcessing
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation(Colors.white),
+                            ),
+                          )
+                        : const Icon(LucideIcons.check, size: 18),
+                    label: Text(_isProcessing ? 'Processando...' : 'Aceitar Plano'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.success,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Safe area padding
+          SizedBox(height: MediaQuery.of(context).padding.bottom),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailItem(
+    BuildContext context,
+    bool isDark,
+    IconData icon,
+    String label,
+    String value,
+  ) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              icon,
+              size: 12,
+              color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }

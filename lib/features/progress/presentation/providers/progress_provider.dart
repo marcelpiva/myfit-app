@@ -537,3 +537,33 @@ final isMeasurementLogsLoadingProvider = Provider<bool>((ref) {
 final isProgressPhotosLoadingProvider = Provider<bool>((ref) {
   return ref.watch(progressPhotosNotifierProvider).isLoading;
 });
+
+// ==================== Combined Progress Provider ====================
+
+/// Combined progress state for comparison page
+class CombinedProgressState {
+  final List<Map<String, dynamic>> weightLogs;
+  final List<Map<String, dynamic>> measurementLogs;
+  final bool isLoading;
+  final String? error;
+
+  const CombinedProgressState({
+    this.weightLogs = const [],
+    this.measurementLogs = const [],
+    this.isLoading = false,
+    this.error,
+  });
+}
+
+/// Combined provider for progress comparison
+final progressProvider = Provider<CombinedProgressState>((ref) {
+  final weightState = ref.watch(weightLogsNotifierProvider);
+  final measurementState = ref.watch(measurementLogsNotifierProvider);
+
+  return CombinedProgressState(
+    weightLogs: weightState.logs,
+    measurementLogs: measurementState.logs,
+    isLoading: weightState.isLoading || measurementState.isLoading,
+    error: weightState.error ?? measurementState.error,
+  );
+});

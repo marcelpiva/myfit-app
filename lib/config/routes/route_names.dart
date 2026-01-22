@@ -48,6 +48,7 @@ abstract class RouteNames {
   static const weightGoal = '/progress/goal';
   static const progressStats = '/progress/stats';
   static const progressComparison = '/progress/compare';
+  static const progressReport = '/progress/report';
 
   // Chat routes
   static const conversation = '/chat/:conversationId';
@@ -68,6 +69,9 @@ abstract class RouteNames {
   // Marketplace
   static const marketplace = '/marketplace';
   static const marketplaceItem = '/marketplace/:id';
+
+  // Social
+  static const activityFeed = '/social/feed';
 
   // Other
   static const notifications = '/notifications';

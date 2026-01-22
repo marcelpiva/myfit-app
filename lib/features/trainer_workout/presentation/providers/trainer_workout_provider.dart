@@ -425,11 +425,11 @@ TrainerWorkout _mapToTrainerWorkout(Map<String, dynamic> data) {
   }).toList();
 
   return TrainerWorkout(
-    id: data['id'] as String,
-    trainerId: data['trainer_id'] as String? ?? '',
-    trainerName: data['trainer_name'] as String? ?? '',
-    studentId: data['student_id'] as String? ?? '',
-    studentName: data['student_name'] as String? ?? '',
+    id: data['id'] as String? ?? '',
+    trainerId: data['trainer_id'] as String? ?? data['created_by_id'] as String? ?? '',
+    trainerName: data['trainer_name'] as String? ?? data['created_by_name'] as String? ?? 'Trainer',
+    studentId: data['student_id'] as String? ?? data['user_id'] as String? ?? '',
+    studentName: data['student_name'] as String? ?? data['user_name'] as String? ?? 'Aluno',
     studentAvatarUrl: data['student_avatar_url'] as String?,
     name: data['name'] as String? ?? '',
     description: data['description'] as String?,

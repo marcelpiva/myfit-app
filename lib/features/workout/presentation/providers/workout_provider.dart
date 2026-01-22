@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/error/api_exceptions.dart';
 import '../../../../core/services/workout_service.dart';
+import '../../../home/presentation/providers/student_home_provider.dart';
 
 // Service provider
 final workoutServiceProvider = Provider<WorkoutService>((ref) {
@@ -37,16 +38,28 @@ class WorkoutsState {
 
 class WorkoutsNotifier extends StateNotifier<WorkoutsState> {
   final WorkoutService _service;
+  final Ref _ref;
 
-  WorkoutsNotifier(this._service) : super(const WorkoutsState()) {
+  WorkoutsNotifier(this._service, this._ref) : super(const WorkoutsState()) {
     loadWorkouts();
   }
+
+  /// Check if user has a trainer (student with personal)
+  bool get _hasTrainer => _ref.read(studentDashboardProvider).hasTrainer;
 
   Future<void> loadWorkouts() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final workouts = await _service.getWorkouts();
-      state = state.copyWith(workouts: workouts, isLoading: false);
+      if (_hasTrainer) {
+        // Student has trainer - don't show individual workouts
+        // They should only train workouts within their assigned plans
+        debugPrint('loadWorkouts: Student has trainer, no individual workouts');
+        state = state.copyWith(workouts: [], isLoading: false);
+      } else {
+        // Student has no trainer - load their own workouts
+        final workouts = await _service.getWorkouts();
+        state = state.copyWith(workouts: workouts, isLoading: false);
+      }
     } on ApiException catch (e) {
       state = state.copyWith(isLoading: false, error: e.message);
     } catch (e) {
@@ -124,7 +137,7 @@ class WorkoutsNotifier extends StateNotifier<WorkoutsState> {
 
 final workoutsNotifierProvider = StateNotifierProvider<WorkoutsNotifier, WorkoutsState>((ref) {
   final service = ref.watch(workoutServiceProvider);
-  return WorkoutsNotifier(service);
+  return WorkoutsNotifier(service, ref);
 });
 
 // ==================== Workout Sessions ====================
@@ -461,15 +474,45 @@ class PlansState {
 
 class PlansNotifier extends StateNotifier<PlansState> {
   final WorkoutService _service;
+  final Ref _ref;
 
-  PlansNotifier(this._service) : super(const PlansState()) {
+  PlansNotifier(this._service, this._ref) : super(const PlansState()) {
     loadPlans();
   }
+
+  /// Check if user has a trainer (student with personal)
+  bool get _hasTrainer => _ref.read(studentDashboardProvider).hasTrainer;
 
   Future<void> loadPlans() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final plans = await _service.getPlans();
+      List<Map<String, dynamic>> plans;
+
+      if (_hasTrainer) {
+        // Student has a trainer - load only assigned plans
+        debugPrint('loadPlans: Student has trainer, loading plan assignments');
+        final assignments = await _service.getPlanAssignments(activeOnly: true);
+
+        // Transform assignments to plan format for UI consistency
+        plans = assignments.map((assignment) {
+          final plan = assignment['plan'] as Map<String, dynamic>? ?? {};
+          return <String, dynamic>{
+            ...plan,
+            'assignment_id': assignment['id'],
+            'start_date': assignment['start_date'],
+            'end_date': assignment['end_date'],
+            'trainer_notes': assignment['notes'],
+            'is_assigned': true,
+          };
+        }).toList();
+
+        debugPrint('loadPlans: Loaded ${plans.length} assigned plans');
+      } else {
+        // Student has no trainer - load their own plans
+        debugPrint('loadPlans: Student has no trainer, loading own plans');
+        plans = await _service.getPlans();
+      }
+
       state = state.copyWith(plans: plans, isLoading: false);
     } on ApiException catch (e) {
       state = state.copyWith(isLoading: false, error: e.message);
@@ -505,7 +548,7 @@ class PlansNotifier extends StateNotifier<PlansState> {
 
 final plansNotifierProvider = StateNotifierProvider<PlansNotifier, PlansState>((ref) {
   final service = ref.watch(workoutServiceProvider);
-  return PlansNotifier(service);
+  return PlansNotifier(service, ref);
 });
 
 final plansProvider = Provider<List<Map<String, dynamic>>>((ref) {

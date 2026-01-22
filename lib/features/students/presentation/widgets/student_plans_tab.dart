@@ -10,6 +10,7 @@ import 'assign_existing_plan_sheet.dart';
 import 'current_plan_card.dart';
 import 'evolve_plan_sheet.dart';
 import 'prescribe_plan_sheet.dart';
+import 'respond_plan_sheet.dart';
 
 /// Tab content showing student's training plans
 class StudentPlansTab extends ConsumerWidget {
@@ -46,6 +47,33 @@ class StudentPlansTab extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Pending Plans Section (only show if there are pending plans)
+          if (state.pendingPlans.isNotEmpty) ...[
+            _buildSectionHeader(
+              theme,
+              isDark,
+              'Aguardando Resposta',
+              LucideIcons.bellRing,
+              trailing: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.warning,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${state.pendingPlans.length}',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _buildPendingList(context, theme, isDark, state.pendingPlans, ref),
+            const SizedBox(height: 24),
+          ],
+
           // Active Plans Section
           _buildSectionHeader(
             theme,
@@ -399,6 +427,247 @@ class StudentPlansTab extends ConsumerWidget {
           ),
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildPendingList(
+    BuildContext context,
+    ThemeData theme,
+    bool isDark,
+    List<Map<String, dynamic>> pending,
+    WidgetRef ref,
+  ) {
+    return Column(
+      children: pending.map((assignment) {
+        final planName = assignment['plan_name'] as String? ?? 'Plano sem nome';
+        final startDateStr = assignment['start_date'] as String?;
+        final trainerName = assignment['trainer_name'] as String?;
+        final notes = assignment['notes'] as String?;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.cardDark : AppColors.card,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.warning.withAlpha(100),
+              width: 2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.warning.withAlpha(20),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Header with pending badge
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withAlpha(isDark ? 20 : 15),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning.withAlpha(30),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        LucideIcons.clock,
+                        size: 20,
+                        color: AppColors.warning,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            planName,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          if (trainerName != null)
+                            Text(
+                              'Prescrito por $trainerName',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: isDark
+                                    ? AppColors.mutedForegroundDark
+                                    : AppColors.mutedForeground,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.warning,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'PENDENTE',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Plan info and actions
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Start date info
+                    if (startDateStr != null)
+                      Row(
+                        children: [
+                          Icon(
+                            LucideIcons.calendar,
+                            size: 14,
+                            color: isDark
+                                ? AppColors.mutedForegroundDark
+                                : AppColors.mutedForeground,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Inicio previsto: ${_formatDate(startDateStr)}',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: isDark
+                                  ? AppColors.mutedForegroundDark
+                                  : AppColors.mutedForeground,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                    // Notes preview
+                    if (notes != null && notes.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.info.withAlpha(isDark ? 15 : 10),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: AppColors.info.withAlpha(30),
+                          ),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              LucideIcons.messageSquare,
+                              size: 14,
+                              color: AppColors.info,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                notes.length > 100 ? '${notes.substring(0, 100)}...' : notes,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: isDark
+                                      ? AppColors.foregroundDark
+                                      : AppColors.foreground,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 16),
+
+                    // Action buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _showRespondSheet(context, assignment, ref),
+                            icon: const Icon(LucideIcons.eye, size: 16),
+                            label: const Text('Ver Detalhes'),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          flex: 2,
+                          child: FilledButton.icon(
+                            onPressed: () async {
+                              HapticUtils.mediumImpact();
+                              final assignmentId = assignment['id'] as String;
+                              final success = await ref
+                                  .read(studentPlansProvider(studentUserId).notifier)
+                                  .acceptAssignment(assignmentId);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      success
+                                          ? 'Plano aceito com sucesso!'
+                                          : 'Erro ao aceitar plano',
+                                    ),
+                                    backgroundColor:
+                                        success ? AppColors.success : AppColors.destructive,
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
+                            },
+                            icon: const Icon(LucideIcons.check, size: 16),
+                            label: const Text('Aceitar'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.success,
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  void _showRespondSheet(
+    BuildContext context,
+    Map<String, dynamic> assignment,
+    WidgetRef ref,
+  ) {
+    HapticUtils.lightImpact();
+    showRespondPlanSheet(
+      context,
+      assignment: assignment,
+      studentUserId: studentUserId,
     );
   }
 

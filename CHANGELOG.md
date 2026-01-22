@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-01-22
+
+### Added
+
+#### Phase 2.6 - Advanced Training Features
+- **Workout Timer System** - Advanced timer sheet for active workouts
+  - Configurable timer with rest intervals
+  - Visual countdown with progress indicator
+
+- **Exercise Technique Visualization** - Grouped display for advanced techniques
+  - Visual grouping for supersets, bisets, trisets, giantsets
+  - Technique badges and colors for dropsets, rest-pause, cluster sets
+  - Improved workout detail page with technique cards
+
+- **Plan Assignment Accept/Decline** - Student response to prescribed plans
+  - Pending plans notification card on Home
+  - Bottom sheet to view plan details and respond
+  - Accept plan directly or decline with optional reason
+  - `studentPendingPlansProvider` for student's own pending plans
+  - `respondToPlanAssignment()` service method
+
+- **Social Features Foundation**
+  - Shareable workout completion cards
+  - Shareable achievement cards
+  - Activity feed page structure
+
+- **Progress Reports**
+  - PDF report generation page structure
+
+### Fixed
+- **Workout Detail Null Handling** - Fixed "type Null is not a subtype of String" errors
+  - Added null safety for exercise name, sets, reps, rest fields
+  - Nested Map access with fallbacks
+
+### Changed
+- **Student Plans Tab** - Added "Aguardando Resposta" section for pending plans
+  - Direct accept button on pending plan cards
+  - "Ver Detalhes" opens full response sheet
+
 ## [1.6.0] - 2026-01-22
 
 ### Added
