@@ -82,15 +82,11 @@ class _PlanDetailPageState extends ConsumerState<PlanDetailPage>
           ),
         ),
       ),
-      floatingActionButton: hasWorkouts && !detailState.isLoading && plan != null
-          ? FloatingActionButton.extended(
-              onPressed: () => _showStartWorkoutSheet(context, plan),
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              icon: const Icon(LucideIcons.play, size: 20),
-              label: const Text('Iniciar Treino'),
-            )
-          : null,
+      floatingActionButton: _buildFloatingActionButton(
+        hasWorkouts: hasWorkouts,
+        isLoading: detailState.isLoading,
+        plan: plan,
+      ),
     );
   }
 
@@ -123,6 +119,53 @@ class _PlanDetailPageState extends ConsumerState<PlanDetailPage>
           ],
         ),
       ),
+    );
+  }
+
+  Widget? _buildFloatingActionButton({
+    required bool hasWorkouts,
+    required bool isLoading,
+    required Map<String, dynamic>? plan,
+  }) {
+    if (!hasWorkouts || isLoading || plan == null) {
+      return null;
+    }
+
+    // Check if user is trainer - trainers should not start workouts
+    final activeContext = ref.watch(activeContextProvider);
+    final isTrainer = activeContext?.isTrainer ?? false;
+    if (isTrainer) {
+      return null;
+    }
+
+    // Check if plan is active (is_active=true and start_date <= today)
+    final isActive = plan['is_active'] as bool? ?? true;
+    if (!isActive) {
+      return null;
+    }
+
+    // Check start_date - if in the future, plan is scheduled (not yet active)
+    final startDateStr = plan['start_date'] as String?;
+    if (startDateStr != null) {
+      try {
+        final startDate = DateTime.parse(startDateStr);
+        final today = DateTime.now();
+        final todayDate = DateTime(today.year, today.month, today.day);
+        if (startDate.isAfter(todayDate)) {
+          // Plan starts in the future - not active yet
+          return null;
+        }
+      } catch (_) {
+        // Invalid date format, allow starting
+      }
+    }
+
+    return FloatingActionButton.extended(
+      onPressed: () => _showStartWorkoutSheet(context, plan),
+      backgroundColor: AppColors.primary,
+      foregroundColor: Colors.white,
+      icon: const Icon(LucideIcons.play, size: 20),
+      label: const Text('Iniciar Treino'),
     );
   }
 
