@@ -69,7 +69,7 @@ class StudentPlansTab extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 12),
-            _buildPendingList(context, theme, isDark, state.pendingPlans),
+            _buildPendingList(context, theme, isDark, state.pendingPlans, ref),
             const SizedBox(height: 24),
           ],
 
@@ -289,12 +289,13 @@ class StudentPlansTab extends ConsumerWidget {
     );
   }
 
-  /// Builds the pending plans list for trainer view (view-only, no accept/decline)
+  /// Builds the pending plans list for trainer view (view/edit/cancel - no accept/decline)
   Widget _buildPendingList(
     BuildContext context,
     ThemeData theme,
     bool isDark,
     List<Map<String, dynamic>> pending,
+    WidgetRef ref,
   ) {
     return Column(
       children: pending.map((assignment) {
@@ -389,41 +390,55 @@ class StudentPlansTab extends ConsumerWidget {
                   ],
                 ),
               ),
-              // View and Edit buttons
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      final planId = assignment['plan_id'] as String?;
-                      if (planId != null) {
-                        _viewPlanDetails(context, planId);
-                      }
-                    },
-                    icon: Icon(
-                      LucideIcons.eye,
-                      size: 18,
-                      color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+              // Menu with view, edit, cancel options
+              PopupMenuButton<String>(
+                icon: Icon(
+                  LucideIcons.moreVertical,
+                  size: 18,
+                  color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                ),
+                onSelected: (value) {
+                  final assignmentId = assignment['id'] as String;
+                  final planId = assignment['plan_id'] as String;
+                  switch (value) {
+                    case 'view':
+                      _viewPlanDetails(context, planId);
+                    case 'edit':
+                      _editPrescription(context, planId);
+                    case 'cancel':
+                      _confirmCancelAssignment(context, ref, assignmentId);
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'view',
+                    child: Row(
+                      children: [
+                        Icon(LucideIcons.eye, size: 16),
+                        SizedBox(width: 8),
+                        Text('Ver plano'),
+                      ],
                     ),
-                    tooltip: 'Ver plano',
-                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                    padding: EdgeInsets.zero,
                   ),
-                  IconButton(
-                    onPressed: () {
-                      final planId = assignment['plan_id'] as String?;
-                      if (planId != null) {
-                        _editPrescription(context, planId);
-                      }
-                    },
-                    icon: Icon(
-                      LucideIcons.pencil,
-                      size: 18,
-                      color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(LucideIcons.pencil, size: 16),
+                        SizedBox(width: 8),
+                        Text('Editar plano'),
+                      ],
                     ),
-                    tooltip: 'Editar',
-                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                    padding: EdgeInsets.zero,
+                  ),
+                  PopupMenuItem(
+                    value: 'cancel',
+                    child: Row(
+                      children: [
+                        Icon(LucideIcons.trash2, size: 16, color: AppColors.destructive),
+                        const SizedBox(width: 8),
+                        Text('Cancelar', style: TextStyle(color: AppColors.destructive)),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -616,6 +631,9 @@ class StudentPlansTab extends ConsumerWidget {
         final planName = assignment['plan_name'] as String? ?? 'Plano sem nome';
         final endDateStr = assignment['end_date'] as String?;
         final startDateStr = assignment['start_date'] as String?;
+        final status = assignment['status'] as String?;
+        final declinedReason = assignment['declined_reason'] as String?;
+        final isDeclined = status == 'declined';
 
         String dateRange = '';
         if (startDateStr != null || endDateStr != null) {
@@ -631,7 +649,9 @@ class StudentPlansTab extends ConsumerWidget {
             color: isDark ? AppColors.cardDark : AppColors.card,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: isDark ? AppColors.borderDark : AppColors.border,
+              color: isDeclined
+                  ? AppColors.destructive.withAlpha(60)
+                  : (isDark ? AppColors.borderDark : AppColors.border),
             ),
           ),
           child: Row(
@@ -639,13 +659,17 @@ class StudentPlansTab extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.muted.withAlpha(isDark ? 30 : 50),
+                  color: isDeclined
+                      ? AppColors.destructive.withAlpha(isDark ? 30 : 20)
+                      : AppColors.muted.withAlpha(isDark ? 30 : 50),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  LucideIcons.clipboardList,
+                  isDeclined ? LucideIcons.xCircle : LucideIcons.clipboardList,
                   size: 18,
-                  color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                  color: isDeclined
+                      ? AppColors.destructive
+                      : (isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground),
                 ),
               ),
               const SizedBox(width: 12),
@@ -653,11 +677,35 @@ class StudentPlansTab extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      planName,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            planName,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        if (isDeclined)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.destructive.withAlpha(20),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'Recusado',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: AppColors.destructive,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     if (dateRange.isNotEmpty)
                       Text(
@@ -666,6 +714,32 @@ class StudentPlansTab extends ConsumerWidget {
                           color: isDark
                               ? AppColors.mutedForegroundDark
                               : AppColors.mutedForeground,
+                        ),
+                      ),
+                    if (isDeclined && declinedReason != null && declinedReason.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              LucideIcons.messageCircle,
+                              size: 12,
+                              color: AppColors.destructive.withAlpha(150),
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                declinedReason.length > 60
+                                    ? '${declinedReason.substring(0, 60)}...'
+                                    : declinedReason,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: AppColors.destructive.withAlpha(180),
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                   ],
