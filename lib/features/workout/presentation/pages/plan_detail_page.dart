@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/utils/haptic_utils.dart';
+import '../../../../core/widgets/dev_screen_label.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -57,35 +58,38 @@ class _PlanDetailPageState extends ConsumerState<PlanDetailPage>
     final workouts = (plan?['plan_workouts'] as List<dynamic>?) ?? [];
     final hasWorkouts = workouts.isNotEmpty;
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              AppColors.primary.withAlpha(isDark ? 15 : 10),
-              AppColors.secondary.withAlpha(isDark ? 12 : 8),
-            ],
+    return DevScreenLabel(
+      screenName: 'PlanDetailPage',
+      child: Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.primary.withAlpha(isDark ? 15 : 10),
+                AppColors.secondary.withAlpha(isDark ? 12 : 8),
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: detailState.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : detailState.error != null
+                      ? _buildError(theme, detailState.error!)
+                      : plan == null
+                          ? _buildNotFound(theme)
+                          : _buildContent(context, theme, isDark, plan),
+            ),
           ),
         ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: detailState.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : detailState.error != null
-                    ? _buildError(theme, detailState.error!)
-                    : plan == null
-                        ? _buildNotFound(theme)
-                        : _buildContent(context, theme, isDark, plan),
-          ),
+        floatingActionButton: _buildFloatingActionButton(
+          hasWorkouts: hasWorkouts,
+          isLoading: detailState.isLoading,
+          plan: plan,
         ),
-      ),
-      floatingActionButton: _buildFloatingActionButton(
-        hasWorkouts: hasWorkouts,
-        isLoading: detailState.isLoading,
-        plan: plan,
       ),
     );
   }

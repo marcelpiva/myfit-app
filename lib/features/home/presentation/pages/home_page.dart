@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/utils/haptic_utils.dart';
+import '../../../../core/widgets/dev_screen_label.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -92,15 +93,17 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
         ? ref.watch(studentPendingPlansProvider)
         : null;
 
-    return Scaffold(
-      body: Container(
-        color: isDark ? AppColors.backgroundDark : AppColors.background,
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: dashboardState.isLoading && dashboardState.dashboard == null
-                ? const Center(child: CircularProgressIndicator())
-                : RefreshIndicator(
+    return DevScreenLabel(
+      screenName: 'StudentHomePage',
+      child: Scaffold(
+        body: Container(
+          color: isDark ? AppColors.backgroundDark : AppColors.background,
+          child: SafeArea(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: dashboardState.isLoading && dashboardState.dashboard == null
+                  ? const Center(child: CircularProgressIndicator())
+                  : RefreshIndicator(
                     onRefresh: () async {
                       ref.read(studentDashboardProvider.notifier).refresh();
                       if (dashboardState.hasTrainer) {
@@ -213,6 +216,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
           ),
         ),
       ),
+    ),
     );
   }
 
