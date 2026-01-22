@@ -47,6 +47,7 @@ abstract class RouteNames {
   static const analytics = '/progress/analytics';
   static const weightGoal = '/progress/goal';
   static const progressStats = '/progress/stats';
+  static const progressComparison = '/progress/compare';
 
   // Chat routes
   static const conversation = '/chat/:conversationId';
@@ -92,6 +93,9 @@ abstract class RouteNames {
   static const studentWorkouts = '/students/:studentId/workouts';
   static const studentPlanHistory = '/students/:studentId/plan-history';
   static const trainerPlans = '/trainer-plans';
+
+  // Student schedule route
+  static const mySchedule = '/my-schedule';
 
   // Nutritionist routes
   static const patients = '/patients';

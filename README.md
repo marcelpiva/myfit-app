@@ -1,6 +1,6 @@
 # MyFit App
 
-[![Version](https://img.shields.io/badge/version-1.5.4-blue.svg)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.6.0-blue.svg)](./CHANGELOG.md)
 [![Flutter](https://img.shields.io/badge/Flutter-3.10+-02569B.svg?logo=flutter)](https://flutter.dev)
 [![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20Android%20%7C%20Web-lightgrey.svg)](https://flutter.dev/multi-platform)
 [![Tests](https://img.shields.io/badge/tests-150+-green.svg)]()
@@ -18,6 +18,10 @@ Aplicativo Flutter multiplataforma para a plataforma MyFit.
 - **Student Diet Management** - View student diet plans, macros, and meal history
 - Progress photos and measurements
 - **Photo Gallery & Comparison** - Full-screen gallery with Before/After comparison
+- **Milestones & Goals** - Track fitness goals with visual progress indicators
+- **AI Insights** - AI-generated progress analysis and recommendations
+- **Progress Comparison** - Compare weight and measurements over time periods
+- **Personal Records** - Track and display exercise PRs with history
 - Real-time chat
 - **Trainer Communication** - Schedule sessions, add student notes
 - **PDF Reports** - Generate and share student progress reports

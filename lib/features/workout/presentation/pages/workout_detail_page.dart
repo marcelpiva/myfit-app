@@ -13,6 +13,7 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../training_plan/domain/models/prescription_note.dart';
 import '../../../training_plan/presentation/widgets/prescription_notes_section.dart';
 import '../providers/workout_provider.dart';
+import '../widgets/start_workout_sheet.dart';
 
 class WorkoutDetailPage extends ConsumerStatefulWidget {
   final String workoutId;
@@ -349,7 +350,7 @@ class _WorkoutDetailPageState extends ConsumerState<WorkoutDetailPage>
                         icon: LucideIcons.play,
                         onPressed: () {
                           HapticUtils.mediumImpact();
-                          context.push('/workouts/active/${widget.workoutId}');
+                          _showStartWorkoutSheet(context, detailState.name);
                         },
                       ),
                     );
@@ -397,6 +398,18 @@ class _WorkoutDetailPageState extends ConsumerState<WorkoutDetailPage>
     // Estimativa aproximada: ~7 kcal/min para treino de musculação
     final calories = (durationMinutes * 7).round();
     return '~$calories kcal';
+  }
+
+  void _showStartWorkoutSheet(BuildContext context, String workoutName) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => StartWorkoutSheet(
+        workoutId: widget.workoutId,
+        workoutName: workoutName.isNotEmpty ? workoutName : 'Treino',
+      ),
+    );
   }
 }
 

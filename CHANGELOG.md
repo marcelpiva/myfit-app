@@ -5,6 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-01-22
+
+### Added
+
+#### Phase 2.3 - Progress Milestones & AI Insights
+- **Milestones System** - Goal tracking with visual progress
+  - Multiple milestone types: Weight, Measurements, Personal Records, Consistency, Workout Count
+  - Progress bar with percentage and days remaining
+  - Auto-detection of almost complete goals (≥80%)
+  - Create, update, and delete milestones
+
+- **AI Insights** - AI-generated progress analysis
+  - Sentiment-based styling (positive, neutral, warning)
+  - Recommendations list with actionable tips
+  - Dismissible insights with expiration
+
+- **Progress Comparison Page** - Compare metrics over time
+  - Date range selector with quick presets (30d, 90d, 6m, 1y)
+  - Weight and measurements side-by-side comparison
+  - Motivational summary with trend indicators
+
+- **Personal Records Tab** - New "PRs" tab in Progress page
+  - PR cards with exercise history
+  - Exercise history bottom sheet with timeline
+  - PR indicator during active workout
+
+#### Phase 2.2 - Student Schedule Management
+- **Student Schedule Page** - View and manage sessions with trainer
+  - Pending confirmations banner
+  - Next session highlight
+  - Upcoming and past sessions lists
+
+- **Session Actions** - Confirm presence, request reschedule
+  - Reschedule request sheet with date/time picker
+  - Optional reason field for reschedule requests
+
+- **Schedule Quick Action** - Added "Agenda" to home for students with trainers
+
+### Fixed
+- **Database Migrations** - Added missing columns for co-training
+  - `trainer_id`, `is_shared`, `status` columns in workout_sessions
+  - `training_mode` column in plan_assignments
+- **Workout Response Schema** - Fixed `created_by_id` to be nullable
+- **Workout Exercises Attribute** - Fixed `workout.exercises` reference
+
 ## [1.5.4] - 2026-01-22
 
 ### Changed

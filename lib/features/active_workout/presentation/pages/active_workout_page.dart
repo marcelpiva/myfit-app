@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,13 +6,20 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
-import '../../../../core/widgets/video_player_page.dart';
+import '../../../../core/providers/context_provider.dart';
 import '../../../../shared/presentation/components/animations/fade_in_up.dart';
 import '../../../shared_session/domain/models/shared_session.dart';
 import '../../../shared_session/presentation/providers/shared_session_provider.dart';
 import '../../../shared_session/presentation/widgets/live_indicator.dart';
 import '../../../shared_session/presentation/widgets/session_chat.dart';
 import '../../../workout/presentation/providers/workout_provider.dart';
+import '../widgets/exercise_card_compact.dart';
+import '../widgets/exercise_page_view.dart';
+import '../widgets/pr_indicator.dart';
+import '../widgets/rest_timer_overlay.dart';
+import '../widgets/set_input_stepper.dart';
+import '../widgets/workout_celebration.dart';
+import '../widgets/workout_notes_banner.dart';
 
 /// Active workout session page - used when student is doing their workout
 class ActiveWorkoutPage extends ConsumerStatefulWidget {
@@ -45,9 +51,9 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
   Timer? _durationTimer;
   String _workoutDuration = '00:00';
 
-  // Text controllers for weight and reps input
-  final _weightController = TextEditingController();
-  final _repsController = TextEditingController();
+  // Weight and reps values (using steppers instead of text controllers)
+  double _currentWeight = 0;
+  double _currentReps = 10;
 
   // Co-training state
   bool _isChatOpen = false;
@@ -84,8 +90,6 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     _restTimer?.cancel();
     _durationTimer?.cancel();
     _stopwatch.stop();
-    _weightController.dispose();
-    _repsController.dispose();
     super.dispose();
   }
 
@@ -155,10 +159,11 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     final exerciseSets = _getExerciseSets(exercise);
     final exerciseRest = _getExerciseRest(exercise);
     final defaultWeight = _getExerciseWeight(exercise);
+    final defaultReps = int.tryParse(_getExerciseReps(exercise)) ?? 10;
     final exerciseId = exercise?['id'] as String? ?? exercise?['exercise_id'] as String? ?? '';
 
-    final weight = double.tryParse(_weightController.text) ?? defaultWeight;
-    final reps = int.tryParse(_repsController.text) ?? 10;
+    final weight = _currentWeight > 0 ? _currentWeight : defaultWeight;
+    final reps = _currentReps > 0 ? _currentReps.toInt() : defaultReps;
 
     // Broadcast to shared session if in co-training mode
     if (_isSharedSession) {
@@ -177,9 +182,9 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         weight: weight,
       ));
 
-      // Clear text fields and pending adjustment
-      _weightController.clear();
-      _repsController.clear();
+      // Reset input values and pending adjustment
+      _currentWeight = 0;
+      _currentReps = defaultReps.toDouble();
       _pendingAdjustment = null;
 
       if (_currentSet < exerciseSets) {
@@ -190,6 +195,10 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         if (_currentExerciseIndex < exercises.length - 1) {
           _currentExerciseIndex++;
           _currentSet = 1;
+          // Reset to new exercise defaults
+          final nextExercise = _getCurrentExercise(exercises);
+          _currentWeight = _getExerciseWeight(nextExercise);
+          _currentReps = (int.tryParse(_getExerciseReps(nextExercise)) ?? 10).toDouble();
         } else {
           // Workout complete!
           _showWorkoutComplete(exercises.length);
@@ -445,22 +454,41 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
             ),
 
             Expanded(
-              child: Row(
+              child: Stack(
                 children: [
                   // Main workout content
-                  Expanded(
-                    child: _isResting
-                        ? _buildRestScreen(theme, isDark, currentExercise, exerciseSets)
-                        : _buildExerciseScreen(theme, isDark, exercises, currentExercise, sharedState),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildExerciseScreen(theme, isDark, exercises, currentExercise, sharedState),
+                      ),
+                      // Chat panel (side panel on larger screens)
+                      if (_isSharedSession && _isChatOpen && MediaQuery.of(context).size.width > 600)
+                        SizedBox(
+                          width: 320,
+                          child: SessionChat(
+                            sessionId: widget.sessionId!,
+                            messages: sharedState?.session?.messages ?? [],
+                            onClose: () => setState(() => _isChatOpen = false),
+                          ),
+                        ),
+                    ],
                   ),
-                  // Chat panel (side panel on larger screens)
-                  if (_isSharedSession && _isChatOpen && MediaQuery.of(context).size.width > 600)
-                    SizedBox(
-                      width: 320,
-                      child: SessionChat(
-                        sessionId: widget.sessionId!,
-                        messages: sharedState?.session?.messages ?? [],
-                        onClose: () => setState(() => _isChatOpen = false),
+                  // Rest timer overlay (with blur)
+                  if (_isResting)
+                    Positioned.fill(
+                      child: RestTimerOverlay(
+                        timeRemaining: _restTimeRemaining,
+                        totalTime: _getExerciseRest(currentExercise),
+                        currentSet: _currentSet,
+                        totalSets: exerciseSets,
+                        onSkip: _skipRest,
+                        onAddTime: () {
+                          setState(() {
+                            _restTimeRemaining += 30;
+                          });
+                        },
+                        isDark: isDark,
                       ),
                     ),
                 ],
@@ -548,14 +576,14 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
           label: 'Aplicar',
           onPressed: () {
             // Apply the adjustment to the current inputs
-            if (adjustment.suggestedWeightKg != null) {
-              final currentWeight = double.tryParse(_weightController.text) ?? 0;
-              _weightController.text = (currentWeight + adjustment.suggestedWeightKg!).toString();
-            }
-            if (adjustment.suggestedReps != null && adjustment.suggestedReps != 99) {
-              final currentReps = int.tryParse(_repsController.text) ?? 10;
-              _repsController.text = (currentReps + adjustment.suggestedReps!).toString();
-            }
+            setState(() {
+              if (adjustment.suggestedWeightKg != null) {
+                _currentWeight = _currentWeight + adjustment.suggestedWeightKg!;
+              }
+              if (adjustment.suggestedReps != null && adjustment.suggestedReps != 99) {
+                _currentReps = _currentReps + adjustment.suggestedReps!;
+              }
+            });
           },
         ),
       ),
@@ -569,30 +597,108 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     Map<String, dynamic>? currentExercise,
     SharedSessionState? sharedState,
   ) {
+    final completedIndices = <int>[];
+    for (var i = 0; i < _completedSets.length; i++) {
+      if (_completedSets[i].length >= _getExerciseSets(exercises[i])) {
+        completedIndices.add(i);
+      }
+    }
+
+    // Get organization ID for notes
+    final activeContext = ref.watch(activeContextProvider);
+    final organizationId = activeContext?.organization.id;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
+          // Workout notes banner (prescription notes from trainer)
+          FadeInUp(
+            child: WorkoutNotesBanner(
+              workoutId: widget.workoutId,
+              organizationId: organizationId,
+              isDark: isDark,
+            ),
+          ),
+
           // Trainer adjustment banner (if pending)
           if (_isSharedSession && _pendingAdjustment != null)
             FadeInUp(
               child: _buildAdjustmentBanner(theme, _pendingAdjustment!),
             ),
 
-          // Exercise navigation
+          // Exercise navigation with arrows
           FadeInUp(
-            child: _buildExerciseNav(theme, exercises),
+            child: ExerciseNavigationArrows(
+              currentIndex: _currentExerciseIndex,
+              totalExercises: exercises.length,
+              onPrevious: _currentExerciseIndex > 0
+                  ? () {
+                      setState(() {
+                        _currentExerciseIndex--;
+                        _currentSet = _completedSets[_currentExerciseIndex].length + 1;
+                        final exerciseSets = _getExerciseSets(_getCurrentExercise(exercises));
+                        if (_currentSet > exerciseSets) _currentSet = exerciseSets;
+                        _updateInputDefaults(exercises);
+                      });
+                    }
+                  : null,
+              onNext: _currentExerciseIndex < exercises.length - 1
+                  ? () {
+                      setState(() {
+                        _currentExerciseIndex++;
+                        _currentSet = _completedSets[_currentExerciseIndex].length + 1;
+                        final exerciseSets = _getExerciseSets(_getCurrentExercise(exercises));
+                        if (_currentSet > exerciseSets) _currentSet = exerciseSets;
+                        _updateInputDefaults(exercises);
+                      });
+                    }
+                  : null,
+              isDark: isDark,
+            ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
 
-          // Main exercise card
+          // Page indicator dots
+          FadeInUp(
+            child: ExercisePageIndicator(
+              totalExercises: exercises.length,
+              currentIndex: _currentExerciseIndex,
+              completedExerciseIndices: completedIndices,
+              isDark: isDark,
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Main exercise card - COMPACT version
           FadeInUp(
             delay: const Duration(milliseconds: 100),
-            child: _buildExerciseCard(theme, isDark, currentExercise),
+            child: ExerciseCardCompact(
+              exercise: currentExercise,
+              currentSet: _currentSet,
+              totalSets: _getExerciseSets(currentExercise),
+              isDark: isDark,
+            ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
+
+          // PR indicator - shows current PR to beat
+          FadeInUp(
+            delay: const Duration(milliseconds: 150),
+            child: PRIndicator(
+              exerciseId: currentExercise?['exercise_id']?.toString(),
+              exerciseName: currentExercise?['name'] as String? ??
+                  currentExercise?['exercise_name'] as String? ??
+                  'Exercício',
+              isDark: isDark,
+              currentWeight: _currentWeight,
+            ),
+          ),
+
+          const SizedBox(height: 8),
 
           // Set tracker
           FadeInUp(
@@ -600,18 +706,24 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
             child: _buildSetTracker(theme, isDark, currentExercise),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
 
-          // Log set section
+          // Log set section with steppers
           FadeInUp(
             delay: const Duration(milliseconds: 300),
-            child: _buildLogSection(theme, isDark, exercises, currentExercise),
+            child: _buildLogSectionWithSteppers(theme, isDark, exercises, currentExercise),
           ),
 
           const SizedBox(height: 100),
         ],
       ),
     );
+  }
+
+  void _updateInputDefaults(List<Map<String, dynamic>> exercises) {
+    final exercise = _getCurrentExercise(exercises);
+    _currentWeight = _getExerciseWeight(exercise);
+    _currentReps = (int.tryParse(_getExerciseReps(exercise)) ?? 10).toDouble();
   }
 
   Widget _buildAdjustmentBanner(ThemeData theme, TrainerAdjustment adjustment) {
@@ -678,15 +790,13 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
           TextButton(
             onPressed: () {
               // Apply the adjustment
-              if (adjustment.suggestedWeightKg != null) {
-                final currentWeight = double.tryParse(_weightController.text) ?? 0;
-                _weightController.text = (currentWeight + adjustment.suggestedWeightKg!).toString();
-              }
-              if (adjustment.suggestedReps != null && adjustment.suggestedReps != 99) {
-                final currentReps = int.tryParse(_repsController.text) ?? 10;
-                _repsController.text = (currentReps + adjustment.suggestedReps!).toString();
-              }
               setState(() {
+                if (adjustment.suggestedWeightKg != null) {
+                  _currentWeight = _currentWeight + adjustment.suggestedWeightKg!;
+                }
+                if (adjustment.suggestedReps != null && adjustment.suggestedReps != 99) {
+                  _currentReps = _currentReps + adjustment.suggestedReps!;
+                }
                 _pendingAdjustment = null;
               });
             },
@@ -703,288 +813,6 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildExerciseNav(ThemeData theme, List<Map<String, dynamic>> exercises) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        TextButton.icon(
-          onPressed: _currentExerciseIndex > 0
-              ? () {
-                  HapticUtils.lightImpact();
-                  setState(() {
-                    _currentExerciseIndex--;
-                    _currentSet = _completedSets[_currentExerciseIndex].length + 1;
-                    final exerciseSets =
-                        _getExerciseSets(_getCurrentExercise(exercises));
-                    if (_currentSet > exerciseSets) {
-                      _currentSet = exerciseSets;
-                    }
-                  });
-                }
-              : null,
-          icon: const Icon(LucideIcons.chevronLeft, size: 18),
-          label: const Text('Anterior'),
-        ),
-        Text(
-          '${_currentExerciseIndex + 1} de ${exercises.length}',
-          style: theme.textTheme.labelMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-        TextButton.icon(
-          onPressed: _currentExerciseIndex < exercises.length - 1
-              ? () {
-                  HapticUtils.lightImpact();
-                  setState(() {
-                    _currentExerciseIndex++;
-                    _currentSet = _completedSets[_currentExerciseIndex].length + 1;
-                    final exerciseSets =
-                        _getExerciseSets(_getCurrentExercise(exercises));
-                    if (_currentSet > exerciseSets) {
-                      _currentSet = exerciseSets;
-                    }
-                  });
-                }
-              : null,
-          label: const Text('Próximo'),
-          icon: const Icon(LucideIcons.chevronRight, size: 18),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildExerciseCard(
-    ThemeData theme,
-    bool isDark,
-    Map<String, dynamic>? exercise,
-  ) {
-    final name = exercise?['name'] ?? exercise?['exercise_name'] ?? 'Exercício';
-    final muscleGroup = exercise?['muscle_group'] ?? exercise?['muscle'] ?? '';
-    final notes = exercise?['notes'] ?? '';
-    final sets = _getExerciseSets(exercise);
-    final reps = _getExerciseReps(exercise);
-    final weight = _getExerciseWeight(exercise);
-    final rest = _getExerciseRest(exercise);
-    // video_url and image_url can be at root level or nested in 'exercise'
-    final exerciseData = exercise?['exercise'] as Map<String, dynamic>?;
-    final videoUrl = exercise?['video_url'] as String? ?? exerciseData?['video_url'] as String?;
-    final imageUrl = exercise?['image_url'] as String? ?? exerciseData?['image_url'] as String?;
-
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: isDark
-            ? theme.colorScheme.surfaceContainerLowest.withAlpha(150)
-            : theme.colorScheme.surfaceContainerLowest.withAlpha(200),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.2),
-        ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          // Video/Image area
-          GestureDetector(
-            onTap: videoUrl != null && videoUrl.isNotEmpty
-                ? () {
-                    HapticUtils.lightImpact();
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => VideoPlayerPage(
-                          videoUrl: videoUrl,
-                          title: name,
-                        ),
-                      ),
-                    );
-                  }
-                : null,
-            child: Container(
-              height: 200,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: isDark
-                    ? theme.colorScheme.surfaceContainerLow.withAlpha(150)
-                    : theme.colorScheme.surfaceContainerLow.withAlpha(200),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
-                ),
-              ),
-              child: imageUrl != null && imageUrl.isNotEmpty
-                  ? Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        ClipRRect(
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(8),
-                            topRight: Radius.circular(8),
-                          ),
-                          child: CachedNetworkImage(
-                            imageUrl: imageUrl,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(
-                              color: theme.colorScheme.surfaceContainerLow,
-                              child: const Center(
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            ),
-                            errorWidget: (_, __, ___) => Container(
-                              color: theme.colorScheme.surfaceContainerLow,
-                              child: Icon(
-                                LucideIcons.image,
-                                size: 48,
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (videoUrl != null && videoUrl.isNotEmpty)
-                          Center(
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withAlpha(150),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                LucideIcons.play,
-                                size: 32,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                      ],
-                    )
-                  : Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            videoUrl != null && videoUrl.isNotEmpty
-                                ? LucideIcons.playCircle
-                                : LucideIcons.image,
-                            size: 48,
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            videoUrl != null && videoUrl.isNotEmpty
-                                ? 'Ver demonstração'
-                                : 'Sem imagem',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-            ),
-          ),
-          // Exercise info
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (muscleGroup.isNotEmpty)
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          muscleGroup,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                const SizedBox(height: 12),
-                Text(
-                  name,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                if (notes.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(
-                        LucideIcons.info,
-                        size: 16,
-                        color: AppColors.secondary,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          notes,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-                const SizedBox(height: 20),
-                // Target stats
-                Row(
-                  children: [
-                    _buildTargetStat(theme, 'Séries', '$sets', LucideIcons.repeat),
-                    const SizedBox(width: 24),
-                    _buildTargetStat(theme, 'Reps', reps, LucideIcons.hash),
-                    const SizedBox(width: 24),
-                    _buildTargetStat(
-                      theme,
-                      'Peso',
-                      weight > 0 ? '${weight.toStringAsFixed(weight.truncateToDouble() == weight ? 0 : 1)}kg' : '--',
-                      LucideIcons.dumbbell,
-                    ),
-                    const SizedBox(width: 24),
-                    _buildTargetStat(theme, 'Descanso', '${rest}s', LucideIcons.timer),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTargetStat(ThemeData theme, String label, String value, IconData icon) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 12, color: theme.colorScheme.onSurfaceVariant),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-        Text(
-          value,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
     );
   }
 
@@ -1075,15 +903,15 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     );
   }
 
-  Widget _buildLogSection(
+  Widget _buildLogSectionWithSteppers(
     ThemeData theme,
     bool isDark,
     List<Map<String, dynamic>> exercises,
     Map<String, dynamic>? exercise,
   ) {
     final exerciseSets = _getExerciseSets(exercise);
-    final reps = _getExerciseReps(exercise);
-    final weight = _getExerciseWeight(exercise);
+    final defaultReps = _getExerciseReps(exercise);
+    final defaultWeight = _getExerciseWeight(exercise);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -1094,178 +922,103 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         border: Border.all(
           color: theme.colorScheme.outline.withValues(alpha: 0.2),
         ),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Série $_currentSet de $exerciseSets',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 16),
+          // Section header
           Row(
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Peso (kg)',
-                      style: theme.textTheme.labelMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _weightController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: InputDecoration(
-                        hintText: weight > 0 ? weight.toStringAsFixed(weight.truncateToDouble() == weight ? 0 : 1) : '0',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                    ),
-                  ],
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withAlpha(25),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Série $_currentSet',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Repetições',
-                      style: theme.textTheme.labelMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _repsController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        hintText: reps,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                    ),
-                  ],
+              const SizedBox(width: 8),
+              Text(
+                'de $exerciseSets',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
           ),
+
           const SizedBox(height: 20),
+
+          // Stepper inputs row
+          Row(
+            children: [
+              // Weight stepper
+              Expanded(
+                child: SetInputStepper(
+                  label: 'Peso (kg)',
+                  icon: LucideIcons.dumbbell,
+                  value: _currentWeight > 0 ? _currentWeight : defaultWeight,
+                  step: 2.5,
+                  minValue: 0,
+                  maxValue: 500,
+                  isDecimal: true,
+                  hint: defaultWeight > 0
+                      ? defaultWeight.toStringAsFixed(
+                          defaultWeight.truncateToDouble() == defaultWeight ? 0 : 1)
+                      : '0',
+                  onChanged: (value) {
+                    setState(() => _currentWeight = value);
+                  },
+                  isDark: isDark,
+                ),
+              ),
+
+              const SizedBox(width: 16),
+
+              // Reps stepper
+              Expanded(
+                child: SetInputStepper(
+                  label: 'Repetições',
+                  icon: LucideIcons.hash,
+                  value: _currentReps > 0 ? _currentReps : (int.tryParse(defaultReps) ?? 10).toDouble(),
+                  step: 1,
+                  minValue: 1,
+                  maxValue: 100,
+                  isDecimal: false,
+                  hint: defaultReps,
+                  onChanged: (value) {
+                    setState(() => _currentReps = value);
+                  },
+                  isDark: isDark,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // Complete button with animation
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
               onPressed: () => _completeSet(exercises),
-              icon: const Icon(LucideIcons.check, size: 18),
-              label: const Text('Completar Série'),
+              icon: const Icon(LucideIcons.check, size: 20),
+              label: const Text(
+                'Completar Série',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRestScreen(
-    ThemeData theme,
-    bool isDark,
-    Map<String, dynamic>? exercise,
-    int exerciseSets,
-  ) {
-    final exerciseRest = _getExerciseRest(exercise);
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Descanse',
-            style: theme.textTheme.headlineSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.3),
-                width: 8,
-              ),
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 180,
-                  height: 180,
-                  child: CircularProgressIndicator(
-                    value: exerciseRest > 0 ? _restTimeRemaining / exerciseRest : 0,
-                    strokeWidth: 8,
-                    backgroundColor: Colors.transparent,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                  ),
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '$_restTimeRemaining',
-                      style: theme.textTheme.displayLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    Text(
-                      'segundos',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 32),
-          Text(
-            'Próxima: Série $_currentSet de $exerciseSets',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 48),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              OutlinedButton.icon(
-                onPressed: () {
-                  HapticUtils.lightImpact();
-                  setState(() {
-                    _restTimeRemaining += 30;
-                  });
-                },
-                icon: const Icon(LucideIcons.plus, size: 18),
-                label: const Text('+30s'),
-                style: OutlinedButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-              const SizedBox(width: 16),
-              FilledButton.icon(
-                onPressed: _skipRest,
-                icon: const Icon(LucideIcons.skipForward, size: 18),
-                label: const Text('Pular'),
-                style: FilledButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-            ],
           ),
         ],
       ),
@@ -1306,7 +1059,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
   }
 }
 
-class _WorkoutCompleteSheet extends StatelessWidget {
+class _WorkoutCompleteSheet extends StatefulWidget {
   final String duration;
   final int exercisesCompleted;
   final int totalSets;
@@ -1318,96 +1071,130 @@ class _WorkoutCompleteSheet extends StatelessWidget {
   });
 
   @override
+  State<_WorkoutCompleteSheet> createState() => _WorkoutCompleteSheetState();
+}
+
+class _WorkoutCompleteSheetState extends State<_WorkoutCompleteSheet> {
+  bool _showCelebration = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Stop celebration after animation completes
+    Future.delayed(const Duration(milliseconds: 3000), () {
+      if (mounted) {
+        setState(() => _showCelebration = false);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Container(
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: isDark
-            ? theme.colorScheme.surface.withAlpha(150)
-            : theme.colorScheme.surface.withAlpha(200),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.success.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              LucideIcons.trophy,
-              size: 48,
+    return WorkoutCelebration(
+      isPlaying: _showCelebration,
+      child: Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: isDark
+              ? theme.colorScheme.surface
+              : theme.colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Animated trophy
+            const AnimatedTrophy(
+              size: 64,
               color: AppColors.success,
             ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Treino Concluído!',
-            style: theme.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Excelente trabalho! Continue assim.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 32),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildCompleteStat(theme, duration, 'Duração', LucideIcons.clock),
-              _buildCompleteStat(theme, '$exercisesCompleted', 'Exercícios', LucideIcons.dumbbell),
-              _buildCompleteStat(theme, '$totalSets', 'Séries', LucideIcons.repeat),
-            ],
-          ),
-          const SizedBox(height: 32),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: () {
-                HapticUtils.mediumImpact();
-                Navigator.pop(context);
-                context.pop();
-              },
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+
+            const SizedBox(height: 24),
+
+            Text(
+              'Treino Concluído!',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
-              child: const Text('Finalizar'),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              _getMotivationalMessage(),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 32),
+
+            // Animated stats
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                AnimatedStatCounter(
+                  value: widget.duration,
+                  label: 'Duração',
+                  icon: LucideIcons.clock,
+                  color: AppColors.primary,
+                  delay: const Duration(milliseconds: 200),
+                ),
+                AnimatedStatCounter(
+                  value: '${widget.exercisesCompleted}',
+                  label: 'Exercícios',
+                  icon: LucideIcons.dumbbell,
+                  color: AppColors.secondary,
+                  delay: const Duration(milliseconds: 400),
+                ),
+                AnimatedStatCounter(
+                  value: '${widget.totalSets}',
+                  label: 'Séries',
+                  icon: LucideIcons.repeat,
+                  color: AppColors.accent,
+                  delay: const Duration(milliseconds: 600),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 32),
+
+            // CTA button
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () {
+                  HapticUtils.mediumImpact();
+                  Navigator.pop(context);
+                  context.pop();
+                },
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text(
+                  'Finalizar',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildCompleteStat(ThemeData theme, String value, String label, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, size: 24, color: AppColors.primary),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
-    );
+  String _getMotivationalMessage() {
+    final messages = [
+      'Excelente trabalho! Continue assim.',
+      'Você arrasou! Mais um passo rumo aos seus objetivos.',
+      'Parabéns pela dedicação! Seu corpo agradece.',
+      'Incrível! Cada treino te deixa mais forte.',
+      'Muito bem! A consistência é a chave do sucesso.',
+    ];
+    return messages[DateTime.now().millisecond % messages.length];
   }
 }
 

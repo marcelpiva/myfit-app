@@ -142,4 +142,52 @@ class ScheduleService {
           : UnknownApiException(e.message ?? 'Erro ao excluir agendamento', e);
     }
   }
+
+  /// Get student's own appointments (for students)
+  Future<List<Map<String, dynamic>>> getMyAppointments({
+    String? status,
+    DateTime? fromDate,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (status != null) queryParams['status'] = status;
+      if (fromDate != null) {
+        queryParams['from_date'] = DateFormat('yyyy-MM-dd').format(fromDate);
+      }
+
+      final response = await _client.get(
+        ApiEndpoints.myAppointments,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return (response.data as List).cast<Map<String, dynamic>>();
+      }
+      return [];
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao carregar sessões', e);
+    }
+  }
+
+  /// Request reschedule for an appointment (for students)
+  Future<void> requestReschedule(
+    String appointmentId, {
+    DateTime? preferredDateTime,
+    String? reason,
+  }) async {
+    try {
+      await _client.post(
+        ApiEndpoints.scheduleAppointmentReschedule(appointmentId),
+        data: {
+          if (preferredDateTime != null) 'preferred_date_time': preferredDateTime.toIso8601String(),
+          if (reason != null) 'reason': reason,
+        },
+      );
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao solicitar reagendamento', e);
+    }
+  }
 }

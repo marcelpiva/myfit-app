@@ -126,6 +126,24 @@ class ApiEndpoints {
   // ==================== Progress - Stats ====================
   static const String progressStats = '/progress/stats';
 
+  // ==================== Progress - Personal Records ====================
+  static const String personalRecords = '/progress/personal-records';
+  static String personalRecord(String id) => '/progress/personal-records/$id';
+  static String exercisePersonalRecords(String exerciseId) =>
+      '/progress/personal-records/exercise/$exerciseId';
+  static const String personalRecordsRecent = '/progress/personal-records/recent';
+
+  // ==================== Progress - Milestones ====================
+  static const String milestones = '/progress/milestones';
+  static String milestoneDetail(String id) => '/progress/milestones/$id';
+  static String milestoneProgress(String id) => '/progress/milestones/$id/progress';
+  static String milestoneComplete(String id) => '/progress/milestones/$id/complete';
+
+  // ==================== Progress - AI Insights ====================
+  static const String aiInsights = '/progress/insights';
+  static String dismissInsight(String id) => '/progress/insights/$id/dismiss';
+  static const String generateInsights = '/progress/insights/generate';
+
   // ==================== Check-ins - Gyms ====================
   static const String gyms = '/checkins/gyms';
   static String gym(String id) => '/checkins/gyms/$id';
@@ -188,6 +206,8 @@ class ApiEndpoints {
   static String scheduleAppointment(String id) => '/schedule/appointments/$id';
   static String scheduleAppointmentCancel(String id) => '/schedule/appointments/$id/cancel';
   static String scheduleAppointmentConfirm(String id) => '/schedule/appointments/$id/confirm';
+  static String scheduleAppointmentReschedule(String id) => '/schedule/appointments/$id/reschedule';
+  static const String myAppointments = '/schedule/appointments/mine';
 
   // ==================== Chat ====================
   static const String chatConversations = '/chat/conversations';
@@ -201,6 +221,9 @@ class ApiEndpoints {
   // ==================== Memberships ====================
   static const String userMemberships = '/users/me/memberships';
   static const String userPendingInvites = '/users/me/pending-invites';
+
+  // ==================== Student Dashboard ====================
+  static const String studentDashboard = '/users/me/dashboard';
 
   // ==================== Billing ====================
   static const String billingPayments = '/billing/payments';

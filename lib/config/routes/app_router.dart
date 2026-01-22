@@ -21,10 +21,12 @@ import '../../features/progress/presentation/pages/register_measurements_page.da
 import '../../features/progress/presentation/pages/weight_goal_page.dart';
 import '../../features/progress/presentation/pages/progress_stats_page.dart';
 import '../../features/progress/presentation/pages/photo_comparison_page.dart';
+import '../../features/progress/presentation/pages/progress_comparison_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/workout/presentation/pages/workout_detail_page.dart';
 import '../../features/workout/presentation/pages/workouts_page.dart';
 import '../../features/workout/presentation/pages/plan_detail_page.dart';
+import '../../features/workout/presentation/pages/waiting_for_trainer_page.dart';
 import '../../features/training_plan/presentation/pages/plan_wizard_page.dart';
 import '../../features/workout_builder/presentation/pages/workout_from_scratch_page.dart';
 import '../../features/workout_builder/presentation/pages/workout_with_ai_page.dart';
@@ -60,6 +62,7 @@ import '../../features/students/presentation/pages/student_plan_history_page.dar
 import '../../features/trainer_workout/presentation/pages/trainer_student_progress_page.dart';
 import '../../features/trainer_workout/presentation/pages/trainer_plans_page.dart';
 import '../../features/schedule/presentation/pages/schedule_page.dart';
+import '../../features/schedule/presentation/pages/student_schedule_page.dart';
 import '../../features/nutrition/presentation/pages/patients_list_page.dart';
 import '../../features/nutrition/presentation/pages/diet_plans_list_page.dart';
 import '../../features/gym/presentation/pages/staff_management_page.dart';
@@ -77,8 +80,25 @@ import '../../features/nutrition/presentation/pages/nutrition_summary_page.dart'
 import '../../features/nutrition_builder/presentation/pages/nutrition_builder_page.dart';
 import '../../features/checkin/presentation/pages/smart_checkin_page.dart';
 import '../../features/marketplace/presentation/pages/marketplace_page.dart';
+import '../../features/home/presentation/providers/student_home_provider.dart';
 import '../../shared/presentation/layouts/main_scaffold.dart';
 import 'route_names.dart';
+
+/// Guard redirect for workout creation routes
+/// Returns redirect path if student has a trainer, null otherwise
+String? _trainerGuardRedirect(BuildContext context) {
+  try {
+    final container = ProviderScope.containerOf(context);
+    final hasTrainer = container.read(studentDashboardProvider).hasTrainer;
+    if (hasTrainer) {
+      // Redirect to workouts list if student has a trainer
+      return RouteNames.workouts;
+    }
+  } catch (_) {
+    // If provider not available (e.g., not logged in), allow access
+  }
+  return null;
+}
 
 /// App Router Configuration
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -139,24 +159,29 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) => const WorkoutsPage(),
                 routes: [
                   // Specific routes MUST come before :workoutId
+                  // Note: These routes are protected by hasTrainer check
                   GoRoute(
                     path: 'builder',
                     name: 'workout-builder',
+                    redirect: (context, state) => _trainerGuardRedirect(context),
                     builder: (context, state) => const WorkoutBuilderPage(),
                   ),
                   GoRoute(
                     path: 'from-scratch',
                     name: 'workout-from-scratch',
+                    redirect: (context, state) => _trainerGuardRedirect(context),
                     builder: (context, state) => const WorkoutFromScratchPage(),
                   ),
                   GoRoute(
                     path: 'with-ai',
                     name: 'workout-with-ai',
+                    redirect: (context, state) => _trainerGuardRedirect(context),
                     builder: (context, state) => const WorkoutWithAIPage(),
                   ),
                   GoRoute(
                     path: 'templates',
                     name: 'workout-templates',
+                    redirect: (context, state) => _trainerGuardRedirect(context),
                     builder: (context, state) => WorkoutTemplatesPage(
                       initialCategory: state.uri.queryParameters['category'],
                     ),
@@ -238,6 +263,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.planWizard,
         name: 'plan-wizard',
+        redirect: (context, state) {
+          // Only guard if no studentId (student creating for themselves)
+          final studentId = state.uri.queryParameters['studentId'];
+          if (studentId != null) return null; // Trainer creating for student
+          return _trainerGuardRedirect(context);
+        },
         builder: (context, state) {
           final studentId = state.uri.queryParameters['studentId'];
           final planId = state.uri.queryParameters['edit'];
@@ -335,6 +366,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'photo-comparison',
         builder: (context, state) => const PhotoComparisonPage(),
       ),
+      GoRoute(
+        path: RouteNames.progressComparison,
+        name: 'progress-comparison',
+        builder: (context, state) => const ProgressComparisonPage(),
+      ),
 
       // Active workout
       GoRoute(
@@ -344,6 +380,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           workoutId: state.pathParameters['workoutId'] ?? '',
           sessionId: state.uri.queryParameters['sessionId'],
         ),
+      ),
+
+      // Waiting for trainer (co-training request)
+      GoRoute(
+        path: '/workouts/waiting-trainer/:workoutId',
+        name: 'waiting-for-trainer',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return WaitingForTrainerPage(
+            workoutId: state.pathParameters['workoutId'] ?? '',
+            workoutName: extra['workoutName'] as String? ?? 'Treino',
+            assignmentId: extra['assignmentId'] as String?,
+          );
+        },
       ),
 
       // Shared session (Co-training)
@@ -450,6 +500,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: RouteNames.schedule,
         name: 'schedule',
         builder: (context, state) => const SchedulePage(),
+      ),
+      GoRoute(
+        path: RouteNames.mySchedule,
+        name: 'my-schedule',
+        builder: (context, state) => const StudentSchedulePage(),
       ),
       GoRoute(
         path: '/students/:studentId/workouts',

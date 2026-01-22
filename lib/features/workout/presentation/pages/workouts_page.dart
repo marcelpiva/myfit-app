@@ -8,6 +8,8 @@ import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
 import '../../../../core/utils/workout_translations.dart';
+import '../../../home/presentation/providers/student_home_provider.dart';
+import '../../../../shared/presentation/widgets/trainer_managed_banner.dart';
 import '../providers/workout_provider.dart';
 
 class WorkoutsPage extends ConsumerStatefulWidget {
@@ -81,24 +83,32 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage>
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () {
-                              HapticUtils.lightImpact();
-                              _showCreateWorkoutOptions(context, isDark);
+                          // Only show create button if student has NO trainer
+                          Consumer(
+                            builder: (context, ref, _) {
+                              final hasTrainer = ref.watch(studentDashboardProvider).hasTrainer;
+                              if (hasTrainer) return const SizedBox.shrink();
+
+                              return GestureDetector(
+                                onTap: () {
+                                  HapticUtils.lightImpact();
+                                  _showCreateWorkoutOptions(context, isDark);
+                                },
+                                child: Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: isDark ? AppColors.primary : AppColors.primary,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    LucideIcons.plus,
+                                    size: 20,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              );
                             },
-                            child: Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: isDark ? AppColors.primary : AppColors.primary,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                LucideIcons.plus,
-                                size: 20,
-                                color: Colors.white,
-                              ),
-                            ),
                           ),
                         ],
                       ),
@@ -152,6 +162,22 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage>
                             ),
                           ],
                         ),
+                      ),
+
+                      // Show banner when student has a trainer
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final dashboardState = ref.watch(studentDashboardProvider);
+                          if (!dashboardState.hasTrainer) return const SizedBox.shrink();
+
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 16),
+                            child: TrainerManagedBanner(
+                              trainerName: dashboardState.trainer?.name,
+                              isDark: isDark,
+                            ),
+                          );
+                        },
                       ),
 
                       const SizedBox(height: 16),

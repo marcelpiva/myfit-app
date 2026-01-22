@@ -8,11 +8,13 @@ import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
 import '../../../../core/providers/context_provider.dart';
-import '../../../../shared/presentation/components/components.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../trainer_home/presentation/pages/trainer_home_page.dart';
 import '../../../nutritionist_home/presentation/pages/nutritionist_home_page.dart';
 import '../../../gym_home/presentation/pages/gym_home_page.dart';
+import '../../data/models/student_dashboard.dart';
+import '../providers/student_home_provider.dart';
+import '../widgets/streak_calendar.dart';
 
 /// Role-aware home page that renders different content based on active context
 class HomePage extends ConsumerWidget {
@@ -83,85 +85,118 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
     final userName = currentUser?.name ?? 'Aluno';
     final userInitials = _getInitials(userName);
 
+    // Watch dashboard state
+    final dashboardState = ref.watch(studentDashboardProvider);
+
     return Scaffold(
       body: Container(
         color: isDark ? AppColors.backgroundDark : AppColors.background,
         child: SafeArea(
           child: FadeTransition(
             opacity: _fadeAnimation,
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 24),
+            child: dashboardState.isLoading && dashboardState.dashboard == null
+                ? const Center(child: CircularProgressIndicator())
+                : RefreshIndicator(
+                    onRefresh: () async {
+                      ref.read(studentDashboardProvider.notifier).refresh();
+                    },
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 24),
 
-                    // Header
-                    _buildHeader(context, isDark, userName, userInitials),
+                            // Header
+                            _buildHeader(context, isDark, userName, userInitials),
 
-                    const SizedBox(height: 32),
+                            const SizedBox(height: 32),
 
-                    // Stats Row
-                    _buildStatsRow(context, isDark),
+                            // Trainer Info Card (if has trainer)
+                            if (dashboardState.hasTrainer) ...[
+                              _buildTrainerCard(context, isDark, dashboardState.trainer!),
+                              const SizedBox(height: 24),
+                            ],
 
-                    const SizedBox(height: 32),
+                            // Stats Row
+                            _buildStatsRow(context, isDark, dashboardState.stats),
 
-                    // Today's Workout
-                    _buildSectionHeader(
-                      context,
-                      isDark,
-                      'Treino de Hoje',
-                      onSeeAll: () {
-                        HapticUtils.lightImpact();
-                        context.go(RouteNames.workouts);
-                      },
+                            const SizedBox(height: 24),
+
+                            // Streak Calendar
+                            StreakCalendar(
+                              currentStreak: dashboardState.stats.currentStreak,
+                              completedDays: _getCompletedDaysFromActivity(dashboardState.recentActivity),
+                              isDark: isDark,
+                            ),
+
+                            const SizedBox(height: 32),
+
+                            // Today's Workout
+                            _buildSectionHeader(
+                              context,
+                              isDark,
+                              'Treino de Hoje',
+                              onSeeAll: () {
+                                HapticUtils.lightImpact();
+                                context.go(RouteNames.workouts);
+                              },
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            _buildTodayWorkout(
+                              context,
+                              isDark,
+                              dashboardState.todayWorkout,
+                              dashboardState.weeklyProgress,
+                            ),
+
+                            const SizedBox(height: 32),
+
+                            // Quick Actions
+                            _buildSectionHeader(context, isDark, 'Ações Rápidas'),
+
+                            const SizedBox(height: 16),
+
+                            _buildQuickActions(context, isDark, dashboardState),
+
+                            const SizedBox(height: 32),
+
+                            // Explorar Treinos - Only show when student has NO trainer
+                            if (!dashboardState.hasTrainer) ...[
+                              _buildSectionHeader(
+                                context,
+                                isDark,
+                                'Explorar Treinos',
+                                onSeeAll: () {
+                                  HapticUtils.lightImpact();
+                                  context.push('/workouts/templates');
+                                },
+                              ),
+
+                              const SizedBox(height: 16),
+
+                              _buildWorkoutCatalogPreview(context, isDark),
+
+                              const SizedBox(height: 32),
+                            ],
+
+                            // Recent Activity
+                            _buildSectionHeader(context, isDark, 'Atividade Recente'),
+
+                            const SizedBox(height: 16),
+
+                            _buildRecentActivity(context, isDark, dashboardState.recentActivity),
+
+                            const SizedBox(height: 100),
+                          ],
+                        ),
+                      ),
                     ),
-
-                    const SizedBox(height: 16),
-
-                    _buildTodayWorkout(context, isDark),
-
-                    const SizedBox(height: 32),
-
-                    // Quick Actions
-                    _buildSectionHeader(context, isDark, 'Ações Rápidas'),
-
-                    const SizedBox(height: 16),
-
-                    _buildQuickActions(context, isDark),
-
-                    const SizedBox(height: 32),
-
-                    // Explorar Treinos
-                    _buildSectionHeader(
-                      context,
-                      isDark,
-                      'Explorar Treinos',
-                      onSeeAll: () {
-                        HapticUtils.lightImpact();
-                        context.push('/workouts/templates');
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    _buildWorkoutCatalogPreview(context, isDark),
-
-                    const SizedBox(height: 32),
-
-                    // Recent Activity
-                    _buildSectionHeader(context, isDark, 'Atividade Recente'),
-
-                    const SizedBox(height: 16),
-
-                    _buildRecentActivity(context, isDark),
-
-                    const SizedBox(height: 100),
-                  ],
-                ),
-              ),
-            ),
+                  ),
           ),
         ),
       ),
@@ -174,6 +209,41 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
     return name.substring(0, name.length >= 2 ? 2 : 1).toUpperCase();
+  }
+
+  List<DateTime> _getCompletedDaysFromActivity(List<RecentActivity> activities) {
+    // Extract completed workout days from recent activity
+    // This is a simplified version - in production, you'd get this from a dedicated API
+    final completedDays = <DateTime>[];
+    final now = DateTime.now();
+
+    for (final activity in activities) {
+      if (activity.type == 'workout') {
+        // Parse time string to approximate date
+        // Time formats: "Hoje", "Ontem", "Há 2 dias", etc.
+        final time = activity.time.toLowerCase();
+        DateTime? date;
+
+        if (time.contains('hoje')) {
+          date = DateTime(now.year, now.month, now.day);
+        } else if (time.contains('ontem')) {
+          date = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 1));
+        } else if (time.contains('há')) {
+          final match = RegExp(r'há (\d+) dia').firstMatch(time);
+          if (match != null) {
+            final daysAgo = int.tryParse(match.group(1) ?? '0') ?? 0;
+            date = DateTime(now.year, now.month, now.day).subtract(Duration(days: daysAgo));
+          }
+        }
+
+        if (date != null && !completedDays.any((d) =>
+            d.year == date!.year && d.month == date.month && d.day == date.day)) {
+          completedDays.add(date);
+        }
+      }
+    }
+
+    return completedDays;
   }
 
   Widget _buildHeader(BuildContext context, bool isDark, String userName, String userInitials) {
@@ -325,7 +395,24 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
     );
   }
 
-  Widget _buildStatsRow(BuildContext context, bool isDark) {
+  Widget _buildStatsRow(BuildContext context, bool isDark, StudentStats stats) {
+    // Format weight change
+    String weightText;
+    IconData weightIcon;
+    if (stats.weightChangeKg == null) {
+      weightText = '--';
+      weightIcon = LucideIcons.minus;
+    } else if (stats.weightChangeKg! < 0) {
+      weightText = '${stats.weightChangeKg!.abs()}kg';
+      weightIcon = LucideIcons.trendingDown;
+    } else if (stats.weightChangeKg! > 0) {
+      weightText = '+${stats.weightChangeKg}kg';
+      weightIcon = LucideIcons.trendingUp;
+    } else {
+      weightText = '0kg';
+      weightIcon = LucideIcons.minus;
+    }
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -343,7 +430,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
           _buildStatItem(
             context,
             isDark,
-            '12',
+            '${stats.totalWorkouts}',
             'Treinos',
             LucideIcons.dumbbell,
             AppColors.primary,
@@ -356,7 +443,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
           _buildStatItem(
             context,
             isDark,
-            '85%',
+            '${stats.adherencePercent}%',
             'Aderência',
             LucideIcons.target,
             AppColors.success,
@@ -369,9 +456,9 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
           _buildStatItem(
             context,
             isDark,
-            '4.5kg',
-            'Perdidos',
-            LucideIcons.trendingDown,
+            weightText,
+            stats.weightChangeKg != null && stats.weightChangeKg! < 0 ? 'Perdidos' : 'Variação',
+            weightIcon,
             AppColors.secondary,
           ),
         ],
@@ -413,6 +500,151 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
     );
   }
 
+  Widget _buildTrainerCard(BuildContext context, bool isDark, TrainerInfo trainer) {
+    final unreadNotesCount = ref.watch(unreadNotesCountProvider);
+
+    return GestureDetector(
+      onTap: () {
+        HapticUtils.lightImpact();
+        context.go(RouteNames.chat);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: isDark
+              ? AppColors.cardDark.withAlpha(150)
+              : AppColors.card.withAlpha(200),
+          border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.border,
+          ),
+        ),
+        child: Row(
+          children: [
+            // Avatar
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: AppColors.primary.withAlpha(25),
+              ),
+              child: trainer.avatarUrl != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        trainer.avatarUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Center(
+                          child: Text(
+                            trainer.name.substring(0, 1).toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Text(
+                        trainer.name.substring(0, 1).toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'Seu Personal',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark
+                              ? AppColors.mutedForegroundDark
+                              : AppColors.mutedForeground,
+                        ),
+                      ),
+                      // Unread notes badge
+                      if (unreadNotesCount > 0) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.warning,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                LucideIcons.stickyNote,
+                                size: 10,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$unreadNotesCount nova${unreadNotesCount > 1 ? 's' : ''}',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Text(
+                        trainer.name,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? AppColors.foregroundDark
+                              : AppColors.foreground,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      if (trainer.isOnline)
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: AppColors.success,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              LucideIcons.messageCircle,
+              size: 20,
+              color: AppColors.primary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSectionHeader(
     BuildContext context,
     bool isDark,
@@ -446,11 +678,80 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
     );
   }
 
-  Widget _buildTodayWorkout(BuildContext context, bool isDark) {
+  Widget _buildTodayWorkout(
+    BuildContext context,
+    bool isDark,
+    TodayWorkout? todayWorkout,
+    WeeklyProgress weeklyProgress,
+  ) {
+    // Calculate progress fraction
+    final progressFraction = weeklyProgress.target > 0
+        ? weeklyProgress.completed / weeklyProgress.target
+        : 0.0;
+
+    // If no workout today, show empty state
+    if (todayWorkout == null) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: isDark
+              ? AppColors.cardDark.withAlpha(150)
+              : AppColors.card.withAlpha(200),
+          border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.border,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              LucideIcons.calendarOff,
+              size: 48,
+              color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Nenhum treino programado',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Escolha um treino ou crie um novo',
+              style: TextStyle(
+                fontSize: 14,
+                color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  HapticUtils.lightImpact();
+                  context.go(RouteNames.workouts);
+                },
+                icon: const Icon(LucideIcons.plus, size: 18),
+                label: const Text('Escolher Treino'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return GestureDetector(
       onTap: () {
         HapticUtils.mediumImpact();
-        context.push('/workouts/1');
+        context.push('/workouts/${todayWorkout.workoutId}');
       },
       child: Container(
         padding: const EdgeInsets.all(20),
@@ -477,9 +778,9 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                     borderRadius: BorderRadius.circular(8),
                     color: Colors.white.withAlpha(30),
                   ),
-                  child: const Text(
-                    'TREINO A',
-                    style: TextStyle(
+                  child: Text(
+                    todayWorkout.label,
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -505,9 +806,9 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
 
             const SizedBox(height: 20),
 
-            const Text(
-              'Peito e Tríceps',
-              style: TextStyle(
+            Text(
+              todayWorkout.name,
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
@@ -520,16 +821,16 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
               children: [
                 const Icon(LucideIcons.clock, size: 14, color: Colors.white70),
                 const SizedBox(width: 6),
-                const Text(
-                  '45-60 min',
-                  style: TextStyle(fontSize: 14, color: Colors.white70),
+                Text(
+                  '~${todayWorkout.durationMinutes} min',
+                  style: const TextStyle(fontSize: 14, color: Colors.white70),
                 ),
                 const SizedBox(width: 16),
                 const Icon(LucideIcons.flame, size: 14, color: Colors.white70),
                 const SizedBox(width: 6),
-                const Text(
-                  '8 exercícios',
-                  style: TextStyle(fontSize: 14, color: Colors.white70),
+                Text(
+                  '${todayWorkout.exercisesCount} exercícios',
+                  style: const TextStyle(fontSize: 14, color: Colors.white70),
                 ),
               ],
             ),
@@ -547,9 +848,9 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                       'Progresso da Semana',
                       style: TextStyle(fontSize: 12, color: Colors.white70),
                     ),
-                    const Text(
-                      '3/5 dias',
-                      style: TextStyle(
+                    Text(
+                      '${weeklyProgress.completed}/${weeklyProgress.target} dias',
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
@@ -566,7 +867,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                   ),
                   child: FractionallySizedBox(
                     alignment: Alignment.centerLeft,
-                    widthFactor: 0.6,
+                    widthFactor: progressFraction.clamp(0.0, 1.0),
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
@@ -583,11 +884,11 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
     );
   }
 
-  Widget _buildQuickActions(BuildContext context, bool isDark) {
+  Widget _buildQuickActions(BuildContext context, bool isDark, StudentDashboardState dashboardState) {
     final actionsRow1 = [
       (LucideIcons.play, 'Iniciar\nTreino', AppColors.primary, () {
         HapticUtils.mediumImpact();
-        _showStartWorkoutOptions(context, isDark);
+        _showStartWorkoutOptions(context, isDark, dashboardState);
       }),
       (LucideIcons.mapPin, 'Check-in', AppColors.secondary, () {
         HapticUtils.lightImpact();
@@ -611,14 +912,26 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
         HapticUtils.lightImpact();
         context.push(RouteNames.progress);
       }),
-      (LucideIcons.sparkles, 'AI\nWizard', AppColors.accent, () {
-        HapticUtils.lightImpact();
-        context.push(RouteNames.planWizard);
-      }),
-      (LucideIcons.creditCard, 'Cobranças', AppColors.success, () {
-        HapticUtils.lightImpact();
-        context.push(RouteNames.billing);
-      }),
+      // Show "Meus Treinos" when student has trainer, "AI Wizard" otherwise
+      dashboardState.hasTrainer
+          ? (LucideIcons.clipboard, 'Meus\nTreinos', AppColors.accent, () {
+              HapticUtils.lightImpact();
+              context.go(RouteNames.workouts);
+            })
+          : (LucideIcons.sparkles, 'AI\nWizard', AppColors.accent, () {
+              HapticUtils.lightImpact();
+              context.push(RouteNames.planWizard);
+            }),
+      // Show "Agenda" when student has trainer, "Cobranças" otherwise
+      dashboardState.hasTrainer
+          ? (LucideIcons.calendar, 'Agenda', AppColors.success, () {
+              HapticUtils.lightImpact();
+              context.push(RouteNames.mySchedule);
+            })
+          : (LucideIcons.creditCard, 'Cobranças', AppColors.success, () {
+              HapticUtils.lightImpact();
+              context.push(RouteNames.billing);
+            }),
     ];
     Widget buildRow(List<(IconData, String, Color, VoidCallback)> actions) {
       return Row(
@@ -763,19 +1076,80 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
     );
   }
 
-  Widget _buildRecentActivity(BuildContext context, bool isDark) {
-    final activities = [
-      ('Treino Completado', 'Peito e Tríceps', '2h atrás', LucideIcons.checkCircle, AppColors.success),
-      ('Nova Dieta', 'Cutting - 1800 kcal', 'Ontem', LucideIcons.utensils, AppColors.secondary),
-      ('Medição Atualizada', 'Peso: 75.2kg', '2 dias atrás', LucideIcons.ruler, AppColors.accent),
-    ];
+  Widget _buildRecentActivity(BuildContext context, bool isDark, List<RecentActivity> activities) {
+    if (activities.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: isDark
+              ? AppColors.cardDark.withAlpha(150)
+              : AppColors.card.withAlpha(200),
+          border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.border,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              LucideIcons.history,
+              size: 40,
+              color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Nenhuma atividade recente',
+              style: TextStyle(
+                fontSize: 14,
+                color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Map activity type to icon and color
+    IconData getActivityIcon(String type) {
+      switch (type) {
+        case 'workout':
+          return LucideIcons.checkCircle;
+        case 'diet':
+          return LucideIcons.utensils;
+        case 'measurement':
+          return LucideIcons.ruler;
+        case 'achievement':
+          return LucideIcons.trophy;
+        default:
+          return LucideIcons.activity;
+      }
+    }
+
+    Color getActivityColor(String type) {
+      switch (type) {
+        case 'workout':
+          return AppColors.success;
+        case 'diet':
+          return AppColors.secondary;
+        case 'measurement':
+          return AppColors.accent;
+        case 'achievement':
+          return AppColors.primary;
+        default:
+          return AppColors.info;
+      }
+    }
 
     return Column(
-      children: activities.map((activity) {
-        final (title, subtitle, time, icon, color) = activity;
+      children: activities.asMap().entries.map((entry) {
+        final index = entry.key;
+        final activity = entry.value;
+        final icon = getActivityIcon(activity.type);
+        final color = getActivityColor(activity.type);
+
         return Container(
           margin: EdgeInsets.only(
-            bottom: activities.indexOf(activity) < activities.length - 1 ? 12 : 0,
+            bottom: index < activities.length - 1 ? 12 : 0,
           ),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -804,7 +1178,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
+                      activity.title,
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
@@ -815,7 +1189,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      subtitle,
+                      activity.subtitle,
                       style: TextStyle(
                         fontSize: 13,
                         color: isDark
@@ -827,7 +1201,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                 ),
               ),
               Text(
-                time,
+                activity.time,
                 style: TextStyle(
                   fontSize: 12,
                   color: isDark
@@ -842,7 +1216,11 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
     );
   }
 
-  void _showStartWorkoutOptions(BuildContext context, bool isDark) {
+  void _showStartWorkoutOptions(BuildContext context, bool isDark, StudentDashboardState dashboardState) {
+    final todayWorkout = dashboardState.todayWorkout;
+    final canTrainWithPersonal = dashboardState.canTrainWithPersonal && dashboardState.hasTrainer;
+    final trainingMode = dashboardState.trainingMode;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
@@ -867,124 +1245,198 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
               const SizedBox(height: 20),
 
               // Treino do dia (se houver)
-              GestureDetector(
-                onTap: () {
-                  HapticUtils.mediumImpact();
-                  Navigator.pop(ctx);
-                  context.push('/workouts'); // Navigate to workouts list
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    gradient: LinearGradient(
-                      colors: [AppColors.primary, AppColors.primary.withAlpha(200)],
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          color: Colors.white.withAlpha(50),
-                        ),
-                        child: const Icon(LucideIcons.calendar, size: 28, color: Colors.white),
+              if (todayWorkout != null)
+                GestureDetector(
+                  onTap: () {
+                    HapticUtils.mediumImpact();
+                    Navigator.pop(ctx);
+                    context.push('/workouts/${todayWorkout.workoutId}');
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      gradient: LinearGradient(
+                        colors: [AppColors.primary, AppColors.primary.withAlpha(200)],
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Treino A - Peito e Tríceps',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.white.withAlpha(50),
+                          ),
+                          child: const Icon(LucideIcons.calendar, size: 28, color: Colors.white),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${todayWorkout.label} - ${todayWorkout.name}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withAlpha(50),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Text(
-                                    'TREINO DO DIA',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withAlpha(50),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Text(
+                                      'TREINO DO DIA',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  '~60 min',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.white70,
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '~${todayWorkout.durationMinutes} min',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.white70,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const Icon(LucideIcons.play, size: 24, color: Colors.white),
-                    ],
+                        const Icon(LucideIcons.play, size: 24, color: Colors.white),
+                      ],
+                    ),
                   ),
                 ),
-              ),
 
+              if (todayWorkout != null) const SizedBox(height: 16),
+
+              // Opção: Treinar com Personal (se modo presencial ou híbrido)
+              if (canTrainWithPersonal) ...[
+                _buildStartOption(
+                  ctx,
+                  isDark,
+                  LucideIcons.users,
+                  'Treinar com Personal',
+                  'Inicie uma sessão acompanhada',
+                  AppColors.success,
+                  () {
+                    HapticUtils.mediumImpact();
+                    Navigator.pop(ctx);
+                    // TODO: Implement co-training session creation
+                    // For now, navigate to workouts
+                    if (todayWorkout != null) {
+                      context.push('/workouts/${todayWorkout.workoutId}?withTrainer=true');
+                    } else {
+                      context.go(RouteNames.workouts);
+                    }
+                  },
+                ),
+                const SizedBox(height: 12),
+              ],
+
+              // Treinar Sozinho
+              _buildStartOption(
+                ctx,
+                isDark,
+                LucideIcons.user,
+                canTrainWithPersonal ? 'Treinar Sozinho' : 'Iniciar Treino',
+                canTrainWithPersonal
+                    ? 'Execute o treino por conta própria'
+                    : 'Selecione um dos seus treinos',
+                canTrainWithPersonal ? AppColors.secondary : AppColors.primary,
+                () {
+                  HapticUtils.lightImpact();
+                  Navigator.pop(ctx);
+                  if (todayWorkout != null) {
+                    context.push('/workouts/${todayWorkout.workoutId}');
+                  } else {
+                    context.go(RouteNames.workouts);
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
+
+              // Options only available when student has NO trainer
+              if (!dashboardState.hasTrainer) ...[
+                // Outros treinos
+                _buildStartOption(
+                  ctx,
+                  isDark,
+                  LucideIcons.list,
+                  'Escolher Outro Treino',
+                  'Selecione um treino diferente',
+                  AppColors.accent,
+                  () {
+                    HapticUtils.lightImpact();
+                    Navigator.pop(ctx);
+                    context.go(RouteNames.workouts);
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildStartOption(
+                  ctx,
+                  isDark,
+                  LucideIcons.sparkles,
+                  'Gerar com IA',
+                  'Deixe a IA criar um treino rápido',
+                  AppColors.info,
+                  () {
+                    HapticUtils.lightImpact();
+                    Navigator.pop(ctx);
+                    context.push(RouteNames.planWizard);
+                  },
+                ),
+                const SizedBox(height: 12),
+              ],
+
+              // Mostrar modo de treinamento atual
               const SizedBox(height: 16),
-
-              // Outros treinos
-              _buildStartOption(
-                ctx,
-                isDark,
-                LucideIcons.list,
-                'Escolher Treino',
-                'Selecione um dos seus treinos',
-                AppColors.secondary,
-                () {
-                  HapticUtils.lightImpact();
-                  Navigator.pop(ctx);
-                  context.go(RouteNames.workouts);
-                },
-              ),
-              const SizedBox(height: 12),
-              _buildStartOption(
-                ctx,
-                isDark,
-                LucideIcons.dumbbell,
-                'Treino Livre',
-                'Comece sem um plano definido',
-                AppColors.accent,
-                () {
-                  HapticUtils.lightImpact();
-                  Navigator.pop(ctx);
-                  context.push('/workouts'); // Navigate to workouts list
-                },
-              ),
-              const SizedBox(height: 12),
-              _buildStartOption(
-                ctx,
-                isDark,
-                LucideIcons.sparkles,
-                'Gerar com IA',
-                'Deixe a IA criar um treino rápido',
-                AppColors.info,
-                () {
-                  HapticUtils.lightImpact();
-                  Navigator.pop(ctx);
-                  context.push(RouteNames.planWizard);
-                },
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: isDark
+                      ? AppColors.mutedDark.withAlpha(100)
+                      : AppColors.muted.withAlpha(100),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      trainingMode == TrainingMode.presencial
+                          ? LucideIcons.users
+                          : trainingMode == TrainingMode.online
+                              ? LucideIcons.wifi
+                              : LucideIcons.refreshCw,
+                      size: 16,
+                      color: isDark
+                          ? AppColors.mutedForegroundDark
+                          : AppColors.mutedForeground,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Modo: ${trainingMode == TrainingMode.presencial ? 'Presencial' : trainingMode == TrainingMode.online ? 'Online' : 'Híbrido'}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark
+                            ? AppColors.mutedForegroundDark
+                            : AppColors.mutedForeground,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

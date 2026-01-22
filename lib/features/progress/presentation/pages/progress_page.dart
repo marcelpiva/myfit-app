@@ -8,7 +8,14 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
+import '../../domain/models/milestone.dart';
+import '../providers/milestone_provider.dart';
+import '../providers/personal_record_provider.dart';
 import '../providers/progress_provider.dart';
+import '../widgets/ai_insights_card.dart';
+import '../widgets/exercise_history_sheet.dart';
+import '../widgets/milestone_card.dart';
+import '../widgets/pr_card.dart';
 
 class ProgressPage extends ConsumerStatefulWidget {
   const ProgressPage({super.key});
@@ -23,7 +30,7 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
   late Animation<double> _fadeAnimation;
   int _selectedTab = 0;
 
-  final _tabs = ['Peso', 'Medidas', 'Fotos'];
+  final _tabs = ['Peso', 'Medidas', 'Fotos', 'PRs', 'Metas'];
 
   @override
   void initState() {
@@ -215,9 +222,15 @@ class _ProgressPageState extends ConsumerState<ProgressPage>
                   ] else if (_selectedTab == 1) ...[
                     // Medidas tab
                     _MeasurementsTab(isDark: isDark),
-                  ] else ...[
+                  ] else if (_selectedTab == 2) ...[
                     // Fotos tab
                     _PhotosTab(isDark: isDark),
+                  ] else if (_selectedTab == 3) ...[
+                    // PRs tab
+                    _PRsTab(isDark: isDark),
+                  ] else ...[
+                    // Metas (Milestones) tab
+                    _MilestonesTab(isDark: isDark),
                   ],
 
                   const SizedBox(height: 100),
@@ -2790,5 +2803,1030 @@ class _PhotosTab extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+// ==================== PRs Tab ====================
+
+class _PRsTab extends ConsumerWidget {
+  final bool isDark;
+
+  const _PRsTab({required this.isDark});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final state = ref.watch(personalRecordsProvider);
+
+    if (state.isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(48),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (state.error != null) {
+      return _PRsErrorView(
+        error: state.error!,
+        onRetry: () => ref.read(personalRecordsProvider.notifier).refresh(),
+        isDark: isDark,
+      );
+    }
+
+    final exercisesWithPRs = state.exercisesWithPRs;
+
+    if (exercisesWithPRs.isEmpty) {
+      return _PRsEmptyView(isDark: isDark);
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Summary cards
+          _PRsSummaryCards(
+            totalPRs: state.totalPRs,
+            prsThisMonth: state.prsThisMonth,
+            mostImproved: state.mostImprovedExercise,
+            isDark: isDark,
+          ),
+
+          const SizedBox(height: 24),
+
+          // Section header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'PRs por Exercício',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  HapticUtils.lightImpact();
+                  ref.read(personalRecordsProvider.notifier).refresh();
+                },
+                child: Icon(
+                  LucideIcons.refreshCw,
+                  size: 18,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // Exercise PR cards
+          ...exercisesWithPRs.map(
+            (exercise) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: PRCard(
+                summary: exercise,
+                isDark: isDark,
+                onTap: () => ExerciseHistorySheet.show(
+                  context,
+                  exerciseId: exercise.exerciseId,
+                  exerciseName: exercise.exerciseName,
+                  isDark: isDark,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PRsSummaryCards extends StatelessWidget {
+  final int totalPRs;
+  final int prsThisMonth;
+  final String? mostImproved;
+  final bool isDark;
+
+  const _PRsSummaryCards({
+    required this.totalPRs,
+    required this.prsThisMonth,
+    this.mostImproved,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.warning.withAlpha(isDark ? 30 : 20),
+            AppColors.accent.withAlpha(isDark ? 25 : 15),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.warning.withAlpha(40),
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _SummaryItem(
+                  icon: LucideIcons.trophy,
+                  iconColor: AppColors.warning,
+                  label: 'Total de PRs',
+                  value: totalPRs.toString(),
+                  isDark: isDark,
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 50,
+                color: isDark ? AppColors.borderDark : AppColors.border,
+              ),
+              Expanded(
+                child: _SummaryItem(
+                  icon: LucideIcons.flame,
+                  iconColor: AppColors.accent,
+                  label: 'PRs este mês',
+                  value: prsThisMonth.toString(),
+                  isDark: isDark,
+                ),
+              ),
+            ],
+          ),
+          if (mostImproved != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? AppColors.backgroundDark.withAlpha(80)
+                    : AppColors.background.withAlpha(200),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    LucideIcons.trendingUp,
+                    size: 16,
+                    color: AppColors.success,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Mais evoluído',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        Text(
+                          mostImproved!,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryItem extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String value;
+  final bool isDark;
+
+  const _SummaryItem({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.value,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      children: [
+        Icon(
+          icon,
+          size: 24,
+          color: iconColor,
+        ),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PRsErrorView extends StatelessWidget {
+  final String error;
+  final VoidCallback onRetry;
+  final bool isDark;
+
+  const _PRsErrorView({
+    required this.error,
+    required this.onRetry,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(48),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              LucideIcons.alertCircle,
+              size: 48,
+              color: AppColors.destructive,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              error,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            TextButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(LucideIcons.refreshCw, size: 16),
+              label: const Text('Tentar novamente'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PRsEmptyView extends StatelessWidget {
+  final bool isDark;
+
+  const _PRsEmptyView({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(48),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.warning.withAlpha(20),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Icon(
+                LucideIcons.trophy,
+                size: 40,
+                color: AppColors.warning.withAlpha(100),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Nenhum PR registrado',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Complete treinos para registrar seus Personal Records automaticamente!',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ==================== MILESTONES TAB ====================
+
+class _MilestonesTab extends ConsumerWidget {
+  final bool isDark;
+
+  const _MilestonesTab({required this.isDark});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final state = ref.watch(milestoneProvider);
+
+    if (state.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(48),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (state.error != null) {
+      return _MilestonesErrorView(
+        error: state.error!,
+        onRetry: () => ref.read(milestoneProvider.notifier).loadMilestones(),
+        isDark: isDark,
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Stats summary
+        if (state.stats != null) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: MilestoneStatsSummary(
+              stats: state.stats!,
+              isDark: isDark,
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+
+        // AI Insights section
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: AIInsightsSectionHeader(
+            insightCount: state.validInsights.length,
+            isLoading: state.isLoadingInsights,
+            onGenerate: () => ref.read(milestoneProvider.notifier).generateInsights(),
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        if (state.validInsights.isEmpty) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: AIInsightsEmptyState(
+              isDark: isDark,
+              onGenerate: () => ref.read(milestoneProvider.notifier).generateInsights(),
+            ),
+          ),
+        ] else ...[
+          SizedBox(
+            height: 180,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              itemCount: state.validInsights.length,
+              itemBuilder: (context, index) {
+                final insight = state.validInsights[index];
+                return Padding(
+                  padding: EdgeInsets.only(
+                    right: index < state.validInsights.length - 1 ? 12 : 0,
+                  ),
+                  child: SizedBox(
+                    width: 300,
+                    child: AIInsightCardCompact(
+                      insight: insight,
+                      isDark: isDark,
+                      onTap: () => _showInsightDetail(context, insight, isDark, ref),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+
+        const SizedBox(height: 24),
+
+        // Active milestones section
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Metas Ativas',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () => _showCreateMilestoneSheet(context, isDark, ref),
+                icon: const Icon(LucideIcons.plus, size: 16),
+                label: const Text('Nova Meta'),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        if (state.activeMilestones.isEmpty) ...[
+          _MilestonesEmptyView(
+            isDark: isDark,
+            onCreateMilestone: () => _showCreateMilestoneSheet(context, isDark, ref),
+          ),
+        ] else ...[
+          ...state.activeMilestones.map((milestone) => Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+                child: MilestoneCard(
+                  milestone: milestone,
+                  isDark: isDark,
+                  onTap: () => _showMilestoneDetail(context, milestone, isDark, ref),
+                  onComplete: milestone.progressPercentage >= 80
+                      ? () => ref.read(milestoneProvider.notifier).completeMilestone(milestone.id)
+                      : null,
+                  onDelete: () => _confirmDeleteMilestone(context, milestone, isDark, ref),
+                ),
+              )),
+        ],
+
+        // Completed milestones section
+        if (state.completedMilestones.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              'Metas Concluídas',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...state.completedMilestones.take(5).map((milestone) => Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+                child: Opacity(
+                  opacity: 0.7,
+                  child: MilestoneCardCompact(
+                    milestone: milestone,
+                    isDark: isDark,
+                    onTap: () => _showMilestoneDetail(context, milestone, isDark, ref),
+                  ),
+                ),
+              )),
+        ],
+      ],
+    );
+  }
+
+  void _showInsightDetail(BuildContext context, dynamic insight, bool isDark, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+        ),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : AppColors.background,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.borderDark : AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              AIInsightCard(
+                insight: insight,
+                isDark: isDark,
+                onDismiss: () {
+                  ref.read(milestoneProvider.notifier).dismissInsight(insight.id);
+                  Navigator.pop(ctx);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showMilestoneDetail(BuildContext context, dynamic milestone, bool isDark, WidgetRef ref) {
+    // TODO: Implement milestone detail view
+    HapticUtils.selectionClick();
+  }
+
+  void _showCreateMilestoneSheet(BuildContext context, bool isDark, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _CreateMilestoneSheet(isDark: isDark),
+    );
+  }
+
+  void _confirmDeleteMilestone(BuildContext context, dynamic milestone, bool isDark, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Excluir Meta'),
+        content: Text('Tem certeza que deseja excluir a meta "${milestone.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () {
+              ref.read(milestoneProvider.notifier).deleteMilestone(milestone.id);
+              Navigator.pop(ctx);
+            },
+            style: FilledButton.styleFrom(backgroundColor: AppColors.destructive),
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MilestonesErrorView extends StatelessWidget {
+  final String error;
+  final VoidCallback onRetry;
+  final bool isDark;
+
+  const _MilestonesErrorView({
+    required this.error,
+    required this.onRetry,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(48),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              LucideIcons.alertCircle,
+              size: 48,
+              color: AppColors.destructive,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              error,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            TextButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(LucideIcons.refreshCw, size: 16),
+              label: const Text('Tentar novamente'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MilestonesEmptyView extends StatelessWidget {
+  final bool isDark;
+  final VoidCallback? onCreateMilestone;
+
+  const _MilestonesEmptyView({
+    required this.isDark,
+    this.onCreateMilestone,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(48),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withAlpha(20),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Icon(
+                LucideIcons.target,
+                size: 40,
+                color: AppColors.primary.withAlpha(100),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Nenhuma meta definida',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Defina metas para acompanhar seu progresso e receber insights personalizados!',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            if (onCreateMilestone != null) ...[
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: onCreateMilestone,
+                icon: const Icon(LucideIcons.plus, size: 18),
+                label: const Text('Criar Meta'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CreateMilestoneSheet extends ConsumerStatefulWidget {
+  final bool isDark;
+
+  const _CreateMilestoneSheet({required this.isDark});
+
+  @override
+  ConsumerState<_CreateMilestoneSheet> createState() => _CreateMilestoneSheetState();
+}
+
+class _CreateMilestoneSheetState extends ConsumerState<_CreateMilestoneSheet> {
+  final _titleController = TextEditingController();
+  final _targetController = TextEditingController();
+  MilestoneType _selectedType = MilestoneType.weightGoal;
+  DateTime? _targetDate;
+  bool _isSubmitting = false;
+
+  String get _unit {
+    switch (_selectedType) {
+      case MilestoneType.weightGoal:
+        return 'kg';
+      case MilestoneType.measurementGoal:
+        return 'cm';
+      case MilestoneType.personalRecord:
+        return 'kg';
+      case MilestoneType.consistency:
+        return 'dias';
+      case MilestoneType.workoutCount:
+        return 'treinos';
+      case MilestoneType.strengthGain:
+        return '%';
+      case MilestoneType.bodyFat:
+        return '%';
+      case MilestoneType.custom:
+        return '';
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _targetController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_titleController.text.isEmpty || _targetController.text.isEmpty) {
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    final success = await ref.read(milestoneProvider.notifier).createMilestone(
+          type: _selectedType,
+          title: _titleController.text,
+          targetValue: double.tryParse(_targetController.text) ?? 0,
+          unit: _unit,
+          targetDate: _targetDate,
+        );
+
+    if (success && mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Meta criada com sucesso!'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    }
+
+    if (mounted) {
+      setState(() => _isSubmitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      padding: EdgeInsets.only(bottom: bottomPadding),
+      decoration: BoxDecoration(
+        color: widget.isDark ? AppColors.cardDark : AppColors.background,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Handle
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: widget.isDark ? AppColors.borderDark : AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Header
+            Text(
+              'Nova Meta',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Type selector
+            Text(
+              'Tipo de Meta',
+              style: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                MilestoneType.weightGoal,
+                MilestoneType.measurementGoal,
+                MilestoneType.consistency,
+                MilestoneType.workoutCount,
+              ].map((type) {
+                final isSelected = type == _selectedType;
+                return ChoiceChip(
+                  label: Text(_getTypeName(type)),
+                  selected: isSelected,
+                  onSelected: (_) => setState(() => _selectedType = type),
+                  selectedColor: AppColors.primary.withAlpha(30),
+                  labelStyle: TextStyle(
+                    color: isSelected ? AppColors.primary : null,
+                    fontWeight: isSelected ? FontWeight.w600 : null,
+                  ),
+                );
+              }).toList(),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Title
+            Text(
+              'Título',
+              style: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _titleController,
+              decoration: InputDecoration(
+                hintText: _getHintText(),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Target value
+            Text(
+              'Valor Alvo ($_unit)',
+              style: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _targetController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                hintText: 'Ex: 70',
+                suffixText: _unit,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Target date
+            Text(
+              'Data Limite (opcional)',
+              style: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: () async {
+                final date = await showDatePicker(
+                  context: context,
+                  initialDate: _targetDate ?? DateTime.now().add(const Duration(days: 30)),
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime.now().add(const Duration(days: 365)),
+                );
+                if (date != null) {
+                  setState(() => _targetDate = date);
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: widget.isDark ? AppColors.borderDark : AppColors.border,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      LucideIcons.calendar,
+                      size: 18,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _targetDate != null
+                          ? DateFormat('d MMM yyyy', 'pt_BR').format(_targetDate!)
+                          : 'Selecionar data',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: _targetDate != null
+                            ? theme.colorScheme.onSurface
+                            : theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Submit button
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: _isSubmitting ? null : _submit,
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text('Criar Meta'),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // Cancel button
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getTypeName(MilestoneType type) {
+    switch (type) {
+      case MilestoneType.weightGoal:
+        return 'Peso';
+      case MilestoneType.measurementGoal:
+        return 'Medida';
+      case MilestoneType.personalRecord:
+        return 'Recorde';
+      case MilestoneType.consistency:
+        return 'Consistência';
+      case MilestoneType.workoutCount:
+        return 'Treinos';
+      case MilestoneType.strengthGain:
+        return 'Força';
+      case MilestoneType.bodyFat:
+        return 'Gordura';
+      case MilestoneType.custom:
+        return 'Personalizado';
+    }
+  }
+
+  String _getHintText() {
+    switch (_selectedType) {
+      case MilestoneType.weightGoal:
+        return 'Ex: Atingir 70kg';
+      case MilestoneType.measurementGoal:
+        return 'Ex: Cintura 80cm';
+      case MilestoneType.personalRecord:
+        return 'Ex: Supino 100kg';
+      case MilestoneType.consistency:
+        return 'Ex: Treinar 30 dias seguidos';
+      case MilestoneType.workoutCount:
+        return 'Ex: Completar 50 treinos';
+      case MilestoneType.strengthGain:
+        return 'Ex: Aumentar força 20%';
+      case MilestoneType.bodyFat:
+        return 'Ex: Atingir 15% gordura';
+      case MilestoneType.custom:
+        return 'Ex: Minha meta personalizada';
+    }
   }
 }
