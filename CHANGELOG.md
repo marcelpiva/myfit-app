@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Color-coded with icons for each technique type
   - Shows exercise order within group
   - Displays group instructions when available
+  - **Consistent colors** - Now uses centralized `ExerciseTheme` for matching colors between builder and active workout
+  - **Visual enhancements** - Colored borders and subtle gradients for grouped exercises
 
 ### Fixed
 - **Active Workout Exit Bug** - Fixed dialog context issue preventing exit

@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../config/theme/tokens/exercise_theme.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import '../../../../core/utils/workout_translations.dart';
 import '../../../../core/widgets/video_player_page.dart';
+import '../../../training_plan/domain/models/training_plan.dart';
 
 /// Compact exercise card for active workout - 120px image height instead of 200px
 class ExerciseCardCompact extends StatelessWidget {
@@ -49,6 +51,42 @@ class ExerciseCardCompact extends StatelessWidget {
 
   String? get _techniqueType => exercise?['technique_type'] as String?;
 
+  /// Converts technique string to TechniqueType enum for consistent theming
+  TechniqueType get _technique {
+    switch (_techniqueType?.toLowerCase()) {
+      case 'bi_set':
+      case 'bi-set':
+      case 'biset':
+        return TechniqueType.biset;
+      case 'tri_set':
+      case 'tri-set':
+      case 'triset':
+        return TechniqueType.triset;
+      case 'superset':
+      case 'super_set':
+        return TechniqueType.superset;
+      case 'giant_set':
+      case 'giant-set':
+      case 'giantset':
+        return TechniqueType.giantset;
+      case 'dropset':
+      case 'drop_set':
+        return TechniqueType.dropset;
+      case 'rest_pause':
+      case 'rest-pause':
+      case 'restpause':
+        return TechniqueType.restPause;
+      case 'cluster':
+      case 'cluster_set':
+        return TechniqueType.cluster;
+      default:
+        return TechniqueType.normal;
+    }
+  }
+
+  /// Check if this exercise is part of a grouped technique
+  bool get _hasGroupTechnique => ExerciseTheme.isGroupTechnique(_technique);
+
   String? get _groupInstructions => exercise?['group_instructions'] as String?;
 
   int? get _exerciseGroupOrder => exercise?['exercise_group_order'] as int?;
@@ -87,15 +125,37 @@ class ExerciseCardCompact extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final techniqueColor = ExerciseTheme.getColor(_technique);
+    final isGrouped = _hasGroupTechnique;
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: isDark
-            ? theme.colorScheme.surfaceContainerLowest.withAlpha(150)
-            : theme.colorScheme.surfaceContainerLowest.withAlpha(200),
+        // Subtle gradient background for grouped techniques
+        gradient: isGrouped
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  techniqueColor.withAlpha(isDark ? 15 : 10),
+                  (isDark
+                          ? theme.colorScheme.surfaceContainerLowest
+                          : theme.colorScheme.surfaceContainerLowest)
+                      .withAlpha(isDark ? 150 : 200),
+                ],
+              )
+            : null,
+        color: isGrouped
+            ? null
+            : (isDark
+                ? theme.colorScheme.surfaceContainerLowest.withAlpha(150)
+                : theme.colorScheme.surfaceContainerLowest.withAlpha(200)),
+        // Colored border for grouped techniques
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.2),
+          color: isGrouped
+              ? techniqueColor.withAlpha(isDark ? 150 : 180)
+              : theme.colorScheme.outline.withValues(alpha: 0.2),
+          width: isGrouped ? 2 : 1,
         ),
         borderRadius: BorderRadius.circular(16),
       ),
@@ -438,81 +498,12 @@ class ExerciseCardCompact extends StatelessWidget {
     );
   }
 
-  Color _getTechniqueColor() {
-    switch (_techniqueType?.toLowerCase()) {
-      case 'bi_set':
-      case 'bi-set':
-        return const Color(0xFF9333EA); // Purple
-      case 'tri_set':
-      case 'tri-set':
-        return const Color(0xFFEC4899); // Pink
-      case 'superset':
-      case 'super_set':
-        return const Color(0xFF3B82F6); // Blue
-      case 'giant_set':
-      case 'giant-set':
-      case 'giantset':
-        return const Color(0xFFF97316); // Orange
-      case 'dropset':
-      case 'drop_set':
-        return const Color(0xFFEF4444); // Red
-      case 'cluster':
-      case 'cluster_set':
-        return const Color(0xFF14B8A6); // Teal
-      default:
-        return AppColors.secondary;
-    }
-  }
+  /// Uses centralized ExerciseTheme for consistent colors across the app
+  Color _getTechniqueColor() => ExerciseTheme.getColor(_technique);
 
-  String _getTechniqueLabel() {
-    switch (_techniqueType?.toLowerCase()) {
-      case 'bi_set':
-      case 'bi-set':
-        return 'BI-SET';
-      case 'tri_set':
-      case 'tri-set':
-        return 'TRI-SET';
-      case 'superset':
-      case 'super_set':
-        return 'SUPERSET';
-      case 'giant_set':
-      case 'giant-set':
-      case 'giantset':
-        return 'GIANT SET';
-      case 'dropset':
-      case 'drop_set':
-        return 'DROP SET';
-      case 'cluster':
-      case 'cluster_set':
-        return 'CLUSTER';
-      default:
-        return _techniqueType?.toUpperCase() ?? '';
-    }
-  }
+  /// Uses centralized ExerciseTheme for consistent labels
+  String _getTechniqueLabel() => ExerciseTheme.getDisplayName(_technique).toUpperCase();
 
-  IconData _getTechniqueIcon() {
-    switch (_techniqueType?.toLowerCase()) {
-      case 'bi_set':
-      case 'bi-set':
-        return LucideIcons.repeat2;
-      case 'tri_set':
-      case 'tri-set':
-        return LucideIcons.repeat2;
-      case 'superset':
-      case 'super_set':
-        return LucideIcons.zap;
-      case 'giant_set':
-      case 'giant-set':
-      case 'giantset':
-        return LucideIcons.flame;
-      case 'dropset':
-      case 'drop_set':
-        return LucideIcons.arrowDown;
-      case 'cluster':
-      case 'cluster_set':
-        return LucideIcons.layers;
-      default:
-        return LucideIcons.link;
-    }
-  }
+  /// Uses centralized ExerciseTheme for consistent icons
+  IconData _getTechniqueIcon() => ExerciseTheme.getIcon(_technique);
 }
