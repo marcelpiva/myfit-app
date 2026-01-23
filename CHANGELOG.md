@@ -38,6 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Separated dialog context from page context
   - Exit now works reliably from confirmation dialog
 
+- **Workout Complete Exit Bug** - Fixed "Finalizar" button not working on completion sheet
+  - Used callback pattern to pass page context to bottom sheet
+  - Exit now works correctly after completing workout
+
 - **Exercise Name Display** - Improved name detection in active workout
   - Checks multiple paths: `name`, `exercise_name`, `exercise.name`
   - Fallback to "Exercício" if no name found

@@ -270,14 +270,22 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
       ref.read(sharedSessionProvider(widget.sessionId!).notifier)
           .updateStatus(SessionStatus.completed);
     }
+
+    // Capture page context before showing sheet
+    final pageContext = context;
+
     showModalBottomSheet(
       context: context,
       isDismissible: false,
       backgroundColor: Colors.transparent,
-      builder: (context) => _WorkoutCompleteSheet(
+      builder: (sheetContext) => _WorkoutCompleteSheet(
         duration: _workoutDuration,
         exercisesCompleted: exerciseCount,
         totalSets: _completedSets.fold(0, (sum, sets) => sum + sets.length),
+        onFinish: () {
+          Navigator.pop(sheetContext); // Close sheet
+          pageContext.pop(); // Exit workout page
+        },
       ),
     );
   }
@@ -1146,11 +1154,13 @@ class _WorkoutCompleteSheet extends StatefulWidget {
   final String duration;
   final int exercisesCompleted;
   final int totalSets;
+  final VoidCallback onFinish;
 
   const _WorkoutCompleteSheet({
     required this.duration,
     required this.exercisesCompleted,
     required this.totalSets,
+    required this.onFinish,
   });
 
   @override
@@ -1250,8 +1260,7 @@ class _WorkoutCompleteSheetState extends State<_WorkoutCompleteSheet> {
               child: FilledButton(
                 onPressed: () {
                   HapticUtils.mediumImpact();
-                  Navigator.pop(context);
-                  context.pop();
+                  widget.onFinish();
                 },
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
