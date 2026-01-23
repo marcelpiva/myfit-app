@@ -496,8 +496,11 @@ class PlansNotifier extends StateNotifier<PlansState> {
         // Transform assignments to plan format for UI consistency
         plans = assignments.map((assignment) {
           final plan = assignment['plan'] as Map<String, dynamic>? ?? {};
+          // Map plan_workouts to workouts for UI compatibility
+          final planWorkouts = plan['plan_workouts'] as List? ?? [];
           return <String, dynamic>{
             ...plan,
+            'workouts': planWorkouts,  // UI expects 'workouts' field
             'assignment_id': assignment['id'],
             'start_date': assignment['start_date'],
             'end_date': assignment['end_date'],

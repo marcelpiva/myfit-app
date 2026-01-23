@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.2] - 2026-01-23
+
+### Added
+- **Organization Context Interceptor** - Automatic `X-Organization-ID` header on all API requests
+  - `OrganizationInterceptor` syncs with active context
+  - Ensures API filters data by current organization
+  - Prevents cross-organization data leaks
+
+- **Auto-Refresh on App Resume** - Data refreshes when returning from background
+  - Triggers after 30+ seconds in background
+  - Refreshes dashboard, plans, students, and invites
+  - Uses `WidgetsBindingObserver` lifecycle management
+
+### Fixed
+- **Plan Workouts Display** - Assigned plans now show correct workout count
+  - Maps `plan_workouts` to `workouts` for UI compatibility
+  - Badge correctly shows number of workouts in plan
+
+- **Keyboard Dismissal** - Numeric keyboard now dismisses properly in active workout
+  - Added `textInputAction: TextInputAction.done` for Done button
+  - Added `onTapOutside` handler to dismiss on outside tap
+  - Properly unfocuses input after submission
+
 ## [1.8.1] - 2026-01-23
 
 ### Fixed

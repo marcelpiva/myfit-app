@@ -170,6 +170,7 @@ class _SetInputStepperState extends State<SetInputStepper> {
                   keyboardType: TextInputType.numberWithOptions(
                     decimal: widget.isDecimal,
                   ),
+                  textInputAction: TextInputAction.done,
                   inputFormatters: widget.isDecimal
                       ? [FilteringTextInputFormatter.allow(RegExp(r'[\d.,]'))]
                       : [FilteringTextInputFormatter.digitsOnly],
@@ -189,7 +190,14 @@ class _SetInputStepperState extends State<SetInputStepper> {
                     ),
                     isDense: true,
                   ),
-                  onSubmitted: (_) => _parseAndUpdate(),
+                  onSubmitted: (_) {
+                    _parseAndUpdate();
+                    _focusNode.unfocus();
+                  },
+                  onTapOutside: (_) {
+                    _parseAndUpdate();
+                    _focusNode.unfocus();
+                  },
                 ),
               ),
 
