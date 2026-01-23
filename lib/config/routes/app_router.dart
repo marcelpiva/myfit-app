@@ -85,6 +85,7 @@ import '../../features/checkin/presentation/pages/smart_checkin_page.dart';
 import '../../features/marketplace/presentation/pages/marketplace_page.dart';
 import '../../features/home/presentation/providers/student_home_provider.dart';
 import '../../shared/presentation/layouts/main_scaffold.dart';
+import '../../core/providers/context_provider.dart';
 import 'route_names.dart';
 
 /// Wraps a widget with DevScreenLabel for debug/dev screen identification
@@ -94,9 +95,17 @@ Widget _devLabel(String name, Widget child) {
 
 /// Guard redirect for workout creation routes
 /// Returns redirect path if student has a trainer, null otherwise
+/// Trainers are never redirected - this guard is for students only
 String? _trainerGuardRedirect(BuildContext context) {
   try {
     final container = ProviderScope.containerOf(context);
+
+    // Check if user is a trainer - trainers should never be redirected
+    final activeContext = container.read(activeContextProvider);
+    if (activeContext?.isTrainer == true) {
+      return null; // Trainers can access all workout creation routes
+    }
+
     final hasTrainer = container.read(studentDashboardProvider).hasTrainer;
     if (hasTrainer) {
       // Redirect to workouts list if student has a trainer

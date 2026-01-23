@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.1] - 2026-01-23
+
+### Fixed
+- **Trainer Plan Wizard Redirect** - Fixed trainers being incorrectly redirected to workouts page
+  - `_trainerGuardRedirect` now checks user role before applying student guard
+  - Trainers can now access plan wizard without being redirected
+
 ## [1.8.0] - 2026-01-23
 
 ### Added
