@@ -10,7 +10,9 @@ import '../../../../core/domain/entities/entities.dart';
 import '../../../../core/providers/context_provider.dart';
 import '../../../../core/services/organization_service.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../home/presentation/providers/student_home_provider.dart';
 import '../../../trainer_workout/presentation/providers/trainer_students_provider.dart';
+import '../../../workout/presentation/providers/workout_provider.dart';
 
 class OrgSelectorPage extends ConsumerStatefulWidget {
   const OrgSelectorPage({super.key});
@@ -24,6 +26,12 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
     HapticUtils.mediumImpact();
     final activeContext = ActiveContext(membership: membership);
     ref.read(activeContextProvider.notifier).setContext(activeContext);
+
+    // Invalidate providers to refresh data for the new organization context
+    ref.invalidate(studentDashboardProvider);
+    ref.invalidate(plansNotifierProvider);
+    ref.invalidate(workoutsNotifierProvider);
+
     context.go(activeContext.homeRoute);
   }
 
