@@ -29,7 +29,7 @@ platform :ios do
 
     # Upload to TestFlight
     upload_to_testflight(
-      ipa: "../build/ios/ipa/myfit_app.ipa",
+      ipa: "../build/ios/ipa/My Fit.ipa",
       skip_waiting_for_build_processing: true
     )
 
