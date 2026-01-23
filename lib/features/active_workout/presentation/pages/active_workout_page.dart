@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../config/theme/tokens/exercise_theme.dart';
+import '../../../training_plan/domain/models/training_plan.dart';
 import '../../../../core/providers/context_provider.dart';
 import '../../../../shared/presentation/components/animations/fade_in_up.dart';
 import '../../../shared_session/domain/models/shared_session.dart';
@@ -127,6 +129,58 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
 
   int _getExerciseRest(Map<String, dynamic>? exercise) {
     return (exercise?['rest_seconds'] ?? exercise?['rest'] ?? 60) as int;
+  }
+
+  /// Get the TechniqueType from the current exercise for theming
+  TechniqueType _getExerciseTechnique(Map<String, dynamic>? exercise) {
+    final techniqueStr = exercise?['technique_type'] as String?;
+    if (techniqueStr == null || techniqueStr.isEmpty) {
+      return TechniqueType.normal;
+    }
+    switch (techniqueStr.toLowerCase()) {
+      case 'bi_set':
+      case 'bi-set':
+      case 'biset':
+        return TechniqueType.biset;
+      case 'tri_set':
+      case 'tri-set':
+      case 'triset':
+        return TechniqueType.triset;
+      case 'superset':
+      case 'super_set':
+        return TechniqueType.superset;
+      case 'giant_set':
+      case 'giant-set':
+      case 'giantset':
+        return TechniqueType.giantset;
+      case 'dropset':
+      case 'drop_set':
+        return TechniqueType.dropset;
+      case 'rest_pause':
+      case 'rest-pause':
+      case 'restpause':
+        return TechniqueType.restPause;
+      case 'cluster':
+      case 'cluster_set':
+        return TechniqueType.cluster;
+      default:
+        return TechniqueType.normal;
+    }
+  }
+
+  /// Check if the current exercise has a group technique (superset, biset, etc.)
+  bool _hasGroupTechnique(Map<String, dynamic>? exercise) {
+    final technique = _getExerciseTechnique(exercise);
+    return ExerciseTheme.isGroupTechnique(technique);
+  }
+
+  /// Get the accent color for the current exercise (based on technique)
+  Color _getExerciseAccentColor(Map<String, dynamic>? exercise) {
+    final technique = _getExerciseTechnique(exercise);
+    if (technique == TechniqueType.normal) {
+      return AppColors.primary;
+    }
+    return ExerciseTheme.getColor(technique);
   }
 
   void _startRestTimer(int restSeconds) {
@@ -322,16 +376,23 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     final progress =
         (_currentExerciseIndex + (_currentSet - 1) / exerciseSets) / exercises.length;
 
+    // Get accent color based on current exercise technique
+    final accentColor = _getExerciseAccentColor(currentExercise);
+    final hasGroupTechnique = _hasGroupTechnique(currentExercise);
+
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-      body: Container(
+      body: AnimatedContainer(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppColors.primary.withAlpha(isDark ? 15 : 10),
-              AppColors.secondary.withAlpha(isDark ? 12 : 8),
+              accentColor.withAlpha(isDark ? 20 : 15),
+              (hasGroupTechnique ? accentColor : AppColors.secondary)
+                  .withAlpha(isDark ? 12 : 8),
             ],
           ),
         ),
@@ -444,11 +505,15 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
               margin: const EdgeInsets.symmetric(horizontal: 16),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  backgroundColor: theme.colorScheme.surfaceContainerLow,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                  minHeight: 4,
+                child: TweenAnimationBuilder<Color?>(
+                  tween: ColorTween(begin: accentColor, end: accentColor),
+                  duration: const Duration(milliseconds: 400),
+                  builder: (context, color, child) => LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: theme.colorScheme.surfaceContainerLow,
+                    valueColor: AlwaysStoppedAnimation<Color>(color ?? accentColor),
+                    minHeight: 4,
+                  ),
                 ),
               ),
             ),
@@ -460,7 +525,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildExerciseScreen(theme, isDark, exercises, currentExercise, sharedState),
+                        child: _buildExerciseScreen(theme, isDark, exercises, currentExercise, sharedState, accentColor: accentColor),
                       ),
                       // Chat panel (side panel on larger screens)
                       if (_isSharedSession && _isChatOpen && MediaQuery.of(context).size.width > 600)
@@ -595,8 +660,9 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     bool isDark,
     List<Map<String, dynamic>> exercises,
     Map<String, dynamic>? currentExercise,
-    SharedSessionState? sharedState,
-  ) {
+    SharedSessionState? sharedState, {
+    required Color accentColor,
+  }) {
     final completedIndices = <int>[];
     for (var i = 0; i < _completedSets.length; i++) {
       if (_completedSets[i].length >= _getExerciseSets(exercises[i])) {
@@ -711,7 +777,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
           // Log set section with steppers
           FadeInUp(
             delay: const Duration(milliseconds: 300),
-            child: _buildLogSectionWithSteppers(theme, isDark, exercises, currentExercise),
+            child: _buildLogSectionWithSteppers(theme, isDark, exercises, currentExercise, accentColor: accentColor),
           ),
 
           const SizedBox(height: 100),
@@ -907,8 +973,9 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     ThemeData theme,
     bool isDark,
     List<Map<String, dynamic>> exercises,
-    Map<String, dynamic>? exercise,
-  ) {
+    Map<String, dynamic>? exercise, {
+    required Color accentColor,
+  }) {
     final exerciseSets = _getExerciseSets(exercise);
     final defaultReps = _getExerciseReps(exercise);
     final defaultWeight = _getExerciseWeight(exercise);
@@ -1004,19 +1071,35 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
 
           const SizedBox(height: 24),
 
-          // Complete button with animation
+          // Complete button with animation - uses accent color based on technique
           SizedBox(
             width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: () => _completeSet(exercises),
-              icon: const Icon(LucideIcons.check, size: 20),
-              label: const Text(
-                'Completar Série',
-                style: TextStyle(fontWeight: FontWeight.w600),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 400),
+              curve: Curves.easeInOut,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: accentColor.withAlpha(60),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: FilledButton.icon(
+                onPressed: () => _completeSet(exercises),
+                icon: const Icon(LucideIcons.check, size: 20),
+                label: const Text(
+                  'Completar Série',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                style: FilledButton.styleFrom(
+                  backgroundColor: accentColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
               ),
             ),
           ),

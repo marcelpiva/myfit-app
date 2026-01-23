@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Displays group instructions when available
   - **Consistent colors** - Now uses centralized `ExerciseTheme` for matching colors between builder and active workout
   - **Visual enhancements** - Colored borders and subtle gradients for grouped exercises
+  - **Global technique theming** - Background gradient, progress bar, and "Completar Série" button all adapt to current exercise's technique color
+  - **Smooth transitions** - Animated color changes when navigating between exercises with different techniques
 
 ### Fixed
 - **Active Workout Exit Bug** - Fixed dialog context issue preventing exit
