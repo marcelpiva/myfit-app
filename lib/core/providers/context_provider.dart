@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/entities/entities.dart';
 import '../network/api_client.dart';
 import '../network/api_endpoints.dart';
+import '../network/interceptors/organization_interceptor.dart';
 import '../services/membership_service.dart';
 import '../../features/trainer_workout/presentation/providers/trainer_students_provider.dart';
 
@@ -55,9 +56,32 @@ final groupedMembershipsProvider =
   );
 });
 
+/// Notifier for the currently active context
+/// Also updates the organization interceptor when context changes
+class ActiveContextNotifier extends StateNotifier<ActiveContext?> {
+  ActiveContextNotifier() : super(null) {
+    // Initialize the organization ID getter
+    OrganizationInterceptor.setOrganizationIdGetter(_getOrganizationId);
+  }
+
+  String? _getOrganizationId() {
+    return state?.organization.id;
+  }
+
+  void setContext(ActiveContext? context) {
+    state = context;
+  }
+
+  void clearContext() {
+    state = null;
+  }
+}
+
 /// Provider for the currently active context
 final activeContextProvider =
-    StateProvider<ActiveContext?>((ref) => null);
+    StateNotifierProvider<ActiveContextNotifier, ActiveContext?>((ref) {
+  return ActiveContextNotifier();
+});
 
 /// Provider to check if user has any trainer/professional roles
 final hasTrainerRoleProvider = Provider<bool>((ref) {

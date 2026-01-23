@@ -23,7 +23,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
   void _selectMembership(OrganizationMembership membership) {
     HapticUtils.mediumImpact();
     final activeContext = ActiveContext(membership: membership);
-    ref.read(activeContextProvider.notifier).state = activeContext;
+    ref.read(activeContextProvider.notifier).setContext(activeContext);
     context.go(activeContext.homeRoute);
   }
 

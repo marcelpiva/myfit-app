@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../config/environment.dart';
 import 'interceptors/auth_interceptor.dart';
 import 'interceptors/error_interceptor.dart';
+import 'interceptors/organization_interceptor.dart';
 
 /// Singleton API client using Dio
 /// Handles all HTTP requests to the MyFit backend
@@ -43,6 +44,9 @@ class ApiClient {
   void _setupInterceptors() {
     // Auth interceptor - adds token to requests and handles refresh
     _dio.interceptors.add(AuthInterceptor(_dio));
+
+    // Organization interceptor - adds X-Organization-ID header
+    _dio.interceptors.add(OrganizationInterceptor());
 
     // Error interceptor - converts Dio errors to ApiExceptions
     _dio.interceptors.add(ErrorInterceptor());

@@ -90,7 +90,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
 
       _ref.read(currentUserProvider.notifier).state = response.user;
-      _ref.read(activeContextProvider.notifier).state = null;
+      _ref.read(activeContextProvider.notifier).setContext(null);
       _ref.invalidate(membershipsProvider);
       state = AuthState(
         status: AuthStatus.authenticated,
@@ -129,7 +129,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
 
       _ref.read(currentUserProvider.notifier).state = response.user;
-      _ref.read(activeContextProvider.notifier).state = null;
+      _ref.read(activeContextProvider.notifier).setContext(null);
       _ref.invalidate(membershipsProvider);
       state = AuthState(
         status: AuthStatus.authenticated,
@@ -156,7 +156,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     await _authService.logout();
     _ref.read(currentUserProvider.notifier).state = null;
-    _ref.read(activeContextProvider.notifier).state = null;
+    _ref.read(activeContextProvider.notifier).setContext(null);
     _ref.invalidate(membershipsProvider);
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
