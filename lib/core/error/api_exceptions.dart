@@ -143,11 +143,11 @@ extension ApiExceptionMessage on ApiException {
   /// Get a user-friendly message suitable for displaying in UI
   String get userMessage {
     return switch (this) {
-      AuthenticationException() => 'Sessão expirada. Faça login novamente.',
-      ForbiddenException() => 'Você não tem permissão para esta ação.',
-      NotFoundException() => 'Não encontrado.',
+      AuthenticationException(message: final msg) => msg.isNotEmpty ? msg : 'Sessão expirada. Faça login novamente.',
+      ForbiddenException(message: final msg) => msg.isNotEmpty ? msg : 'Você não tem permissão para esta ação.',
+      NotFoundException(message: final msg) => msg.isNotEmpty ? msg : 'Não encontrado.',
       ValidationException(message: final msg) => msg,
-      ConflictException() => 'Este item já existe.',
+      ConflictException(message: final msg) => msg.isNotEmpty ? msg : 'Este item já existe.',
       RateLimitException() => 'Muitas requisições. Aguarde um momento.',
       ServerException() => 'Erro no servidor. Tente novamente.',
       NetworkException(isTimeout: true) => 'Conexão lenta. Tente novamente.',
