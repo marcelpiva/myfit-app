@@ -196,9 +196,14 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
       final service = OrganizationService();
       await service.acceptInvite(invite.token ?? '');
 
-      // Refresh memberships and invites
+      // Refresh memberships and invites (student view)
       ref.invalidate(membershipsProvider);
       ref.invalidate(pendingInvitesForUserProvider);
+
+      // Also refresh trainer-side providers for this organization
+      // This ensures the trainer view updates when an invite is accepted
+      ref.invalidate(pendingInvitesNotifierProvider(invite.organizationId));
+      ref.invalidate(trainerStudentsNotifierProvider(invite.organizationId));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

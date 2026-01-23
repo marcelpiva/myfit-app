@@ -6,9 +6,11 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/providers/context_provider.dart';
 import '../providers/auth_provider.dart';
 import '../../../../core/services/organization_service.dart';
 import '../../../../shared/presentation/components/animations/fade_in_up.dart';
+import '../../../trainer_workout/presentation/providers/trainer_students_provider.dart';
 
 /// Page for accepting organization invites via deep link
 /// Route: /invite/:token
@@ -71,6 +73,17 @@ class _InviteAcceptPageState extends ConsumerState<InviteAcceptPage> {
     try {
       final orgService = OrganizationService();
       await orgService.acceptInvite(widget.token);
+
+      // Invalidate student-side providers
+      ref.invalidate(membershipsProvider);
+      ref.invalidate(pendingInvitesForUserProvider);
+
+      // Invalidate trainer-side providers for this organization
+      final orgId = _inviteData?['organization_id'] as String?;
+      if (orgId != null) {
+        ref.invalidate(pendingInvitesNotifierProvider(orgId));
+        ref.invalidate(trainerStudentsNotifierProvider(orgId));
+      }
 
       if (mounted) {
         HapticUtils.heavyImpact();
