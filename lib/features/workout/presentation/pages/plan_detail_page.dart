@@ -590,12 +590,17 @@ class _PlanDetailPageState extends ConsumerState<PlanDetailPage>
             .toList() ??
         [];
 
+    final activeContext = ref.watch(activeContextProvider);
+    final isTrainer = activeContext?.isTrainer ?? false;
+
     return GestureDetector(
       onTap: () {
         HapticUtils.lightImpact();
         final workoutId = workout?['id'] as String?;
         if (workoutId != null) {
-          context.push('/workouts/$workoutId');
+          // Use trainer route to avoid duplicate bottom nav
+          final route = isTrainer ? '/trainer/workouts/$workoutId' : '/workouts/$workoutId';
+          context.push(route);
         }
       },
       child: Container(

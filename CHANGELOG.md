@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `_trainerGuardRedirect` now checks user role before applying student guard
   - Trainers can now access plan wizard without being redirected
 
+- **Duplicate Bottom Navigation** - Fixed trainers seeing student bottom nav when viewing workouts
+  - Added `/trainer/workouts/:workoutId` route outside shell
+  - Plan detail page now routes trainers to trainer-specific workout route
+  - Prevents duplicate navigation bars when trainer clicks Home
+
 ## [1.8.0] - 2026-01-23
 
 ### Added
