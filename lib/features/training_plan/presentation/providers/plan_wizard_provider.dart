@@ -2161,9 +2161,12 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
           'workout_name': w.name,
           'order': w.order,
           'muscle_groups': w.muscleGroups,
-          'workout_exercises': w.exercises.map((e) {
+          'workout_exercises': w.exercises.asMap().entries.map((entry) {
+            final e = entry.value;
+            final order = entry.key;
             return {
               'exercise_id': e.exerciseId,
+              'order': order,
               'sets': e.sets,
               'reps': e.reps,
               'rest_seconds': e.restSeconds,

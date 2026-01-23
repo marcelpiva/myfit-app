@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../core/utils/haptic_utils.dart';
-import '../../../../core/widgets/dev_screen_label.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -16,6 +15,7 @@ import '../../../gym_home/presentation/pages/gym_home_page.dart';
 import '../../data/models/student_dashboard.dart';
 import '../providers/student_home_provider.dart';
 import '../widgets/streak_calendar.dart';
+import '../../../workout/presentation/widgets/workout_picker_sheet.dart';
 
 /// Role-aware home page that renders different content based on active context
 class HomePage extends ConsumerWidget {
@@ -93,17 +93,15 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
         ? ref.watch(studentPendingPlansProvider)
         : null;
 
-    return DevScreenLabel(
-      screenName: 'StudentHomePage',
-      child: Scaffold(
-        body: Container(
-          color: isDark ? AppColors.backgroundDark : AppColors.background,
-          child: SafeArea(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: dashboardState.isLoading && dashboardState.dashboard == null
-                  ? const Center(child: CircularProgressIndicator())
-                  : RefreshIndicator(
+    return Scaffold(
+      body: Container(
+        color: isDark ? AppColors.backgroundDark : AppColors.background,
+        child: SafeArea(
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: dashboardState.isLoading && dashboardState.dashboard == null
+                ? const Center(child: CircularProgressIndicator())
+                : RefreshIndicator(
                     onRefresh: () async {
                       ref.read(studentDashboardProvider.notifier).refresh();
                       if (dashboardState.hasTrainer) {
@@ -216,7 +214,6 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
           ),
         ),
       ),
-    ),
     );
   }
 
@@ -1446,6 +1443,17 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
   }
 
   void _showStartWorkoutOptions(BuildContext context, bool isDark, StudentDashboardState dashboardState) {
+    // Show the workout picker sheet
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => const WorkoutPickerSheet(),
+    );
+  }
+
+  // Keep the old method for reference but renamed
+  void _showStartWorkoutOptionsLegacy(BuildContext context, bool isDark, StudentDashboardState dashboardState) {
     final todayWorkout = dashboardState.todayWorkout;
     final canTrainWithPersonal = dashboardState.canTrainWithPersonal && dashboardState.hasTrainer;
     final trainingMode = dashboardState.trainingMode;

@@ -5,6 +5,67 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-01-23
+
+### Added
+- **Workout Picker Sheet** - New bottom sheet for choosing which workout to start
+  - Shows all workouts from active plan
+  - Highlights suggested workout with badge
+  - Allows selecting any workout regardless of schedule
+  - Integrates with Start Workout options (alone vs with personal)
+
+- **Feature Flags System** - New `FeatureFlags` class for controlling features
+  - `showDevScreenLabels` - Controls visibility of dev screen labels
+  - Works in release builds (not tied to kDebugMode)
+
+- **DevScreenLabel on All Routes** - Automatic wrapper via GoRouter
+  - All 70+ routes now have DevScreenLabel automatically
+  - Centralized implementation via `_devLabel()` helper
+  - Removed manual DevScreenLabel from individual pages
+
+- **Grouped Exercise Indicators** - Visual badges for advanced techniques in active workout
+  - BI-SET, TRI-SET, SUPERSET, GIANT SET, DROP SET, CLUSTER badges
+  - Color-coded with icons for each technique type
+  - Shows exercise order within group
+  - Displays group instructions when available
+
+### Fixed
+- **Active Workout Exit Bug** - Fixed dialog context issue preventing exit
+  - Separated dialog context from page context
+  - Exit now works reliably from confirmation dialog
+
+- **Exercise Name Display** - Improved name detection in active workout
+  - Checks multiple paths: `name`, `exercise_name`, `exercise.name`
+  - Fallback to "Exercício" if no name found
+
+- **Plan Detail 422 Error** - Fixed navigation to `/plans/null`
+  - Added redirect guard for invalid planId (null, empty, "null")
+  - Added validation in PlanDetailNotifier before API call
+  - Added null check in WorkoutsPage before navigation
+
+- **Plan Cache Invalidation** - Fixed exercises not appearing after plan edit
+  - Now invalidates `planDetailNotifierProvider` after saving in wizard
+
+- **Exercise Order** - Fixed missing order field when saving plan
+  - Added `order` field to exercise mapping in plan wizard provider
+
+- **Plan Wizard Blank Screen on Edit** - Fixed blank screen when editing student workout
+  - Added loading indicator while fetching plan data
+  - Added error state with retry option
+  - Applies to both edit mode and periodization mode
+
+- **Duplicate Exercise Count** - Fixed "1/12" showing twice on active workout screen
+  - ExercisePageIndicator no longer shows compact text when > 10 exercises
+  - ExerciseNavigationArrows already displays the count
+
+- **Muscle Group Translation** - Applied `translateMuscleGroup` to ExerciseCardCompact
+  - "glutes" now correctly shows as "Glúteos"
+
+### Changed
+- **Start Workout Flow** - Now shows WorkoutPickerSheet instead of direct navigation
+  - Students can choose any workout from their plan
+  - Suggested workout is highlighted but not required
+
 ## [1.7.1] - 2026-01-22
 
 ### Added

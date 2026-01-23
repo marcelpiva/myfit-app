@@ -594,6 +594,12 @@ class PlanDetailNotifier extends StateNotifier<PlanDetailState> {
   }
 
   Future<void> loadDetail() async {
+    // Don't make API calls with invalid planId
+    if (planId.isEmpty || planId == 'null') {
+      state = state.copyWith(isLoading: false, error: 'ID do plano inválido');
+      return;
+    }
+
     state = state.copyWith(isLoading: true, error: null);
     try {
       final plan = await _service.getPlan(planId);

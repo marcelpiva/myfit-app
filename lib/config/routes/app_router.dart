@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/widgets/dev_screen_label.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
@@ -86,6 +87,11 @@ import '../../features/home/presentation/providers/student_home_provider.dart';
 import '../../shared/presentation/layouts/main_scaffold.dart';
 import 'route_names.dart';
 
+/// Wraps a widget with DevScreenLabel for debug/dev screen identification
+Widget _devLabel(String name, Widget child) {
+  return DevScreenLabel(screenName: name, child: child);
+}
+
 /// Guard redirect for workout creation routes
 /// Returns redirect path if student has a trainer, null otherwise
 String? _trainerGuardRedirect(BuildContext context) {
@@ -112,27 +118,27 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.welcome,
         name: 'welcome',
-        builder: (context, state) => const WelcomePage(),
+        builder: (context, state) => _devLabel('welcome', const WelcomePage()),
       ),
       GoRoute(
         path: RouteNames.login,
         name: 'login',
-        builder: (context, state) => const LoginPage(),
+        builder: (context, state) => _devLabel('login', const LoginPage()),
       ),
       GoRoute(
         path: RouteNames.register,
         name: 'register',
-        builder: (context, state) => const RegisterPage(),
+        builder: (context, state) => _devLabel('register', const RegisterPage()),
       ),
       GoRoute(
         path: RouteNames.forgotPassword,
         name: 'forgot-password',
-        builder: (context, state) => const ForgotPasswordPage(),
+        builder: (context, state) => _devLabel('forgot-password', const ForgotPasswordPage()),
       ),
       GoRoute(
         path: RouteNames.orgSelector,
         name: 'org-selector',
-        builder: (context, state) => const OrgSelectorPage(),
+        builder: (context, state) => _devLabel('org-selector', const OrgSelectorPage()),
       ),
 
       // Main app with bottom navigation
@@ -147,7 +153,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RouteNames.home,
                 name: 'home',
-                builder: (context, state) => const HomePage(),
+                builder: (context, state) => _devLabel('home', const HomePage()),
               ),
             ],
           ),
@@ -158,7 +164,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RouteNames.workouts,
                 name: 'workouts',
-                builder: (context, state) => const WorkoutsPage(),
+                builder: (context, state) => _devLabel('workouts', const WorkoutsPage()),
                 routes: [
                   // Specific routes MUST come before :workoutId
                   // Note: These routes are protected by hasTrainer check
@@ -166,45 +172,45 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     path: 'builder',
                     name: 'workout-builder',
                     redirect: (context, state) => _trainerGuardRedirect(context),
-                    builder: (context, state) => const WorkoutBuilderPage(),
+                    builder: (context, state) => _devLabel('workout-builder', const WorkoutBuilderPage()),
                   ),
                   GoRoute(
                     path: 'from-scratch',
                     name: 'workout-from-scratch',
                     redirect: (context, state) => _trainerGuardRedirect(context),
-                    builder: (context, state) => const WorkoutFromScratchPage(),
+                    builder: (context, state) => _devLabel('workout-from-scratch', const WorkoutFromScratchPage()),
                   ),
                   GoRoute(
                     path: 'with-ai',
                     name: 'workout-with-ai',
                     redirect: (context, state) => _trainerGuardRedirect(context),
-                    builder: (context, state) => const WorkoutWithAIPage(),
+                    builder: (context, state) => _devLabel('workout-with-ai', const WorkoutWithAIPage()),
                   ),
                   GoRoute(
                     path: 'templates',
                     name: 'workout-templates',
                     redirect: (context, state) => _trainerGuardRedirect(context),
-                    builder: (context, state) => WorkoutTemplatesPage(
+                    builder: (context, state) => _devLabel('workout-templates', WorkoutTemplatesPage(
                       initialCategory: state.uri.queryParameters['category'],
-                    ),
+                    )),
                   ),
                   GoRoute(
                     path: 'progression',
                     name: 'workout-progression',
-                    builder: (context, state) => const WorkoutProgressionPage(),
+                    builder: (context, state) => _devLabel('workout-progression', const WorkoutProgressionPage()),
                   ),
                   GoRoute(
                     path: 'exercises/new',
                     name: 'exercise-create',
-                    builder: (context, state) => const ExerciseFormPage(),
+                    builder: (context, state) => _devLabel('exercise-create', const ExerciseFormPage()),
                   ),
                   // Dynamic route MUST come last
                   GoRoute(
                     path: ':workoutId',
                     name: 'workout-detail',
-                    builder: (context, state) => WorkoutDetailPage(
+                    builder: (context, state) => _devLabel('workout-detail', WorkoutDetailPage(
                       workoutId: state.pathParameters['workoutId'] ?? '',
-                    ),
+                    )),
                   ),
                 ],
               ),
@@ -217,7 +223,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RouteNames.nutrition,
                 name: 'nutrition',
-                builder: (context, state) => const NutritionPage(),
+                builder: (context, state) => _devLabel('nutrition', const NutritionPage()),
               ),
             ],
           ),
@@ -228,7 +234,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RouteNames.progress,
                 name: 'progress',
-                builder: (context, state) => const ProgressPage(),
+                builder: (context, state) => _devLabel('progress', const ProgressPage()),
               ),
             ],
           ),
@@ -239,7 +245,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RouteNames.chat,
                 name: 'chat',
-                builder: (context, state) => const ChatPage(),
+                builder: (context, state) => _devLabel('chat', const ChatPage()),
               ),
             ],
           ),
@@ -250,17 +256,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.profile,
         name: 'profile',
-        builder: (context, state) => const ProfilePage(),
+        builder: (context, state) => _devLabel('profile', const ProfilePage()),
       ),
       GoRoute(
         path: RouteNames.editProfile,
         name: 'edit-profile',
-        builder: (context, state) => const EditProfilePage(),
+        builder: (context, state) => _devLabel('edit-profile', const EditProfilePage()),
       ),
       GoRoute(
         path: RouteNames.settings,
         name: 'settings',
-        builder: (context, state) => const SettingsPage(),
+        builder: (context, state) => _devLabel('settings', const SettingsPage()),
       ),
       GoRoute(
         path: RouteNames.planWizard,
@@ -276,122 +282,130 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final planId = state.uri.queryParameters['edit'];
           final basePlanId = state.uri.queryParameters['basePlanId'];
           final phaseType = state.uri.queryParameters['phaseType'];
-          return PlanWizardPage(
+          return _devLabel('plan-wizard', PlanWizardPage(
             studentId: studentId,
             planId: planId,
             basePlanId: basePlanId,
             phaseType: phaseType,
-          );
+          ));
         },
       ),
       GoRoute(
         path: RouteNames.planDetail,
         name: 'plan-detail',
-        builder: (context, state) => PlanDetailPage(
+        redirect: (context, state) {
+          final planId = state.pathParameters['planId'];
+          // Redirect to workouts if planId is null, empty, or literal "null"
+          if (planId == null || planId.isEmpty || planId == 'null') {
+            return RouteNames.workouts;
+          }
+          return null;
+        },
+        builder: (context, state) => _devLabel('plan-detail', PlanDetailPage(
           planId: state.pathParameters['planId'] ?? '',
-        ),
+        )),
       ),
       GoRoute(
         path: RouteNames.checkin,
         name: 'checkin',
-        builder: (context, state) => const CheckinPage(),
+        builder: (context, state) => _devLabel('checkin', const CheckinPage()),
       ),
       GoRoute(
         path: RouteNames.checkinHistory,
         name: 'checkin-history',
-        builder: (context, state) => const CheckinHistoryPage(),
+        builder: (context, state) => _devLabel('checkin-history', const CheckinHistoryPage()),
       ),
       GoRoute(
         path: RouteNames.qrScanner,
         name: 'qr-scanner',
-        builder: (context, state) => const QrScannerPage(),
+        builder: (context, state) => _devLabel('qr-scanner', const QrScannerPage()),
       ),
       GoRoute(
         path: RouteNames.qrGenerator,
         name: 'qr-generator',
-        builder: (context, state) => const QrGeneratorPage(),
+        builder: (context, state) => _devLabel('qr-generator', const QrGeneratorPage()),
       ),
       GoRoute(
         path: RouteNames.leaderboard,
         name: 'leaderboard',
-        builder: (context, state) => const LeaderboardPage(),
+        builder: (context, state) => _devLabel('leaderboard', const LeaderboardPage()),
       ),
       GoRoute(
         path: RouteNames.billing,
         name: 'billing',
-        builder: (context, state) => const BillingDashboardPage(),
+        builder: (context, state) => _devLabel('billing', const BillingDashboardPage()),
       ),
       GoRoute(
         path: RouteNames.coachDashboard,
         name: 'coach-dashboard',
-        builder: (context, state) => const CoachDashboardPage(),
+        builder: (context, state) => _devLabel('coach-dashboard', const CoachDashboardPage()),
       ),
       GoRoute(
         path: RouteNames.notifications,
         name: 'notifications',
-        builder: (context, state) => const NotificationsPage(),
+        builder: (context, state) => _devLabel('notifications', const NotificationsPage()),
       ),
       GoRoute(
         path: RouteNames.marketplace,
         name: 'marketplace',
-        builder: (context, state) => const MarketplacePage(),
+        builder: (context, state) => _devLabel('marketplace', const MarketplacePage()),
       ),
       GoRoute(
         path: RouteNames.activityFeed,
         name: 'activity-feed',
-        builder: (context, state) => const ActivityFeedPage(),
+        builder: (context, state) => _devLabel('activity-feed', const ActivityFeedPage()),
       ),
       GoRoute(
         path: RouteNames.help,
         name: 'help',
-        builder: (context, state) => const HelpPage(),
+        builder: (context, state) => _devLabel('help', const HelpPage()),
       ),
 
       // Progress routes
       GoRoute(
         path: '/progress/weight',
         name: 'register-weight',
-        builder: (context, state) => const RegisterWeightPage(),
+        builder: (context, state) => _devLabel('register-weight', const RegisterWeightPage()),
       ),
       GoRoute(
         path: RouteNames.measurements,
         name: 'register-measurements',
-        builder: (context, state) => const RegisterMeasurementsPage(),
+        builder: (context, state) => _devLabel('register-measurements', const RegisterMeasurementsPage()),
       ),
       GoRoute(
         path: RouteNames.weightGoal,
         name: 'weight-goal',
-        builder: (context, state) => const WeightGoalPage(),
+        builder: (context, state) => _devLabel('weight-goal', const WeightGoalPage()),
       ),
       GoRoute(
         path: RouteNames.progressStats,
         name: 'progress-stats',
-        builder: (context, state) => const ProgressStatsPage(),
+        builder: (context, state) => _devLabel('progress-stats', const ProgressStatsPage()),
       ),
       GoRoute(
         path: RouteNames.progressPhotoComparison,
         name: 'photo-comparison',
-        builder: (context, state) => const PhotoComparisonPage(),
+        builder: (context, state) => _devLabel('photo-comparison', const PhotoComparisonPage()),
       ),
       GoRoute(
         path: RouteNames.progressComparison,
         name: 'progress-comparison',
-        builder: (context, state) => const ProgressComparisonPage(),
+        builder: (context, state) => _devLabel('progress-comparison', const ProgressComparisonPage()),
       ),
       GoRoute(
         path: RouteNames.progressReport,
         name: 'progress-report',
-        builder: (context, state) => const ProgressReportPage(),
+        builder: (context, state) => _devLabel('progress-report', const ProgressReportPage()),
       ),
 
       // Active workout
       GoRoute(
         path: '/workouts/active/:workoutId',
         name: 'active-workout',
-        builder: (context, state) => ActiveWorkoutPage(
+        builder: (context, state) => _devLabel('active-workout', ActiveWorkoutPage(
           workoutId: state.pathParameters['workoutId'] ?? '',
           sessionId: state.uri.queryParameters['sessionId'],
-        ),
+        )),
       ),
 
       // Waiting for trainer (co-training request)
@@ -400,11 +414,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'waiting-for-trainer',
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>? ?? {};
-          return WaitingForTrainerPage(
+          return _devLabel('waiting-for-trainer', WaitingForTrainerPage(
             workoutId: state.pathParameters['workoutId'] ?? '',
             workoutName: extra['workoutName'] as String? ?? 'Treino',
             assignmentId: extra['assignmentId'] as String?,
-          );
+          ));
         },
       ),
 
@@ -412,252 +426,252 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/sessions/:sessionId',
         name: 'shared-session',
-        builder: (context, state) => SharedSessionPage(
+        builder: (context, state) => _devLabel('shared-session', SharedSessionPage(
           sessionId: state.pathParameters['sessionId'] ?? '',
           mode: state.uri.queryParameters['mode'] == 'trainer'
               ? SessionMode.trainer
               : SessionMode.student,
-        ),
+        )),
       ),
 
       // Legal pages
       GoRoute(
         path: RouteNames.about,
         name: 'about',
-        builder: (context, state) => const AboutPage(),
+        builder: (context, state) => _devLabel('about', const AboutPage()),
       ),
       GoRoute(
         path: RouteNames.privacy,
         name: 'privacy',
-        builder: (context, state) => const PrivacyPage(),
+        builder: (context, state) => _devLabel('privacy', const PrivacyPage()),
       ),
       GoRoute(
         path: RouteNames.terms,
         name: 'terms',
-        builder: (context, state) => const TermsPage(),
+        builder: (context, state) => _devLabel('terms', const TermsPage()),
       ),
 
       // Organization management
       GoRoute(
         path: RouteNames.createOrg,
         name: 'create-org',
-        builder: (context, state) => const CreateOrgPage(),
+        builder: (context, state) => _devLabel('create-org', const CreateOrgPage()),
       ),
       GoRoute(
         path: RouteNames.joinOrg,
         name: 'join-org',
-        builder: (context, state) => const JoinOrgPage(),
+        builder: (context, state) => _devLabel('join-org', const JoinOrgPage()),
       ),
 
       // Invite accept route (deep link)
       GoRoute(
         path: '/invite/:token',
         name: 'invite-accept',
-        builder: (context, state) => InviteAcceptPage(
+        builder: (context, state) => _devLabel('invite-accept', InviteAcceptPage(
           token: state.pathParameters['token'] ?? '',
-        ),
+        )),
       ),
 
       // Role-based home pages
       GoRoute(
         path: '/trainer-home',
         name: 'trainer-home',
-        builder: (context, state) => const TrainerHomePage(),
+        builder: (context, state) => _devLabel('trainer-home', const TrainerHomePage()),
       ),
       GoRoute(
         path: '/nutritionist-home',
         name: 'nutritionist-home',
-        builder: (context, state) => const NutritionistHomePage(),
+        builder: (context, state) => _devLabel('nutritionist-home', const NutritionistHomePage()),
       ),
       GoRoute(
         path: '/gym-home',
         name: 'gym-home',
-        builder: (context, state) => const GymHomePage(),
+        builder: (context, state) => _devLabel('gym-home', const GymHomePage()),
       ),
 
       // Role-specific chat routes (outside shell to avoid duplicate nav)
       GoRoute(
         path: '/trainer-chat',
         name: 'trainer-chat',
-        builder: (context, state) => const RoleChatWrapper(role: UserRole.trainer),
+        builder: (context, state) => _devLabel('trainer-chat', const RoleChatWrapper(role: UserRole.trainer)),
       ),
       GoRoute(
         path: '/nutritionist-chat',
         name: 'nutritionist-chat',
-        builder: (context, state) => const RoleChatWrapper(role: UserRole.nutritionist),
+        builder: (context, state) => _devLabel('nutritionist-chat', const RoleChatWrapper(role: UserRole.nutritionist)),
       ),
 
       // Trainer routes
       GoRoute(
         path: RouteNames.students,
         name: 'students',
-        builder: (context, state) => const StudentsListPage(),
+        builder: (context, state) => _devLabel('students', const StudentsListPage()),
       ),
       GoRoute(
         path: '/students/:studentId/detail',
         name: 'student-detail',
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>? ?? {};
-          return StudentDetailPage(
+          return _devLabel('student-detail', StudentDetailPage(
             studentId: state.pathParameters['studentId'] ?? '',
             studentUserId: extra['studentUserId'] as String? ?? '',
             studentName: extra['studentName'] as String? ?? 'Aluno',
             studentEmail: extra['studentEmail'] as String?,
             avatarUrl: extra['avatarUrl'] as String?,
             isActive: extra['isActive'] as bool? ?? true,
-          );
+          ));
         },
       ),
       GoRoute(
         path: RouteNames.schedule,
         name: 'schedule',
-        builder: (context, state) => const SchedulePage(),
+        builder: (context, state) => _devLabel('schedule', const SchedulePage()),
       ),
       GoRoute(
         path: RouteNames.mySchedule,
         name: 'my-schedule',
-        builder: (context, state) => const StudentSchedulePage(),
+        builder: (context, state) => _devLabel('my-schedule', const StudentSchedulePage()),
       ),
       GoRoute(
         path: '/students/:studentId/workouts',
         name: 'student-workouts',
-        builder: (context, state) => StudentWorkoutsPage(
+        builder: (context, state) => _devLabel('student-workouts', StudentWorkoutsPage(
           studentId: state.pathParameters['studentId'] ?? '',
           studentName: state.uri.queryParameters['name'],
-        ),
+        )),
       ),
       GoRoute(
         path: '/students/:studentId/plan-history',
         name: 'student-plan-history',
-        builder: (context, state) => StudentPlanHistoryPage(
+        builder: (context, state) => _devLabel('student-plan-history', StudentPlanHistoryPage(
           studentId: state.pathParameters['studentId'] ?? '',
           studentName: state.uri.queryParameters['name'],
-        ),
+        )),
       ),
       GoRoute(
         path: '/students/:studentId/progress',
         name: 'student-progress',
-        builder: (context, state) => TrainerStudentProgressPage(
+        builder: (context, state) => _devLabel('student-progress', TrainerStudentProgressPage(
           studentId: state.pathParameters['studentId'] ?? '',
           studentName: state.uri.queryParameters['name'],
-        ),
+        )),
       ),
       GoRoute(
         path: RouteNames.trainerPlans,
         name: 'trainer-plans',
-        builder: (context, state) => const TrainerPlansPage(),
+        builder: (context, state) => _devLabel('trainer-plans', const TrainerPlansPage()),
       ),
 
       // Nutritionist routes
       GoRoute(
         path: RouteNames.patients,
         name: 'patients',
-        builder: (context, state) => const PatientsListPage(),
+        builder: (context, state) => _devLabel('patients', const PatientsListPage()),
       ),
       GoRoute(
         path: RouteNames.dietPlans,
         name: 'diet-plans',
-        builder: (context, state) => const DietPlansListPage(),
+        builder: (context, state) => _devLabel('diet-plans', const DietPlansListPage()),
       ),
       GoRoute(
         path: '/patients/:patientId/diet-plan',
         name: 'patient-diet-plan',
-        builder: (context, state) => PatientDietPlanPage(
+        builder: (context, state) => _devLabel('patient-diet-plan', PatientDietPlanPage(
           patientId: state.pathParameters['patientId'] ?? '',
           patientName: state.uri.queryParameters['name'] ?? 'Paciente',
-        ),
+        )),
       ),
 
       // Gym management routes
       GoRoute(
         path: RouteNames.staff,
         name: 'staff',
-        builder: (context, state) => const StaffManagementPage(),
+        builder: (context, state) => _devLabel('staff', const StaffManagementPage()),
       ),
       GoRoute(
         path: RouteNames.members,
         name: 'members',
-        builder: (context, state) => const MembersListPage(),
+        builder: (context, state) => _devLabel('members', const MembersListPage()),
       ),
       GoRoute(
         path: '/gym-settings',
         name: 'gym-settings',
-        builder: (context, state) => const GymSettingsPage(),
+        builder: (context, state) => _devLabel('gym-settings', const GymSettingsPage()),
       ),
       GoRoute(
         path: '/gym-reports',
         name: 'gym-reports',
-        builder: (context, state) => const GymReportsPage(),
+        builder: (context, state) => _devLabel('gym-reports', const GymReportsPage()),
       ),
 
       // Nutrition sub-routes
       GoRoute(
         path: '/nutrition/search',
         name: 'food-search',
-        builder: (context, state) => const FoodSearchPage(),
+        builder: (context, state) => _devLabel('food-search', const FoodSearchPage()),
       ),
       GoRoute(
         path: '/nutrition/barcode',
         name: 'barcode-scanner',
-        builder: (context, state) => const BarcodeScannerPage(),
+        builder: (context, state) => _devLabel('barcode-scanner', const BarcodeScannerPage()),
       ),
       GoRoute(
         path: '/nutrition/recent',
         name: 'recent-meals',
-        builder: (context, state) => const RecentMealsPage(),
+        builder: (context, state) => _devLabel('recent-meals', const RecentMealsPage()),
       ),
       GoRoute(
         path: '/nutrition/ai-suggestion',
         name: 'ai-suggestion',
-        builder: (context, state) => const AISuggestionPage(),
+        builder: (context, state) => _devLabel('ai-suggestion', const AISuggestionPage()),
       ),
       GoRoute(
         path: RouteNames.dietPlanBuilder,
         name: 'diet-plan-builder',
-        builder: (context, state) => DietPlanBuilderPage(
+        builder: (context, state) => _devLabel('diet-plan-builder', DietPlanBuilderPage(
           planId: state.uri.queryParameters['planId'],
-        ),
+        )),
       ),
       GoRoute(
         path: RouteNames.mealLog,
         name: 'meal-log',
-        builder: (context, state) => const MealLogPage(),
+        builder: (context, state) => _devLabel('meal-log', const MealLogPage()),
       ),
       GoRoute(
         path: RouteNames.nutritionSummary,
         name: 'nutrition-summary',
-        builder: (context, state) => const NutritionSummaryPage(),
+        builder: (context, state) => _devLabel('nutrition-summary', const NutritionSummaryPage()),
       ),
       GoRoute(
         path: RouteNames.patientDetail,
         name: 'patient-detail',
-        builder: (context, state) => PatientDetailPage(
+        builder: (context, state) => _devLabel('patient-detail', PatientDetailPage(
           patientId: state.pathParameters['patientId'] ?? '',
-        ),
+        )),
       ),
 
       // Nutrition builder route
       GoRoute(
         path: '/nutrition/builder',
         name: 'nutrition-builder',
-        builder: (context, state) => NutritionBuilderPage(
+        builder: (context, state) => _devLabel('nutrition-builder', NutritionBuilderPage(
           planId: state.uri.queryParameters['planId'],
           studentId: state.uri.queryParameters['studentId'],
-        ),
+        )),
       ),
 
       // Smart check-in route
       GoRoute(
         path: '/checkin/smart',
         name: 'smart-checkin',
-        builder: (context, state) => const SmartCheckinPage(),
+        builder: (context, state) => _devLabel('smart-checkin', const SmartCheckinPage()),
       ),
 
       // Trainers management route
       GoRoute(
         path: '/trainers-management',
         name: 'trainers-management',
-        builder: (context, state) => const TrainersManagementPage(),
+        builder: (context, state) => _devLabel('trainers-management', const TrainersManagementPage()),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

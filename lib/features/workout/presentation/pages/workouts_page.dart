@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../core/utils/haptic_utils.dart';
-import '../../../../core/widgets/dev_screen_label.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -52,32 +51,30 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return DevScreenLabel(
-      screenName: 'WorkoutsPage',
-      child: Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.primary.withAlpha(isDark ? 15 : 10),
-                AppColors.secondary.withAlpha(isDark ? 12 : 8),
-              ],
-            ),
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.primary.withAlpha(isDark ? 15 : 10),
+              AppColors.secondary.withAlpha(isDark ? 12 : 8),
+            ],
           ),
-          child: SafeArea(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Column(
-                children: [
-                  // Header
-                  Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+        ),
+        child: SafeArea(
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: Column(
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
@@ -249,7 +246,6 @@ class _WorkoutsPageState extends ConsumerState<WorkoutsPage>
           ),
         ),
       ),
-    ),
     );
   }
 
@@ -618,8 +614,10 @@ class _WorkoutsList extends ConsumerWidget {
                 isDark: isDark,
                 isAssigned: plan['is_assigned'] == true,
                 onTap: () {
+                  final planId = plan['id'];
+                  if (planId == null || planId.toString().isEmpty) return;
                   HapticUtils.lightImpact();
-                  context.push('/plans/${plan['id']}');
+                  context.push('/plans/$planId');
                 },
               )),
           const SizedBox(height: 24),

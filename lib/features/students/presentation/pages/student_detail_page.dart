@@ -8,7 +8,6 @@ import '../../../../config/theme/tokens/animations.dart';
 import '../../../../core/providers/context_provider.dart';
 import '../../../../core/services/trainer_service.dart';
 import '../../../../core/utils/haptic_utils.dart';
-import '../../../../core/widgets/dev_screen_label.dart';
 import '../../../trainer_workout/presentation/providers/trainer_students_provider.dart';
 import '../widgets/schedule_session_sheet.dart';
 import '../widgets/student_diet_tab.dart';
@@ -42,7 +41,7 @@ class StudentDetailPage extends ConsumerStatefulWidget {
 }
 
 class _StudentDetailPageState extends ConsumerState<StudentDetailPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late TabController _tabController;
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
@@ -168,34 +167,32 @@ class _StudentDetailPageState extends ConsumerState<StudentDetailPage>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return DevScreenLabel(
-      screenName: 'StudentDetailPage',
-      child: Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                (isDark ? AppColors.primaryDark : AppColors.primary).withAlpha(isDark ? 15 : 10),
-                (isDark ? AppColors.secondaryDark : AppColors.secondary).withAlpha(isDark ? 12 : 8),
-              ],
-            ),
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              (isDark ? AppColors.primaryDark : AppColors.primary).withAlpha(isDark ? 15 : 10),
+              (isDark ? AppColors.secondaryDark : AppColors.secondary).withAlpha(isDark ? 12 : 8),
+            ],
           ),
-          child: SafeArea(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Column(
-                children: [
-                  // Header
-                  _buildHeader(context, theme, isDark),
+        ),
+        child: SafeArea(
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: Column(
+              children: [
+                // Header
+                _buildHeader(context, theme, isDark),
 
-                  // Tabs
-                  _buildTabBar(theme, isDark),
+                // Tabs
+                _buildTabBar(theme, isDark),
 
-                  // Tab content
-                  Expanded(
-                    child: TabBarView(
+                // Tab content
+                Expanded(
+                  child: TabBarView(
                     controller: _tabController,
                     children: [
                       // Plans tab
@@ -226,7 +223,6 @@ class _StudentDetailPageState extends ConsumerState<StudentDetailPage>
           ),
         ),
       ),
-    ),
     );
   }
 

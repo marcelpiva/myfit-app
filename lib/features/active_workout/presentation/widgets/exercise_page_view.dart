@@ -22,9 +22,9 @@ class ExercisePageIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    // If too many exercises, show compact version
+    // If too many exercises, don't show dots (ExerciseNavigationArrows already shows the count)
     if (totalExercises > 10) {
-      return _buildCompactIndicator(theme);
+      return const SizedBox.shrink();
     }
 
     return Row(

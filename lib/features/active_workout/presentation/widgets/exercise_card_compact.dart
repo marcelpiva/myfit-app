@@ -4,6 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/utils/haptic_utils.dart';
+import '../../../../core/utils/workout_translations.dart';
 import '../../../../core/widgets/video_player_page.dart';
 
 /// Compact exercise card for active workout - 120px image height instead of 200px
@@ -21,10 +22,36 @@ class ExerciseCardCompact extends StatelessWidget {
     required this.isDark,
   });
 
-  String get _name =>
-      exercise?['name'] ?? exercise?['exercise_name'] ?? 'Exercício';
+  String get _name {
+    // Try multiple paths to get the exercise name
+    final directName = exercise?['name'] as String?;
+    if (directName != null && directName.isNotEmpty) return directName;
 
-  String get _muscleGroup => exercise?['muscle_group'] ?? exercise?['muscle'] ?? '';
+    final exerciseName = exercise?['exercise_name'] as String?;
+    if (exerciseName != null && exerciseName.isNotEmpty) return exerciseName;
+
+    // Try nested exercise object
+    final nestedExercise = exercise?['exercise'] as Map<String, dynamic>?;
+    final nestedName = nestedExercise?['name'] as String?;
+    if (nestedName != null && nestedName.isNotEmpty) return nestedName;
+
+    return 'Exercício';
+  }
+
+  String get _muscleGroup {
+    final direct = exercise?['muscle_group'] as String? ?? exercise?['muscle'] as String?;
+    if (direct != null && direct.isNotEmpty) return direct;
+
+    // Try nested exercise object
+    final nestedExercise = exercise?['exercise'] as Map<String, dynamic>?;
+    return nestedExercise?['muscle_group'] as String? ?? '';
+  }
+
+  String? get _techniqueType => exercise?['technique_type'] as String?;
+
+  String? get _groupInstructions => exercise?['group_instructions'] as String?;
+
+  int? get _exerciseGroupOrder => exercise?['exercise_group_order'] as int?;
 
   String get _notes => exercise?['notes'] ?? '';
 
@@ -83,6 +110,12 @@ class ExerciseCardCompact extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Technique type badge (bi-set, tri-set, superset, etc.)
+                if (_techniqueType != null && _techniqueType!.isNotEmpty) ...[
+                  _buildTechniqueBadge(theme),
+                  const SizedBox(height: 8),
+                ],
+
                 // Muscle group badge and set indicator
                 Row(
                   children: [
@@ -94,7 +127,7 @@ class ExerciseCardCompact extends StatelessWidget {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          _muscleGroup,
+                          translateMuscleGroup(_muscleGroup),
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w600,
@@ -129,6 +162,38 @@ class ExerciseCardCompact extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+
+                // Group instructions (if in a grouped set)
+                if (_groupInstructions != null && _groupInstructions!.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: _getTechniqueColor().withAlpha(15),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: _getTechniqueColor().withAlpha(40)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          LucideIcons.lightbulb,
+                          size: 14,
+                          color: _getTechniqueColor(),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            _groupInstructions!,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: _getTechniqueColor(),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
 
                 // Notes if present
                 if (_notes.isNotEmpty) ...[
@@ -332,5 +397,122 @@ class ExerciseCardCompact extends StatelessWidget {
       width: 1,
       color: theme.colorScheme.outline.withValues(alpha: 0.2),
     );
+  }
+
+  Widget _buildTechniqueBadge(ThemeData theme) {
+    final color = _getTechniqueColor();
+    final label = _getTechniqueLabel();
+    final icon = _getTechniqueIcon();
+    final orderLabel = _exerciseGroupOrder != null ? ' (${_exerciseGroupOrder! + 1}º)' : '';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [color, color.withAlpha(180)],
+        ),
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: color.withAlpha(60),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.white),
+          const SizedBox(width: 6),
+          Text(
+            '$label$orderLabel',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getTechniqueColor() {
+    switch (_techniqueType?.toLowerCase()) {
+      case 'bi_set':
+      case 'bi-set':
+        return const Color(0xFF9333EA); // Purple
+      case 'tri_set':
+      case 'tri-set':
+        return const Color(0xFFEC4899); // Pink
+      case 'superset':
+      case 'super_set':
+        return const Color(0xFF3B82F6); // Blue
+      case 'giant_set':
+      case 'giant-set':
+      case 'giantset':
+        return const Color(0xFFF97316); // Orange
+      case 'dropset':
+      case 'drop_set':
+        return const Color(0xFFEF4444); // Red
+      case 'cluster':
+      case 'cluster_set':
+        return const Color(0xFF14B8A6); // Teal
+      default:
+        return AppColors.secondary;
+    }
+  }
+
+  String _getTechniqueLabel() {
+    switch (_techniqueType?.toLowerCase()) {
+      case 'bi_set':
+      case 'bi-set':
+        return 'BI-SET';
+      case 'tri_set':
+      case 'tri-set':
+        return 'TRI-SET';
+      case 'superset':
+      case 'super_set':
+        return 'SUPERSET';
+      case 'giant_set':
+      case 'giant-set':
+      case 'giantset':
+        return 'GIANT SET';
+      case 'dropset':
+      case 'drop_set':
+        return 'DROP SET';
+      case 'cluster':
+      case 'cluster_set':
+        return 'CLUSTER';
+      default:
+        return _techniqueType?.toUpperCase() ?? '';
+    }
+  }
+
+  IconData _getTechniqueIcon() {
+    switch (_techniqueType?.toLowerCase()) {
+      case 'bi_set':
+      case 'bi-set':
+        return LucideIcons.repeat2;
+      case 'tri_set':
+      case 'tri-set':
+        return LucideIcons.repeat2;
+      case 'superset':
+      case 'super_set':
+        return LucideIcons.zap;
+      case 'giant_set':
+      case 'giant-set':
+      case 'giantset':
+        return LucideIcons.flame;
+      case 'dropset':
+      case 'drop_set':
+        return LucideIcons.arrowDown;
+      case 'cluster':
+      case 'cluster_set':
+        return LucideIcons.layers;
+      default:
+        return LucideIcons.link;
+    }
   }
 }

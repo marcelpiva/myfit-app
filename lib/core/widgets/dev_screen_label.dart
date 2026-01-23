@@ -1,8 +1,9 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-/// A subtle label that shows the current screen name during development.
-/// Only visible in debug mode. Does not interfere with navigation.
+import '../config/feature_flags.dart';
+
+/// A subtle label that shows the current screen name.
+/// Controlled by FeatureFlags.showDevScreenLabels. Does not interfere with navigation.
 class DevScreenLabel extends StatelessWidget {
   final String screenName;
   final Widget child;
@@ -15,8 +16,8 @@ class DevScreenLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Only show in debug mode
-    if (!kDebugMode) {
+    // Controlled by feature flag
+    if (!FeatureFlags.showDevScreenLabels) {
       return child;
     }
 

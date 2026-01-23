@@ -5,6 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../trainer_workout/presentation/pages/trainer_plans_page.dart';
+import '../../../workout/presentation/providers/workout_provider.dart';
 import '../providers/plan_wizard_provider.dart';
 import '../widgets/step_ai_questionnaire.dart';
 import '../widgets/step_diet_configuration.dart';
@@ -267,8 +268,9 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
     final planId = await notifier.createPlan();
 
     if (planId != null && mounted) {
-      // Invalidate the programs list to refresh it
+      // Invalidate providers to refresh data
       ref.invalidate(allPlansProvider);
+      ref.invalidate(planDetailNotifierProvider(planId));
 
       scaffoldMessenger.showSnackBar(
         SnackBar(content: Text(state.isEditing ? 'Plano atualizado com sucesso!' : 'Plano criado com sucesso!')),
@@ -312,6 +314,96 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
     final state = ref.watch(planWizardProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+
+    // Show loading indicator while loading plan data for editing or periodization
+    final isLoadingPlanData = (widget.isEditing || widget.isPeriodization) && state.planName.isEmpty;
+    if (state.isLoading && isLoadingPlanData) {
+      return Scaffold(
+        backgroundColor: theme.colorScheme.surface,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.primary.withAlpha(isDark ? 15 : 10),
+                AppColors.secondary.withAlpha(isDark ? 12 : 8),
+              ],
+            ),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                Text(
+                  'Carregando plano...',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurface.withAlpha(180),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Show error state if loading failed
+    if (state.error != null && isLoadingPlanData) {
+      return Scaffold(
+        backgroundColor: theme.colorScheme.surface,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.primary.withAlpha(isDark ? 15 : 10),
+                AppColors.secondary.withAlpha(isDark ? 12 : 8),
+              ],
+            ),
+          ),
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    LucideIcons.alertCircle,
+                    size: 48,
+                    color: AppColors.destructive,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Erro ao carregar plano',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    state.error!,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withAlpha(150),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(LucideIcons.arrowLeft, size: 18),
+                    label: const Text('Voltar'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,

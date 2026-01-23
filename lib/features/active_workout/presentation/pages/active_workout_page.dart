@@ -1025,11 +1025,11 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     );
   }
 
-  void _showExitConfirmation(BuildContext context) {
+  void _showExitConfirmation(BuildContext pageContext) {
     HapticUtils.lightImpact();
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
+      context: pageContext,
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         title: const Text('Sair do treino?'),
         content: const Text('Seu progresso será salvo, mas o treino ficará incompleto.'),
@@ -1037,15 +1037,15 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
           TextButton(
             onPressed: () {
               HapticUtils.lightImpact();
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
             },
             child: const Text('Continuar'),
           ),
           FilledButton(
             onPressed: () {
               HapticUtils.lightImpact();
-              Navigator.pop(context);
-              context.pop();
+              Navigator.pop(dialogContext); // Close dialog
+              pageContext.pop(); // Exit page using the page context
             },
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.destructive,
