@@ -123,10 +123,17 @@ class _GroupedExerciseCard extends StatelessWidget {
     required this.isDark,
   });
 
+  String? get _groupInstructions {
+    if (exercises.isEmpty) return null;
+    final instructions = exercises.first['group_instructions'] as String?;
+    return (instructions != null && instructions.isNotEmpty) ? instructions : null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final color = ExerciseTheme.getColor(techniqueType);
+    final hasInstructions = _groupInstructions != null;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -165,6 +172,25 @@ class _GroupedExerciseCard extends StatelessWidget {
                     color: color,
                   ),
                 ),
+                // Instructions indicator icon
+                if (hasInstructions) ...[
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => _showGroupInstructions(context, theme),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: color.withAlpha(50),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(
+                        LucideIcons.fileText,
+                        size: 14,
+                        color: color,
+                      ),
+                    ),
+                  ),
+                ],
                 const Spacer(),
                 Container(
                   padding:
@@ -185,42 +211,23 @@ class _GroupedExerciseCard extends StatelessWidget {
             ),
           ),
 
-          // Vertical connector line indicator
-          Container(
-            margin: const EdgeInsets.only(left: 28),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Vertical connecting line
-                Container(
-                  width: 3,
-                  height: exercises.length * 80.0,
-                  decoration: BoxDecoration(
-                    color: color.withAlpha(60),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(width: 12),
+          // Exercise items
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Column(
+              children: exercises.asMap().entries.map((entry) {
+                final index = entry.key;
+                final exercise = entry.value;
+                final isLast = index == exercises.length - 1;
 
-                // Exercise items
-                Expanded(
-                  child: Column(
-                    children: exercises.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final exercise = entry.value;
-                      final isLast = index == exercises.length - 1;
-
-                      return _GroupedExerciseItem(
-                        exercise: exercise,
-                        index: index + 1,
-                        isLast: isLast,
-                        color: color,
-                        isDark: isDark,
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
+                return _GroupedExerciseItem(
+                  exercise: exercise,
+                  index: index + 1,
+                  isLast: isLast,
+                  color: color,
+                  isDark: isDark,
+                );
+              }).toList(),
             ),
           ),
 
@@ -268,6 +275,97 @@ class _GroupedExerciseCard extends StatelessWidget {
         exercise['rest_seconds'] as int? ??
         60;
   }
+
+  void _showGroupInstructions(BuildContext context, ThemeData theme) {
+    final instructions = _groupInstructions;
+    if (instructions == null) return;
+
+    HapticUtils.lightImpact();
+    final color = ExerciseTheme.getColor(techniqueType);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: color.withAlpha(25),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      ExerciseTheme.getIcon(techniqueType),
+                      color: color,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Instruções do ${techniqueType.displayName}',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          '${exercises.length} exercícios',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: isDark
+                                ? AppColors.mutedForegroundDark
+                                : AppColors.mutedForeground,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              // Instructions content
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? AppColors.mutedDark.withAlpha(100)
+                      : AppColors.muted.withAlpha(150),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: color.withAlpha(50),
+                  ),
+                ),
+                child: Text(
+                  instructions,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: isDark
+                        ? AppColors.foregroundDark
+                        : AppColors.foreground,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Single exercise item within a grouped card
@@ -286,6 +384,12 @@ class _GroupedExerciseItem extends StatelessWidget {
     required this.isDark,
   });
 
+  String? get _executionInstructions {
+    final instructions = exercise['execution_instructions'] as String? ??
+        exercise['notes'] as String?;
+    return (instructions != null && instructions.isNotEmpty) ? instructions : null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -294,11 +398,12 @@ class _GroupedExerciseItem extends StatelessWidget {
         'Exercício';
     final sets = exercise['sets'] ?? exercise['target_sets'] ?? '-';
     final reps = exercise['reps'] ?? exercise['target_reps'] ?? '-';
+    final hasInstructions = _executionInstructions != null;
 
     return GestureDetector(
       onTap: () => _showExerciseDetail(context),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
         decoration: BoxDecoration(
           border: isLast
               ? null
@@ -310,7 +415,7 @@ class _GroupedExerciseItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Index circle with connector dot
+            // Index circle
             Container(
               width: 28,
               height: 28,
@@ -358,6 +463,22 @@ class _GroupedExerciseItem extends StatelessWidget {
               ),
             ),
 
+            // Instructions indicator icon
+            if (hasInstructions)
+              GestureDetector(
+                onTap: () => _showInstructionsSheet(context, theme),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(
+                    LucideIcons.fileText,
+                    size: 16,
+                    color: color,
+                  ),
+                ),
+              ),
+
+            const SizedBox(width: 4),
+
             Icon(
               LucideIcons.chevronRight,
               size: 16,
@@ -374,6 +495,99 @@ class _GroupedExerciseItem extends StatelessWidget {
     HapticUtils.lightImpact();
     _showExerciseDetailSheet(context, exercise, isDark);
   }
+
+  void _showInstructionsSheet(BuildContext context, ThemeData theme) {
+    final instructions = _executionInstructions;
+    if (instructions == null) return;
+
+    HapticUtils.lightImpact();
+    final name = exercise['name'] as String? ??
+        (exercise['exercise'] as Map<String, dynamic>?)?['name'] as String? ??
+        'Exercício';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: color.withAlpha(25),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      LucideIcons.fileText,
+                      color: color,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Instruções de Execução',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          name,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: isDark
+                                ? AppColors.mutedForegroundDark
+                                : AppColors.mutedForeground,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              // Instructions content
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? AppColors.mutedDark.withAlpha(100)
+                      : AppColors.muted.withAlpha(150),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: color.withAlpha(50),
+                  ),
+                ),
+                child: Text(
+                  instructions,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: isDark
+                        ? AppColors.foregroundDark
+                        : AppColors.foreground,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Card for single exercises with techniques (dropset, rest-pause, cluster)
@@ -388,6 +602,12 @@ class _SingleTechniqueCard extends StatelessWidget {
     required this.isDark,
   });
 
+  String? get _executionInstructions {
+    final instructions = exercise['execution_instructions'] as String? ??
+        exercise['notes'] as String?;
+    return (instructions != null && instructions.isNotEmpty) ? instructions : null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -395,6 +615,7 @@ class _SingleTechniqueCard extends StatelessWidget {
     final name = exercise['name'] as String? ??
         (exercise['exercise'] as Map<String, dynamic>?)?['name'] as String? ??
         'Exercício';
+    final hasInstructions = _executionInstructions != null;
 
     return GestureDetector(
       onTap: () {
@@ -438,6 +659,25 @@ class _SingleTechniqueCard extends StatelessWidget {
                       color: color,
                     ),
                   ),
+                  // Instructions indicator icon
+                  if (hasInstructions) ...[
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => _showInstructionsSheet(context, theme, color),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: color.withAlpha(50),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Icon(
+                          LucideIcons.fileText,
+                          size: 12,
+                          color: color,
+                        ),
+                      ),
+                    ),
+                  ],
                   const Spacer(),
                   // Technique config
                   Text(
@@ -493,6 +733,99 @@ class _SingleTechniqueCard extends StatelessWidget {
     );
   }
 
+  void _showInstructionsSheet(BuildContext context, ThemeData theme, Color color) {
+    final instructions = _executionInstructions;
+    if (instructions == null) return;
+
+    HapticUtils.lightImpact();
+    final name = exercise['name'] as String? ??
+        (exercise['exercise'] as Map<String, dynamic>?)?['name'] as String? ??
+        'Exercício';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: color.withAlpha(25),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      LucideIcons.fileText,
+                      color: color,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Instruções de Execução',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          name,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: isDark
+                                ? AppColors.mutedForegroundDark
+                                : AppColors.mutedForeground,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              // Instructions content
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? AppColors.mutedDark.withAlpha(100)
+                      : AppColors.muted.withAlpha(150),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: color.withAlpha(50),
+                  ),
+                ),
+                child: Text(
+                  instructions,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: isDark
+                        ? AppColors.foregroundDark
+                        : AppColors.foreground,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   String _getTechniqueConfig() {
     switch (techniqueType) {
       case TechniqueType.dropset:
@@ -529,6 +862,12 @@ class _SimpleExerciseCard extends StatelessWidget {
     required this.isDark,
   });
 
+  String? get _executionInstructions {
+    final instructions = exercise['execution_instructions'] as String? ??
+        exercise['notes'] as String?;
+    return (instructions != null && instructions.isNotEmpty) ? instructions : null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -538,6 +877,8 @@ class _SimpleExerciseCard extends StatelessWidget {
     final sets = exercise['sets'] ?? exercise['target_sets'] ?? '-';
     final reps = exercise['reps'] ?? exercise['target_reps'] ?? '-';
     final rest = exercise['rest'] ?? exercise['rest_seconds'] ?? 60;
+    final hasInstructions = _executionInstructions != null;
+    final primaryColor = isDark ? AppColors.primaryDark : AppColors.primary;
 
     return GestureDetector(
       onTap: () {
@@ -573,7 +914,7 @@ class _SimpleExerciseCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: isDark ? AppColors.primaryDark : AppColors.primary,
+                      color: primaryColor,
                     ),
                   ),
                 ),
@@ -604,6 +945,20 @@ class _SimpleExerciseCard extends StatelessWidget {
                   ],
                 ),
               ),
+
+              // Instructions indicator icon
+              if (hasInstructions)
+                GestureDetector(
+                  onTap: () => _showInstructionsSheet(context, theme, primaryColor),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      LucideIcons.fileText,
+                      size: 16,
+                      color: primaryColor,
+                    ),
+                  ),
+                ),
 
               // Rest time
               Container(
@@ -646,6 +1001,99 @@ class _SimpleExerciseCard extends StatelessWidget {
                 color: isDark
                     ? AppColors.mutedForegroundDark
                     : AppColors.mutedForeground,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showInstructionsSheet(BuildContext context, ThemeData theme, Color color) {
+    final instructions = _executionInstructions;
+    if (instructions == null) return;
+
+    HapticUtils.lightImpact();
+    final name = exercise['name'] as String? ??
+        (exercise['exercise'] as Map<String, dynamic>?)?['name'] as String? ??
+        'Exercício';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: color.withAlpha(25),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      LucideIcons.fileText,
+                      color: color,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Instruções de Execução',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          name,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: isDark
+                                ? AppColors.mutedForegroundDark
+                                : AppColors.mutedForeground,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              // Instructions content
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? AppColors.mutedDark.withAlpha(100)
+                      : AppColors.muted.withAlpha(150),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: color.withAlpha(50),
+                  ),
+                ),
+                child: Text(
+                  instructions,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: isDark
+                        ? AppColors.foregroundDark
+                        : AppColors.foreground,
+                    height: 1.5,
+                  ),
+                ),
               ),
             ],
           ),
