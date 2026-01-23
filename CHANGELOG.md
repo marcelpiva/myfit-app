@@ -28,6 +28,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `onTapOutside` handler to dismiss on outside tap
   - Properly unfocuses input after submission
 
+- **Workout Detail Loading States** - Page now shows loading spinner and error messages
+  - Displays loading indicator while fetching workout data
+  - Shows error message with retry button when fetch fails
+  - Improves user feedback for API issues
+
 ## [1.8.1] - 2026-01-23
 
 ### Fixed

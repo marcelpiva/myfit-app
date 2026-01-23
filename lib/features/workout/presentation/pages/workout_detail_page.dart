@@ -60,6 +60,55 @@ class _WorkoutDetailPageState extends ConsumerState<WorkoutDetailPage>
     final detailState = ref.watch(workoutDetailNotifierProvider(widget.workoutId));
     final exercises = detailState.exercises;
 
+    // Show loading state
+    if (detailState.isLoading) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            color: AppColors.primary,
+          ),
+        ),
+      );
+    }
+
+    // Show error state
+    if (detailState.error != null) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  LucideIcons.alertCircle,
+                  size: 48,
+                  color: theme.colorScheme.error,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  detailState.error!,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () => ref.read(workoutDetailNotifierProvider(widget.workoutId).notifier).refresh(),
+                  icon: const Icon(LucideIcons.refreshCw),
+                  label: const Text('Tentar novamente'),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Voltar'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
