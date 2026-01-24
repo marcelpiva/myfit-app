@@ -1,6 +1,5 @@
 import 'dart:math' show max;
 
-import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -1347,84 +1346,29 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
 
   /// Reorder exercises using UI indices (where groups count as 1 item).
   /// This method converts UI indices to data indices and handles groups properly.
-  void reorderExercises(String workoutId, int uiOldIndex, int uiNewIndex) {
-    debugPrint('');
-    debugPrint('========== REORDER START ==========');
-    debugPrint('FROM Flutter: oldIndex=$uiOldIndex, newIndex=$uiNewIndex');
+  void reorderExercises(String workoutId, int oldIndex, int newIndex) {
+    // Flutter's ReorderableListView passes insertion index, not destination index
+    // When moving down, newIndex is already adjusted for the removal
+    // We need to handle this correctly
 
     final workouts = state.workouts.map((w) {
       if (w.id == workoutId) {
         final exercises = List<WizardExercise>.from(w.exercises);
 
-        debugPrint('BEFORE - Exercise order:');
-        for (var i = 0; i < exercises.length; i++) {
-          final e = exercises[i];
-          debugPrint('  [$i] ${e.name} (groupId: ${e.exerciseGroupId ?? "null"})');
-        }
+        // Build UI items list where each group is a single unit
+        final uiItems = _buildUiItems(exercises);
 
-        // Build UI-to-data index mapping
-        final uiToDataMapping = _buildUiToDataMapping(exercises);
+        if (oldIndex < 0 || oldIndex >= uiItems.length) return w;
+        if (newIndex < 0 || newIndex > uiItems.length) return w;
 
-        debugPrint('UI mapping (${uiToDataMapping.length} UI items):');
-        for (var i = 0; i < uiToDataMapping.length; i++) {
-          final m = uiToDataMapping[i];
-          final name = exercises[m.dataStartIndex].name;
-          debugPrint('  UI[$i] = ${m.isGroup ? "GROUP" : "SINGLE"} "$name" (data ${m.dataStartIndex}-${m.dataEndIndex})');
-        }
+        // Perform the reorder using Flutter's convention directly
+        final item = uiItems.removeAt(oldIndex);
+        // Adjust newIndex after removal (Flutter's convention)
+        final insertIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
+        uiItems.insert(insertIndex.clamp(0, uiItems.length), item);
 
-        if (uiOldIndex >= uiToDataMapping.length) {
-          debugPrint('ERROR: uiOldIndex $uiOldIndex >= mapping.length ${uiToDataMapping.length}');
-          return w;
-        }
-
-        final oldMapping = uiToDataMapping[uiOldIndex];
-        final isMovingGroup = oldMapping.isGroup;
-        final movingName = exercises[oldMapping.dataStartIndex].name;
-
-        // Adjust uiNewIndex for ReorderableListView behavior
-        // Flutter's ReorderableListView: when moving DOWN, newIndex is +1 because it's insertion point after removal
-        var adjustedUiNewIndex = uiNewIndex;
-        if (adjustedUiNewIndex > uiOldIndex) {
-          adjustedUiNewIndex -= 1;
-        }
-        adjustedUiNewIndex = adjustedUiNewIndex.clamp(0, uiToDataMapping.length - 1);
-
-        debugPrint('Moving "$movingName" from UI[$uiOldIndex] to UI[$adjustedUiNewIndex] (isGroup: $isMovingGroup)');
-
-        // If moving to same position, no change needed
-        if (adjustedUiNewIndex == uiOldIndex) {
-          debugPrint('Same position, no change');
-          return w;
-        }
-
-        List<WizardExercise> newExercises;
-        if (isMovingGroup) {
-          // Moving an entire group
-          newExercises = _reorderGroup(
-            exercises,
-            oldMapping.groupId!,
-            uiOldIndex,
-            adjustedUiNewIndex,
-            uiToDataMapping,
-          );
-        } else {
-          // Moving a single ungrouped exercise
-          newExercises = _reorderSingleExercise(
-            exercises,
-            oldMapping.dataStartIndex,
-            uiOldIndex,
-            adjustedUiNewIndex,
-            uiToDataMapping,
-          );
-        }
-
-        debugPrint('AFTER - Exercise order:');
-        for (var i = 0; i < newExercises.length; i++) {
-          final e = newExercises[i];
-          debugPrint('  [$i] ${e.name} (groupId: ${e.exerciseGroupId ?? "null"})');
-        }
-        debugPrint('========== REORDER END ==========');
-        debugPrint('');
+        // Flatten back to exercise list
+        final newExercises = uiItems.expand((x) => x).toList();
 
         return w.copyWith(exercises: newExercises);
       }
@@ -1433,104 +1377,42 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
     state = state.copyWith(workouts: workouts);
   }
 
-  /// Mapping from UI position to data indices
-  List<_UiDataMapping> _buildUiToDataMapping(List<WizardExercise> exercises) {
-    final mapping = <_UiDataMapping>[];
-    final processedGroups = <String>{};
+  /// Build a list of UI items matching exactly how the UI renders the list.
+  /// Each ungrouped exercise (groupId == null) is a separate item.
+  /// All exercises with the same groupId are combined into a single item.
+  /// This MUST match the logic in step_workouts_config.dart _buildExerciseList.
+  List<List<WizardExercise>> _buildUiItems(List<WizardExercise> exercises) {
+    // Match the UI's grouping logic exactly
+    final Map<String?, List<WizardExercise>> groupedExercises = {};
+    final List<String?> groupOrder = [];
 
-    for (var i = 0; i < exercises.length; i++) {
-      final exercise = exercises[i];
+    for (final exercise in exercises) {
       final groupId = exercise.exerciseGroupId;
-
-      if (groupId == null) {
-        // Ungrouped exercise
-        mapping.add(_UiDataMapping(
-          dataStartIndex: i,
-          dataEndIndex: i,
-          isGroup: false,
-          groupId: null,
-        ));
-      } else if (!processedGroups.contains(groupId)) {
-        // First exercise of a group
-        processedGroups.add(groupId);
-
-        // Find all exercises in this group
-        var endIndex = i;
-        for (var j = i + 1; j < exercises.length; j++) {
-          if (exercises[j].exerciseGroupId == groupId) {
-            endIndex = j;
-          } else {
-            break;
-          }
-        }
-
-        mapping.add(_UiDataMapping(
-          dataStartIndex: i,
-          dataEndIndex: endIndex,
-          isGroup: true,
-          groupId: groupId,
-        ));
+      if (!groupedExercises.containsKey(groupId)) {
+        groupedExercises[groupId] = [];
+        groupOrder.add(groupId);
       }
-      // Skip subsequent exercises of already processed groups
+      groupedExercises[groupId]!.add(exercise);
     }
 
-    return mapping;
-  }
-
-  /// Reorder a single ungrouped exercise
-  List<WizardExercise> _reorderSingleExercise(
-    List<WizardExercise> exercises,
-    int dataIndex,
-    int uiOldIndex,
-    int uiNewIndex,
-    List<_UiDataMapping> mapping,
-  ) {
-    debugPrint('_reorderSingleExercise: dataIndex=$dataIndex, uiOld=$uiOldIndex, uiNew=$uiNewIndex');
-
-    // Simple approach: rebuild the list based on UI order
-    // First, create a list of UI items (groups as units, singles as singles)
+    // Build uiItems in the same order as the UI
     final uiItems = <List<WizardExercise>>[];
-    for (final m in mapping) {
-      uiItems.add(exercises.sublist(m.dataStartIndex, m.dataEndIndex + 1));
+
+    for (final groupId in groupOrder) {
+      final groupExercises = groupedExercises[groupId]!;
+
+      if (groupId == null || groupId.isEmpty) {
+        // Ungrouped exercises - each is a separate UI item
+        for (final exercise in groupExercises) {
+          uiItems.add([exercise]);
+        }
+      } else {
+        // Grouped exercises - all together as one UI item
+        uiItems.add(groupExercises);
+      }
     }
 
-    // Move the item in UI space
-    final item = uiItems.removeAt(uiOldIndex);
-    uiItems.insert(uiNewIndex, item);
-
-    // Flatten back to exercise list
-    final result = uiItems.expand((x) => x).toList();
-
-    debugPrint('Result order: ${result.map((e) => e.name).join(", ")}');
-    return result;
-  }
-
-  /// Reorder an entire group
-  List<WizardExercise> _reorderGroup(
-    List<WizardExercise> exercises,
-    String groupId,
-    int uiOldIndex,
-    int uiNewIndex,
-    List<_UiDataMapping> mapping,
-  ) {
-    debugPrint('_reorderGroup: groupId=$groupId, uiOld=$uiOldIndex, uiNew=$uiNewIndex');
-
-    // Simple approach: rebuild the list based on UI order
-    // First, create a list of UI items (groups as units, singles as singles)
-    final uiItems = <List<WizardExercise>>[];
-    for (final m in mapping) {
-      uiItems.add(exercises.sublist(m.dataStartIndex, m.dataEndIndex + 1));
-    }
-
-    // Move the group in UI space
-    final group = uiItems.removeAt(uiOldIndex);
-    uiItems.insert(uiNewIndex, group);
-
-    // Flatten back to exercise list
-    final result = uiItems.expand((x) => x).toList();
-
-    debugPrint('Result order: ${result.map((e) => e.name).join(", ")}');
-    return result;
+    return uiItems;
   }
 
   /// Reorder exercises within a group (by exercise ID, not UI index)
@@ -2368,18 +2250,3 @@ final planWizardProvider =
     StateNotifierProvider.autoDispose<PlanWizardNotifier, PlanWizardState>(
   (ref) => PlanWizardNotifier(),
 );
-
-/// Helper class for mapping UI indices to data indices
-class _UiDataMapping {
-  final int dataStartIndex;
-  final int dataEndIndex;
-  final bool isGroup;
-  final String? groupId;
-
-  const _UiDataMapping({
-    required this.dataStartIndex,
-    required this.dataEndIndex,
-    required this.isGroup,
-    required this.groupId,
-  });
-}
