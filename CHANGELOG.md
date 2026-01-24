@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.1] - 2026-01-24
+
+### Added
+- **TestFlight Automation** - Streamlined iOS deployment process
+  - `ITSAppUsesNonExemptEncryption` flag to auto-skip encryption compliance review
+  - Builds no longer require manual compliance approval in App Store Connect
+
+### Changed
+- Updated fastlane configuration for simplified TestFlight uploads
+
 ## [1.9.0] - 2026-01-24
 
 ### Added
