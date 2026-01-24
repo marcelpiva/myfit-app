@@ -30,10 +30,7 @@ platform :ios do
     # Upload to TestFlight
     upload_to_testflight(
       ipa: "../build/ios/ipa/My Fit.ipa",
-      skip_waiting_for_build_processing: false,
-      distribute_external: true,
-      groups: ["My Testers"],
-      changelog: "Nova versão disponível para teste"
+      skip_waiting_for_build_processing: true
     )
 
     puts "Successfully uploaded to TestFlight!"
@@ -49,10 +46,7 @@ platform :ios do
     # Upload to TestFlight
     pilot(
       ipa: "../build/ios/ipa/My Fit.ipa",
-      skip_waiting_for_build_processing: false,
-      distribute_external: true,
-      groups: ["My Testers"],
-      changelog: "Nova versão disponível para teste"
+      skip_waiting_for_build_processing: true
     )
   end
 
@@ -61,10 +55,7 @@ platform :ios do
     # Upload to TestFlight (IPA must already be built)
     pilot(
       ipa: "../build/ios/ipa/My Fit.ipa",
-      skip_waiting_for_build_processing: false,
-      distribute_external: true,
-      groups: ["My Testers"],
-      changelog: "Nova versão disponível para teste"
+      skip_waiting_for_build_processing: true
     )
   end
 
