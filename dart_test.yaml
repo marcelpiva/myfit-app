@@ -1,0 +1,13 @@
+tags:
+  golden:
+    # Visual regression tests using Alchemist golden testing
+    # These tests compare rendered widgets against reference images
+
+# Default test configuration
+timeout: 2m
+
+# CI-specific configuration
+presets:
+  ci:
+    verbose: true
+    timeout: 5m

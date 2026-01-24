@@ -1,9 +1,9 @@
 # MyFit App
 
-[![Version](https://img.shields.io/badge/version-1.8.5-blue.svg)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.8.6-blue.svg)](./CHANGELOG.md)
 [![Flutter](https://img.shields.io/badge/Flutter-3.10+-02569B.svg?logo=flutter)](https://flutter.dev)
 [![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20Android%20%7C%20Web-lightgrey.svg)](https://flutter.dev/multi-platform)
-[![Tests](https://img.shields.io/badge/tests-150+-green.svg)]()
+[![Tests](https://img.shields.io/badge/tests-240+-green.svg)]()
 
 Aplicativo Flutter multiplataforma para a plataforma MyFit.
 
@@ -89,7 +89,8 @@ lib/
 ├── core/               # Core utilities, services, network
 │   ├── services/       # API services (workout, auth, etc.)
 │   ├── utils/          # Platform utils, haptic utils
-│   └── network/        # Dio client, interceptors
+│   ├── network/        # Dio client, interceptors
+│   └── observability/  # Error tracking, analytics
 ├── features/           # Feature modules
 │   ├── auth/
 │   ├── workout/
@@ -109,6 +110,10 @@ test/
 │   ├── models/
 │   ├── providers/
 │   └── services/
+├── visual/             # Visual/golden tests
+│   ├── config/         # Device profiles, helpers
+│   ├── components/     # Component tests
+│   └── screens/        # Screen tests
 ├── integration/        # Integration tests
 │   └── journeys/
 └── helpers/            # Test fixtures and utilities
@@ -138,6 +143,9 @@ flutter test
 # Run unit tests only
 flutter test test/unit/
 
+# Run visual/golden tests
+flutter test test/visual/
+
 # Run integration tests
 flutter test test/integration/
 
@@ -146,17 +154,58 @@ flutter test test/unit/providers/plan_wizard_provider_test.dart
 
 # Run with coverage
 flutter test --coverage
+
+# Update golden files (after intentional UI changes)
+flutter test test/visual --update-goldens
 ```
 
 ### Test Coverage
 
 | Category | Tests |
 |----------|-------|
-| Unit Tests - Providers | 80+ |
+| Unit Tests - Providers | 130+ |
 | Unit Tests - Models | 30+ |
 | Unit Tests - Services | 40+ |
+| Visual/Golden Tests | 34 |
 | Integration Tests | 70+ |
-| **Total** | **150+** |
+| **Total** | **240+** |
+
+### Visual Testing
+
+Uses [Alchemist](https://pub.dev/packages/alchemist) for golden/snapshot testing:
+
+- Multi-device support (iPhone 14 Pro, Pixel 7, iPad Pro)
+- Light/dark mode variants
+- Component and full-screen mockups
+- CI integration via GitHub Actions
+
+## Observability
+
+Error tracking and performance monitoring via GlitchTip (Sentry-compatible):
+
+```dart
+// In main.dart
+await ObservabilityService.init(
+  appRunner: () => runApp(
+    ProviderScope(
+      observers: [const ObservabilityProviderObserver()],
+      child: const MyFitApp(),
+    ),
+  ),
+);
+
+// Set user context after login
+await ObservabilityService.setUserContext(
+  userId: user.id,
+  email: user.email,
+  role: 'student',
+);
+```
+
+Configure DSN via environment variables:
+- `GLITCHTIP_DSN` - Production
+- `GLITCHTIP_DSN_STAGING` - Staging
+- `GLITCHTIP_DSN_DEV` - Development
 
 ## License
 

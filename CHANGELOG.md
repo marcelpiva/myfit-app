@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.6] - 2026-01-24
+
+### Added
+- **Visual Regression Testing** - Alchemist-based golden tests for UI components
+  - Device profiles for iPhone 14 Pro, Pixel 7, iPad Pro 11
+  - Auth components tests (login form, buttons, headers, screen mockups)
+  - Student dashboard tests (stats cards, workout cards, activity lists)
+  - Button components tests (elevated, outlined, text, FAB variants)
+  - 34 visual tests with multi-device support
+
+- **CI/CD for Visual Tests** - GitHub Actions workflow for visual regression
+  - Runs on PRs and pushes affecting lib/ or test/visual/
+  - Uploads failure artifacts for debugging
+  - Auto-update goldens with `update-goldens` label
+
+- **Observability Infrastructure** - GlitchTip/Sentry-compatible error tracking
+  - `ObservabilityService` for error capture and user context
+  - `ObservabilityProviderObserver` for Riverpod state tracking
+  - `ObservabilityNavigationObserver` for route tracking
+  - Environment-based DSN configuration (production, staging, development)
+  - Performance tracing with configurable sample rates
+
+- **Provider Unit Tests** - Comprehensive tests for critical providers
+  - `auth_provider_test.dart` - 24 tests (login, logout, register, state management)
+  - `context_provider_test.dart` - 30 tests (active context, memberships, role checks)
+
+### Dependencies
+- Added `alchemist: ^0.13.0` for visual testing
+- Added `sentry_flutter: ^8.0.0` for observability
+
 ## [1.8.5] - 2026-01-24
 
 ### Fixed

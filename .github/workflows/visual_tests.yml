@@ -1,0 +1,77 @@
+name: Visual Regression Tests
+
+on:
+  pull_request:
+    paths:
+      - 'lib/**'
+      - 'test/visual/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+  push:
+    branches: [main, develop]
+    paths:
+      - 'lib/**'
+      - 'test/visual/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+
+jobs:
+  golden_tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Run visual tests
+        run: flutter test test/visual --reporter=expanded
+
+      - name: Upload golden failures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: golden-failures
+          path: test/visual/failures/
+          retention-days: 7
+
+  update_goldens:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'update-goldens')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Update golden files
+        run: flutter test test/visual --update-goldens
+
+      - name: Commit updated goldens
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add test/visual/goldens/
+          git diff --quiet --cached || git commit -m "chore: update golden files [skip ci]"
+          git push
