@@ -406,23 +406,35 @@ class WorkoutDetailNotifier extends StateNotifier<WorkoutDetailState> {
   }
 
   Future<void> loadDetail() async {
+    // Don't make API calls with invalid workoutId
+    if (workoutId.isEmpty || workoutId == 'null') {
+      debugPrint('WorkoutDetailNotifier: Invalid workoutId: $workoutId');
+      state = state.copyWith(isLoading: false, error: 'ID do treino inválido');
+      return;
+    }
+
+    debugPrint('WorkoutDetailNotifier: Loading workout detail for $workoutId');
     state = state.copyWith(isLoading: true, error: null);
     try {
       final results = await Future.wait([
         _service.getWorkout(workoutId),
         _service.getWorkoutExercises(workoutId),
       ]);
+      debugPrint('WorkoutDetailNotifier: Loaded workout successfully');
       state = state.copyWith(
         workout: results[0] as Map<String, dynamic>,
         exercises: results[1] as List<Map<String, dynamic>>,
         isLoading: false,
       );
     } on ApiException catch (e) {
+      debugPrint('WorkoutDetailNotifier: API error: ${e.message}');
       state = state.copyWith(isLoading: false, error: e.message);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('WorkoutDetailNotifier: Unknown error: $e');
+      debugPrint('WorkoutDetailNotifier: StackTrace: $stackTrace');
       state = state.copyWith(
         isLoading: false,
-        error: 'Erro ao carregar detalhes do treino',
+        error: 'Erro ao carregar detalhes do treino: ${e.runtimeType}',
       );
     }
   }

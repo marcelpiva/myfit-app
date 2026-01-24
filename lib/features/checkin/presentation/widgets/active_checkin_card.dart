@@ -224,7 +224,8 @@ class _ActiveCheckinCardState extends ConsumerState<ActiveCheckinCard> {
                         TextButton(
                           onPressed: () {
                             if (widget.checkIn.workoutId != null) {
-                              context.push('/workouts/${widget.checkIn.workoutId}');
+                              // Use standalone route outside shell
+                              context.push('/workout/${widget.checkIn.workoutId}');
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(

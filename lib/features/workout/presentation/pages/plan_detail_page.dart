@@ -596,16 +596,30 @@ class _PlanDetailPageState extends ConsumerState<PlanDetailPage>
     return GestureDetector(
       onTap: () {
         HapticUtils.lightImpact();
+        // Debug: log full planWorkout structure
+        debugPrint('PlanDetailPage: planWorkout keys: ${planWorkout.keys.toList()}');
+        debugPrint('PlanDetailPage: workout object: $workout');
+        debugPrint('PlanDetailPage: workout_id field: ${planWorkout['workout_id']}');
+
         // Try to get workout ID from nested workout object, fall back to workout_id field
         final workoutId = workout?['id'] as String? ?? planWorkout['workout_id'] as String?;
-        debugPrint('PlanDetailPage: Tapped workout, id=$workoutId, workout=$workout, planWorkout=$planWorkout');
+        debugPrint('PlanDetailPage: Resolved workoutId=$workoutId');
+
         if (workoutId != null && workoutId.isNotEmpty) {
-          // Use trainer route to avoid duplicate bottom nav
-          final route = isTrainer ? '/trainer/workouts/$workoutId' : '/workouts/$workoutId';
+          // Use standalone routes outside shell to avoid navigation issues
+          final route = isTrainer ? '/trainer/workouts/$workoutId' : '/workout/$workoutId';
           debugPrint('PlanDetailPage: Navigating to $route');
           context.push(route);
         } else {
-          debugPrint('PlanDetailPage: workoutId is null or empty!');
+          debugPrint('PlanDetailPage: ERROR - workoutId is null or empty!');
+          debugPrint('PlanDetailPage: Full planWorkout data: $planWorkout');
+          // Show error snackbar to user
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Erro: ID do treino não encontrado'),
+              backgroundColor: Colors.red,
+            ),
+          );
         }
       },
       child: Container(

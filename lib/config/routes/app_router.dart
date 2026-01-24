@@ -549,6 +549,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           studentName: state.uri.queryParameters['name'],
         )),
       ),
+      // Workout detail outside shell (for navigation from plan-detail, etc.)
+      GoRoute(
+        path: '/workout/:workoutId',
+        name: 'standalone-workout-detail',
+        builder: (context, state) => _devLabel('standalone-workout-detail', WorkoutDetailPage(
+          workoutId: state.pathParameters['workoutId'] ?? '',
+        )),
+      ),
       // Trainer viewing workout (outside shell to avoid duplicate nav)
       GoRoute(
         path: '/trainer/workouts/:workoutId',
