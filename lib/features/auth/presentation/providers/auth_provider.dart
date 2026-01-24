@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/error/api_exceptions.dart';
 import '../../../../core/providers/context_provider.dart';
 import '../../../../core/services/auth_service.dart';
+import '../../../../core/services/push_notification_service.dart';
 import '../../data/models/auth_models.dart';
 
 /// Auth service provider
@@ -56,6 +58,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   AuthNotifier(this._authService, this._ref) : super(const AuthState());
 
+  /// Initialize push notifications (only on mobile platforms)
+  void _initPushNotifications() {
+    if (!kIsWeb) {
+      PushNotificationService().init();
+    }
+  }
+
   /// Check if user is already authenticated (on app start)
   Future<void> checkAuthStatus() async {
     state = state.copyWith(status: AuthStatus.loading);
@@ -68,6 +77,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
           status: AuthStatus.authenticated,
           user: user,
         );
+        // Initialize push notifications after successful auth check
+        _initPushNotifications();
       } else {
         state = const AuthState(status: AuthStatus.unauthenticated);
       }
@@ -96,6 +107,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
         status: AuthStatus.authenticated,
         user: response.user,
       );
+
+      // Initialize push notifications after successful login
+      _initPushNotifications();
 
       return true;
     } on ApiException catch (e) {
@@ -135,6 +149,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
         status: AuthStatus.authenticated,
         user: response.user,
       );
+
+      // Initialize push notifications after successful registration
+      _initPushNotifications();
 
       return true;
     } on ApiException catch (e) {

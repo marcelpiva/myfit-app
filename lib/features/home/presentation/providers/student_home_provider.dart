@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/cache/cache.dart';
 import '../../../../core/error/api_exceptions.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
@@ -8,39 +9,59 @@ import '../../data/models/student_dashboard.dart';
 
 // ==================== Student Dashboard State ====================
 
-class StudentDashboardState {
-  final StudentDashboard? dashboard;
+class StudentDashboardState implements CachedState<StudentDashboard> {
+  @override
+  final StudentDashboard? data;
+  @override
   final bool isLoading;
+  @override
   final String? error;
+  @override
+  final CacheMetadata cache;
 
   const StudentDashboardState({
-    this.dashboard,
+    this.data,
     this.isLoading = false,
     this.error,
+    this.cache = const CacheMetadata(),
   });
+
+  // CachedState implementation
+  @override
+  bool get hasData => data != null;
+
+  @override
+  bool isStale(CacheConfig config) => cache.isStale(config);
+
+  @override
+  bool get isBackgroundRefresh => cache.isRefreshing && hasData;
+
+  // Backwards compatible getter
+  StudentDashboard? get dashboard => data;
 
   StudentDashboardState copyWith({
     StudentDashboard? dashboard,
     bool? isLoading,
     String? error,
+    CacheMetadata? cache,
   }) {
     return StudentDashboardState(
-      dashboard: dashboard ?? this.dashboard,
+      data: dashboard ?? data,
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      cache: cache ?? this.cache,
     );
   }
 
   // Convenience getters
-  StudentStats get stats => dashboard?.stats ?? const StudentStats();
-  TodayWorkout? get todayWorkout => dashboard?.todayWorkout;
+  StudentStats get stats => data?.stats ?? const StudentStats();
+  TodayWorkout? get todayWorkout => data?.todayWorkout;
   WeeklyProgress get weeklyProgress =>
-      dashboard?.weeklyProgress ?? const WeeklyProgress();
-  List<RecentActivity> get recentActivity =>
-      dashboard?.recentActivity ?? [];
-  TrainerInfo? get trainer => dashboard?.trainer;
-  PlanProgress? get planProgress => dashboard?.planProgress;
-  int get unreadNotesCount => dashboard?.unreadNotesCount ?? 0;
+      data?.weeklyProgress ?? const WeeklyProgress();
+  List<RecentActivity> get recentActivity => data?.recentActivity ?? [];
+  TrainerInfo? get trainer => data?.trainer;
+  PlanProgress? get planProgress => data?.planProgress;
+  int get unreadNotesCount => data?.unreadNotesCount ?? 0;
 
   // Training mode helpers
   TrainingMode get trainingMode =>
@@ -53,55 +74,102 @@ class StudentDashboardState {
   bool get hasTodayWorkout => todayWorkout != null;
 }
 
-class StudentDashboardNotifier extends StateNotifier<StudentDashboardState> {
+class StudentDashboardNotifier
+    extends CachedStateNotifier<StudentDashboardState> {
   final ApiClient _client;
 
-  StudentDashboardNotifier({ApiClient? client})
-      : _client = client ?? ApiClient.instance,
-        super(const StudentDashboardState()) {
-    loadDashboard();
-  }
+  StudentDashboardNotifier({
+    required Ref ref,
+    ApiClient? client,
+  })  : _client = client ?? ApiClient.instance,
+        super(
+          const StudentDashboardState(),
+          config: CacheConfigs.dashboard, // 1 min TTL, auto-refresh
+          ref: ref,
+        );
 
-  Future<void> loadDashboard() async {
-    state = state.copyWith(isLoading: true, error: null);
+  /// Events that should trigger a refresh of this provider
+  @override
+  Set<CacheEventType> get invalidationEvents => {
+        CacheEventType.workoutCompleted,
+        CacheEventType.sessionCompleted,
+        CacheEventType.planAssigned,
+        CacheEventType.planAcknowledged,
+        CacheEventType.checkInCompleted,
+        CacheEventType.contextChanged,
+        CacheEventType.appResumed,
+      };
+
+  @override
+  Future<void> fetchData() async {
     try {
       final response = await _client.get(ApiEndpoints.studentDashboard);
       if (response.statusCode == 200 && response.data != null) {
         final dashboard = StudentDashboard.fromJson(
           response.data as Map<String, dynamic>,
         );
-        state = state.copyWith(
-          dashboard: dashboard,
-          isLoading: false,
-        );
+        onFetchSuccess(dashboard);
       } else {
-        state = state.copyWith(
-          isLoading: false,
-          error: 'Erro ao carregar dashboard',
-        );
+        throw Exception('Erro ao carregar dashboard');
       }
     } on DioException catch (e) {
       final message = e.error is ApiException
           ? (e.error as ApiException).message
           : 'Erro ao carregar dashboard';
-      state = state.copyWith(isLoading: false, error: message);
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Erro inesperado: $e',
-      );
+      throw Exception(message);
     }
   }
 
-  void refresh() => loadDashboard();
+  @override
+  StudentDashboardState updateStateWithData(
+    dynamic data,
+    CacheMetadata newCache,
+  ) {
+    return state.copyWith(
+      dashboard: data as StudentDashboard,
+      isLoading: false,
+      error: null,
+      cache: newCache,
+    );
+  }
+
+  @override
+  StudentDashboardState updateStateForLoading(
+    bool isLoading,
+    CacheMetadata cache,
+  ) {
+    return state.copyWith(isLoading: isLoading, cache: cache);
+  }
+
+  @override
+  StudentDashboardState updateStateForError(
+    String error,
+    CacheMetadata cache,
+  ) {
+    return state.copyWith(isLoading: false, error: error, cache: cache);
+  }
+
+  // Keep old method name for backwards compatibility
+  Future<void> loadDashboard() => loadData(forceRefresh: true);
 }
 
 // ==================== Providers ====================
 
 final studentDashboardProvider =
     StateNotifierProvider<StudentDashboardNotifier, StudentDashboardState>(
-  (ref) => StudentDashboardNotifier(),
+  (ref) => StudentDashboardNotifier(ref: ref),
 );
+
+// NEW: Provider to check if data is being refreshed in background
+final isStudentDashboardRefreshingProvider = Provider<bool>((ref) {
+  return ref.watch(studentDashboardProvider).cache.isRefreshing;
+});
+
+// NEW: Provider to check if data is stale
+final isStudentDashboardStaleProvider = Provider<bool>((ref) {
+  final state = ref.watch(studentDashboardProvider);
+  return state.isStale(CacheConfigs.dashboard);
+});
 
 // Convenience providers for specific data
 final studentStatsProvider = Provider<StudentStats>((ref) {
@@ -182,9 +250,11 @@ class StudentNewPlansState {
 
 class StudentNewPlansNotifier extends StateNotifier<StudentNewPlansState> {
   final ApiClient _client;
+  final Ref _ref;
 
-  StudentNewPlansNotifier({ApiClient? client})
-      : _client = client ?? ApiClient.instance,
+  StudentNewPlansNotifier({required Ref ref, ApiClient? client})
+      : _ref = ref,
+        _client = client ?? ApiClient.instance,
         super(const StudentNewPlansState()) {
     loadNewPlans();
   }
@@ -249,6 +319,11 @@ class StudentNewPlansNotifier extends StateNotifier<StudentNewPlansState> {
         '${ApiEndpoints.planAssignments}/$assignmentId/acknowledge',
       );
       if (response.statusCode == 200) {
+        // Emit cache event to invalidate trainer's view
+        final planId = response.data?['plan_id'] as String?;
+        if (planId != null) {
+          _ref.read(cacheEventEmitterProvider).planAcknowledged(planId);
+        }
         await loadNewPlans();
         state = state.copyWith(isAcknowledging: false);
         return true;
@@ -266,7 +341,7 @@ class StudentNewPlansNotifier extends StateNotifier<StudentNewPlansState> {
 
 final studentNewPlansProvider =
     StateNotifierProvider<StudentNewPlansNotifier, StudentNewPlansState>(
-  (ref) => StudentNewPlansNotifier(),
+  (ref) => StudentNewPlansNotifier(ref: ref),
 );
 
 // Backwards compatibility alias
