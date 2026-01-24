@@ -181,20 +181,21 @@ Uses [Alchemist](https://pub.dev/packages/alchemist) for golden/snapshot testing
 
 ## Observability
 
-Error tracking and performance monitoring via GlitchTip (Sentry-compatible):
+Error tracking and performance monitoring via [GlitchTip](https://glitchtip.com) (Sentry-compatible, open-source).
 
+**Already integrated in:**
+- `main.dart` - Error capture and provider state tracking
+- `app_router.dart` - Navigation breadcrumbs
+
+**What gets tracked:**
+- Flutter errors and exceptions
+- Async/uncaught errors
+- Riverpod provider failures
+- Navigation events (route changes)
+- User context (after login)
+
+**Set user context after login:**
 ```dart
-// In main.dart
-await ObservabilityService.init(
-  appRunner: () => runApp(
-    ProviderScope(
-      observers: [const ObservabilityProviderObserver()],
-      child: const MyFitApp(),
-    ),
-  ),
-);
-
-// Set user context after login
 await ObservabilityService.setUserContext(
   userId: user.id,
   email: user.email,
@@ -202,7 +203,7 @@ await ObservabilityService.setUserContext(
 );
 ```
 
-Configure DSN via environment variables:
+**Environment variables** (optional, defaults configured):
 - `GLITCHTIP_DSN` - Production
 - `GLITCHTIP_DSN_STAGING` - Staging
 - `GLITCHTIP_DSN_DEV` - Development

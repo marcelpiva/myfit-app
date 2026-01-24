@@ -46,3 +46,8 @@ app.*.map.json
 
 # Fastlane secrets
 ios/fastlane/AuthKey.p8
+
+# Environment variables
+.env
+.env.*
+!.env.example

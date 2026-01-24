@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `ObservabilityNavigationObserver` for route tracking
   - Environment-based DSN configuration (production, staging, development)
   - Performance tracing with configurable sample rates
+  - Integrated in `main.dart` and GoRouter for full coverage
+  - DSN configured: app.glitchtip.com/19780
 
 - **Provider Unit Tests** - Comprehensive tests for critical providers
   - `auth_provider_test.dart` - 24 tests (login, logout, register, state management)

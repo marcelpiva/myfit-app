@@ -85,6 +85,7 @@ import '../../features/checkin/presentation/pages/smart_checkin_page.dart';
 import '../../features/marketplace/presentation/pages/marketplace_page.dart';
 import '../../features/home/presentation/providers/student_home_provider.dart';
 import '../../shared/presentation/layouts/main_scaffold.dart';
+import '../../core/observability/observability.dart';
 import '../../core/providers/context_provider.dart';
 import 'route_names.dart';
 
@@ -122,6 +123,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: RouteNames.welcome,
     debugLogDiagnostics: true,
+    observers: [ObservabilityGoRouterObserver()],
     routes: [
       // Auth routes (no shell)
       GoRoute(

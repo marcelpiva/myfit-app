@@ -12,27 +12,23 @@ class ObservabilityConfig {
 
   /// GlitchTip DSN (Data Source Name) per environment
   /// Format: `https://[key]@[glitchtip-domain]/[project-id]`
-  ///
-  /// Replace with your actual GlitchTip DSN values
   static String get dsn {
     switch (EnvironmentConfig.environment) {
       case Environment.production:
-        // TODO: Replace with your production GlitchTip DSN
         return const String.fromEnvironment(
           'GLITCHTIP_DSN',
-          defaultValue: 'https://key@glitchtip.yourdomain.com/1',
+          defaultValue: 'https://03477ed5d1d9409ca758097f8f29b3d8@app.glitchtip.com/19780',
         );
       case Environment.staging:
-        // TODO: Replace with your staging GlitchTip DSN
         return const String.fromEnvironment(
           'GLITCHTIP_DSN_STAGING',
-          defaultValue: 'https://key@glitchtip.yourdomain.com/2',
+          defaultValue: 'https://03477ed5d1d9409ca758097f8f29b3d8@app.glitchtip.com/19780',
         );
       case Environment.development:
-        // Development uses local GlitchTip or empty DSN to disable
+        // Development can use same DSN or empty to disable
         return const String.fromEnvironment(
           'GLITCHTIP_DSN_DEV',
-          defaultValue: '', // Empty to disable in development
+          defaultValue: 'https://03477ed5d1d9409ca758097f8f29b3d8@app.glitchtip.com/19780',
         );
     }
   }
