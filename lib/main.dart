@@ -19,11 +19,6 @@ void main() async {
   // Initialize token storage
   await TokenStorage.init();
 
-  // Initialize push notifications (Firebase)
-  if (!kIsWeb) {
-    await PushNotificationService().init();
-  }
-
   // Configure timeago locales
   timeago.setLocaleMessages('pt_BR', timeago.PtBrMessages());
 
@@ -47,11 +42,18 @@ void main() async {
 
   // Initialize observability (GlitchTip) and run the app
   await ObservabilityService.init(
-    appRunner: () => runApp(
-      ProviderScope(
-        observers: [const ObservabilityProviderObserver()],
-        child: const MyFitApp(),
-      ),
-    ),
+    appRunner: () async {
+      // Initialize push notifications AFTER observability so logs work
+      if (!kIsWeb) {
+        await PushNotificationService().init();
+      }
+
+      runApp(
+        ProviderScope(
+          observers: [const ObservabilityProviderObserver()],
+          child: const MyFitApp(),
+        ),
+      );
+    },
   );
 }
