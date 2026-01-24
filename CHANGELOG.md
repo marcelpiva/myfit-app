@@ -8,11 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.8.5] - 2026-01-24
 
 ### Fixed
-- **Plan Wizard Reordering Bug** - Fixed erratic behavior when reordering collapsed exercise containers
-  - Moved collapse/expand state from local widget state to `PlanWizardState` provider
-  - Added `collapsedExerciseIds` and `collapsedGroupIds` fields to persist collapse state
-  - State now survives drag-and-drop reordering for all technique types (bi-set, tri-set, giant-set, etc.)
-  - Cleanup of collapse state when exercises/groups are deleted
+- **Plan Wizard Reordering** - Complete fix for drag-and-drop reordering of exercises
+  - Fixed items landing in wrong positions after drag-and-drop
+  - Root cause: mismatch between UI list building and provider's index calculation
+  - UI was grouping all single exercises together instead of preserving original order
+  - Now correctly preserves relative positions of singles and groups (bi-set, tri-set, giant-set)
+  - Groups can now be positioned anywhere, not just at start/end
+  - Moved collapse/expand state to `PlanWizardState` provider to survive reordering
+  - Added `collapsedExerciseIds` and `collapsedGroupIds` fields
+  - Removed unused legacy reorder functions (`_buildUiToDataMapping`, `_reorderSingleExercise`, `_reorderGroup`)
 
 ## [1.8.4] - 2026-01-24
 
