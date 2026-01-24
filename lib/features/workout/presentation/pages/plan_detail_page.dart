@@ -596,11 +596,16 @@ class _PlanDetailPageState extends ConsumerState<PlanDetailPage>
     return GestureDetector(
       onTap: () {
         HapticUtils.lightImpact();
-        final workoutId = workout?['id'] as String?;
-        if (workoutId != null) {
+        // Try to get workout ID from nested workout object, fall back to workout_id field
+        final workoutId = workout?['id'] as String? ?? planWorkout['workout_id'] as String?;
+        debugPrint('PlanDetailPage: Tapped workout, id=$workoutId, workout=$workout, planWorkout=$planWorkout');
+        if (workoutId != null && workoutId.isNotEmpty) {
           // Use trainer route to avoid duplicate bottom nav
           final route = isTrainer ? '/trainer/workouts/$workoutId' : '/workouts/$workoutId';
+          debugPrint('PlanDetailPage: Navigating to $route');
           context.push(route);
+        } else {
+          debugPrint('PlanDetailPage: workoutId is null or empty!');
         }
       },
       child: Container(

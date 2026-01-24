@@ -371,7 +371,7 @@ class WorkoutDetailState {
   const WorkoutDetailState({
     this.workout,
     this.exercises = const [],
-    this.isLoading = false,
+    this.isLoading = true,  // Start with loading state
     this.error,
   });
 

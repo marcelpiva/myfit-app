@@ -57,15 +57,28 @@ class _WorkoutDetailPageState extends ConsumerState<WorkoutDetailPage>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+
+    // Debug: print workout ID and state
+    debugPrint('WorkoutDetailPage: workoutId=${widget.workoutId}');
+
     final detailState = ref.watch(workoutDetailNotifierProvider(widget.workoutId));
     final exercises = detailState.exercises;
+
+    debugPrint('WorkoutDetailPage: isLoading=${detailState.isLoading}, error=${detailState.error}, workout=${detailState.workout != null}, exercises=${exercises.length}');
 
     // Show loading state
     if (detailState.isLoading) {
       return Scaffold(
         body: Center(
-          child: CircularProgressIndicator(
-            color: AppColors.primary,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: AppColors.primary,
+              ),
+              const SizedBox(height: 16),
+              Text('Carregando: ${widget.workoutId}'),
+            ],
           ),
         ),
       );
@@ -90,6 +103,52 @@ class _WorkoutDetailPageState extends ConsumerState<WorkoutDetailPage>
                   detailState.error!,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () => ref.read(workoutDetailNotifierProvider(widget.workoutId).notifier).refresh(),
+                  icon: const Icon(LucideIcons.refreshCw),
+                  label: const Text('Tentar novamente'),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Voltar'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Show not found state if workout is null after loading
+    if (detailState.workout == null && !detailState.isLoading) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  LucideIcons.searchX,
+                  size: 48,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Treino não encontrado',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'ID: ${widget.workoutId}',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
