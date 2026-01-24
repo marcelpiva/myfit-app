@@ -43,17 +43,19 @@ class PlanWizardPage extends ConsumerStatefulWidget {
 }
 
 class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
-  final PageController _pageController = PageController();
+  late final PageController _pageController;
 
   @override
   void initState() {
     super.initState();
+    // Initialize PageController with correct initial page
+    // Edit mode starts at step 3 (workouts config)
+    _pageController = PageController(initialPage: widget.planId != null ? 3 : 0);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Load program for editing if planId is provided
       if (widget.planId != null) {
         ref.read(planWizardProvider.notifier).loadPlanForEdit(widget.planId!);
-        // Jump to step 3 (workouts config - skip method, info, and split in edit mode)
-        _pageController.jumpToPage(3);
       }
       // Load program for periodization if basePlanId and phaseType are provided
       else if (widget.isPeriodization) {
@@ -463,7 +465,7 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
                             ),
                           ),
                           Text(
-                            _getStepTitle(state.currentStep),
+                            _getStepTitle(state.currentStep, state),
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurface
                                   .withValues(alpha: 0.6),
@@ -575,7 +577,7 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
           ),
           child: Row(
             children: [
-              if (state.currentStep > 0)
+              if (state.currentStep > state.firstStep)
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
@@ -591,7 +593,7 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
                     child: const Text('Voltar'),
                   ),
                 ),
-              if (state.currentStep > 0) const SizedBox(width: 12),
+              if (state.currentStep > state.firstStep) const SizedBox(width: 12),
               Expanded(
                 flex: 2,
                 child: FilledButton.icon(
@@ -634,24 +636,22 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
     return 'Criar Plano';
   }
 
-  String _getStepTitle(int step) {
-    switch (step) {
-      case 0:
-        return 'Passo 1 de 7 - Método de Criação';
-      case 1:
-        return 'Passo 2 de 7 - Informações do Plano';
-      case 2:
-        return 'Passo 3 de 7 - Divisão de Treino';
-      case 3:
-        return 'Passo 4 de 7 - Configurar Treinos';
-      case 4:
-        return 'Passo 5 de 7 - Dieta (Opcional)';
-      case 5:
-        return 'Passo 6 de 7 - Atribuir a Aluno';
-      case 6:
-        return 'Passo 7 de 7 - Revisão Final';
-      default:
-        return '';
-    }
+  String _getStepTitle(int step, PlanWizardState state) {
+    final displayStep = state.displayStep + 1; // 1-based for display
+    final total = state.totalSteps;
+
+    // Step titles (description only, number is dynamic)
+    final titles = {
+      0: 'Método de Criação',
+      1: 'Informações do Plano',
+      2: 'Divisão de Treino',
+      3: 'Configurar Treinos',
+      4: 'Dieta (Opcional)',
+      5: 'Atribuir a Aluno',
+      6: 'Revisão Final',
+    };
+
+    final title = titles[step] ?? '';
+    return 'Passo $displayStep de $total - $title';
   }
 }
