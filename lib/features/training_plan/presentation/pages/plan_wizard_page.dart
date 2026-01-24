@@ -52,8 +52,8 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
       // Load program for editing if planId is provided
       if (widget.planId != null) {
         ref.read(planWizardProvider.notifier).loadPlanForEdit(widget.planId!);
-        // Jump to step 1 (skip method selection in edit mode)
-        _pageController.jumpToPage(1);
+        // Jump to step 3 (workouts config - skip method, info, and split in edit mode)
+        _pageController.jumpToPage(3);
       }
       // Load program for periodization if basePlanId and phaseType are provided
       else if (widget.isPeriodization) {
@@ -104,7 +104,7 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
       return;
     }
 
-    if (state.currentStep < state.totalSteps - 1) {
+    if (!state.isLastStep) {
       _goToStep(state.currentStep + 1);
     }
   }
@@ -148,10 +148,8 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
 
   void _previousStep() {
     final state = ref.read(planWizardProvider);
-    // In edit mode, step 1 is the first step (skip method selection)
-    final firstStep = state.isEditing ? 1 : 0;
 
-    if (state.currentStep > firstStep) {
+    if (state.currentStep > state.firstStep) {
       _goToStep(state.currentStep - 1);
     } else {
       // Just navigate back without confirmation
@@ -511,8 +509,8 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: List.generate(state.totalSteps, (index) {
-                  final isActive = index <= state.currentStep;
-                  final isCurrent = index == state.currentStep;
+                  final isActive = index <= state.displayStep;
+                  final isCurrent = index == state.displayStep;
                   return Expanded(
                     child: Container(
                       margin: EdgeInsets.only(right: index < state.totalSteps - 1 ? 4 : 0),

@@ -1773,7 +1773,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
 }
 
 /// Widget for displaying a group of exercises (Bi-Set, Tri-Set, etc.)
-class _ExerciseGroupCard extends ConsumerWidget {
+class _ExerciseGroupCard extends ConsumerStatefulWidget {
   final String groupId;
   final List<WizardExercise> exercises;
   final String workoutId;
@@ -1792,11 +1792,18 @@ class _ExerciseGroupCard extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (exercises.isEmpty) return const SizedBox.shrink();
+  ConsumerState<_ExerciseGroupCard> createState() => _ExerciseGroupCardState();
+}
+
+class _ExerciseGroupCardState extends ConsumerState<_ExerciseGroupCard> {
+  bool _isExpanded = true;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.exercises.isEmpty) return const SizedBox.shrink();
 
     final notifier = ref.read(planWizardProvider.notifier);
-    final leader = exercises.first;
+    final leader = widget.exercises.first;
     final techniqueType = leader.techniqueType;
     final techniqueColor = ExerciseTheme.getColor(techniqueType);
     final groupInstructions = leader.groupInstructions;
@@ -1804,9 +1811,9 @@ class _ExerciseGroupCard extends ConsumerWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isDark
-            ? theme.colorScheme.surfaceContainerLow.withAlpha(100)
-            : theme.colorScheme.surfaceContainerLowest,
+        color: widget.isDark
+            ? widget.theme.colorScheme.surfaceContainerLow.withAlpha(100)
+            : widget.theme.colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(8),
         border: Border(
           left: BorderSide(
@@ -1818,138 +1825,173 @@ class _ExerciseGroupCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Group header
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: techniqueColor.withValues(alpha: 0.15),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(8),
-                topRight: Radius.circular(8),
+          // Group header - tappable to expand/collapse
+          GestureDetector(
+            onTap: () {
+              HapticUtils.selectionClick();
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+              decoration: BoxDecoration(
+                color: techniqueColor.withValues(alpha: 0.15),
+                borderRadius: _isExpanded
+                    ? const BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        topRight: Radius.circular(8),
+                      )
+                    : BorderRadius.circular(8),
               ),
-            ),
-            child: Row(
-              children: [
-                // Compact badge (icon + name + count)
-                Icon(
-                  ExerciseTheme.getIcon(techniqueType),
-                  size: 14,
-                  color: techniqueColor,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  '${techniqueType.displayName} (${exercises.length})',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
+              child: Row(
+                children: [
+                  // Expand/collapse icon
+                  AnimatedRotation(
+                    turns: _isExpanded ? 0.25 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      LucideIcons.chevronRight,
+                      size: 16,
+                      color: techniqueColor,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  // Compact badge (icon + name + count)
+                  Icon(
+                    ExerciseTheme.getIcon(techniqueType),
+                    size: 14,
                     color: techniqueColor,
                   ),
-                ),
-                const Spacer(),
-                // Action icons
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => _showAddExerciseToGroup(context, ref, techniqueColor),
-                  child: Padding(
-                    padding: const EdgeInsets.all(6),
-                    child: Icon(LucideIcons.plus, size: 16, color: techniqueColor),
-                  ),
-                ),
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => _showEditGroupInstructions(context, ref, groupInstructions),
-                  child: Padding(
-                    padding: const EdgeInsets.all(6),
-                    child: Icon(
-                      LucideIcons.fileText,
-                      size: 16,
-                      color: groupInstructions.isNotEmpty
-                          ? techniqueColor
-                          : theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${techniqueType.displayName} (${widget.exercises.length})',
+                    style: widget.theme.textTheme.labelSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: techniqueColor,
                     ),
                   ),
-                ),
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    HapticUtils.selectionClick();
-                    showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text('Desfazer Grupo'),
-                        content: Text(
-                          'Deseja desfazer o grupo "${techniqueType.displayName}"? Os exercícios serão mantidos individualmente.',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            child: const Text('Cancelar'),
-                          ),
-                          FilledButton(
-                            onPressed: () {
-                              Navigator.pop(ctx);
-                              HapticUtils.lightImpact();
-                              notifier.disbandExerciseGroup(workoutId, groupId);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: const Text('Grupo desfeito'),
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
-                            },
-                            child: const Text('Desfazer'),
-                          ),
-                        ],
+                  const Spacer(),
+                  // Drag handle when collapsed
+                  if (!_isExpanded)
+                    Icon(
+                      LucideIcons.gripVertical,
+                      size: 18,
+                      color: techniqueColor.withValues(alpha: 0.6),
+                    ),
+                  // Action icons (only show when expanded)
+                  if (_isExpanded) ...[
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => _showAddExerciseToGroup(context, ref, techniqueColor),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(LucideIcons.plus, size: 16, color: techniqueColor),
                       ),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(6),
-                    child: Icon(
-                      LucideIcons.unlink,
-                      size: 16,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
-                  ),
-                ),
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => _showDeleteGroupConfirmation(context, ref, techniqueType),
-                  child: Padding(
-                    padding: const EdgeInsets.all(6),
-                    child: Icon(
-                      LucideIcons.trash2,
-                      size: 16,
-                      color: Colors.red.withValues(alpha: 0.6),
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => _showEditGroupInstructions(context, ref, groupInstructions),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(
+                          LucideIcons.fileText,
+                          size: 16,
+                          color: groupInstructions.isNotEmpty
+                              ? techniqueColor
+                              : widget.theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ],
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        HapticUtils.selectionClick();
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Desfazer Grupo'),
+                            content: Text(
+                              'Deseja desfazer o grupo "${techniqueType.displayName}"? Os exercícios serão mantidos individualmente.',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('Cancelar'),
+                              ),
+                              FilledButton(
+                                onPressed: () {
+                                  Navigator.pop(ctx);
+                                  HapticUtils.lightImpact();
+                                  notifier.disbandExerciseGroup(widget.workoutId, widget.groupId);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: const Text('Grupo desfeito'),
+                                      behavior: SnackBarBehavior.floating,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
+                                },
+                                child: const Text('Desfazer'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(
+                          LucideIcons.unlink,
+                          size: 16,
+                          color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => _showDeleteGroupConfirmation(context, ref, techniqueType),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(
+                          LucideIcons.trash2,
+                          size: 16,
+                          color: Colors.red.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
-          // Exercises in group (aligned, no indentation)
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              children: exercises.asMap().entries.map((entry) {
-                final index = entry.key;
-                final exercise = entry.value;
-                return _GroupedExerciseItem(
-                  exercise: exercise,
-                  workoutId: workoutId,
-                  groupId: groupId,
-                  orderInGroup: index,
-                  totalInGroup: exercises.length,
-                  techniqueColor: techniqueColor,
-                  isDark: isDark,
-                  theme: theme,
-                  isLast: index == exercises.length - 1,
-                );
-              }).toList(),
+          // Exercises in group (animated collapse/expand)
+          AnimatedCrossFade(
+            firstChild: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                children: widget.exercises.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final exercise = entry.value;
+                  return _GroupedExerciseItem(
+                    exercise: exercise,
+                    workoutId: widget.workoutId,
+                    groupId: widget.groupId,
+                    orderInGroup: index,
+                    totalInGroup: widget.exercises.length,
+                    techniqueColor: techniqueColor,
+                    isDark: widget.isDark,
+                    theme: widget.theme,
+                    isLast: index == widget.exercises.length - 1,
+                  );
+                }).toList(),
+              ),
             ),
+            secondChild: const SizedBox.shrink(),
+            crossFadeState: _isExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+            duration: const Duration(milliseconds: 200),
           ),
         ],
       ),
@@ -1961,13 +2003,13 @@ class _ExerciseGroupCard extends ConsumerWidget {
     HapticUtils.selectionClick();
 
     // Get exercises already in this group
-    final groupExerciseIds = exercises.map((e) => e.exerciseId).toSet();
-    final currentGroupSize = exercises.length;
+    final groupExerciseIds = widget.exercises.map((e) => e.exerciseId).toSet();
+    final currentGroupSize = widget.exercises.length;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: widget.isDark ? AppColors.backgroundDark : AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -1976,13 +2018,13 @@ class _ExerciseGroupCard extends ConsumerWidget {
         excludedExerciseIds: groupExerciseIds,
         currentGroupSize: currentGroupSize,
         maxGroupSize: 8,
-        allowedMuscleGroups: muscleGroups,
+        allowedMuscleGroups: widget.muscleGroups,
         onExercisesSelected: (exercisesList) {
           final notifier = ref.read(planWizardProvider.notifier);
           for (final exercise in exercisesList) {
             notifier.addExerciseToGroup(
-              workoutId: workoutId,
-              groupId: groupId,
+              workoutId: widget.workoutId,
+              groupId: widget.groupId,
               exercise: exercise,
             );
           }
@@ -2031,8 +2073,8 @@ class _ExerciseGroupCard extends ConsumerWidget {
             children: [
               Text(
                 'Estas instruções serão aplicadas a todos os exercícios do grupo.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                style: widget.theme.textTheme.bodySmall?.copyWith(
+                  color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
               const SizedBox(height: 16),
@@ -2060,8 +2102,8 @@ class _ExerciseGroupCard extends ConsumerWidget {
             onPressed: () {
               Navigator.pop(ctx);
               ref.read(planWizardProvider.notifier).updateGroupInstructions(
-                    workoutId: workoutId,
-                    groupId: groupId,
+                    workoutId: widget.workoutId,
+                    groupId: widget.groupId,
                     instructions: controller.text.trim(),
                   );
               ScaffoldMessenger.of(context).showSnackBar(
@@ -2104,13 +2146,13 @@ class _ExerciseGroupCard extends ConsumerWidget {
           children: [
             Text(
               'Tem certeza que deseja excluir este ${techniqueType.displayName}?',
-              style: theme.textTheme.bodyMedium,
+              style: widget.theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              'Todos os ${exercises.length} exercícios serão removidos do treino.',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              'Todos os ${widget.exercises.length} exercícios serão removidos do treino.',
+              style: widget.theme.textTheme.bodySmall?.copyWith(
+                color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ],
@@ -2127,8 +2169,8 @@ class _ExerciseGroupCard extends ConsumerWidget {
             onPressed: () {
               Navigator.pop(ctx);
               ref.read(planWizardProvider.notifier).deleteExerciseGroup(
-                    workoutId,
-                    groupId,
+                    widget.workoutId,
+                    widget.groupId,
                   );
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -2939,7 +2981,7 @@ class _GroupedExerciseItem extends ConsumerWidget {
   }
 }
 
-class _ExerciseItem extends ConsumerWidget {
+class _ExerciseItem extends ConsumerStatefulWidget {
   final WizardExercise exercise;
   final String workoutId;
   final int index;
@@ -2955,13 +2997,20 @@ class _ExerciseItem extends ConsumerWidget {
     required this.theme,
   });
 
+  @override
+  ConsumerState<_ExerciseItem> createState() => _ExerciseItemState();
+}
+
+class _ExerciseItemState extends ConsumerState<_ExerciseItem> {
+  bool _isExpanded = true;
+
   void _showExerciseDetails(BuildContext context, String exerciseId) async {
     final service = WorkoutService();
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: widget.isDark ? AppColors.backgroundDark : AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -3007,7 +3056,7 @@ class _ExerciseItem extends ConsumerWidget {
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: isDark ? AppColors.borderDark : AppColors.border,
+                        color: widget.isDark ? AppColors.borderDark : AppColors.border,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -3017,7 +3066,7 @@ class _ExerciseItem extends ConsumerWidget {
                   // Title
                   Text(
                     name,
-                    style: theme.textTheme.headlineSmall?.copyWith(
+                    style: widget.theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -3031,7 +3080,7 @@ class _ExerciseItem extends ConsumerWidget {
                       ),
                       child: Text(
                         muscleGroup.toMuscleGroup().displayName,
-                        style: theme.textTheme.labelMedium?.copyWith(
+                        style: widget.theme.textTheme.labelMedium?.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,
                         ),
@@ -3052,7 +3101,7 @@ class _ExerciseItem extends ConsumerWidget {
                         errorBuilder: (_, __, ___) => Container(
                           height: 200,
                           decoration: BoxDecoration(
-                            color: isDark ? AppColors.mutedDark : AppColors.muted,
+                            color: widget.isDark ? AppColors.mutedDark : AppColors.muted,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Center(
@@ -3073,7 +3122,7 @@ class _ExerciseItem extends ConsumerWidget {
                           MaterialPageRoute(
                             builder: (_) => VideoPlayerPage(
                               videoUrl: videoUrl,
-                              title: exercise.name,
+                              title: widget.exercise.name,
                             ),
                           ),
                         );
@@ -3091,15 +3140,15 @@ class _ExerciseItem extends ConsumerWidget {
                   if (description.isNotEmpty) ...[
                     Text(
                       'Descrição',
-                      style: theme.textTheme.titleMedium?.copyWith(
+                      style: widget.theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       description,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: isDark
+                      style: widget.theme.textTheme.bodyMedium?.copyWith(
+                        color: widget.isDark
                             ? AppColors.mutedForegroundDark
                             : AppColors.mutedForeground,
                       ),
@@ -3111,15 +3160,15 @@ class _ExerciseItem extends ConsumerWidget {
                   if (instructions.isNotEmpty) ...[
                     Text(
                       'Instruções',
-                      style: theme.textTheme.titleMedium?.copyWith(
+                      style: widget.theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       instructions,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: isDark
+                      style: widget.theme.textTheme.bodyMedium?.copyWith(
+                        color: widget.isDark
                             ? AppColors.mutedForegroundDark
                             : AppColors.mutedForeground,
                       ),
@@ -3145,43 +3194,43 @@ class _ExerciseItem extends ConsumerWidget {
 
   void _showEditExerciseDialog(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(planWizardProvider.notifier);
-    int sets = exercise.sets;
-    String reps = exercise.reps;
-    int restSeconds = exercise.restSeconds;
-    String notes = exercise.notes;
+    int sets = widget.exercise.sets;
+    String reps = widget.exercise.reps;
+    int restSeconds = widget.exercise.restSeconds;
+    String notes = widget.exercise.notes;
     // Advanced technique fields
-    String executionInstructions = exercise.executionInstructions;
-    int? isometricSeconds = exercise.isometricSeconds;
-    TechniqueType techniqueType = exercise.techniqueType;
+    String executionInstructions = widget.exercise.executionInstructions;
+    int? isometricSeconds = widget.exercise.isometricSeconds;
+    TechniqueType techniqueType = widget.exercise.techniqueType;
     // Structured technique parameters
-    int? dropCount = exercise.dropCount ?? _parseDropCount(exercise.executionInstructions);
-    int? restBetweenDrops = exercise.restBetweenDrops ?? _parseRestBetweenDrops(exercise.executionInstructions);
-    int? pauseDuration = exercise.pauseDuration ?? _parsePauseDuration(exercise.executionInstructions);
-    int? miniSetCount = exercise.miniSetCount ?? _parseMiniSetCount(exercise.executionInstructions);
+    int? dropCount = widget.exercise.dropCount ?? _parseDropCount(widget.exercise.executionInstructions);
+    int? restBetweenDrops = widget.exercise.restBetweenDrops ?? _parseRestBetweenDrops(widget.exercise.executionInstructions);
+    int? pauseDuration = widget.exercise.pauseDuration ?? _parsePauseDuration(widget.exercise.executionInstructions);
+    int? miniSetCount = widget.exercise.miniSetCount ?? _parseMiniSetCount(widget.exercise.executionInstructions);
     // Exercise mode (strength vs aerobic)
-    ExerciseMode exerciseMode = exercise.exerciseMode;
+    ExerciseMode exerciseMode = widget.exercise.exerciseMode;
     // Aerobic exercise fields
-    int durationMinutes = exercise.durationMinutes ?? 30;
-    String intensity = exercise.intensity ?? 'moderate';
-    int workSeconds = exercise.workSeconds ?? 30;
-    int intervalRestSeconds = exercise.intervalRestSeconds ?? 30;
-    int rounds = exercise.rounds ?? 10;
-    double distanceKm = exercise.distanceKm ?? 5.0;
-    double targetPaceMinPerKm = exercise.targetPaceMinPerKm ?? 6.0;
+    int durationMinutes = widget.exercise.durationMinutes ?? 30;
+    String intensity = widget.exercise.intensity ?? 'moderate';
+    int workSeconds = widget.exercise.workSeconds ?? 30;
+    int intervalRestSeconds = widget.exercise.intervalRestSeconds ?? 30;
+    int rounds = widget.exercise.rounds ?? 10;
+    double distanceKm = widget.exercise.distanceKm ?? 5.0;
+    double targetPaceMinPerKm = widget.exercise.targetPaceMinPerKm ?? 6.0;
     // Check if this is a cardio exercise
-    final isCardio = exercise.muscleGroup.toLowerCase() == 'cardio';
+    final isCardio = widget.exercise.muscleGroup.toLowerCase() == 'cardio';
     // Extract custom instructions (without auto-generated technique text)
-    String customInstructions = _extractCustomInstructions(exercise.executionInstructions);
+    String customInstructions = _extractCustomInstructions(widget.exercise.executionInstructions);
 
     final repsController = TextEditingController(text: reps);
     final instructionsController = TextEditingController(text: customInstructions);
     // Execution mode (reps vs isometric vs combined)
-    ExecutionMode executionMode = getInitialExecutionMode(exercise);
+    ExecutionMode executionMode = getInitialExecutionMode(widget.exercise);
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: widget.isDark ? AppColors.backgroundDark : AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -3190,37 +3239,43 @@ class _ExerciseItem extends ConsumerWidget {
       ),
       builder: (ctx) => SafeArea(
         child: StatefulBuilder(
-          builder: (context, setState) => Padding(
-            padding: EdgeInsets.only(
-              left: 20,
-              right: 20,
-              top: 8,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Drag handle
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(2),
+          builder: (context, setState) {
+            // Local aliases for widget properties
+            final theme = widget.theme;
+            final isDark = widget.isDark;
+            final exercise = widget.exercise;
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 8,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Drag handle
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     ),
-                  ),
                   // Header
                   Row(
                     children: [
                       Expanded(
                         child: Text(
-                          exercise.name,
-                          style: theme.textTheme.titleLarge?.copyWith(
+                          widget.exercise.name,
+                          style: widget.theme.textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -3231,7 +3286,7 @@ class _ExerciseItem extends ConsumerWidget {
                       ),
                     ],
                   ),
-                if (exercise.muscleGroup.isNotEmpty) ...[
+                if (widget.exercise.muscleGroup.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -3240,8 +3295,8 @@ class _ExerciseItem extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      exercise.muscleGroup.toMuscleGroup().displayName,
-                      style: theme.textTheme.labelSmall?.copyWith(
+                      widget.exercise.muscleGroup.toMuscleGroup().displayName,
+                      style: widget.theme.textTheme.labelSmall?.copyWith(
                         color: AppColors.primary,
                       ),
                     ),
@@ -3251,7 +3306,7 @@ class _ExerciseItem extends ConsumerWidget {
 
                 // View Details Button
                 OutlinedButton.icon(
-                  onPressed: () => _showExerciseDetails(context, exercise.exerciseId),
+                  onPressed: () => _showExerciseDetails(context, widget.exercise.exerciseId),
                   icon: const Icon(LucideIcons.info, size: 18),
                   label: const Text('Ver Detalhes do Exercício'),
                   style: OutlinedButton.styleFrom(
@@ -3748,7 +3803,7 @@ class _ExerciseItem extends ConsumerWidget {
                         distanceKm: exerciseMode == ExerciseMode.distance ? distanceKm : null,
                         targetPaceMinPerKm: exerciseMode == ExerciseMode.distance ? targetPaceMinPerKm : null,
                       );
-                      notifier.updateExercise(workoutId, exercise.id, updated);
+                      notifier.updateExercise(widget.workoutId, widget.exercise.id, updated);
                       Navigator.pop(ctx);
                       HapticUtils.lightImpact();
                     },
@@ -3761,7 +3816,8 @@ class _ExerciseItem extends ConsumerWidget {
               ],
             ),
           ),
-        ),
+        );
+          },
         ),
       ),
     );
@@ -4004,7 +4060,7 @@ class _ExerciseItem extends ConsumerWidget {
   /// Show dialog to edit execution instructions (same style as group instructions)
   void _showInstructionsDialog(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(planWizardProvider.notifier);
-    final controller = TextEditingController(text: exercise.executionInstructions);
+    final controller = TextEditingController(text: widget.exercise.executionInstructions);
 
     showDialog(
       context: context,
@@ -4025,8 +4081,8 @@ class _ExerciseItem extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                exercise.name,
-                style: theme.textTheme.bodyMedium?.copyWith(
+                widget.exercise.name,
+                style: widget.theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,
                 ),
@@ -4034,8 +4090,8 @@ class _ExerciseItem extends ConsumerWidget {
               const SizedBox(height: 8),
               Text(
                 'Adicione instruções específicas para este exercício.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                style: widget.theme.textTheme.bodySmall?.copyWith(
+                  color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               ),
               const SizedBox(height: 16),
@@ -4062,10 +4118,10 @@ class _ExerciseItem extends ConsumerWidget {
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
-              final updated = exercise.copyWith(
+              final updated = widget.exercise.copyWith(
                 executionInstructions: controller.text.trim(),
               );
-              notifier.updateExercise(workoutId, exercise.id, updated);
+              notifier.updateExercise(widget.workoutId, widget.exercise.id, updated);
               HapticUtils.lightImpact();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -4088,13 +4144,13 @@ class _ExerciseItem extends ConsumerWidget {
   /// Show dialog to select technique category
   void _showTechniqueSelectionDialog(BuildContext context, WidgetRef ref) {
     final state = ref.read(planWizardProvider);
-    final workout = state.workouts.firstWhere((w) => w.id == workoutId);
+    final workout = state.workouts.firstWhere((w) => w.id == widget.workoutId);
 
     // Check if there are other truly simple exercises available for grouping
     // (no technique and no group)
     final otherSimpleExercises = workout.exercises
         .where((e) =>
-            e.id != exercise.id &&
+            e.id != widget.exercise.id &&
             e.exerciseGroupId == null &&
             e.techniqueType == TechniqueType.normal)
         .toList();
@@ -4102,7 +4158,7 @@ class _ExerciseItem extends ConsumerWidget {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: widget.isDark ? AppColors.backgroundDark : AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -4115,7 +4171,7 @@ class _ExerciseItem extends ConsumerWidget {
             children: [
               Text(
                 'Aplicar Técnica',
-                style: theme.textTheme.titleMedium?.copyWith(
+                style: widget.theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -4132,7 +4188,7 @@ class _ExerciseItem extends ConsumerWidget {
                   child: const Icon(LucideIcons.target, color: AppColors.primary, size: 20),
                 ),
                 title: const Text('Exercício Único'),
-                subtitle: Text('Dropset, Rest-Pause, Cluster', style: theme.textTheme.bodySmall),
+                subtitle: Text('Dropset, Rest-Pause, Cluster', style: widget.theme.textTheme.bodySmall),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showSingleExerciseTechniques(context, ref);
@@ -4151,7 +4207,7 @@ class _ExerciseItem extends ConsumerWidget {
                     child: Icon(LucideIcons.users, color: ExerciseTheme.getColor(TechniqueType.superset), size: 20),
                   ),
                   title: const Text('Múltiplos Exercícios'),
-                  subtitle: Text('Bi-Set, Tri-Set, Giant Set', style: theme.textTheme.bodySmall),
+                  subtitle: Text('Bi-Set, Tri-Set, Giant Set', style: widget.theme.textTheme.bodySmall),
                   onTap: () {
                     Navigator.pop(ctx);
                     _showGroupTechniques(context, ref);
@@ -4176,7 +4232,7 @@ class _ExerciseItem extends ConsumerWidget {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: widget.isDark ? AppColors.backgroundDark : AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -4189,7 +4245,7 @@ class _ExerciseItem extends ConsumerWidget {
             children: [
               Text(
                 'Técnica de Exercício Único',
-                style: theme.textTheme.titleMedium?.copyWith(
+                style: widget.theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -4215,12 +4271,12 @@ class _ExerciseItem extends ConsumerWidget {
                     child: Icon(icon, color: color, size: 20),
                   ),
                   title: Text(technique.displayName),
-                  subtitle: Text(description, style: theme.textTheme.bodySmall),
+                  subtitle: Text(description, style: widget.theme.textTheme.bodySmall),
                   onTap: () {
                     Navigator.pop(ctx);
                     HapticUtils.lightImpact();
-                    final updated = exercise.copyWith(techniqueType: technique);
-                    notifier.updateExercise(workoutId, exercise.id, updated);
+                    final updated = widget.exercise.copyWith(techniqueType: technique);
+                    notifier.updateExercise(widget.workoutId, widget.exercise.id, updated);
                   },
                 );
               }),
@@ -4235,13 +4291,13 @@ class _ExerciseItem extends ConsumerWidget {
   /// Show group techniques (Bi-Set/Tri-Set, Giant Set)
   void _showGroupTechniques(BuildContext context, WidgetRef ref) {
     final state = ref.read(planWizardProvider);
-    final workout = state.workouts.firstWhere((w) => w.id == workoutId);
+    final workout = state.workouts.firstWhere((w) => w.id == widget.workoutId);
 
     // Count other truly simple exercises available for grouping
     // (no technique and no group)
     final otherSimpleExercises = workout.exercises
         .where((e) =>
-            e.id != exercise.id &&
+            e.id != widget.exercise.id &&
             e.exerciseGroupId == null &&
             e.techniqueType == TechniqueType.normal)
         .toList();
@@ -4255,7 +4311,7 @@ class _ExerciseItem extends ConsumerWidget {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: widget.isDark ? AppColors.backgroundDark : AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -4268,7 +4324,7 @@ class _ExerciseItem extends ConsumerWidget {
             children: [
               Text(
                 'Agrupar com outros exercícios',
-                style: theme.textTheme.titleMedium?.copyWith(
+                style: widget.theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -4285,7 +4341,7 @@ class _ExerciseItem extends ConsumerWidget {
                   child: Icon(ExerciseTheme.getIcon(TechniqueType.superset), color: supersetColor, size: 20),
                 ),
                 title: const Text('Bi-Set / Tri-Set'),
-                subtitle: Text('2-3 exercícios sem descanso', style: theme.textTheme.bodySmall),
+                subtitle: Text('2-3 exercícios sem descanso', style: widget.theme.textTheme.bodySmall),
                 onTap: () {
                   Navigator.pop(ctx);
                   _showGroupingDialog(context, ref, TechniqueType.superset);
@@ -4304,7 +4360,7 @@ class _ExerciseItem extends ConsumerWidget {
                     child: Icon(ExerciseTheme.getIcon(TechniqueType.giantset), color: giantsetColor, size: 20),
                   ),
                   title: const Text('Giant Set'),
-                  subtitle: Text('4+ exercícios sem descanso', style: theme.textTheme.bodySmall),
+                  subtitle: Text('4+ exercícios sem descanso', style: widget.theme.textTheme.bodySmall),
                   onTap: () {
                     Navigator.pop(ctx);
                     _showGroupingDialog(context, ref, TechniqueType.giantset);
@@ -4324,13 +4380,13 @@ class _ExerciseItem extends ConsumerWidget {
     final notifier = ref.read(planWizardProvider.notifier);
 
     // Get the current workout
-    final workout = state.workouts.firstWhere((w) => w.id == workoutId);
+    final workout = state.workouts.firstWhere((w) => w.id == widget.workoutId);
 
     // Get other truly simple exercises in the workout
     // (no technique and no group)
     final availableExercises = workout.exercises
         .where((e) =>
-            e.id != exercise.id &&
+            e.id != widget.exercise.id &&
             e.exerciseGroupId == null &&
             e.techniqueType == TechniqueType.normal)
         .toList();
@@ -4366,7 +4422,7 @@ class _ExerciseItem extends ConsumerWidget {
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
+      backgroundColor: widget.isDark ? AppColors.backgroundDark : AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -4395,7 +4451,7 @@ class _ExerciseItem extends ConsumerWidget {
                   height: 4,
                   margin: const EdgeInsets.only(top: 12, bottom: 8),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                    color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -4423,13 +4479,13 @@ class _ExerciseItem extends ConsumerWidget {
                           children: [
                             Text(
                               'Criar Grupo',
-                              style: theme.textTheme.titleMedium?.copyWith(
+                              style: widget.theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
                               currentGroupType,
-                              style: theme.textTheme.bodySmall?.copyWith(
+                              style: widget.theme.textTheme.bodySmall?.copyWith(
                                 color: techniqueColor,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -4461,8 +4517,8 @@ class _ExerciseItem extends ConsumerWidget {
                         children: [
                           Text(
                             'Exercícios no grupo:',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                            style: widget.theme.textTheme.labelMedium?.copyWith(
+                              color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                           const Spacer(),
@@ -4491,7 +4547,7 @@ class _ExerciseItem extends ConsumerWidget {
                             children: [
                               // Leader exercise (current exercise - cannot be removed)
                               _GroupExerciseChip(
-                                name: exercise.name,
+                                name: widget.exercise.name,
                                 number: 1,
                                 color: techniqueColor,
                                 canRemove: false,
@@ -4527,8 +4583,8 @@ class _ExerciseItem extends ConsumerWidget {
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                         child: Text(
                           'Toque para adicionar:',
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                          style: widget.theme.textTheme.labelMedium?.copyWith(
+                            color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                       ),
@@ -4548,14 +4604,14 @@ class _ExerciseItem extends ConsumerWidget {
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? techniqueColor.withValues(alpha: 0.15)
-                                      : theme.colorScheme.surfaceContainerHighest,
+                                      : widget.theme.colorScheme.surfaceContainerHighest,
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Icon(
                                   isSelected ? LucideIcons.check : LucideIcons.dumbbell,
                                   color: isSelected
                                       ? techniqueColor
-                                      : theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                      : widget.theme.colorScheme.onSurface.withValues(alpha: 0.5),
                                   size: 20,
                                 ),
                               ),
@@ -4570,7 +4626,7 @@ class _ExerciseItem extends ConsumerWidget {
                               trailing: isSelected
                                   ? Icon(LucideIcons.checkCircle2, color: techniqueColor)
                                   : canAdd
-                                      ? Icon(LucideIcons.plusCircle, color: theme.colorScheme.onSurface.withValues(alpha: 0.3))
+                                      ? Icon(LucideIcons.plusCircle, color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.3))
                                       : null,
                               onTap: () {
                                 HapticUtils.selectionClick();
@@ -4593,10 +4649,10 @@ class _ExerciseItem extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isDark ? AppColors.cardDark : AppColors.card,
+                    color: widget.isDark ? AppColors.cardDark : AppColors.card,
                     border: Border(
                       top: BorderSide(
-                        color: theme.colorScheme.outline.withValues(alpha: 0.1),
+                        color: widget.theme.colorScheme.outline.withValues(alpha: 0.1),
                       ),
                     ),
                   ),
@@ -4618,8 +4674,8 @@ class _ExerciseItem extends ConsumerWidget {
 
                                 // Create the group with current exercise + selected exercises
                                 notifier.createExerciseGroup(
-                                  workoutId: workoutId,
-                                  exerciseIds: [exercise.id, ...selectedExercises.map((e) => e.id)],
+                                  workoutId: widget.workoutId,
+                                  exerciseIds: [widget.exercise.id, ...selectedExercises.map((e) => e.id)],
                                   techniqueType: actualTechniqueType,
                                 );
                                 Navigator.pop(ctx);
@@ -4654,16 +4710,16 @@ class _ExerciseItem extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final state = ref.watch(planWizardProvider);
     final notifier = ref.read(planWizardProvider.notifier);
-    final otherWorkouts = state.workouts.where((w) => w.id != workoutId).toList();
+    final otherWorkouts = state.workouts.where((w) => w.id != widget.workoutId).toList();
 
     // Check if this is a single-exercise technique (dropset, rest-pause, etc.)
-    final techniqueColor = ExerciseTheme.getColor(exercise.techniqueType);
-    final hasTechnique = exercise.techniqueType != TechniqueType.normal;
-    final isCardio = ExerciseTheme.isCardioExercise(exercise.muscleGroup);
-    final modeColor = ExerciseTheme.getModeColor(exercise.exerciseMode);
+    final techniqueColor = ExerciseTheme.getColor(widget.exercise.techniqueType);
+    final hasTechnique = widget.exercise.techniqueType != TechniqueType.normal;
+    final isCardio = ExerciseTheme.isCardioExercise(widget.exercise.muscleGroup);
+    final modeColor = ExerciseTheme.getModeColor(widget.exercise.exerciseMode);
 
     // Determine the accent color: technique > cardio mode > simple (all use their theme color)
     final accentColor = hasTechnique
@@ -4673,9 +4729,9 @@ class _ExerciseItem extends ConsumerWidget {
     return Container(
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
-          color: isDark
-              ? theme.colorScheme.surfaceContainerLow.withAlpha(150)
-              : theme.colorScheme.surfaceContainerLow.withAlpha(200),
+          color: widget.isDark
+              ? widget.theme.colorScheme.surfaceContainerLow.withAlpha(150)
+              : widget.theme.colorScheme.surfaceContainerLow.withAlpha(200),
           borderRadius: BorderRadius.circular(8),
           // Left border for all exercises (colored for techniques/cardio, neutral for simple)
           border: Border(
@@ -4688,66 +4744,97 @@ class _ExerciseItem extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header for all exercises
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: accentColor.withValues(alpha: 0.15),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
+            // Header for all exercises - tappable to expand/collapse
+            GestureDetector(
+              onTap: () {
+                HapticUtils.selectionClick();
+                setState(() {
+                  _isExpanded = !_isExpanded;
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.15),
+                  borderRadius: _isExpanded
+                      ? const BorderRadius.only(
+                          topLeft: Radius.circular(8),
+                          topRight: Radius.circular(8),
+                        )
+                      : BorderRadius.circular(8),
                 ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    hasTechnique
-                        ? ExerciseTheme.getIcon(exercise.techniqueType)
-                        : (isCardio ? ExerciseTheme.getModeIcon(exercise.exerciseMode) : LucideIcons.dumbbell),
-                    size: 14,
-                    color: accentColor,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    hasTechnique
-                        ? exercise.techniqueType.displayName
-                        : (isCardio ? exercise.exerciseMode.displayName : 'Exercício Simples'),
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: accentColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  // Link button (only for simple strength exercises - no technique, no group, no cardio)
-                  if (exercise.exerciseGroupId == null && !hasTechnique && !isCardio)
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () {
-                        HapticUtils.selectionClick();
-                        _showTechniqueSelectionDialog(context, ref);
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(6),
-                        child: Icon(
-                          LucideIcons.link2,
-                          size: 16,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                        ),
+                child: Row(
+                  children: [
+                    // Expand/collapse icon
+                    AnimatedRotation(
+                      turns: _isExpanded ? 0.25 : 0,
+                      duration: const Duration(milliseconds: 200),
+                      child: Icon(
+                        LucideIcons.chevronRight,
+                        size: 16,
+                        color: accentColor,
                       ),
                     ),
-                  // Unlink button (only for technique exercises, not cardio)
-                  if (hasTechnique && !isCardio)
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () {
-                        HapticUtils.selectionClick();
-                        showDialog(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            title: const Text('Remover Técnica'),
-                            content: Text(
-                              'Deseja remover a técnica "${exercise.techniqueType.displayName}" deste exercício?',
+                    const SizedBox(width: 4),
+                    Icon(
+                      hasTechnique
+                          ? ExerciseTheme.getIcon(widget.exercise.techniqueType)
+                          : (isCardio ? ExerciseTheme.getModeIcon(widget.exercise.exerciseMode) : LucideIcons.dumbbell),
+                      size: 14,
+                      color: accentColor,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        hasTechnique
+                            ? '${widget.exercise.techniqueType.displayName}: ${widget.exercise.name}'
+                            : (isCardio ? '${widget.exercise.exerciseMode.displayName}: ${widget.exercise.name}' : widget.exercise.name),
+                        style: widget.theme.textTheme.labelSmall?.copyWith(
+                          color: accentColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    // Drag handle when collapsed
+                    if (!_isExpanded)
+                      Icon(
+                        LucideIcons.gripVertical,
+                        size: 18,
+                        color: accentColor.withValues(alpha: 0.6),
+                      ),
+                    // Action icons only when expanded
+                    if (_isExpanded) ...[
+                      // Link button (only for simple strength exercises - no technique, no group, no cardio)
+                      if (widget.exercise.exerciseGroupId == null && !hasTechnique && !isCardio)
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            HapticUtils.selectionClick();
+                            _showTechniqueSelectionDialog(context, ref);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: Icon(
+                              LucideIcons.link2,
+                              size: 16,
+                              color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.5),
                             ),
+                          ),
+                        ),
+                      // Unlink button (only for technique exercises, not cardio)
+                      if (hasTechnique && !isCardio)
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            HapticUtils.selectionClick();
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Remover Técnica'),
+                                content: Text(
+                                  'Deseja remover a técnica "${widget.exercise.techniqueType.displayName}" deste exercício?',
+                                ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx),
@@ -4757,8 +4844,8 @@ class _ExerciseItem extends ConsumerWidget {
                                 onPressed: () {
                                   Navigator.pop(ctx);
                                   HapticUtils.lightImpact();
-                                  final updated = exercise.copyWith(techniqueType: TechniqueType.normal);
-                                  notifier.updateExercise(workoutId, exercise.id, updated);
+                                  final updated = widget.exercise.copyWith(techniqueType: TechniqueType.normal);
+                                  notifier.updateExercise(widget.workoutId, widget.exercise.id, updated);
                                 },
                                 child: const Text('Remover'),
                               ),
@@ -4771,261 +4858,268 @@ class _ExerciseItem extends ConsumerWidget {
                         child: Icon(
                           LucideIcons.unlink,
                           size: 16,
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.5),
                         ),
                       ),
                     ),
-                  // Info button - show exercise details
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      HapticUtils.selectionClick();
-                      _showExerciseDetails(context, exercise.exerciseId);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(6),
-                      child: Icon(
-                        LucideIcons.info,
-                        size: 16,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                      ),
-                    ),
-                  ),
-                  // Instructions button - edit execution instructions
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      HapticUtils.selectionClick();
-                      _showInstructionsDialog(context, ref);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(6),
-                      child: Icon(
-                        LucideIcons.fileText,
-                        size: 16,
-                        color: exercise.executionInstructions.isNotEmpty
-                            ? (hasTechnique ? techniqueColor : AppColors.primary)
-                            : theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                      ),
-                    ),
-                  ),
-                  // Delete button (for all exercises)
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      HapticUtils.selectionClick();
-                      showDialog(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text('Remover Exercício'),
-                          content: Text('Deseja remover "${exercise.name}" do treino?'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx),
-                              child: const Text('Cancelar'),
-                            ),
-                            FilledButton(
-                              onPressed: () {
-                                Navigator.pop(ctx);
-                                HapticUtils.lightImpact();
-                                notifier.removeExerciseFromWorkout(workoutId, exercise.id);
-                              },
-                              style: FilledButton.styleFrom(
-                                backgroundColor: Colors.red,
-                              ),
-                              child: const Text('Remover'),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(6),
-                      child: Icon(
-                        LucideIcons.trash2,
-                        size: 16,
-                        color: Colors.red.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Main content - tappable to edit exercise
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                HapticUtils.selectionClick();
-                _showEditExerciseDialog(context, ref);
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    Icon(
-                      LucideIcons.gripVertical,
-                      size: 20,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            exercise.name,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w500,
-                              color: hasTechnique ? techniqueColor : null,
-                            ),
+                      // Info button - show exercise details
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          HapticUtils.selectionClick();
+                          _showExerciseDetails(context, widget.exercise.exerciseId);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Icon(
+                            LucideIcons.info,
+                            size: 16,
+                            color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.5),
                           ),
-                          const SizedBox(height: 4),
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            children: [
-                              // Cardio-specific chips
-                              if (isCardio) ...[
-                                // Duration mode: show duration and intensity
-                                if (exercise.exerciseMode == ExerciseMode.duration) ...[
-                                  _MiniChip(
-                                    label: '${exercise.durationMinutes ?? 30} min',
-                                    icon: LucideIcons.timer,
-                                    isDark: isDark,
-                                    color: modeColor,
-                                  ),
-                                  if (exercise.intensity != null)
-                                    _MiniChip(
-                                      label: exercise.intensity!,
-                                      isDark: isDark,
-                                      color: modeColor,
-                                    ),
-                                ],
-                                // Interval mode: show work/rest/rounds
-                                if (exercise.exerciseMode == ExerciseMode.interval) ...[
-                                  _MiniChip(
-                                    label: '${exercise.workSeconds ?? 30}s trabalho',
-                                    icon: LucideIcons.zap,
-                                    isDark: isDark,
-                                    color: modeColor,
-                                  ),
-                                  _MiniChip(
-                                    label: '${exercise.intervalRestSeconds ?? 30}s descanso',
-                                    isDark: isDark,
-                                    color: modeColor,
-                                  ),
-                                  _MiniChip(
-                                    label: '${exercise.rounds ?? 10}x',
-                                    isDark: isDark,
-                                    color: modeColor,
-                                  ),
-                                ],
-                                // Distance mode: show distance and pace
-                                if (exercise.exerciseMode == ExerciseMode.distance) ...[
-                                  _MiniChip(
-                                    label: '${exercise.distanceKm ?? 5} km',
-                                    icon: LucideIcons.mapPin,
-                                    isDark: isDark,
-                                    color: modeColor,
-                                  ),
-                                  if (exercise.targetPaceMinPerKm != null)
-                                    _MiniChip(
-                                      label: '${exercise.targetPaceMinPerKm!.toStringAsFixed(1)} min/km',
-                                      isDark: isDark,
-                                      color: modeColor,
-                                    ),
-                                ],
-                              ] else ...[
-                                // Strength exercise chips (sets/reps/rest)
-                                _MiniChip(label: '${exercise.sets} series', isDark: isDark),
-                                _MiniChip(label: '${exercise.reps} reps', isDark: isDark),
-                                _MiniChip(
-                                  label: exercise.restSeconds == 0 ? 'Sem descanso' : '${exercise.restSeconds}s',
-                                  isDark: isDark,
-                                  isHighlighted: exercise.restSeconds == 0,
+                        ),
+                      ),
+                      // Instructions button - edit execution instructions
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          HapticUtils.selectionClick();
+                          _showInstructionsDialog(context, ref);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Icon(
+                            LucideIcons.fileText,
+                            size: 16,
+                            color: widget.exercise.executionInstructions.isNotEmpty
+                                ? (hasTechnique ? techniqueColor : AppColors.primary)
+                                : widget.theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ),
+                      // Delete button (for all exercises)
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          HapticUtils.selectionClick();
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Remover Exercício'),
+                              content: Text('Deseja remover "${widget.exercise.name}" do treino?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('Cancelar'),
                                 ),
-                                // Compact isometric display
-                                if (exercise.isometricSeconds != null && exercise.isometricSeconds! > 0)
-                                  _MiniChip(
-                                    label: '${exercise.isometricSeconds}s',
-                                    icon: LucideIcons.timer,
-                                    isDark: isDark,
-                                    isHighlighted: true,
+                                FilledButton(
+                                  onPressed: () {
+                                    Navigator.pop(ctx);
+                                    HapticUtils.lightImpact();
+                                    notifier.removeExerciseFromWorkout(widget.workoutId, widget.exercise.id);
+                                  },
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: Colors.red,
                                   ),
+                                  child: const Text('Remover'),
+                                ),
                               ],
-                              // Time estimate (for all exercises)
-                              _MiniChip(
-                                label: exercise.formattedTime,
-                                icon: LucideIcons.clock,
-                                isDark: isDark,
-                              ),
-                              if (exercise.executionInstructions.isNotEmpty)
-                                _MiniChip(
-                                  label: 'Instruções',
-                                  isDark: isDark,
-                                  icon: LucideIcons.fileText,
-                                ),
-                            ],
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Icon(
+                            LucideIcons.trash2,
+                            size: 16,
+                            color: Colors.red.withValues(alpha: 0.6),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  // Copy to another workout
-                  if (otherWorkouts.isNotEmpty)
-                    PopupMenuButton<String>(
-                      icon: Icon(
-                        LucideIcons.copy,
-                        size: 18,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                      ),
-                      tooltip: 'Copiar para outro treino',
-                      onSelected: (targetWorkoutId) {
-                        HapticUtils.selectionClick();
-                        notifier.copyExerciseToWorkout(workoutId, exercise.id, targetWorkoutId);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Exercício copiado para Treino ${otherWorkouts.firstWhere((w) => w.id == targetWorkoutId).label}'),
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
-                      },
-                      itemBuilder: (context) => otherWorkouts.map((w) {
-                        return PopupMenuItem<String>(
-                          value: w.id,
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withAlpha(30),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    w.label,
-                                    style: theme.textTheme.labelSmall?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  w.name,
-                                  style: theme.textTheme.bodyMedium,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
+                    ],
                   ],
                 ),
               ),
+            ),
+            // Main content - tappable to edit exercise (collapsible)
+            AnimatedCrossFade(
+              firstChild: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  HapticUtils.selectionClick();
+                  _showEditExerciseDialog(context, ref);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      Icon(
+                        LucideIcons.gripVertical,
+                        size: 20,
+                        color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.exercise.name,
+                              style: widget.theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: hasTechnique ? techniqueColor : null,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: [
+                                // Cardio-specific chips
+                                if (isCardio) ...[
+                                  // Duration mode: show duration and intensity
+                                  if (widget.exercise.exerciseMode == ExerciseMode.duration) ...[
+                                    _MiniChip(
+                                      label: '${widget.exercise.durationMinutes ?? 30} min',
+                                      icon: LucideIcons.timer,
+                                      isDark: widget.isDark,
+                                      color: modeColor,
+                                    ),
+                                    if (widget.exercise.intensity != null)
+                                      _MiniChip(
+                                        label: widget.exercise.intensity!,
+                                        isDark: widget.isDark,
+                                        color: modeColor,
+                                      ),
+                                  ],
+                                  // Interval mode: show work/rest/rounds
+                                  if (widget.exercise.exerciseMode == ExerciseMode.interval) ...[
+                                    _MiniChip(
+                                      label: '${widget.exercise.workSeconds ?? 30}s trabalho',
+                                      icon: LucideIcons.zap,
+                                      isDark: widget.isDark,
+                                      color: modeColor,
+                                    ),
+                                    _MiniChip(
+                                      label: '${widget.exercise.intervalRestSeconds ?? 30}s descanso',
+                                      isDark: widget.isDark,
+                                      color: modeColor,
+                                    ),
+                                    _MiniChip(
+                                      label: '${widget.exercise.rounds ?? 10}x',
+                                      isDark: widget.isDark,
+                                      color: modeColor,
+                                    ),
+                                  ],
+                                  // Distance mode: show distance and pace
+                                  if (widget.exercise.exerciseMode == ExerciseMode.distance) ...[
+                                    _MiniChip(
+                                      label: '${widget.exercise.distanceKm ?? 5} km',
+                                      icon: LucideIcons.mapPin,
+                                      isDark: widget.isDark,
+                                      color: modeColor,
+                                    ),
+                                    if (widget.exercise.targetPaceMinPerKm != null)
+                                      _MiniChip(
+                                        label: '${widget.exercise.targetPaceMinPerKm!.toStringAsFixed(1)} min/km',
+                                        isDark: widget.isDark,
+                                        color: modeColor,
+                                      ),
+                                  ],
+                                ] else ...[
+                                  // Strength exercise chips (sets/reps/rest)
+                                  _MiniChip(label: '${widget.exercise.sets} series', isDark: widget.isDark),
+                                  _MiniChip(label: '${widget.exercise.reps} reps', isDark: widget.isDark),
+                                  _MiniChip(
+                                    label: widget.exercise.restSeconds == 0 ? 'Sem descanso' : '${widget.exercise.restSeconds}s',
+                                    isDark: widget.isDark,
+                                    isHighlighted: widget.exercise.restSeconds == 0,
+                                  ),
+                                  // Compact isometric display
+                                  if (widget.exercise.isometricSeconds != null && widget.exercise.isometricSeconds! > 0)
+                                    _MiniChip(
+                                      label: '${widget.exercise.isometricSeconds}s',
+                                      icon: LucideIcons.timer,
+                                      isDark: widget.isDark,
+                                      isHighlighted: true,
+                                    ),
+                                ],
+                                // Time estimate (for all exercises)
+                                _MiniChip(
+                                  label: widget.exercise.formattedTime,
+                                  icon: LucideIcons.clock,
+                                  isDark: widget.isDark,
+                                ),
+                                if (widget.exercise.executionInstructions.isNotEmpty)
+                                  _MiniChip(
+                                    label: 'Instruções',
+                                    isDark: widget.isDark,
+                                    icon: LucideIcons.fileText,
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    // Copy to another workout
+                    if (otherWorkouts.isNotEmpty)
+                      PopupMenuButton<String>(
+                        icon: Icon(
+                          LucideIcons.copy,
+                          size: 18,
+                          color: widget.theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                        tooltip: 'Copiar para outro treino',
+                        onSelected: (targetWorkoutId) {
+                          HapticUtils.selectionClick();
+                          notifier.copyExerciseToWorkout(widget.workoutId, widget.exercise.id, targetWorkoutId);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Exercício copiado para Treino ${otherWorkouts.firstWhere((w) => w.id == targetWorkoutId).label}'),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        },
+                        itemBuilder: (context) => otherWorkouts.map((w) {
+                          return PopupMenuItem<String>(
+                            value: w.id,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withAlpha(30),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      w.label,
+                                      style: widget.theme.textTheme.labelSmall?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    w.name,
+                                    style: widget.theme.textTheme.bodyMedium,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              secondChild: const SizedBox.shrink(),
+              crossFadeState: _isExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+              duration: const Duration(milliseconds: 200),
             ),
           ],
         ),

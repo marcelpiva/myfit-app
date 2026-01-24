@@ -310,11 +310,19 @@ sealed class PlanWizardState with _$PlanWizardState {
     }
   }
 
-  /// Total step count (0-Method, 1-Info, 2-Split, 3-Workouts, 4-Diet, 5-Student, 6-Review)
-  int get totalSteps => 7;
+  /// First step index (3 in edit mode, 0 in create mode)
+  int get firstStep => isEditing ? 3 : 0;
+
+  /// Total step count for display
+  /// Create mode: 7 steps (0-Method, 1-Info, 2-Split, 3-Workouts, 4-Diet, 5-Student, 6-Review)
+  /// Edit mode: 4 steps (3-Workouts, 4-Diet, 5-Student, 6-Review)
+  int get totalSteps => isEditing ? 4 : 7;
+
+  /// Current step for progress display (0-based relative to firstStep)
+  int get displayStep => currentStep - firstStep;
 
   /// Check if we're on the last step
-  bool get isLastStep => currentStep == totalSteps - 1;
+  bool get isLastStep => currentStep == 6;
 
   /// Get total exercise count across all workouts
   int get totalExerciseCount {
@@ -370,20 +378,21 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
   }
 
   // Step navigation
+  // Note: Actual steps are always 0-6, but display shows 4 steps in edit mode
   void nextStep() {
-    if (state.currentStep < state.totalSteps - 1) {
+    if (!state.isLastStep) {
       state = state.copyWith(currentStep: state.currentStep + 1);
     }
   }
 
   void previousStep() {
-    if (state.currentStep > 0) {
+    if (state.currentStep > state.firstStep) {
       state = state.copyWith(currentStep: state.currentStep - 1);
     }
   }
 
   void goToStep(int step) {
-    if (step >= 0 && step < state.totalSteps) {
+    if (step >= 0 && step <= 6) {
       state = state.copyWith(currentStep: step);
     }
   }
@@ -743,7 +752,7 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
         dietNotes: dietNotes,
         // Navigation
         method: CreationMethod.scratch,
-        currentStep: 1, // Skip method selection in edit mode
+        currentStep: 3, // Skip to workouts config in edit mode
         isLoading: false,
       );
     } catch (e) {
