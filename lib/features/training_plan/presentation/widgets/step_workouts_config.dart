@@ -1702,52 +1702,46 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
     );
   }
 
-  /// Build exercise list with groups properly displayed
+  /// Build exercise list with groups properly displayed.
+  /// Preserves original order: single exercises stay in their position,
+  /// groups are rendered as one item where the first member appears.
   Widget _buildExerciseList(BuildContext context, WidgetRef ref, WizardWorkout workout, bool isDark) {
     final notifier = ref.read(planWizardProvider.notifier);
     final exercises = workout.exercises;
 
-    // Group exercises by exerciseGroupId
-    final Map<String?, List<WizardExercise>> groupedExercises = {};
-    final List<String?> groupOrder = []; // Track order of groups/ungrouped
-
-    for (final exercise in exercises) {
-      final groupId = exercise.exerciseGroupId;
-      if (!groupedExercises.containsKey(groupId)) {
-        groupedExercises[groupId] = [];
-        groupOrder.add(groupId);
-      }
-      groupedExercises[groupId]!.add(exercise);
-    }
-
-    // Sort exercises within each group by exerciseGroupOrder
-    for (final group in groupedExercises.values) {
-      group.sort((a, b) => a.exerciseGroupOrder.compareTo(b.exerciseGroupOrder));
-    }
-
-    // Build list items
+    // Build list items preserving order
+    // - Single exercises (null groupId): each is its own item
+    // - Grouped exercises: all members rendered as one card where first member appears
     final listItems = <Widget>[];
+    final processedGroups = <String>{};
     int itemIndex = 0;
 
-    for (final groupId in groupOrder) {
-      final groupExercises = groupedExercises[groupId]!;
+    for (var i = 0; i < exercises.length; i++) {
+      final exercise = exercises[i];
+      final groupId = exercise.exerciseGroupId;
 
-      if (groupId == null) {
-        // Ungrouped exercises - render individually
-        for (final exercise in groupExercises) {
-          listItems.add(
-            _ExerciseItem(
-              key: ValueKey(exercise.id),
-              exercise: exercise,
-              workoutId: workout.id,
-              index: itemIndex++,
-              isDark: isDark,
-              theme: theme,
-            ),
-          );
-        }
-      } else {
-        // Grouped exercises - render as a group card
+      if (groupId == null || groupId.isEmpty) {
+        // Single exercise - add as individual item
+        listItems.add(
+          _ExerciseItem(
+            key: ValueKey(exercise.id),
+            exercise: exercise,
+            workoutId: workout.id,
+            index: itemIndex++,
+            isDark: isDark,
+            theme: theme,
+          ),
+        );
+      } else if (!processedGroups.contains(groupId)) {
+        // First exercise of a group - collect all members and render as one card
+        processedGroups.add(groupId);
+
+        // Collect all exercises with this groupId
+        final groupExercises = exercises
+            .where((e) => e.exerciseGroupId == groupId)
+            .toList()
+          ..sort((a, b) => a.exerciseGroupOrder.compareTo(b.exerciseGroupOrder));
+
         listItems.add(
           _ExerciseGroupCard(
             key: ValueKey('group_$groupId'),
@@ -1761,6 +1755,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
         );
         itemIndex += groupExercises.length;
       }
+      // Skip subsequent members of already-processed groups
     }
 
     return ReorderableListView(

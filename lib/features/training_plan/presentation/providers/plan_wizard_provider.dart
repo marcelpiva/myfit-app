@@ -1347,10 +1347,6 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
   /// Reorder exercises using UI indices (where groups count as 1 item).
   /// This method converts UI indices to data indices and handles groups properly.
   void reorderExercises(String workoutId, int oldIndex, int newIndex) {
-    // Flutter's ReorderableListView passes insertion index, not destination index
-    // When moving down, newIndex is already adjusted for the removal
-    // We need to handle this correctly
-
     final workouts = state.workouts.map((w) {
       if (w.id == workoutId) {
         final exercises = List<WizardExercise>.from(w.exercises);
@@ -1358,14 +1354,19 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
         // Build UI items list where each group is a single unit
         final uiItems = _buildUiItems(exercises);
 
+        // Validate indices
         if (oldIndex < 0 || oldIndex >= uiItems.length) return w;
         if (newIndex < 0 || newIndex > uiItems.length) return w;
+        if (oldIndex == newIndex) return w;
 
-        // Perform the reorder using Flutter's convention directly
+        // Flutter's ReorderableListView convention:
+        // - newIndex is the insertion point BEFORE the item is removed
+        // - When dragging DOWN (to higher index), newIndex includes the space
+        //   that will be vacated, so we subtract 1
+        // - When dragging UP (to lower index), newIndex is already correct
         final item = uiItems.removeAt(oldIndex);
-        // Adjust newIndex after removal (Flutter's convention)
-        final insertIndex = newIndex > oldIndex ? newIndex - 1 : newIndex;
-        uiItems.insert(insertIndex.clamp(0, uiItems.length), item);
+        final insertAt = newIndex > oldIndex ? newIndex - 1 : newIndex;
+        uiItems.insert(insertAt, item);
 
         // Flatten back to exercise list
         final newExercises = uiItems.expand((x) => x).toList();
@@ -1378,38 +1379,33 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
   }
 
   /// Build a list of UI items matching exactly how the UI renders the list.
-  /// Each ungrouped exercise (groupId == null) is a separate item.
-  /// All exercises with the same groupId are combined into a single item.
+  /// Preserves original order: single exercises stay in their position,
+  /// groups are collected where the first member appears.
   /// This MUST match the logic in step_workouts_config.dart _buildExerciseList.
   List<List<WizardExercise>> _buildUiItems(List<WizardExercise> exercises) {
-    // Match the UI's grouping logic exactly
-    final Map<String?, List<WizardExercise>> groupedExercises = {};
-    final List<String?> groupOrder = [];
-
-    for (final exercise in exercises) {
-      final groupId = exercise.exerciseGroupId;
-      if (!groupedExercises.containsKey(groupId)) {
-        groupedExercises[groupId] = [];
-        groupOrder.add(groupId);
-      }
-      groupedExercises[groupId]!.add(exercise);
-    }
-
-    // Build uiItems in the same order as the UI
     final uiItems = <List<WizardExercise>>[];
+    final processedGroups = <String>{};
 
-    for (final groupId in groupOrder) {
-      final groupExercises = groupedExercises[groupId]!;
+    for (var i = 0; i < exercises.length; i++) {
+      final exercise = exercises[i];
+      final groupId = exercise.exerciseGroupId;
 
       if (groupId == null || groupId.isEmpty) {
-        // Ungrouped exercises - each is a separate UI item
-        for (final exercise in groupExercises) {
-          uiItems.add([exercise]);
-        }
-      } else {
-        // Grouped exercises - all together as one UI item
+        // Single exercise - add as individual item
+        uiItems.add([exercise]);
+      } else if (!processedGroups.contains(groupId)) {
+        // First exercise of a group - collect all members
+        processedGroups.add(groupId);
+
+        // Collect all exercises with this groupId
+        final groupExercises = exercises
+            .where((e) => e.exerciseGroupId == groupId)
+            .toList()
+          ..sort((a, b) => a.exerciseGroupOrder.compareTo(b.exerciseGroupOrder));
+
         uiItems.add(groupExercises);
       }
+      // Skip subsequent members of already-processed groups
     }
 
     return uiItems;
