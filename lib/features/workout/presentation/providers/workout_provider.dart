@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/cache/cache.dart';
 import '../../../../core/error/api_exceptions.dart';
 import '../../../../core/services/workout_service.dart';
 import '../../../home/presentation/providers/student_home_provider.dart';
@@ -460,43 +461,80 @@ final isWorkoutDetailLoadingProvider =
 
 // ==================== Training Plans ====================
 
-class PlansState {
-  final List<Map<String, dynamic>> plans;
+class PlansState implements CachedState<List<Map<String, dynamic>>> {
+  @override
+  final List<Map<String, dynamic>>? data;
+  @override
   final bool isLoading;
+  @override
   final String? error;
+  @override
+  final CacheMetadata cache;
 
   const PlansState({
-    this.plans = const [],
+    this.data,
     this.isLoading = false,
     this.error,
+    this.cache = const CacheMetadata(),
   });
+
+  // CachedState implementation
+  @override
+  bool get hasData => data != null;
+
+  @override
+  bool isStale(CacheConfig config) => cache.isStale(config);
+
+  @override
+  bool get isBackgroundRefresh => cache.isRefreshing && hasData;
+
+  // Backwards compatible getter
+  List<Map<String, dynamic>> get plans => data ?? const [];
 
   PlansState copyWith({
     List<Map<String, dynamic>>? plans,
     bool? isLoading,
     String? error,
+    CacheMetadata? cache,
   }) {
     return PlansState(
-      plans: plans ?? this.plans,
+      data: plans ?? data,
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      cache: cache ?? this.cache,
     );
   }
 }
 
-class PlansNotifier extends StateNotifier<PlansState> {
+class PlansNotifier extends CachedStateNotifier<PlansState> {
   final WorkoutService _service;
-  final Ref _ref;
 
-  PlansNotifier(this._service, this._ref) : super(const PlansState()) {
-    loadPlans();
-  }
+  PlansNotifier({
+    required Ref ref,
+    required WorkoutService service,
+  })  : _service = service,
+        super(
+          const PlansState(),
+          config: CacheConfigs.plans, // 5 min TTL
+          ref: ref,
+        );
+
+  /// Events that should trigger a refresh of this provider
+  @override
+  Set<CacheEventType> get invalidationEvents => {
+        CacheEventType.planCreated,
+        CacheEventType.planUpdated,
+        CacheEventType.planDeleted,
+        CacheEventType.planAssigned,
+        CacheEventType.planAcknowledged,
+        CacheEventType.contextChanged,
+      };
 
   /// Check if user has a trainer (student with personal)
-  bool get _hasTrainer => _ref.read(studentDashboardProvider).hasTrainer;
+  bool get _hasTrainer => ref.read(studentDashboardProvider).hasTrainer;
 
-  Future<void> loadPlans() async {
-    state = state.copyWith(isLoading: true, error: null);
+  @override
+  Future<void> fetchData() async {
     try {
       List<Map<String, dynamic>> plans;
 
@@ -512,7 +550,7 @@ class PlansNotifier extends StateNotifier<PlansState> {
           final planWorkouts = plan['plan_workouts'] as List? ?? [];
           return <String, dynamic>{
             ...plan,
-            'workouts': planWorkouts,  // UI expects 'workouts' field
+            'workouts': planWorkouts, // UI expects 'workouts' field
             'assignment_id': assignment['id'],
             'start_date': assignment['start_date'],
             'end_date': assignment['end_date'],
@@ -528,14 +566,43 @@ class PlansNotifier extends StateNotifier<PlansState> {
         plans = await _service.getPlans();
       }
 
-      state = state.copyWith(plans: plans, isLoading: false);
+      onFetchSuccess(plans);
     } on ApiException catch (e) {
-      state = state.copyWith(isLoading: false, error: e.message);
+      throw Exception(e.message);
     } catch (e, stackTrace) {
       debugPrint('Erro ao carregar planos: $e');
       debugPrint('StackTrace: $stackTrace');
-      state = state.copyWith(isLoading: false, error: 'Erro ao carregar planos: ${e.runtimeType}');
+      throw Exception('Erro ao carregar planos: ${e.runtimeType}');
     }
+  }
+
+  @override
+  PlansState updateStateWithData(
+    dynamic data,
+    CacheMetadata newCache,
+  ) {
+    return state.copyWith(
+      plans: data as List<Map<String, dynamic>>,
+      isLoading: false,
+      error: null,
+      cache: newCache,
+    );
+  }
+
+  @override
+  PlansState updateStateForLoading(
+    bool isLoading,
+    CacheMetadata cache,
+  ) {
+    return state.copyWith(isLoading: isLoading, cache: cache);
+  }
+
+  @override
+  PlansState updateStateForError(
+    String error,
+    CacheMetadata cache,
+  ) {
+    return state.copyWith(isLoading: false, error: error, cache: cache);
   }
 
   Future<void> deletePlan(String planId) async {
@@ -544,8 +611,8 @@ class PlansNotifier extends StateNotifier<PlansState> {
       state = state.copyWith(
         plans: state.plans.where((p) => p['id'] != planId).toList(),
       );
-    } on ApiException catch (e) {
-      throw e;
+    } on ApiException {
+      rethrow;
     }
   }
 
@@ -553,17 +620,19 @@ class PlansNotifier extends StateNotifier<PlansState> {
     try {
       final plan = await _service.duplicatePlan(planId);
       state = state.copyWith(plans: [plan, ...state.plans]);
-    } on ApiException catch (e) {
-      throw e;
+    } on ApiException {
+      rethrow;
     }
   }
 
-  void refresh() => loadPlans();
+  // Keep old method name for backwards compatibility
+  Future<void> loadPlans() => loadData(forceRefresh: true);
 }
 
-final plansNotifierProvider = StateNotifierProvider<PlansNotifier, PlansState>((ref) {
+final plansNotifierProvider =
+    StateNotifierProvider<PlansNotifier, PlansState>((ref) {
   final service = ref.watch(workoutServiceProvider);
-  return PlansNotifier(service, ref);
+  return PlansNotifier(ref: ref, service: service);
 });
 
 final plansProvider = Provider<List<Map<String, dynamic>>>((ref) {

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/cache/cache.dart';
 import '../../../../core/services/organization_service.dart';
 import '../../../../core/services/schedule_service.dart';
 import '../../../../core/services/workout_service.dart';
@@ -18,9 +19,9 @@ final trainerHomeScheduleServiceProvider = Provider<ScheduleService>((ref) {
   return ScheduleService();
 });
 
-// ==================== Trainer Dashboard State ====================
+// ==================== Trainer Dashboard Data ====================
 
-class TrainerDashboardState {
+class TrainerDashboardData {
   final int totalStudents;
   final int activeStudents;
   final int todaySessions;
@@ -28,10 +29,8 @@ class TrainerDashboardState {
   final List<Map<String, dynamic>> recentActivities;
   final List<Map<String, dynamic>> alerts;
   final List<Map<String, dynamic>> todaySchedule;
-  final bool isLoading;
-  final String? error;
 
-  const TrainerDashboardState({
+  const TrainerDashboardData({
     this.totalStudents = 0,
     this.activeStudents = 0,
     this.todaySessions = 0,
@@ -39,64 +38,116 @@ class TrainerDashboardState {
     this.recentActivities = const [],
     this.alerts = const [],
     this.todaySchedule = const [],
+  });
+}
+
+// ==================== Trainer Dashboard State ====================
+
+class TrainerDashboardState implements CachedState<TrainerDashboardData> {
+  @override
+  final TrainerDashboardData? data;
+  @override
+  final bool isLoading;
+  @override
+  final String? error;
+  @override
+  final CacheMetadata cache;
+
+  const TrainerDashboardState({
+    this.data,
     this.isLoading = false,
     this.error,
+    this.cache = const CacheMetadata(),
   });
 
+  // CachedState implementation
+  @override
+  bool get hasData => data != null;
+
+  @override
+  bool isStale(CacheConfig config) => cache.isStale(config);
+
+  @override
+  bool get isBackgroundRefresh => cache.isRefreshing && hasData;
+
+  // Convenience getters
+  int get totalStudents => data?.totalStudents ?? 0;
+  int get activeStudents => data?.activeStudents ?? 0;
+  int get todaySessions => data?.todaySessions ?? 0;
+  int get pendingWorkouts => data?.pendingWorkouts ?? 0;
+  List<Map<String, dynamic>> get recentActivities =>
+      data?.recentActivities ?? const [];
+  List<Map<String, dynamic>> get alerts => data?.alerts ?? const [];
+  List<Map<String, dynamic>> get todaySchedule =>
+      data?.todaySchedule ?? const [];
+
   TrainerDashboardState copyWith({
-    int? totalStudents,
-    int? activeStudents,
-    int? todaySessions,
-    int? pendingWorkouts,
-    List<Map<String, dynamic>>? recentActivities,
-    List<Map<String, dynamic>>? alerts,
-    List<Map<String, dynamic>>? todaySchedule,
+    TrainerDashboardData? data,
     bool? isLoading,
     String? error,
+    CacheMetadata? cache,
   }) {
     return TrainerDashboardState(
-      totalStudents: totalStudents ?? this.totalStudents,
-      activeStudents: activeStudents ?? this.activeStudents,
-      todaySessions: todaySessions ?? this.todaySessions,
-      pendingWorkouts: pendingWorkouts ?? this.pendingWorkouts,
-      recentActivities: recentActivities ?? this.recentActivities,
-      alerts: alerts ?? this.alerts,
-      todaySchedule: todaySchedule ?? this.todaySchedule,
+      data: data ?? this.data,
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      cache: cache ?? this.cache,
     );
   }
 }
 
-class TrainerDashboardNotifier extends StateNotifier<TrainerDashboardState> {
+class TrainerDashboardNotifier
+    extends CachedStateNotifier<TrainerDashboardState> {
   final OrganizationService _orgService;
   final WorkoutService _workoutService;
   final ScheduleService _scheduleService;
-  final Ref _ref;
   final String? orgId;
 
-  TrainerDashboardNotifier(
-    this._orgService,
-    this._workoutService,
-    this._scheduleService,
-    this._ref,
+  TrainerDashboardNotifier({
+    required Ref ref,
+    required OrganizationService orgService,
+    required WorkoutService workoutService,
+    required ScheduleService scheduleService,
     this.orgId,
-  ) : super(const TrainerDashboardState()) {
-    loadDashboard();
-  }
+  })  : _orgService = orgService,
+        _workoutService = workoutService,
+        _scheduleService = scheduleService,
+        super(
+          const TrainerDashboardState(),
+          config: CacheConfigs.dashboard, // 1 min TTL, auto-refresh
+          ref: ref,
+        );
 
-  Future<void> loadDashboard() async {
-    if (orgId == null) return;
+  /// Events that should trigger a refresh of this provider
+  @override
+  Set<CacheEventType> get invalidationEvents => {
+        CacheEventType.workoutCompleted,
+        CacheEventType.sessionCompleted,
+        CacheEventType.checkInCompleted,
+        CacheEventType.studentAdded,
+        CacheEventType.studentRemoved,
+        CacheEventType.inviteAccepted,
+        CacheEventType.contextChanged,
+        CacheEventType.appResumed,
+      };
 
-    state = state.copyWith(isLoading: true, error: null);
+  @override
+  Future<void> fetchData() async {
+    if (orgId == null) {
+      onFetchSuccess(const TrainerDashboardData());
+      return;
+    }
+
     try {
       // Load members to get student count
       final members = await _orgService.getMembers(orgId!, role: 'student');
-      final activeMembers = members.where((m) => m['status'] == 'active').length;
+      final activeMembers =
+          members.where((m) => m['status'] == 'active').length;
 
       // Load workouts to get pending count
       final workouts = await _workoutService.getWorkoutAssignments();
-      final pendingWorkouts = workouts.where((w) => w['status'] == 'draft').length;
+      final pendingWorkouts =
+          workouts.where((w) => w['status'] == 'draft').length;
 
       // Build activities from recent check-ins
       final activities = _buildRecentActivities();
@@ -107,12 +158,13 @@ class TrainerDashboardNotifier extends StateNotifier<TrainerDashboardState> {
       // Load today's schedule
       List<Map<String, dynamic>> todaySchedule = [];
       try {
-        todaySchedule = await _scheduleService.getAppointmentsForDay(DateTime.now());
+        todaySchedule =
+            await _scheduleService.getAppointmentsForDay(DateTime.now());
       } catch (_) {
         // Schedule loading is non-critical, continue with empty list
       }
 
-      state = state.copyWith(
+      final data = TrainerDashboardData(
         totalStudents: members.length,
         activeStudents: activeMembers,
         todaySessions: todaySchedule.length,
@@ -120,16 +172,46 @@ class TrainerDashboardNotifier extends StateNotifier<TrainerDashboardState> {
         recentActivities: activities,
         alerts: alerts,
         todaySchedule: todaySchedule,
-        isLoading: false,
       );
+
+      onFetchSuccess(data);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'Erro ao carregar dashboard');
+      throw Exception('Erro ao carregar dashboard');
     }
+  }
+
+  @override
+  TrainerDashboardState updateStateWithData(
+    dynamic data,
+    CacheMetadata newCache,
+  ) {
+    return state.copyWith(
+      data: data as TrainerDashboardData,
+      isLoading: false,
+      error: null,
+      cache: newCache,
+    );
+  }
+
+  @override
+  TrainerDashboardState updateStateForLoading(
+    bool isLoading,
+    CacheMetadata cache,
+  ) {
+    return state.copyWith(isLoading: isLoading, cache: cache);
+  }
+
+  @override
+  TrainerDashboardState updateStateForError(
+    String error,
+    CacheMetadata cache,
+  ) {
+    return state.copyWith(isLoading: false, error: error, cache: cache);
   }
 
   List<Map<String, dynamic>> _buildRecentActivities() {
     // Get recent check-ins from the check-in provider
-    final checkIns = _ref.read(checkInHistoryProvider);
+    final checkIns = ref.read(checkInHistoryProvider);
 
     return checkIns.take(5).map((checkIn) {
       return {
@@ -190,15 +272,22 @@ class TrainerDashboardNotifier extends StateNotifier<TrainerDashboardState> {
     return 'Há ${diff.inDays}d';
   }
 
-  void refresh() => loadDashboard();
+  // Keep old method name for backwards compatibility
+  Future<void> loadDashboard() => loadData(forceRefresh: true);
 }
 
-final trainerDashboardNotifierProvider =
-    StateNotifierProvider.family<TrainerDashboardNotifier, TrainerDashboardState, String?>((ref, orgId) {
+final trainerDashboardNotifierProvider = StateNotifierProvider.family<
+    TrainerDashboardNotifier, TrainerDashboardState, String?>((ref, orgId) {
   final orgService = ref.watch(trainerHomeOrgServiceProvider);
   final workoutService = ref.watch(trainerHomeWorkoutServiceProvider);
   final scheduleService = ref.watch(trainerHomeScheduleServiceProvider);
-  return TrainerDashboardNotifier(orgService, workoutService, scheduleService, ref, orgId);
+  return TrainerDashboardNotifier(
+    ref: ref,
+    orgService: orgService,
+    workoutService: workoutService,
+    scheduleService: scheduleService,
+    orgId: orgId,
+  );
 });
 
 // ==================== Convenience Providers ====================

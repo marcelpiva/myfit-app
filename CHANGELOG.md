@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2026-01-24
+
+### Added
+- **Global Cache Strategy** - Comprehensive caching infrastructure for Riverpod providers
+  - `CachedStateNotifier` base class with built-in TTL and stale-while-revalidate support
+  - `CacheConfig` with predefined TTL configs: frequent (1 min), standard (5 min), longlived (30 min), static (24 hours)
+  - `CacheMetadata` for tracking fetch timestamps and refresh state
+  - Event-driven cache invalidation via `CacheEventType` (workoutCompleted, planAssigned, etc.)
+  - `CachedRefreshIndicator` widget for pull-to-refresh with automatic haptic feedback
+  - Background refresh shows cached data immediately while fetching updates
+
+### Changed
+- **Provider Migrations to Cache System**:
+  - `StudentDashboardNotifier` - Uses dashboard cache (1 min TTL), auto-refreshes on workout/checkin events
+  - `TrainerDashboardNotifier` - Uses dashboard cache, listens to student/workout/session events
+  - `PlansNotifier` - Uses plans cache (5 min TTL), auto-refreshes on plan create/update/delete events
+  - `NotificationsNotifier` - Uses notifications cache (1 min TTL), refreshes on message/achievement events
+  - `GamificationStatsNotifier` - Uses gamification cache, refreshes on workout/checkin/achievement events
+  - `TrainerStudentsNotifier` - Uses students cache, refreshes on student add/remove/invite events
+  - All providers now support stale-while-revalidate pattern for better UX
+
 ## [1.8.9] - 2026-01-24
 
 ### Fixed

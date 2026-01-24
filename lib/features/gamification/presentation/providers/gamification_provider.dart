@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/cache/cache.dart';
 import '../../../../core/error/api_exceptions.dart';
 import '../../../../core/services/gamification_service.dart';
 import '../../domain/models/achievement.dart';
@@ -458,53 +459,97 @@ final pointsHistoryProvider = Provider<List<PointsTransaction>>((ref) {
   return ref.watch(pointsHistoryNotifierProvider).transactions;
 });
 
-// Stats state
-class GamificationStatsState {
+// Stats data
+class GamificationStatsData {
   final int totalCheckIns;
   final int currentStreak;
   final int longestStreak;
   final int totalWorkouts;
-  final bool isLoading;
-  final String? error;
 
-  const GamificationStatsState({
+  const GamificationStatsData({
     this.totalCheckIns = 0,
     this.currentStreak = 0,
     this.longestStreak = 0,
     this.totalWorkouts = 0,
+  });
+}
+
+// Stats state
+class GamificationStatsState implements CachedState<GamificationStatsData> {
+  @override
+  final GamificationStatsData? data;
+  @override
+  final bool isLoading;
+  @override
+  final String? error;
+  @override
+  final CacheMetadata cache;
+
+  const GamificationStatsState({
+    this.data,
     this.isLoading = false,
     this.error,
+    this.cache = const CacheMetadata(),
   });
 
+  // CachedState implementation
+  @override
+  bool get hasData => data != null;
+
+  @override
+  bool isStale(CacheConfig config) => cache.isStale(config);
+
+  @override
+  bool get isBackgroundRefresh => cache.isRefreshing && hasData;
+
+  // Convenience getters
+  int get totalCheckIns => data?.totalCheckIns ?? 0;
+  int get currentStreak => data?.currentStreak ?? 0;
+  int get longestStreak => data?.longestStreak ?? 0;
+  int get totalWorkouts => data?.totalWorkouts ?? 0;
+
   GamificationStatsState copyWith({
-    int? totalCheckIns,
-    int? currentStreak,
-    int? longestStreak,
-    int? totalWorkouts,
+    GamificationStatsData? data,
     bool? isLoading,
     String? error,
+    CacheMetadata? cache,
   }) {
     return GamificationStatsState(
-      totalCheckIns: totalCheckIns ?? this.totalCheckIns,
-      currentStreak: currentStreak ?? this.currentStreak,
-      longestStreak: longestStreak ?? this.longestStreak,
-      totalWorkouts: totalWorkouts ?? this.totalWorkouts,
+      data: data ?? this.data,
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      cache: cache ?? this.cache,
     );
   }
 }
 
 // Stats notifier
-class GamificationStatsNotifier extends StateNotifier<GamificationStatsState> {
+class GamificationStatsNotifier
+    extends CachedStateNotifier<GamificationStatsState> {
   final GamificationService _service;
 
-  GamificationStatsNotifier(this._service) : super(const GamificationStatsState()) {
-    loadStats();
-  }
+  GamificationStatsNotifier({
+    required Ref ref,
+    required GamificationService service,
+  })  : _service = service,
+        super(
+          const GamificationStatsState(),
+          config: CacheConfigs.gamificationStats, // 30 min TTL
+          ref: ref,
+        );
 
-  Future<void> loadStats() async {
-    state = state.copyWith(isLoading: true, error: null);
+  /// Events that should trigger a refresh of this provider
+  @override
+  Set<CacheEventType> get invalidationEvents => {
+        CacheEventType.workoutCompleted,
+        CacheEventType.checkInCompleted,
+        CacheEventType.achievementUnlocked,
+        CacheEventType.pointsEarned,
+        CacheEventType.appResumed,
+      };
+
+  @override
+  Future<void> fetchData() async {
     try {
       final results = await Future.wait([
         _service.getGamificationStats(),
@@ -514,26 +559,59 @@ class GamificationStatsNotifier extends StateNotifier<GamificationStatsState> {
       final stats = results[0] as Map<String, dynamic>;
       final streak = results[1] as Map<String, dynamic>;
 
-      state = state.copyWith(
+      final data = GamificationStatsData(
         totalCheckIns: stats['total_checkins'] as int? ?? 0,
         totalWorkouts: stats['total_workouts'] as int? ?? 0,
         currentStreak: streak['current_streak'] as int? ?? 0,
         longestStreak: streak['longest_streak'] as int? ?? 0,
-        isLoading: false,
       );
+
+      onFetchSuccess(data);
     } on ApiException catch (e) {
-      state = state.copyWith(isLoading: false, error: e.message);
+      throw Exception(e.message);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'Erro ao carregar estatísticas');
+      throw Exception('Erro ao carregar estatísticas');
     }
   }
 
-  void refresh() => loadStats();
+  @override
+  GamificationStatsState updateStateWithData(
+    dynamic data,
+    CacheMetadata newCache,
+  ) {
+    return state.copyWith(
+      data: data as GamificationStatsData,
+      isLoading: false,
+      error: null,
+      cache: newCache,
+    );
+  }
+
+  @override
+  GamificationStatsState updateStateForLoading(
+    bool isLoading,
+    CacheMetadata cache,
+  ) {
+    return state.copyWith(isLoading: isLoading, cache: cache);
+  }
+
+  @override
+  GamificationStatsState updateStateForError(
+    String error,
+    CacheMetadata cache,
+  ) {
+    return state.copyWith(isLoading: false, error: error, cache: cache);
+  }
+
+  // Keep old method name for backwards compatibility
+  Future<void> loadStats() => loadData(forceRefresh: true);
 }
 
-final gamificationStatsNotifierProvider = StateNotifierProvider<GamificationStatsNotifier, GamificationStatsState>((ref) {
+final gamificationStatsNotifierProvider =
+    StateNotifierProvider<GamificationStatsNotifier, GamificationStatsState>(
+        (ref) {
   final service = ref.watch(gamificationServiceProvider);
-  return GamificationStatsNotifier(service);
+  return GamificationStatsNotifier(ref: ref, service: service);
 });
 
 // Stats providers for backward compatibility

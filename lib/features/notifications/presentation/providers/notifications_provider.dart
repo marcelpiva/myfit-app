@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/cache/cache.dart';
 import '../../../../core/services/notification_service.dart';
 
 /// Notification types
@@ -68,60 +69,122 @@ class NotificationItem {
 }
 
 /// State for notifications
-class NotificationsState {
-  final List<NotificationItem> notifications;
+class NotificationsState implements CachedState<List<NotificationItem>> {
+  @override
+  final List<NotificationItem>? data;
+  @override
   final bool isLoading;
+  @override
   final String? error;
+  @override
+  final CacheMetadata cache;
   final int unreadCount;
 
   const NotificationsState({
-    this.notifications = const [],
+    this.data,
     this.isLoading = false,
     this.error,
+    this.cache = const CacheMetadata(),
     this.unreadCount = 0,
   });
+
+  // CachedState implementation
+  @override
+  bool get hasData => data != null;
+
+  @override
+  bool isStale(CacheConfig config) => cache.isStale(config);
+
+  @override
+  bool get isBackgroundRefresh => cache.isRefreshing && hasData;
+
+  // Backwards compatible getter
+  List<NotificationItem> get notifications => data ?? const [];
 
   NotificationsState copyWith({
     List<NotificationItem>? notifications,
     bool? isLoading,
     String? error,
+    CacheMetadata? cache,
     int? unreadCount,
   }) {
     return NotificationsState(
-      notifications: notifications ?? this.notifications,
+      data: notifications ?? data,
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      cache: cache ?? this.cache,
       unreadCount: unreadCount ?? this.unreadCount,
     );
   }
 }
 
 /// Notifications notifier
-class NotificationsNotifier extends StateNotifier<NotificationsState> {
+class NotificationsNotifier extends CachedStateNotifier<NotificationsState> {
   final NotificationService _service;
 
-  NotificationsNotifier({NotificationService? service})
-      : _service = service ?? NotificationService(),
-        super(const NotificationsState());
+  NotificationsNotifier({
+    required Ref ref,
+    NotificationService? service,
+  })  : _service = service ?? NotificationService(),
+        super(
+          const NotificationsState(),
+          config: CacheConfigs.notifications, // 1 min TTL, auto-refresh
+          ref: ref,
+        );
 
-  /// Load notifications
-  Future<void> loadNotifications() async {
-    state = state.copyWith(isLoading: true, error: null);
+  /// Events that should trigger a refresh of this provider
+  @override
+  Set<CacheEventType> get invalidationEvents => {
+        CacheEventType.messageReceived,
+        CacheEventType.achievementUnlocked,
+        CacheEventType.appResumed,
+      };
+
+  @override
+  Future<void> fetchData() async {
     try {
       final data = await _service.getNotifications();
-      final notifications = data.map((e) => NotificationItem.fromJson(e)).toList();
+      final notifications =
+          data.map((e) => NotificationItem.fromJson(e)).toList();
+      onFetchSuccess(notifications);
+      // Update unread count after successful fetch
       final unreadCount = notifications.where((n) => !n.isRead).length;
-      state = state.copyWith(
-        notifications: notifications,
-        isLoading: false,
-        unreadCount: unreadCount,
-      );
+      state = state.copyWith(unreadCount: unreadCount);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      throw Exception(e.toString());
     }
+  }
+
+  @override
+  NotificationsState updateStateWithData(
+    dynamic data,
+    CacheMetadata newCache,
+  ) {
+    final notifications = data as List<NotificationItem>;
+    final unreadCount = notifications.where((n) => !n.isRead).length;
+    return state.copyWith(
+      notifications: notifications,
+      isLoading: false,
+      error: null,
+      cache: newCache,
+      unreadCount: unreadCount,
+    );
+  }
+
+  @override
+  NotificationsState updateStateForLoading(
+    bool isLoading,
+    CacheMetadata cache,
+  ) {
+    return state.copyWith(isLoading: isLoading, cache: cache);
+  }
+
+  @override
+  NotificationsState updateStateForError(
+    String error,
+    CacheMetadata cache,
+  ) {
+    return state.copyWith(isLoading: false, error: error, cache: cache);
   }
 
   /// Mark notification as read
@@ -153,11 +216,13 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
   Future<void> markAllAsRead() async {
     try {
       await _service.markAllAsRead();
-      final updated = state.notifications.map((n) => n.copyWith(isRead: true)).toList();
+      final updated =
+          state.notifications.map((n) => n.copyWith(isRead: true)).toList();
       state = state.copyWith(notifications: updated, unreadCount: 0);
     } catch (e) {
       // Optimistically update locally even if API fails
-      final updated = state.notifications.map((n) => n.copyWith(isRead: true)).toList();
+      final updated =
+          state.notifications.map((n) => n.copyWith(isRead: true)).toList();
       state = state.copyWith(notifications: updated, unreadCount: 0);
     }
   }
@@ -173,10 +238,13 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
       // Keep in list if delete fails
     }
   }
+
+  // Keep old method name for backwards compatibility
+  Future<void> loadNotifications() => loadData(forceRefresh: true);
 }
 
 /// Provider for notifications
 final notificationsProvider =
     StateNotifierProvider<NotificationsNotifier, NotificationsState>((ref) {
-  return NotificationsNotifier();
+  return NotificationsNotifier(ref: ref);
 });
