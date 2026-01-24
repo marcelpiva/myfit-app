@@ -1348,39 +1348,48 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
   /// Reorder exercises using UI indices (where groups count as 1 item).
   /// This method converts UI indices to data indices and handles groups properly.
   void reorderExercises(String workoutId, int uiOldIndex, int uiNewIndex) {
-    debugPrint('=== REORDER START ===');
-    debugPrint('uiOldIndex: $uiOldIndex, uiNewIndex: $uiNewIndex');
+    debugPrint('');
+    debugPrint('========== REORDER START ==========');
+    debugPrint('FROM Flutter: oldIndex=$uiOldIndex, newIndex=$uiNewIndex');
 
     final workouts = state.workouts.map((w) {
       if (w.id == workoutId) {
         final exercises = List<WizardExercise>.from(w.exercises);
 
+        debugPrint('BEFORE - Exercise order:');
+        for (var i = 0; i < exercises.length; i++) {
+          final e = exercises[i];
+          debugPrint('  [$i] ${e.name} (groupId: ${e.exerciseGroupId ?? "null"})');
+        }
+
         // Build UI-to-data index mapping
         final uiToDataMapping = _buildUiToDataMapping(exercises);
 
-        debugPrint('UI mapping (${uiToDataMapping.length} items):');
+        debugPrint('UI mapping (${uiToDataMapping.length} UI items):');
         for (var i = 0; i < uiToDataMapping.length; i++) {
           final m = uiToDataMapping[i];
           final name = exercises[m.dataStartIndex].name;
-          debugPrint('  [$i] ${m.isGroup ? "GROUP" : "SINGLE"} "$name" data:${m.dataStartIndex}-${m.dataEndIndex}');
+          debugPrint('  UI[$i] = ${m.isGroup ? "GROUP" : "SINGLE"} "$name" (data ${m.dataStartIndex}-${m.dataEndIndex})');
         }
 
         if (uiOldIndex >= uiToDataMapping.length) {
-          debugPrint('ERROR: uiOldIndex out of bounds');
+          debugPrint('ERROR: uiOldIndex $uiOldIndex >= mapping.length ${uiToDataMapping.length}');
           return w;
         }
 
         final oldMapping = uiToDataMapping[uiOldIndex];
         final isMovingGroup = oldMapping.isGroup;
+        final movingName = exercises[oldMapping.dataStartIndex].name;
 
         // Adjust uiNewIndex for ReorderableListView behavior
+        // Flutter's ReorderableListView: when moving DOWN, newIndex is +1 because it's insertion point after removal
         var adjustedUiNewIndex = uiNewIndex;
         if (adjustedUiNewIndex > uiOldIndex) {
           adjustedUiNewIndex -= 1;
         }
         adjustedUiNewIndex = adjustedUiNewIndex.clamp(0, uiToDataMapping.length - 1);
 
-        debugPrint('adjustedUiNewIndex: $adjustedUiNewIndex, isMovingGroup: $isMovingGroup');
+        debugPrint('Moving "$movingName" from UI[$uiOldIndex] to UI[$adjustedUiNewIndex] (isGroup: $isMovingGroup)');
 
         // If moving to same position, no change needed
         if (adjustedUiNewIndex == uiOldIndex) {
@@ -1388,29 +1397,36 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
           return w;
         }
 
+        List<WizardExercise> newExercises;
         if (isMovingGroup) {
           // Moving an entire group
-          return w.copyWith(
-            exercises: _reorderGroup(
-              exercises,
-              oldMapping.groupId!,
-              uiOldIndex,
-              adjustedUiNewIndex,
-              uiToDataMapping,
-            ),
+          newExercises = _reorderGroup(
+            exercises,
+            oldMapping.groupId!,
+            uiOldIndex,
+            adjustedUiNewIndex,
+            uiToDataMapping,
           );
         } else {
           // Moving a single ungrouped exercise
-          return w.copyWith(
-            exercises: _reorderSingleExercise(
-              exercises,
-              oldMapping.dataStartIndex,
-              uiOldIndex,
-              adjustedUiNewIndex,
-              uiToDataMapping,
-            ),
+          newExercises = _reorderSingleExercise(
+            exercises,
+            oldMapping.dataStartIndex,
+            uiOldIndex,
+            adjustedUiNewIndex,
+            uiToDataMapping,
           );
         }
+
+        debugPrint('AFTER - Exercise order:');
+        for (var i = 0; i < newExercises.length; i++) {
+          final e = newExercises[i];
+          debugPrint('  [$i] ${e.name} (groupId: ${e.exerciseGroupId ?? "null"})');
+        }
+        debugPrint('========== REORDER END ==========');
+        debugPrint('');
+
+        return w.copyWith(exercises: newExercises);
       }
       return w;
     }).toList();
