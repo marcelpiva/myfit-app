@@ -115,33 +115,41 @@ class _StartWorkoutSheetState extends ConsumerState<StartWorkoutSheet> {
               const SizedBox(height: 32),
 
               // Option 1: Train Alone
-              _OptionCard(
-                icon: LucideIcons.user,
-                title: 'Treinar Sozinho',
-                subtitle: 'Registre seu treino de forma independente',
-                onTap: _isLoading ? null : _startAlone,
-                isDark: isDark,
-                isEnabled: true,
+              Semantics(
+                label: 'start-workout-solo',
+                button: true,
+                child: _OptionCard(
+                  icon: LucideIcons.user,
+                  title: 'Treinar Sozinho',
+                  subtitle: 'Registre seu treino de forma independente',
+                  onTap: _isLoading ? null : _startAlone,
+                  isDark: isDark,
+                  isEnabled: true,
+                ),
               ),
 
               const SizedBox(height: 12),
 
               // Option 2: Train with Personal
-              _OptionCard(
-                icon: LucideIcons.users,
-                title: 'Treinar com Personal',
-                subtitle: canTrainWithPersonal && hasTrainer
-                    ? 'Solicitar acompanhamento de ${trainer?.name ?? "seu personal"}'
-                    : trainingMode == TrainingMode.online
-                        ? 'Seu plano é consultoria online'
-                        : 'Você não possui um personal vinculado',
-                onTap: canTrainWithPersonal && hasTrainer && !_isLoading
-                    ? _requestCoTraining
-                    : null,
-                isDark: isDark,
-                isEnabled: canTrainWithPersonal && hasTrainer,
-                showBadge: canTrainWithPersonal && hasTrainer && (trainer?.isOnline ?? false),
-                badgeText: 'Online',
+              Semantics(
+                label: 'cotraining-mode',
+                button: true,
+                child: _OptionCard(
+                  icon: LucideIcons.users,
+                  title: 'Treinar com Personal',
+                  subtitle: canTrainWithPersonal && hasTrainer
+                      ? 'Solicitar acompanhamento de ${trainer?.name ?? "seu personal"}'
+                      : trainingMode == TrainingMode.online
+                          ? 'Seu plano é consultoria online'
+                          : 'Você não possui um personal vinculado',
+                  onTap: canTrainWithPersonal && hasTrainer && !_isLoading
+                      ? _requestCoTraining
+                      : null,
+                  isDark: isDark,
+                  isEnabled: canTrainWithPersonal && hasTrainer,
+                  showBadge: canTrainWithPersonal && hasTrainer && (trainer?.isOnline ?? false),
+                  badgeText: 'Online',
+                ),
               ),
 
               if (_isLoading) ...[

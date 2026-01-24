@@ -20,6 +20,10 @@ class AppPasswordField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
 
+  /// Semantic label for accessibility and E2E testing.
+  /// If not provided, falls back to [label].
+  final String? semanticsLabel;
+
   const AppPasswordField({
     super.key,
     this.controller,
@@ -32,6 +36,7 @@ class AppPasswordField extends StatefulWidget {
     this.textInputAction,
     this.onChanged,
     this.onSubmitted,
+    this.semanticsLabel,
   });
 
   @override
@@ -113,17 +118,21 @@ class _AppPasswordFieldState extends State<AppPasswordField> {
               width: _hasFocus ? 1.5 : 1,
             ),
           ),
-          child: TextField(
-            controller: widget.controller,
-            focusNode: _focusNode,
-            obscureText: _obscureText,
-            enabled: widget.enabled,
-            autofocus: widget.autofocus,
-            keyboardType: TextInputType.visiblePassword,
-            textInputAction: widget.textInputAction,
-            onChanged: widget.onChanged,
-            onSubmitted: widget.onSubmitted,
-            style: TextStyle(
+          child: Semantics(
+            label: widget.semanticsLabel ?? widget.label ?? 'Password',
+            textField: true,
+            obscured: _obscureText,
+            child: TextField(
+              controller: widget.controller,
+              focusNode: _focusNode,
+              obscureText: _obscureText,
+              enabled: widget.enabled,
+              autofocus: widget.autofocus,
+              keyboardType: TextInputType.visiblePassword,
+              textInputAction: widget.textInputAction,
+              onChanged: widget.onChanged,
+              onSubmitted: widget.onSubmitted,
+              style: TextStyle(
               fontSize: 16,
               color: widget.enabled
                   ? (isDark ? AppColors.foregroundDark : AppColors.foreground)
@@ -164,6 +173,7 @@ class _AppPasswordFieldState extends State<AppPasswordField> {
                 minHeight: 20,
               ),
             ),
+          ),
           ),
         ),
         if (hasError) ...[

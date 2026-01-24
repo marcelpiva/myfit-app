@@ -8,7 +8,6 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'app/app.dart';
 import 'core/config/environment.dart';
 import 'core/observability/observability.dart';
-import 'core/services/push_notification_service.dart';
 import 'core/storage/token_storage.dart';
 import 'firebase_options.dart';
 
@@ -49,17 +48,12 @@ void main() async {
     );
   }
 
-  // Initialize observability (GlitchTip) and run the app
+  // Initialize observability (GlitchTip) and run app
   await ObservabilityService.init(
-    appRunner: () async {
-      // Initialize push notifications AFTER observability so logs work
-      if (!kIsWeb) {
-        await PushNotificationService().init();
-      }
-
+    appRunner: () {
       runApp(
         ProviderScope(
-          observers: [const ObservabilityProviderObserver()],
+          observers: const [ObservabilityProviderObserver()],
           child: const MyFitApp(),
         ),
       );

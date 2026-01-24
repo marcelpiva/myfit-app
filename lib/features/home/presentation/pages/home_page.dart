@@ -1127,10 +1127,15 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
       return Row(
         children: actions.map((action) {
           final (icon, label, color, onTap) = action;
+          // Generate semantic label for E2E testing
+          final semanticLabel = label.replaceAll('\n', '-').toLowerCase();
           return Expanded(
-            child: GestureDetector(
-              onTap: onTap,
-              child: Container(
+            child: Semantics(
+              label: 'quick-action-$semanticLabel',
+              button: true,
+              child: GestureDetector(
+                onTap: onTap,
+                child: Container(
                 height: 100,
                 margin: EdgeInsets.only(
                   right: actions.indexOf(action) < actions.length - 1 ? 12 : 0,
@@ -1175,6 +1180,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                   ],
                 ),
               ),
+            ),
             ),
           );
         }).toList(),

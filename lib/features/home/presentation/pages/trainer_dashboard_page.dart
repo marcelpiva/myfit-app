@@ -119,7 +119,11 @@ class _TrainerDashboardPageState extends ConsumerState<TrainerDashboardPage>
                       },
                     ),
                     const SizedBox(height: 16),
-                    _buildRecentStudents(context, isDark, studentsState.students),
+                    Semantics(
+                      label: 'active-students',
+                      container: true,
+                      child: _buildRecentStudents(context, isDark, studentsState.students),
+                    ),
 
                     const SizedBox(height: 32),
 
@@ -589,74 +593,78 @@ class _TrainerDashboardPageState extends ConsumerState<TrainerDashboardPage>
           final initials = _getInitials(name);
           final isActive = student.isActive;
 
-          return GestureDetector(
-            onTap: () {
-              HapticUtils.lightImpact();
-              // Navigate to student detail
-              context.push('${RouteNames.students}/${student.id}');
-            },
-            child: Container(
-              width: 90,
-              margin: EdgeInsets.only(right: index < displayStudents.length - 1 ? 12 : 0),
-              decoration: BoxDecoration(
-                color: (isDark ? AppColors.cardDark : AppColors.card).withAlpha(isDark ? 150 : 200),
-                border: Border.all(color: isDark ? AppColors.borderDark : AppColors.border),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Stack(
-                    children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: isDark ? AppColors.mutedDark : AppColors.muted,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Center(
-                          child: Text(
-                            initials,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? AppColors.foregroundDark : AppColors.foreground,
-                            ),
+          return Semantics(
+            label: 'student-card-$name',
+            button: true,
+            child: GestureDetector(
+              onTap: () {
+                HapticUtils.lightImpact();
+                // Navigate to student detail
+                context.push('${RouteNames.students}/${student.id}');
+              },
+              child: Container(
+                width: 90,
+                margin: EdgeInsets.only(right: index < displayStudents.length - 1 ? 12 : 0),
+                decoration: BoxDecoration(
+                  color: (isDark ? AppColors.cardDark : AppColors.card).withAlpha(isDark ? 150 : 200),
+                  border: Border.all(color: isDark ? AppColors.borderDark : AppColors.border),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Stack(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.mutedDark : AppColors.muted,
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                        ),
-                      ),
-                      if (isActive)
-                        Positioned(
-                          right: 0,
-                          bottom: 0,
-                          child: Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: AppColors.success,
-                              border: Border.all(
-                                color: isDark ? AppColors.cardDark : AppColors.card,
-                                width: 2,
+                          child: Center(
+                            child: Text(
+                              initials,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? AppColors.foregroundDark : AppColors.foreground,
                               ),
-                              shape: BoxShape.circle,
                             ),
                           ),
                         ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    name.split(' ')[0],
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                        if (isActive)
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: AppColors.success,
+                                border: Border.all(
+                                  color: isDark ? AppColors.cardDark : AppColors.card,
+                                  width: 2,
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Text(
+                      name.split(' ')[0],
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
             ),
           );

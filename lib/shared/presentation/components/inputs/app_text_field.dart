@@ -29,6 +29,10 @@ class AppTextField extends StatefulWidget {
   final int? minLines;
   final int? maxLength;
 
+  /// Semantic label for accessibility and E2E testing.
+  /// If not provided, falls back to [label].
+  final String? semanticsLabel;
+
   const AppTextField({
     super.key,
     this.controller,
@@ -49,6 +53,7 @@ class AppTextField extends StatefulWidget {
     this.maxLines = 1,
     this.minLines,
     this.maxLength,
+    this.semanticsLabel,
   });
 
   @override
@@ -123,27 +128,30 @@ class _AppTextFieldState extends State<AppTextField> {
               width: _hasFocus ? 1.5 : 1,
             ),
           ),
-          child: TextField(
-            controller: widget.controller,
-            focusNode: _focusNode,
-            obscureText: widget.obscureText,
-            enabled: widget.enabled,
-            autofocus: widget.autofocus,
-            keyboardType: widget.keyboardType,
-            textInputAction: widget.textInputAction,
-            textCapitalization: widget.textCapitalization,
-            onChanged: widget.onChanged,
-            onSubmitted: widget.onSubmitted,
-            maxLines: widget.maxLines,
-            minLines: widget.minLines,
-            maxLength: widget.maxLength,
-            style: TextStyle(
-              fontSize: 16,
-              color: widget.enabled
-                  ? (isDark ? AppColors.foregroundDark : AppColors.foreground)
-                  : (isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground),
-            ),
-            decoration: InputDecoration(
+          child: Semantics(
+            label: widget.semanticsLabel ?? widget.label,
+            textField: true,
+            child: TextField(
+              controller: widget.controller,
+              focusNode: _focusNode,
+              obscureText: widget.obscureText,
+              enabled: widget.enabled,
+              autofocus: widget.autofocus,
+              keyboardType: widget.keyboardType,
+              textInputAction: widget.textInputAction,
+              textCapitalization: widget.textCapitalization,
+              onChanged: widget.onChanged,
+              onSubmitted: widget.onSubmitted,
+              maxLines: widget.maxLines,
+              minLines: widget.minLines,
+              maxLength: widget.maxLength,
+              style: TextStyle(
+                fontSize: 16,
+                color: widget.enabled
+                    ? (isDark ? AppColors.foregroundDark : AppColors.foreground)
+                    : (isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground),
+              ),
+              decoration: InputDecoration(
               hintText: widget.hint,
               hintStyle: TextStyle(
                 fontSize: 16,
@@ -182,6 +190,7 @@ class _AppTextFieldState extends State<AppTextField> {
               ),
               counterText: '',
             ),
+          ),
           ),
         ),
         if (hasError) ...[

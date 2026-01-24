@@ -188,10 +188,14 @@ class WorkoutPickerSheet extends ConsumerWidget {
                   separatorBuilder: (_, __) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     final workout = allWorkouts[index];
-                    return _WorkoutCard(
-                      workout: workout,
-                      isDark: isDark,
-                      onTap: () => _selectWorkout(context, ref, workout),
+                    return Semantics(
+                      label: 'workout-card-${workout.label.toLowerCase().replaceAll(' ', '-')}',
+                      button: true,
+                      child: _WorkoutCard(
+                        workout: workout,
+                        isDark: isDark,
+                        onTap: () => _selectWorkout(context, ref, workout),
+                      ),
                     );
                   },
                 ),

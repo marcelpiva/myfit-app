@@ -341,6 +341,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
                             onSubmitted: (_) => _passwordFocus.requestFocus(),
+                            semanticsLabel: 'email-input',
                           ),
                           const SizedBox(height: 16),
                           AppPasswordField(
@@ -349,6 +350,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                             label: l10n.password,
                             textInputAction: TextInputAction.done,
                             onSubmitted: (_) => _login(),
+                            semanticsLabel: 'password-input',
                           ),
                           const SizedBox(height: 8),
                           Align(
@@ -379,6 +381,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                       label: l10n.signIn,
                       loading: _loading,
                       onPressed: _login,
+                      semanticsLabel: 'login-button',
                     ),
 
                     // Biometric login button

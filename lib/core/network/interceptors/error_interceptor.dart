@@ -105,20 +105,37 @@ class ErrorInterceptor extends Interceptor {
   ValidationException _handleValidationError(String message, dynamic data) {
     Map<String, List<String>>? fieldErrors;
 
-    if (data is Map && data['detail'] is List) {
-      final details = data['detail'] as List;
-      fieldErrors = {};
+    if (data is Map && data['detail'] != null) {
+      final detail = data['detail'];
 
-      for (final error in details) {
-        if (error is Map) {
-          // FastAPI validation error format
-          final loc = error['loc'] as List?;
-          final msg = error['msg'] as String?;
+      if (detail is List) {
+        // FastAPI validation error array format
+        fieldErrors = {};
+        for (final error in detail) {
+          if (error is Map) {
+            final loc = error['loc'] as List?;
+            final msg = error['msg'] as String?;
 
-          if (loc != null && loc.length > 1 && msg != null) {
-            final field = loc.last.toString();
-            fieldErrors.putIfAbsent(field, () => []).add(msg);
+            if (loc != null && loc.length > 1 && msg != null) {
+              final field = loc.last.toString();
+              fieldErrors.putIfAbsent(field, () => []).add(msg);
+            }
           }
+        }
+      } else if (detail is Map) {
+        // Structured error with code and message
+        fieldErrors = {};
+        if (detail['code'] != null) {
+          fieldErrors['code'] = [detail['code'].toString()];
+        }
+        if (detail['message'] != null) {
+          fieldErrors['message'] = [detail['message'].toString()];
+        }
+        if (detail['membership_id'] != null) {
+          fieldErrors['membership_id'] = [detail['membership_id'].toString()];
+        }
+        if (detail['invite_id'] != null) {
+          fieldErrors['invite_id'] = [detail['invite_id'].toString()];
         }
       }
     }

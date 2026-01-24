@@ -15,6 +15,10 @@ class PrimaryButton extends StatefulWidget {
   final Color? backgroundColor;
   final Color? foregroundColor;
 
+  /// Semantic label for accessibility and E2E testing.
+  /// If not provided, falls back to [label].
+  final String? semanticsLabel;
+
   const PrimaryButton({
     super.key,
     required this.label,
@@ -25,6 +29,7 @@ class PrimaryButton extends StatefulWidget {
     this.icon,
     this.backgroundColor,
     this.foregroundColor,
+    this.semanticsLabel,
   });
 
   @override
@@ -46,12 +51,16 @@ class _PrimaryButtonState extends State<PrimaryButton>
     final fgColor = widget.foregroundColor ??
         (isDark ? AppColors.backgroundDark : AppColors.background);
 
-    return GestureDetector(
-      onTapDown: _isEnabled ? (_) => setState(() => _isPressed = true) : null,
-      onTapUp: _isEnabled ? (_) => setState(() => _isPressed = false) : null,
-      onTapCancel: _isEnabled ? () => setState(() => _isPressed = false) : null,
-      onTap: _isEnabled ? widget.onPressed : null,
-      child: AnimatedContainer(
+    return Semantics(
+      button: true,
+      enabled: _isEnabled,
+      label: widget.semanticsLabel ?? widget.label,
+      child: GestureDetector(
+        onTapDown: _isEnabled ? (_) => setState(() => _isPressed = true) : null,
+        onTapUp: _isEnabled ? (_) => setState(() => _isPressed = false) : null,
+        onTapCancel: _isEnabled ? () => setState(() => _isPressed = false) : null,
+        onTap: _isEnabled ? widget.onPressed : null,
+        child: AnimatedContainer(
         duration: AppAnimations.instant,
         curve: AppAnimations.easeOut,
         width: widget.fullWidth ? double.infinity : null,
@@ -96,6 +105,7 @@ class _PrimaryButtonState extends State<PrimaryButton>
               if (!widget.fullWidth) const SizedBox(width: 24),
             ],
           ],
+        ),
         ),
       ),
     );

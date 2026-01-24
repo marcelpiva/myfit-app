@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/entities/entities.dart';
@@ -106,13 +107,17 @@ final hasStudentRoleProvider = Provider<bool>((ref) {
 /// Provider for pending invites for the current user
 final pendingInvitesForUserProvider = FutureProvider<List<PendingInvite>>((ref) async {
   try {
+    debugPrint('[PENDING_INVITES] Fetching pending invites...');
     final response = await ApiClient.instance.get(ApiEndpoints.userPendingInvites);
+    debugPrint('[PENDING_INVITES] Response: ${response.statusCode}');
     if (response.statusCode == 200 && response.data != null) {
       final data = response.data as List;
+      debugPrint('[PENDING_INVITES] Found ${data.length} invites');
       return data.map((e) => PendingInvite.fromJson(e as Map<String, dynamic>)).toList();
     }
     return [];
   } catch (e) {
+    debugPrint('[PENDING_INVITES] Error: $e');
     return [];
   }
 });

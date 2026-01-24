@@ -142,17 +142,24 @@ class UnknownApiException extends ApiException {
 extension ApiExceptionMessage on ApiException {
   /// Get a user-friendly message suitable for displaying in UI
   String get userMessage {
+    // Use the actual message from the exception if available
+    final msg = message;
+    if (msg.isNotEmpty && msg != 'Sessão expirada. Faça login novamente.') {
+      // Return the API message directly for authentication errors
+      if (this is AuthenticationException) return msg;
+    }
+
     return switch (this) {
-      AuthenticationException(message: final msg) => msg.isNotEmpty ? msg : 'Sessão expirada. Faça login novamente.',
-      ForbiddenException(message: final msg) => msg.isNotEmpty ? msg : 'Você não tem permissão para esta ação.',
-      NotFoundException(message: final msg) => msg.isNotEmpty ? msg : 'Não encontrado.',
-      ValidationException(message: final msg) => msg,
-      ConflictException(message: final msg) => msg.isNotEmpty ? msg : 'Este item já existe.',
+      AuthenticationException() => msg.isNotEmpty ? msg : 'Sessão expirada. Faça login novamente.',
+      ForbiddenException() => msg.isNotEmpty ? msg : 'Você não tem permissão para esta ação.',
+      NotFoundException() => msg.isNotEmpty ? msg : 'Não encontrado.',
+      ValidationException() => msg,
+      ConflictException() => msg.isNotEmpty ? msg : 'Este item já existe.',
       RateLimitException() => 'Muitas requisições. Aguarde um momento.',
-      ServerException() => 'Erro no servidor. Tente novamente.',
+      ServerException() => msg.isNotEmpty ? msg : 'Erro no servidor. Tente novamente.',
       NetworkException(isTimeout: true) => 'Conexão lenta. Tente novamente.',
       NetworkException() => 'Sem conexão com a internet.',
-      UnknownApiException() => 'Ocorreu um erro. Tente novamente.',
+      UnknownApiException() => msg.isNotEmpty ? msg : 'Ocorreu um erro. Tente novamente.',
     };
   }
 

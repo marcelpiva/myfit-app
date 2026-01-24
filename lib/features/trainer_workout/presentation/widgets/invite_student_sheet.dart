@@ -216,18 +216,22 @@ class _InviteStudentSheetContentState extends State<_InviteStudentSheetContent> 
 
         // Handle specific error codes from backend
         if (errorCode == 'ALREADY_MEMBER') {
+          Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Você já tem esse aluno'),
               backgroundColor: AppColors.warning,
+              behavior: SnackBarBehavior.floating,
             ),
           );
           return;
         } else if (errorCode == 'PENDING_INVITE') {
+          Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Este aluno já possui um convite pendente'),
               backgroundColor: AppColors.warning,
+              behavior: SnackBarBehavior.floating,
             ),
           );
           return;
@@ -238,30 +242,35 @@ class _InviteStudentSheetContentState extends State<_InviteStudentSheetContent> 
         }
 
         // Extract a more user-friendly error message
-        String errorMsg = 'Erro desconhecido';
-        if (e.toString().contains('401')) {
+        String errorMsg;
+        final errorString = e.toString();
+        if (e is ApiException) {
+          errorMsg = e.userMessage;
+        } else if (errorString.contains('401')) {
           errorMsg = 'Sessão expirada. Faça login novamente.';
-        } else if (e.toString().contains('403')) {
+        } else if (errorString.contains('403')) {
           errorMsg = 'Você não tem permissão para convidar alunos.';
-        } else if (e.toString().contains('404')) {
+        } else if (errorString.contains('404')) {
           errorMsg = 'Organização não encontrada.';
-        } else if (e.toString().contains('409') || e.toString().contains('ALREADY_MEMBER')) {
+        } else if (errorString.contains('409') || errorString.contains('ALREADY_MEMBER')) {
           errorMsg = 'Você já tem esse aluno.';
-        } else if (e.toString().contains('PENDING_INVITE')) {
+        } else if (errorString.contains('PENDING_INVITE')) {
           errorMsg = 'Este aluno já possui um convite pendente.';
-        } else if (e.toString().contains('INACTIVE_MEMBER')) {
+        } else if (errorString.contains('INACTIVE_MEMBER')) {
           errorMsg = 'Este aluno está inativo. Deseja reativá-lo?';
         } else {
-          errorMsg = e.toString();
+          errorMsg = 'Erro ao enviar convite. Tente novamente.';
         }
 
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Erro: $errorMsg',
+              errorMsg,
               style: const TextStyle(color: Colors.white),
             ),
             backgroundColor: AppColors.destructive,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }

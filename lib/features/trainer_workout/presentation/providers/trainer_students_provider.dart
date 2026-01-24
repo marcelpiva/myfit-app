@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/cache/cache.dart';
 import '../../../../core/error/api_exceptions.dart';
 import '../../../../core/services/organization_service.dart';
 import '../../../../core/services/workout_service.dart';
@@ -112,26 +113,47 @@ class TrainerStudent {
 
 // ==================== Trainer Students State ====================
 
-class TrainerStudentsState {
-  final List<TrainerStudent> students;
+class TrainerStudentsState implements CachedState<List<TrainerStudent>> {
+  @override
+  final List<TrainerStudent>? data;
+  @override
   final bool isLoading;
+  @override
   final String? error;
+  @override
+  final CacheMetadata cache;
 
   const TrainerStudentsState({
-    this.students = const [],
+    this.data,
     this.isLoading = false,
     this.error,
+    this.cache = const CacheMetadata(),
   });
+
+  // CachedState implementation
+  @override
+  bool get hasData => data != null && data!.isNotEmpty;
+
+  @override
+  bool isStale(CacheConfig config) => cache.isStale(config);
+
+  @override
+  bool get isBackgroundRefresh => cache.isRefreshing && hasData;
+
+  // Backwards compatible getter
+  List<TrainerStudent> get students => data ?? const [];
 
   TrainerStudentsState copyWith({
     List<TrainerStudent>? students,
     bool? isLoading,
     String? error,
+    CacheMetadata? cache,
   }) {
     return TrainerStudentsState(
-      students: students ?? this.students,
+      data: students ?? data,
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      cache: cache ?? this.cache,
     );
   }
 
@@ -139,21 +161,37 @@ class TrainerStudentsState {
   int get inactiveCount => students.where((s) => !s.isActive).length;
 }
 
-class TrainerStudentsNotifier extends StateNotifier<TrainerStudentsState> {
+class TrainerStudentsNotifier
+    extends CachedStateNotifier<TrainerStudentsState> {
   final OrganizationService _orgService;
   final WorkoutService _workoutService;
   final String? orgId;
 
-  TrainerStudentsNotifier(
-    this._orgService,
-    this._workoutService,
+  TrainerStudentsNotifier({
+    required Ref ref,
+    required OrganizationService orgService,
+    required WorkoutService workoutService,
     this.orgId,
-  ) : super(const TrainerStudentsState()) {
-    loadStudents();
-  }
+  })  : _orgService = orgService,
+        _workoutService = workoutService,
+        super(
+          const TrainerStudentsState(),
+          config: CacheConfigs.students, // 5 min TTL
+          ref: ref,
+        );
 
-  Future<void> loadStudents() async {
-    state = state.copyWith(isLoading: true, error: null);
+  /// Events that should trigger a refresh of this provider
+  @override
+  Set<CacheEventType> get invalidationEvents => {
+        CacheEventType.inviteAccepted,
+        CacheEventType.studentAdded,
+        CacheEventType.studentRemoved,
+        CacheEventType.contextChanged,
+        CacheEventType.appResumed,
+      };
+
+  @override
+  Future<void> fetchData() async {
     try {
       // Load members with role 'member' or 'student'
       List<Map<String, dynamic>> members = [];
@@ -167,20 +205,26 @@ class TrainerStudentsNotifier extends StateNotifier<TrainerStudentsState> {
       // Build student list with workout info
       final students = members.map((member) {
         final userId = member['user_id'] as String;
-        final studentWorkouts = workouts.where((w) => w['student_id'] == userId).toList();
+        final studentWorkouts =
+            workouts.where((w) => w['student_id'] == userId).toList();
 
-        final activeWorkout = studentWorkouts.where((w) => w['status'] == 'active').firstOrNull;
-        final completedCount = studentWorkouts.where((w) => w['status'] == 'completed').length;
+        final activeWorkout =
+            studentWorkouts.where((w) => w['status'] == 'active').firstOrNull;
+        final completedCount =
+            studentWorkouts.where((w) => w['status'] == 'completed').length;
 
         return TrainerStudent(
           id: userId,
-          name: member['user_name'] as String? ?? member['name'] as String? ?? 'Aluno',
+          name: member['user_name'] as String? ??
+              member['name'] as String? ??
+              'Aluno',
           email: member['email'] as String?,
           avatarUrl: member['avatar_url'] as String?,
           phone: member['phone'] as String?,
           isActive: member['is_active'] == true,
           joinedAt: DateTime.tryParse(member['joined_at'] as String? ?? ''),
-          lastWorkoutAt: DateTime.tryParse(member['last_workout_at'] as String? ?? ''),
+          lastWorkoutAt:
+              DateTime.tryParse(member['last_workout_at'] as String? ?? ''),
           currentWorkoutName: activeWorkout?['name'] as String?,
           totalWorkouts: studentWorkouts.length,
           completedWorkouts: completedCount,
@@ -191,22 +235,57 @@ class TrainerStudentsNotifier extends StateNotifier<TrainerStudentsState> {
         );
       }).toList();
 
-      state = state.copyWith(students: students, isLoading: false);
+      onFetchSuccess(students);
     } on ApiException catch (e) {
-      state = state.copyWith(isLoading: false, error: e.message);
+      throw Exception(e.message);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'Erro ao carregar alunos');
+      throw Exception('Erro ao carregar alunos');
     }
   }
 
-  void refresh() => loadStudents();
+  @override
+  TrainerStudentsState updateStateWithData(
+    dynamic data,
+    CacheMetadata newCache,
+  ) {
+    return state.copyWith(
+      students: data as List<TrainerStudent>,
+      isLoading: false,
+      error: null,
+      cache: newCache,
+    );
+  }
+
+  @override
+  TrainerStudentsState updateStateForLoading(
+    bool isLoading,
+    CacheMetadata cache,
+  ) {
+    return state.copyWith(isLoading: isLoading, cache: cache);
+  }
+
+  @override
+  TrainerStudentsState updateStateForError(
+    String error,
+    CacheMetadata cache,
+  ) {
+    return state.copyWith(isLoading: false, error: error, cache: cache);
+  }
+
+  // Keep old method name for backwards compatibility
+  Future<void> loadStudents() => loadData(forceRefresh: true);
 }
 
-final trainerStudentsNotifierProvider =
-    StateNotifierProvider.family<TrainerStudentsNotifier, TrainerStudentsState, String?>((ref, orgId) {
+final trainerStudentsNotifierProvider = StateNotifierProvider.family<
+    TrainerStudentsNotifier, TrainerStudentsState, String?>((ref, orgId) {
   final orgService = ref.watch(trainerStudentsOrgServiceProvider);
   final workoutService = ref.watch(trainerStudentsWorkoutServiceProvider);
-  return TrainerStudentsNotifier(orgService, workoutService, orgId);
+  return TrainerStudentsNotifier(
+    ref: ref,
+    orgService: orgService,
+    workoutService: workoutService,
+    orgId: orgId,
+  );
 });
 
 // ==================== Simple Providers ====================
@@ -344,51 +423,119 @@ class PendingInvite {
   }
 }
 
-class PendingInvitesState {
-  final List<PendingInvite> invites;
+class PendingInvitesState implements CachedState<List<PendingInvite>> {
+  @override
+  final List<PendingInvite>? data;
+  @override
   final bool isLoading;
+  @override
   final String? error;
+  @override
+  final CacheMetadata cache;
 
   const PendingInvitesState({
-    this.invites = const [],
+    this.data,
     this.isLoading = false,
     this.error,
+    this.cache = const CacheMetadata(),
   });
+
+  // CachedState implementation
+  @override
+  bool get hasData => data != null;
+
+  @override
+  bool isStale(CacheConfig config) => cache.isStale(config);
+
+  @override
+  bool get isBackgroundRefresh => cache.isRefreshing && hasData;
+
+  // Backwards compatible getter
+  List<PendingInvite> get invites => data ?? const [];
 
   PendingInvitesState copyWith({
     List<PendingInvite>? invites,
     bool? isLoading,
     String? error,
+    CacheMetadata? cache,
   }) {
     return PendingInvitesState(
-      invites: invites ?? this.invites,
+      data: invites ?? data,
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      cache: cache ?? this.cache,
     );
   }
 }
 
-class PendingInvitesNotifier extends StateNotifier<PendingInvitesState> {
+class PendingInvitesNotifier extends CachedStateNotifier<PendingInvitesState> {
   final OrganizationService _orgService;
   final String? orgId;
 
-  PendingInvitesNotifier(this._orgService, this.orgId)
-      : super(const PendingInvitesState()) {
-    loadInvites();
-  }
+  PendingInvitesNotifier({
+    required Ref ref,
+    required OrganizationService orgService,
+    this.orgId,
+  })  : _orgService = orgService,
+        super(
+          const PendingInvitesState(),
+          config: CacheConfigs.pendingInvites, // 1 min TTL
+          ref: ref,
+        );
 
-  Future<void> loadInvites() async {
-    if (orgId == null) return;
-    state = state.copyWith(isLoading: true, error: null);
+  /// Events that should trigger a refresh of this provider
+  @override
+  Set<CacheEventType> get invalidationEvents => {
+        CacheEventType.inviteCreated,
+        CacheEventType.inviteAccepted,
+        CacheEventType.inviteDeclined,
+        CacheEventType.contextChanged,
+      };
+
+  @override
+  Future<void> fetchData() async {
+    if (orgId == null) {
+      onFetchSuccess(<PendingInvite>[]);
+      return;
+    }
     try {
       final data = await _orgService.getInvites(orgId!);
       final invites = data.map((json) => PendingInvite.fromJson(json)).toList();
       // Filter out accepted invites
       final pendingOnly = invites.where((i) => !i.isExpired).toList();
-      state = state.copyWith(invites: pendingOnly, isLoading: false);
+      onFetchSuccess(pendingOnly);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'Erro ao carregar convites');
+      throw Exception('Erro ao carregar convites');
     }
+  }
+
+  @override
+  PendingInvitesState updateStateWithData(
+    dynamic data,
+    CacheMetadata newCache,
+  ) {
+    return state.copyWith(
+      invites: data as List<PendingInvite>,
+      isLoading: false,
+      error: null,
+      cache: newCache,
+    );
+  }
+
+  @override
+  PendingInvitesState updateStateForLoading(
+    bool isLoading,
+    CacheMetadata cache,
+  ) {
+    return state.copyWith(isLoading: isLoading, cache: cache);
+  }
+
+  @override
+  PendingInvitesState updateStateForError(
+    String error,
+    CacheMetadata cache,
+  ) {
+    return state.copyWith(isLoading: false, error: error, cache: cache);
   }
 
   Future<void> cancelInvite(String inviteId) async {
@@ -409,20 +556,26 @@ class PendingInvitesNotifier extends StateNotifier<PendingInvitesState> {
       final updated = await _orgService.resendInvite(orgId!, inviteId);
       final updatedInvite = PendingInvite.fromJson(updated);
       state = state.copyWith(
-        invites: state.invites.map((i) => i.id == inviteId ? updatedInvite : i).toList(),
+        invites:
+            state.invites.map((i) => i.id == inviteId ? updatedInvite : i).toList(),
       );
     } catch (e) {
       rethrow;
     }
   }
 
-  void refresh() => loadInvites();
+  // Keep old method name for backwards compatibility
+  Future<void> loadInvites() => loadData(forceRefresh: true);
 }
 
-final pendingInvitesNotifierProvider =
-    StateNotifierProvider.family<PendingInvitesNotifier, PendingInvitesState, String?>((ref, orgId) {
+final pendingInvitesNotifierProvider = StateNotifierProvider.family<
+    PendingInvitesNotifier, PendingInvitesState, String?>((ref, orgId) {
   final orgService = ref.watch(trainerStudentsOrgServiceProvider);
-  return PendingInvitesNotifier(orgService, orgId);
+  return PendingInvitesNotifier(
+    ref: ref,
+    orgService: orgService,
+    orgId: orgId,
+  );
 });
 
 final pendingInvitesProvider = Provider.family<List<PendingInvite>, String?>((ref, orgId) {

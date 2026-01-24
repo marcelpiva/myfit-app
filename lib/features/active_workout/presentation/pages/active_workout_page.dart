@@ -888,7 +888,10 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
       }
     }
 
-    return Container(
+    return Semantics(
+      label: 'adjustment-notification',
+      liveRegion: true,
+      child: Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -960,6 +963,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
           ),
         ],
       ),
+    ),
     );
   }
 
