@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/cache/cache.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,7 +11,6 @@ import '../../../../core/providers/context_provider.dart';
 import '../providers/auth_provider.dart';
 import '../../../../core/services/organization_service.dart';
 import '../../../../shared/presentation/components/animations/fade_in_up.dart';
-import '../../../trainer_workout/presentation/providers/trainer_students_provider.dart';
 
 /// Page for accepting organization invites via deep link
 /// Route: /invite/:token
@@ -74,16 +74,12 @@ class _InviteAcceptPageState extends ConsumerState<InviteAcceptPage> {
       final orgService = OrganizationService();
       await orgService.acceptInvite(widget.token);
 
-      // Invalidate student-side providers
-      ref.invalidate(membershipsProvider);
-      ref.invalidate(pendingInvitesForUserProvider);
+      // Emit cache event to refresh all related providers
+      final inviteId = _inviteData?['id'] as String? ?? '';
+      ref.read(cacheEventEmitterProvider).inviteAccepted(inviteId);
 
-      // Invalidate trainer-side providers for this organization
-      final orgId = _inviteData?['organization_id'] as String?;
-      if (orgId != null) {
-        ref.invalidate(pendingInvitesNotifierProvider(orgId));
-        ref.invalidate(trainerStudentsNotifierProvider(orgId));
-      }
+      // Also emit membershipChanged for memberships provider
+      ref.read(cacheEventEmitterProvider).membershipChanged();
 
       if (mounted) {
         HapticUtils.heavyImpact();

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/cache/cache.dart';
 import '../../../../core/services/workout_service.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import '../providers/student_plans_provider.dart';
@@ -370,7 +371,13 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
           );
       }
 
-      // Refresh student plans
+      // Emit cache event to refresh student's dashboard and plan lists
+      ref.read(cacheEventEmitterProvider).planAssigned(
+            _selectedPlanId!,
+            studentId: widget.studentUserId,
+          );
+
+      // Also invalidate specific student plans provider for immediate update
       ref.invalidate(studentPlansProvider(widget.studentUserId));
 
       if (mounted) {
@@ -423,7 +430,13 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
         endDate: _endDate,
       );
 
-      // Refresh student plans
+      // Emit cache event to refresh student's dashboard and plan lists
+      ref.read(cacheEventEmitterProvider).planAssigned(
+            _selectedPlanId!,
+            studentId: widget.studentUserId,
+          );
+
+      // Also invalidate specific student plans provider for immediate update
       ref.invalidate(studentPlansProvider(widget.studentUserId));
 
       if (mounted) {

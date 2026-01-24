@@ -5,10 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/l10n/generated/app_localizations.dart';
 import '../config/routes/app_router.dart';
 import '../config/theme/app_theme.dart';
+import '../core/cache/cache.dart';
 import '../core/providers/context_provider.dart';
-import '../features/home/presentation/providers/student_home_provider.dart';
-import '../features/trainer_workout/presentation/providers/trainer_students_provider.dart';
-import '../features/workout/presentation/providers/workout_provider.dart';
 
 /// Theme mode provider
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);
@@ -70,27 +68,8 @@ class _MyFitAppState extends ConsumerState<MyFitApp> with WidgetsBindingObserver
   }
 
   void _refreshAllData() {
-    final activeContext = ref.read(activeContextProvider);
-    if (activeContext == null) return;
-
-    final orgId = activeContext.organization.id;
-
-    // Refresh student data
-    if (activeContext.isStudent) {
-      ref.invalidate(studentDashboardProvider);
-      ref.invalidate(studentPendingPlansProvider);
-      ref.invalidate(plansNotifierProvider);
-    }
-
-    // Refresh trainer data
-    if (activeContext.isTrainer) {
-      ref.invalidate(trainerStudentsNotifierProvider(orgId));
-      ref.invalidate(pendingInvitesNotifierProvider(orgId));
-    }
-
-    // Refresh common data
-    ref.invalidate(membershipsProvider);
-    ref.invalidate(pendingInvitesForUserProvider);
+    // Emit appResumed event - all subscribed providers will auto-refresh
+    ref.read(cacheEventEmitterProvider).appResumed();
   }
 
   @override

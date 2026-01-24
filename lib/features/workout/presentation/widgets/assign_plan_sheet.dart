@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/cache/cache.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -54,6 +55,12 @@ class _AssignPlanSheetState extends ConsumerState<AssignPlanSheet> {
         startDate: _startDate,
         endDate: _endDate,
       );
+
+      // Emit cache event to refresh student's dashboard and plan lists
+      ref.read(cacheEventEmitterProvider).planAssigned(
+            widget.planId,
+            studentId: _selectedStudentId,
+          );
 
       if (mounted) {
         Navigator.pop(context, true);

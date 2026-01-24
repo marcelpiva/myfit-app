@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/cache/cache.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -52,7 +53,7 @@ Future<void> showInviteStudentSheet(
 }
 
 /// Stateful content widget for the invite sheet
-class _InviteStudentSheetContent extends StatefulWidget {
+class _InviteStudentSheetContent extends ConsumerStatefulWidget {
   final bool isDark;
   final String orgId;
   final VoidCallback? onSuccess;
@@ -64,11 +65,11 @@ class _InviteStudentSheetContent extends StatefulWidget {
   });
 
   @override
-  State<_InviteStudentSheetContent> createState() =>
+  ConsumerState<_InviteStudentSheetContent> createState() =>
       _InviteStudentSheetContentState();
 }
 
-class _InviteStudentSheetContentState extends State<_InviteStudentSheetContent> {
+class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetContent> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   bool _isLoading = false;
@@ -171,12 +172,19 @@ class _InviteStudentSheetContentState extends State<_InviteStudentSheetContent> 
     try {
       debugPrint('🔵 Sending invite to: $email for org: ${widget.orgId}');
       final orgService = OrganizationService();
-      await orgService.sendInvite(
+      final result = await orgService.sendInvite(
         widget.orgId,
         email: email,
         role: 'student',
       );
       debugPrint('🟢 Invite sent successfully');
+
+      // Emit cache event to refresh pending invites list
+      final inviteId = result['id'] as String? ?? '';
+      ref.read(cacheEventEmitterProvider).inviteCreated(
+            inviteId,
+            organizationId: widget.orgId,
+          );
 
       if (mounted) {
         Navigator.pop(context);

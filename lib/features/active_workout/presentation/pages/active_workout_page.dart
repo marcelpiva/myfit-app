@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../../../core/cache/cache.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -126,6 +127,9 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     try {
       final workoutService = WorkoutService();
       await workoutService.completeWorkoutSession(_workoutSessionId!);
+
+      // Emit cache event to refresh dashboard and related providers
+      ref.read(cacheEventEmitterProvider).workoutCompleted(widget.workoutId);
     } catch (e) {
       debugPrint('Failed to complete workout session: $e');
     }
