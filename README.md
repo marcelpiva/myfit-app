@@ -55,7 +55,7 @@ Aplicativo Flutter multiplataforma para a plataforma MyFit.
 
 - Flutter SDK 3.10+
 - Dart 3.x
-- iOS 12+ / Android 5.0+ / Modern browsers (Chrome, Safari, Edge)
+- iOS 15+ / Android 5.0+ / Modern browsers (Chrome, Safari, Edge)
 
 ### Installation
 

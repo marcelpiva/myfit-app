@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.4] - 2026-01-24
+
+### Fixed
+- **Xcode Warnings** - Resolved 109+ Xcode warnings and build issues
+  - Added `inhibit_all_warnings!` to Podfile to suppress CocoaPods plugin warnings
+  - Disabled `CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER` in project settings
+  - Updated `IPHONEOS_DEPLOYMENT_TARGET` from 13.0 to 15.0 for consistency with Podfile
+  - Fixes iOS version mismatch linker warnings
+
 ## [1.8.3] - 2026-01-24
 
 ### Fixed

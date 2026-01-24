@@ -1,6 +1,9 @@
 # iOS 26.3 beta workaround - use higher platform version
 platform :ios, '15.0'
 
+# Suppress all warnings from third-party CocoaPods dependencies
+inhibit_all_warnings!
+
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
@@ -46,5 +49,10 @@ post_install do |installer|
       config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
     end
+  end
+
+  # Suppress quoted include warnings at project level
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings['CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER'] = 'NO'
   end
 end
