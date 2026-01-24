@@ -33,6 +33,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `auth_provider_test.dart` - 24 tests (login, logout, register, state management)
   - `context_provider_test.dart` - 30 tests (active context, memberships, role checks)
 
+### Fixed
+- **Exercise Feedback Swap Dialog** - Keyboard no longer covers submit button
+  - Added `isScrollControlled: true` to modal bottom sheet
+  - Wrapped content in `SingleChildScrollView` for proper keyboard handling
+
 ### Dependencies
 - Added `alchemist: ^0.13.0` for visual testing
 - Added `sentry_flutter: ^8.0.0` for observability
