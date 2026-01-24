@@ -1,0 +1,5 @@
+# Appfile for MyFit Android App
+# Docs: https://docs.fastlane.tools/advanced/#appfile
+
+json_key_file("fastlane/play-store-credentials.json")
+package_name("com.marcelpiva.myfitplatform")

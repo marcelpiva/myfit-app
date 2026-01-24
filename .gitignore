@@ -52,3 +52,12 @@ ios/fastlane/AuthKey.p8
 .env.*
 !.env.example
 android/app/firebase-credentials.json
+
+# Android Keystore (NUNCA commitar!)
+android/key.properties
+android/app/keystore/
+*.jks
+*.keystore
+
+# Google Play Store credentials
+android/fastlane/play-store-credentials.json

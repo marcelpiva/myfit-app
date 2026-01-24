@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.7] - 2026-01-24
+
+### Added
+- **Google Play Store Deployment** - Full Android release pipeline
+  - Configured release signing with upload keystore
+  - Enabled core library desugaring for Java 8+ API support
+  - Added multiDex support for large app builds
+  - Updated Kotlin to 2.1.0 for Flutter compatibility
+  - Added Google Services plugin 4.4.2 for Firebase
+
+- **Android Fastlane Setup** - Automated Play Store deployment
+  - `fastlane build` - Generate release App Bundle
+  - `fastlane internal` - Deploy to internal testing track
+  - `fastlane beta` - Deploy to open testing track
+  - `fastlane production` - Deploy to production
+  - `fastlane promote_to_production` - Promote internal to production
+  - Service Account authentication with Play Store API
+
+### Changed
+- Updated `.gitignore` to exclude Android keystore and Play Store credentials
+
 ## [1.8.6] - 2026-01-24
 
 ### Added

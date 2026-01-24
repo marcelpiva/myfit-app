@@ -134,6 +134,39 @@ flutter build web --release
 # Output: build/web/
 ```
 
+## Deployment
+
+### iOS (TestFlight)
+
+```bash
+cd ios
+fastlane beta
+```
+
+### Android (Play Store)
+
+```bash
+cd android
+
+# Deploy to internal testing
+fastlane internal
+
+# Deploy to production
+fastlane production
+
+# Promote internal to production
+fastlane promote_to_production
+```
+
+**Available lanes:**
+| Lane | Description |
+|------|-------------|
+| `build` | Generate release AAB only |
+| `internal` | Build + upload to internal testing |
+| `beta` | Build + upload to open testing |
+| `production` | Build + upload to production |
+| `promote_to_production` | Promote internal build to production |
+
 ## Testing
 
 ```bash

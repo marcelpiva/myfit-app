@@ -1,0 +1,114 @@
+# Fastfile for MyFit Android App
+# Docs: https://docs.fastlane.tools
+
+default_platform(:android)
+
+platform :android do
+  desc "Build App Bundle for release"
+  lane :build do
+    # Build Flutter App Bundle
+    Dir.chdir("../..") do
+      sh("flutter build appbundle --release")
+    end
+
+    puts "App Bundle built successfully!"
+    puts "Location: build/app/outputs/bundle/release/app-release.aab"
+  end
+
+  desc "Deploy to internal testing track"
+  lane :internal do
+    # Build first
+    build
+
+    # Upload to Play Store internal testing
+    upload_to_play_store(
+      track: "internal",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+
+    puts "Successfully uploaded to Internal Testing!"
+  end
+
+  desc "Deploy to alpha (closed testing) track"
+  lane :alpha do
+    # Build first
+    build
+
+    # Upload to Play Store alpha/closed testing
+    upload_to_play_store(
+      track: "alpha",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+
+    puts "Successfully uploaded to Closed Testing (Alpha)!"
+  end
+
+  desc "Deploy to beta (open testing) track"
+  lane :beta do
+    # Build first
+    build
+
+    # Upload to Play Store beta/open testing
+    upload_to_play_store(
+      track: "beta",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+
+    puts "Successfully uploaded to Open Testing (Beta)!"
+  end
+
+  desc "Deploy to production"
+  lane :production do
+    # Build first
+    build
+
+    # Upload to Play Store production
+    upload_to_play_store(
+      track: "production",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+
+    puts "Successfully uploaded to Production!"
+  end
+
+  desc "Promote internal to production"
+  lane :promote_to_production do
+    upload_to_play_store(
+      track: "internal",
+      track_promote_to: "production",
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+
+    puts "Successfully promoted to Production!"
+  end
+
+  desc "Upload only (AAB must already be built)"
+  lane :upload_only do |options|
+    track = options[:track] || "internal"
+
+    upload_to_play_store(
+      track: track,
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+
+    puts "Successfully uploaded to #{track}!"
+  end
+end
