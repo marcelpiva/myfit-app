@@ -662,7 +662,8 @@ mixin _$PlanWizardState {
  String? get basePlanId;// Source plan for periodization
  PeriodizationPhase? get phaseType;// Type of periodization phase
 // Diet fields
- bool get includeDiet; DietType? get dietType; int? get dailyCalories; int? get proteinGrams; int? get carbsGrams; int? get fatGrams; int? get mealsPerDay; String? get dietNotes;
+ bool get includeDiet; DietType? get dietType; int? get dailyCalories; int? get proteinGrams; int? get carbsGrams; int? get fatGrams; int? get mealsPerDay; String? get dietNotes;// UI state for collapse/expand (survives reordering)
+ Set<String> get collapsedExerciseIds; Set<String> get collapsedGroupIds;
 /// Create a copy of PlanWizardState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -673,16 +674,16 @@ $PlanWizardStateCopyWith<PlanWizardState> get copyWith => _$PlanWizardStateCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlanWizardState&&(identical(other.currentStep, currentStep) || other.currentStep == currentStep)&&(identical(other.method, method) || other.method == method)&&(identical(other.planName, planName) || other.planName == planName)&&(identical(other.goal, goal) || other.goal == goal)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.splitType, splitType) || other.splitType == splitType)&&(identical(other.durationWeeks, durationWeeks) || other.durationWeeks == durationWeeks)&&(identical(other.targetWorkoutMinutes, targetWorkoutMinutes) || other.targetWorkoutMinutes == targetWorkoutMinutes)&&const DeepCollectionEquality().equals(other.workouts, workouts)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.error, error) || other.error == error)&&(identical(other.isTemplate, isTemplate) || other.isTemplate == isTemplate)&&(identical(other.templateId, templateId) || other.templateId == templateId)&&(identical(other.studentId, studentId) || other.studentId == studentId)&&(identical(other.editingPlanId, editingPlanId) || other.editingPlanId == editingPlanId)&&(identical(other.basePlanId, basePlanId) || other.basePlanId == basePlanId)&&(identical(other.phaseType, phaseType) || other.phaseType == phaseType)&&(identical(other.includeDiet, includeDiet) || other.includeDiet == includeDiet)&&(identical(other.dietType, dietType) || other.dietType == dietType)&&(identical(other.dailyCalories, dailyCalories) || other.dailyCalories == dailyCalories)&&(identical(other.proteinGrams, proteinGrams) || other.proteinGrams == proteinGrams)&&(identical(other.carbsGrams, carbsGrams) || other.carbsGrams == carbsGrams)&&(identical(other.fatGrams, fatGrams) || other.fatGrams == fatGrams)&&(identical(other.mealsPerDay, mealsPerDay) || other.mealsPerDay == mealsPerDay)&&(identical(other.dietNotes, dietNotes) || other.dietNotes == dietNotes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is PlanWizardState&&(identical(other.currentStep, currentStep) || other.currentStep == currentStep)&&(identical(other.method, method) || other.method == method)&&(identical(other.planName, planName) || other.planName == planName)&&(identical(other.goal, goal) || other.goal == goal)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.splitType, splitType) || other.splitType == splitType)&&(identical(other.durationWeeks, durationWeeks) || other.durationWeeks == durationWeeks)&&(identical(other.targetWorkoutMinutes, targetWorkoutMinutes) || other.targetWorkoutMinutes == targetWorkoutMinutes)&&const DeepCollectionEquality().equals(other.workouts, workouts)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.error, error) || other.error == error)&&(identical(other.isTemplate, isTemplate) || other.isTemplate == isTemplate)&&(identical(other.templateId, templateId) || other.templateId == templateId)&&(identical(other.studentId, studentId) || other.studentId == studentId)&&(identical(other.editingPlanId, editingPlanId) || other.editingPlanId == editingPlanId)&&(identical(other.basePlanId, basePlanId) || other.basePlanId == basePlanId)&&(identical(other.phaseType, phaseType) || other.phaseType == phaseType)&&(identical(other.includeDiet, includeDiet) || other.includeDiet == includeDiet)&&(identical(other.dietType, dietType) || other.dietType == dietType)&&(identical(other.dailyCalories, dailyCalories) || other.dailyCalories == dailyCalories)&&(identical(other.proteinGrams, proteinGrams) || other.proteinGrams == proteinGrams)&&(identical(other.carbsGrams, carbsGrams) || other.carbsGrams == carbsGrams)&&(identical(other.fatGrams, fatGrams) || other.fatGrams == fatGrams)&&(identical(other.mealsPerDay, mealsPerDay) || other.mealsPerDay == mealsPerDay)&&(identical(other.dietNotes, dietNotes) || other.dietNotes == dietNotes)&&const DeepCollectionEquality().equals(other.collapsedExerciseIds, collapsedExerciseIds)&&const DeepCollectionEquality().equals(other.collapsedGroupIds, collapsedGroupIds));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,currentStep,method,planName,goal,difficulty,splitType,durationWeeks,targetWorkoutMinutes,const DeepCollectionEquality().hash(workouts),isLoading,error,isTemplate,templateId,studentId,editingPlanId,basePlanId,phaseType,includeDiet,dietType,dailyCalories,proteinGrams,carbsGrams,fatGrams,mealsPerDay,dietNotes]);
+int get hashCode => Object.hashAll([runtimeType,currentStep,method,planName,goal,difficulty,splitType,durationWeeks,targetWorkoutMinutes,const DeepCollectionEquality().hash(workouts),isLoading,error,isTemplate,templateId,studentId,editingPlanId,basePlanId,phaseType,includeDiet,dietType,dailyCalories,proteinGrams,carbsGrams,fatGrams,mealsPerDay,dietNotes,const DeepCollectionEquality().hash(collapsedExerciseIds),const DeepCollectionEquality().hash(collapsedGroupIds)]);
 
 @override
 String toString() {
-  return 'PlanWizardState(currentStep: $currentStep, method: $method, planName: $planName, goal: $goal, difficulty: $difficulty, splitType: $splitType, durationWeeks: $durationWeeks, targetWorkoutMinutes: $targetWorkoutMinutes, workouts: $workouts, isLoading: $isLoading, error: $error, isTemplate: $isTemplate, templateId: $templateId, studentId: $studentId, editingPlanId: $editingPlanId, basePlanId: $basePlanId, phaseType: $phaseType, includeDiet: $includeDiet, dietType: $dietType, dailyCalories: $dailyCalories, proteinGrams: $proteinGrams, carbsGrams: $carbsGrams, fatGrams: $fatGrams, mealsPerDay: $mealsPerDay, dietNotes: $dietNotes)';
+  return 'PlanWizardState(currentStep: $currentStep, method: $method, planName: $planName, goal: $goal, difficulty: $difficulty, splitType: $splitType, durationWeeks: $durationWeeks, targetWorkoutMinutes: $targetWorkoutMinutes, workouts: $workouts, isLoading: $isLoading, error: $error, isTemplate: $isTemplate, templateId: $templateId, studentId: $studentId, editingPlanId: $editingPlanId, basePlanId: $basePlanId, phaseType: $phaseType, includeDiet: $includeDiet, dietType: $dietType, dailyCalories: $dailyCalories, proteinGrams: $proteinGrams, carbsGrams: $carbsGrams, fatGrams: $fatGrams, mealsPerDay: $mealsPerDay, dietNotes: $dietNotes, collapsedExerciseIds: $collapsedExerciseIds, collapsedGroupIds: $collapsedGroupIds)';
 }
 
 
@@ -693,7 +694,7 @@ abstract mixin class $PlanWizardStateCopyWith<$Res>  {
   factory $PlanWizardStateCopyWith(PlanWizardState value, $Res Function(PlanWizardState) _then) = _$PlanWizardStateCopyWithImpl;
 @useResult
 $Res call({
- int currentStep, CreationMethod? method, String planName, WorkoutGoal goal, PlanDifficulty difficulty, SplitType splitType, int? durationWeeks, int? targetWorkoutMinutes, List<WizardWorkout> workouts, bool isLoading, String? error, bool isTemplate, String? templateId, String? studentId, String? editingPlanId, String? basePlanId, PeriodizationPhase? phaseType, bool includeDiet, DietType? dietType, int? dailyCalories, int? proteinGrams, int? carbsGrams, int? fatGrams, int? mealsPerDay, String? dietNotes
+ int currentStep, CreationMethod? method, String planName, WorkoutGoal goal, PlanDifficulty difficulty, SplitType splitType, int? durationWeeks, int? targetWorkoutMinutes, List<WizardWorkout> workouts, bool isLoading, String? error, bool isTemplate, String? templateId, String? studentId, String? editingPlanId, String? basePlanId, PeriodizationPhase? phaseType, bool includeDiet, DietType? dietType, int? dailyCalories, int? proteinGrams, int? carbsGrams, int? fatGrams, int? mealsPerDay, String? dietNotes, Set<String> collapsedExerciseIds, Set<String> collapsedGroupIds
 });
 
 
@@ -710,7 +711,7 @@ class _$PlanWizardStateCopyWithImpl<$Res>
 
 /// Create a copy of PlanWizardState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? currentStep = null,Object? method = freezed,Object? planName = null,Object? goal = null,Object? difficulty = null,Object? splitType = null,Object? durationWeeks = freezed,Object? targetWorkoutMinutes = freezed,Object? workouts = null,Object? isLoading = null,Object? error = freezed,Object? isTemplate = null,Object? templateId = freezed,Object? studentId = freezed,Object? editingPlanId = freezed,Object? basePlanId = freezed,Object? phaseType = freezed,Object? includeDiet = null,Object? dietType = freezed,Object? dailyCalories = freezed,Object? proteinGrams = freezed,Object? carbsGrams = freezed,Object? fatGrams = freezed,Object? mealsPerDay = freezed,Object? dietNotes = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? currentStep = null,Object? method = freezed,Object? planName = null,Object? goal = null,Object? difficulty = null,Object? splitType = null,Object? durationWeeks = freezed,Object? targetWorkoutMinutes = freezed,Object? workouts = null,Object? isLoading = null,Object? error = freezed,Object? isTemplate = null,Object? templateId = freezed,Object? studentId = freezed,Object? editingPlanId = freezed,Object? basePlanId = freezed,Object? phaseType = freezed,Object? includeDiet = null,Object? dietType = freezed,Object? dailyCalories = freezed,Object? proteinGrams = freezed,Object? carbsGrams = freezed,Object? fatGrams = freezed,Object? mealsPerDay = freezed,Object? dietNotes = freezed,Object? collapsedExerciseIds = null,Object? collapsedGroupIds = null,}) {
   return _then(_self.copyWith(
 currentStep: null == currentStep ? _self.currentStep : currentStep // ignore: cast_nullable_to_non_nullable
 as int,method: freezed == method ? _self.method : method // ignore: cast_nullable_to_non_nullable
@@ -737,7 +738,9 @@ as int?,carbsGrams: freezed == carbsGrams ? _self.carbsGrams : carbsGrams // ign
 as int?,fatGrams: freezed == fatGrams ? _self.fatGrams : fatGrams // ignore: cast_nullable_to_non_nullable
 as int?,mealsPerDay: freezed == mealsPerDay ? _self.mealsPerDay : mealsPerDay // ignore: cast_nullable_to_non_nullable
 as int?,dietNotes: freezed == dietNotes ? _self.dietNotes : dietNotes // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,collapsedExerciseIds: null == collapsedExerciseIds ? _self.collapsedExerciseIds : collapsedExerciseIds // ignore: cast_nullable_to_non_nullable
+as Set<String>,collapsedGroupIds: null == collapsedGroupIds ? _self.collapsedGroupIds : collapsedGroupIds // ignore: cast_nullable_to_non_nullable
+as Set<String>,
   ));
 }
 
@@ -819,10 +822,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int currentStep,  CreationMethod? method,  String planName,  WorkoutGoal goal,  PlanDifficulty difficulty,  SplitType splitType,  int? durationWeeks,  int? targetWorkoutMinutes,  List<WizardWorkout> workouts,  bool isLoading,  String? error,  bool isTemplate,  String? templateId,  String? studentId,  String? editingPlanId,  String? basePlanId,  PeriodizationPhase? phaseType,  bool includeDiet,  DietType? dietType,  int? dailyCalories,  int? proteinGrams,  int? carbsGrams,  int? fatGrams,  int? mealsPerDay,  String? dietNotes)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int currentStep,  CreationMethod? method,  String planName,  WorkoutGoal goal,  PlanDifficulty difficulty,  SplitType splitType,  int? durationWeeks,  int? targetWorkoutMinutes,  List<WizardWorkout> workouts,  bool isLoading,  String? error,  bool isTemplate,  String? templateId,  String? studentId,  String? editingPlanId,  String? basePlanId,  PeriodizationPhase? phaseType,  bool includeDiet,  DietType? dietType,  int? dailyCalories,  int? proteinGrams,  int? carbsGrams,  int? fatGrams,  int? mealsPerDay,  String? dietNotes,  Set<String> collapsedExerciseIds,  Set<String> collapsedGroupIds)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlanWizardState() when $default != null:
-return $default(_that.currentStep,_that.method,_that.planName,_that.goal,_that.difficulty,_that.splitType,_that.durationWeeks,_that.targetWorkoutMinutes,_that.workouts,_that.isLoading,_that.error,_that.isTemplate,_that.templateId,_that.studentId,_that.editingPlanId,_that.basePlanId,_that.phaseType,_that.includeDiet,_that.dietType,_that.dailyCalories,_that.proteinGrams,_that.carbsGrams,_that.fatGrams,_that.mealsPerDay,_that.dietNotes);case _:
+return $default(_that.currentStep,_that.method,_that.planName,_that.goal,_that.difficulty,_that.splitType,_that.durationWeeks,_that.targetWorkoutMinutes,_that.workouts,_that.isLoading,_that.error,_that.isTemplate,_that.templateId,_that.studentId,_that.editingPlanId,_that.basePlanId,_that.phaseType,_that.includeDiet,_that.dietType,_that.dailyCalories,_that.proteinGrams,_that.carbsGrams,_that.fatGrams,_that.mealsPerDay,_that.dietNotes,_that.collapsedExerciseIds,_that.collapsedGroupIds);case _:
   return orElse();
 
 }
@@ -840,10 +843,10 @@ return $default(_that.currentStep,_that.method,_that.planName,_that.goal,_that.d
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int currentStep,  CreationMethod? method,  String planName,  WorkoutGoal goal,  PlanDifficulty difficulty,  SplitType splitType,  int? durationWeeks,  int? targetWorkoutMinutes,  List<WizardWorkout> workouts,  bool isLoading,  String? error,  bool isTemplate,  String? templateId,  String? studentId,  String? editingPlanId,  String? basePlanId,  PeriodizationPhase? phaseType,  bool includeDiet,  DietType? dietType,  int? dailyCalories,  int? proteinGrams,  int? carbsGrams,  int? fatGrams,  int? mealsPerDay,  String? dietNotes)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int currentStep,  CreationMethod? method,  String planName,  WorkoutGoal goal,  PlanDifficulty difficulty,  SplitType splitType,  int? durationWeeks,  int? targetWorkoutMinutes,  List<WizardWorkout> workouts,  bool isLoading,  String? error,  bool isTemplate,  String? templateId,  String? studentId,  String? editingPlanId,  String? basePlanId,  PeriodizationPhase? phaseType,  bool includeDiet,  DietType? dietType,  int? dailyCalories,  int? proteinGrams,  int? carbsGrams,  int? fatGrams,  int? mealsPerDay,  String? dietNotes,  Set<String> collapsedExerciseIds,  Set<String> collapsedGroupIds)  $default,) {final _that = this;
 switch (_that) {
 case _PlanWizardState():
-return $default(_that.currentStep,_that.method,_that.planName,_that.goal,_that.difficulty,_that.splitType,_that.durationWeeks,_that.targetWorkoutMinutes,_that.workouts,_that.isLoading,_that.error,_that.isTemplate,_that.templateId,_that.studentId,_that.editingPlanId,_that.basePlanId,_that.phaseType,_that.includeDiet,_that.dietType,_that.dailyCalories,_that.proteinGrams,_that.carbsGrams,_that.fatGrams,_that.mealsPerDay,_that.dietNotes);}
+return $default(_that.currentStep,_that.method,_that.planName,_that.goal,_that.difficulty,_that.splitType,_that.durationWeeks,_that.targetWorkoutMinutes,_that.workouts,_that.isLoading,_that.error,_that.isTemplate,_that.templateId,_that.studentId,_that.editingPlanId,_that.basePlanId,_that.phaseType,_that.includeDiet,_that.dietType,_that.dailyCalories,_that.proteinGrams,_that.carbsGrams,_that.fatGrams,_that.mealsPerDay,_that.dietNotes,_that.collapsedExerciseIds,_that.collapsedGroupIds);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -857,10 +860,10 @@ return $default(_that.currentStep,_that.method,_that.planName,_that.goal,_that.d
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int currentStep,  CreationMethod? method,  String planName,  WorkoutGoal goal,  PlanDifficulty difficulty,  SplitType splitType,  int? durationWeeks,  int? targetWorkoutMinutes,  List<WizardWorkout> workouts,  bool isLoading,  String? error,  bool isTemplate,  String? templateId,  String? studentId,  String? editingPlanId,  String? basePlanId,  PeriodizationPhase? phaseType,  bool includeDiet,  DietType? dietType,  int? dailyCalories,  int? proteinGrams,  int? carbsGrams,  int? fatGrams,  int? mealsPerDay,  String? dietNotes)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int currentStep,  CreationMethod? method,  String planName,  WorkoutGoal goal,  PlanDifficulty difficulty,  SplitType splitType,  int? durationWeeks,  int? targetWorkoutMinutes,  List<WizardWorkout> workouts,  bool isLoading,  String? error,  bool isTemplate,  String? templateId,  String? studentId,  String? editingPlanId,  String? basePlanId,  PeriodizationPhase? phaseType,  bool includeDiet,  DietType? dietType,  int? dailyCalories,  int? proteinGrams,  int? carbsGrams,  int? fatGrams,  int? mealsPerDay,  String? dietNotes,  Set<String> collapsedExerciseIds,  Set<String> collapsedGroupIds)?  $default,) {final _that = this;
 switch (_that) {
 case _PlanWizardState() when $default != null:
-return $default(_that.currentStep,_that.method,_that.planName,_that.goal,_that.difficulty,_that.splitType,_that.durationWeeks,_that.targetWorkoutMinutes,_that.workouts,_that.isLoading,_that.error,_that.isTemplate,_that.templateId,_that.studentId,_that.editingPlanId,_that.basePlanId,_that.phaseType,_that.includeDiet,_that.dietType,_that.dailyCalories,_that.proteinGrams,_that.carbsGrams,_that.fatGrams,_that.mealsPerDay,_that.dietNotes);case _:
+return $default(_that.currentStep,_that.method,_that.planName,_that.goal,_that.difficulty,_that.splitType,_that.durationWeeks,_that.targetWorkoutMinutes,_that.workouts,_that.isLoading,_that.error,_that.isTemplate,_that.templateId,_that.studentId,_that.editingPlanId,_that.basePlanId,_that.phaseType,_that.includeDiet,_that.dietType,_that.dailyCalories,_that.proteinGrams,_that.carbsGrams,_that.fatGrams,_that.mealsPerDay,_that.dietNotes,_that.collapsedExerciseIds,_that.collapsedGroupIds);case _:
   return null;
 
 }
@@ -872,7 +875,7 @@ return $default(_that.currentStep,_that.method,_that.planName,_that.goal,_that.d
 
 
 class _PlanWizardState extends PlanWizardState {
-  const _PlanWizardState({this.currentStep = 0, this.method, this.planName = '', this.goal = WorkoutGoal.hypertrophy, this.difficulty = PlanDifficulty.intermediate, this.splitType = SplitType.abc, this.durationWeeks, this.targetWorkoutMinutes, final  List<WizardWorkout> workouts = const [], this.isLoading = false, this.error, this.isTemplate = false, this.templateId, this.studentId, this.editingPlanId, this.basePlanId, this.phaseType, this.includeDiet = false, this.dietType, this.dailyCalories, this.proteinGrams, this.carbsGrams, this.fatGrams, this.mealsPerDay, this.dietNotes}): _workouts = workouts,super._();
+  const _PlanWizardState({this.currentStep = 0, this.method, this.planName = '', this.goal = WorkoutGoal.hypertrophy, this.difficulty = PlanDifficulty.intermediate, this.splitType = SplitType.abc, this.durationWeeks, this.targetWorkoutMinutes, final  List<WizardWorkout> workouts = const [], this.isLoading = false, this.error, this.isTemplate = false, this.templateId, this.studentId, this.editingPlanId, this.basePlanId, this.phaseType, this.includeDiet = false, this.dietType, this.dailyCalories, this.proteinGrams, this.carbsGrams, this.fatGrams, this.mealsPerDay, this.dietNotes, final  Set<String> collapsedExerciseIds = const {}, final  Set<String> collapsedGroupIds = const {}}): _workouts = workouts,_collapsedExerciseIds = collapsedExerciseIds,_collapsedGroupIds = collapsedGroupIds,super._();
   
 
 @override@JsonKey() final  int currentStep;
@@ -912,6 +915,22 @@ class _PlanWizardState extends PlanWizardState {
 @override final  int? fatGrams;
 @override final  int? mealsPerDay;
 @override final  String? dietNotes;
+// UI state for collapse/expand (survives reordering)
+ final  Set<String> _collapsedExerciseIds;
+// UI state for collapse/expand (survives reordering)
+@override@JsonKey() Set<String> get collapsedExerciseIds {
+  if (_collapsedExerciseIds is EqualUnmodifiableSetView) return _collapsedExerciseIds;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableSetView(_collapsedExerciseIds);
+}
+
+ final  Set<String> _collapsedGroupIds;
+@override@JsonKey() Set<String> get collapsedGroupIds {
+  if (_collapsedGroupIds is EqualUnmodifiableSetView) return _collapsedGroupIds;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableSetView(_collapsedGroupIds);
+}
+
 
 /// Create a copy of PlanWizardState
 /// with the given fields replaced by the non-null parameter values.
@@ -923,16 +942,16 @@ _$PlanWizardStateCopyWith<_PlanWizardState> get copyWith => __$PlanWizardStateCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlanWizardState&&(identical(other.currentStep, currentStep) || other.currentStep == currentStep)&&(identical(other.method, method) || other.method == method)&&(identical(other.planName, planName) || other.planName == planName)&&(identical(other.goal, goal) || other.goal == goal)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.splitType, splitType) || other.splitType == splitType)&&(identical(other.durationWeeks, durationWeeks) || other.durationWeeks == durationWeeks)&&(identical(other.targetWorkoutMinutes, targetWorkoutMinutes) || other.targetWorkoutMinutes == targetWorkoutMinutes)&&const DeepCollectionEquality().equals(other._workouts, _workouts)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.error, error) || other.error == error)&&(identical(other.isTemplate, isTemplate) || other.isTemplate == isTemplate)&&(identical(other.templateId, templateId) || other.templateId == templateId)&&(identical(other.studentId, studentId) || other.studentId == studentId)&&(identical(other.editingPlanId, editingPlanId) || other.editingPlanId == editingPlanId)&&(identical(other.basePlanId, basePlanId) || other.basePlanId == basePlanId)&&(identical(other.phaseType, phaseType) || other.phaseType == phaseType)&&(identical(other.includeDiet, includeDiet) || other.includeDiet == includeDiet)&&(identical(other.dietType, dietType) || other.dietType == dietType)&&(identical(other.dailyCalories, dailyCalories) || other.dailyCalories == dailyCalories)&&(identical(other.proteinGrams, proteinGrams) || other.proteinGrams == proteinGrams)&&(identical(other.carbsGrams, carbsGrams) || other.carbsGrams == carbsGrams)&&(identical(other.fatGrams, fatGrams) || other.fatGrams == fatGrams)&&(identical(other.mealsPerDay, mealsPerDay) || other.mealsPerDay == mealsPerDay)&&(identical(other.dietNotes, dietNotes) || other.dietNotes == dietNotes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _PlanWizardState&&(identical(other.currentStep, currentStep) || other.currentStep == currentStep)&&(identical(other.method, method) || other.method == method)&&(identical(other.planName, planName) || other.planName == planName)&&(identical(other.goal, goal) || other.goal == goal)&&(identical(other.difficulty, difficulty) || other.difficulty == difficulty)&&(identical(other.splitType, splitType) || other.splitType == splitType)&&(identical(other.durationWeeks, durationWeeks) || other.durationWeeks == durationWeeks)&&(identical(other.targetWorkoutMinutes, targetWorkoutMinutes) || other.targetWorkoutMinutes == targetWorkoutMinutes)&&const DeepCollectionEquality().equals(other._workouts, _workouts)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.error, error) || other.error == error)&&(identical(other.isTemplate, isTemplate) || other.isTemplate == isTemplate)&&(identical(other.templateId, templateId) || other.templateId == templateId)&&(identical(other.studentId, studentId) || other.studentId == studentId)&&(identical(other.editingPlanId, editingPlanId) || other.editingPlanId == editingPlanId)&&(identical(other.basePlanId, basePlanId) || other.basePlanId == basePlanId)&&(identical(other.phaseType, phaseType) || other.phaseType == phaseType)&&(identical(other.includeDiet, includeDiet) || other.includeDiet == includeDiet)&&(identical(other.dietType, dietType) || other.dietType == dietType)&&(identical(other.dailyCalories, dailyCalories) || other.dailyCalories == dailyCalories)&&(identical(other.proteinGrams, proteinGrams) || other.proteinGrams == proteinGrams)&&(identical(other.carbsGrams, carbsGrams) || other.carbsGrams == carbsGrams)&&(identical(other.fatGrams, fatGrams) || other.fatGrams == fatGrams)&&(identical(other.mealsPerDay, mealsPerDay) || other.mealsPerDay == mealsPerDay)&&(identical(other.dietNotes, dietNotes) || other.dietNotes == dietNotes)&&const DeepCollectionEquality().equals(other._collapsedExerciseIds, _collapsedExerciseIds)&&const DeepCollectionEquality().equals(other._collapsedGroupIds, _collapsedGroupIds));
 }
 
 
 @override
-int get hashCode => Object.hashAll([runtimeType,currentStep,method,planName,goal,difficulty,splitType,durationWeeks,targetWorkoutMinutes,const DeepCollectionEquality().hash(_workouts),isLoading,error,isTemplate,templateId,studentId,editingPlanId,basePlanId,phaseType,includeDiet,dietType,dailyCalories,proteinGrams,carbsGrams,fatGrams,mealsPerDay,dietNotes]);
+int get hashCode => Object.hashAll([runtimeType,currentStep,method,planName,goal,difficulty,splitType,durationWeeks,targetWorkoutMinutes,const DeepCollectionEquality().hash(_workouts),isLoading,error,isTemplate,templateId,studentId,editingPlanId,basePlanId,phaseType,includeDiet,dietType,dailyCalories,proteinGrams,carbsGrams,fatGrams,mealsPerDay,dietNotes,const DeepCollectionEquality().hash(_collapsedExerciseIds),const DeepCollectionEquality().hash(_collapsedGroupIds)]);
 
 @override
 String toString() {
-  return 'PlanWizardState(currentStep: $currentStep, method: $method, planName: $planName, goal: $goal, difficulty: $difficulty, splitType: $splitType, durationWeeks: $durationWeeks, targetWorkoutMinutes: $targetWorkoutMinutes, workouts: $workouts, isLoading: $isLoading, error: $error, isTemplate: $isTemplate, templateId: $templateId, studentId: $studentId, editingPlanId: $editingPlanId, basePlanId: $basePlanId, phaseType: $phaseType, includeDiet: $includeDiet, dietType: $dietType, dailyCalories: $dailyCalories, proteinGrams: $proteinGrams, carbsGrams: $carbsGrams, fatGrams: $fatGrams, mealsPerDay: $mealsPerDay, dietNotes: $dietNotes)';
+  return 'PlanWizardState(currentStep: $currentStep, method: $method, planName: $planName, goal: $goal, difficulty: $difficulty, splitType: $splitType, durationWeeks: $durationWeeks, targetWorkoutMinutes: $targetWorkoutMinutes, workouts: $workouts, isLoading: $isLoading, error: $error, isTemplate: $isTemplate, templateId: $templateId, studentId: $studentId, editingPlanId: $editingPlanId, basePlanId: $basePlanId, phaseType: $phaseType, includeDiet: $includeDiet, dietType: $dietType, dailyCalories: $dailyCalories, proteinGrams: $proteinGrams, carbsGrams: $carbsGrams, fatGrams: $fatGrams, mealsPerDay: $mealsPerDay, dietNotes: $dietNotes, collapsedExerciseIds: $collapsedExerciseIds, collapsedGroupIds: $collapsedGroupIds)';
 }
 
 
@@ -943,7 +962,7 @@ abstract mixin class _$PlanWizardStateCopyWith<$Res> implements $PlanWizardState
   factory _$PlanWizardStateCopyWith(_PlanWizardState value, $Res Function(_PlanWizardState) _then) = __$PlanWizardStateCopyWithImpl;
 @override @useResult
 $Res call({
- int currentStep, CreationMethod? method, String planName, WorkoutGoal goal, PlanDifficulty difficulty, SplitType splitType, int? durationWeeks, int? targetWorkoutMinutes, List<WizardWorkout> workouts, bool isLoading, String? error, bool isTemplate, String? templateId, String? studentId, String? editingPlanId, String? basePlanId, PeriodizationPhase? phaseType, bool includeDiet, DietType? dietType, int? dailyCalories, int? proteinGrams, int? carbsGrams, int? fatGrams, int? mealsPerDay, String? dietNotes
+ int currentStep, CreationMethod? method, String planName, WorkoutGoal goal, PlanDifficulty difficulty, SplitType splitType, int? durationWeeks, int? targetWorkoutMinutes, List<WizardWorkout> workouts, bool isLoading, String? error, bool isTemplate, String? templateId, String? studentId, String? editingPlanId, String? basePlanId, PeriodizationPhase? phaseType, bool includeDiet, DietType? dietType, int? dailyCalories, int? proteinGrams, int? carbsGrams, int? fatGrams, int? mealsPerDay, String? dietNotes, Set<String> collapsedExerciseIds, Set<String> collapsedGroupIds
 });
 
 
@@ -960,7 +979,7 @@ class __$PlanWizardStateCopyWithImpl<$Res>
 
 /// Create a copy of PlanWizardState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? currentStep = null,Object? method = freezed,Object? planName = null,Object? goal = null,Object? difficulty = null,Object? splitType = null,Object? durationWeeks = freezed,Object? targetWorkoutMinutes = freezed,Object? workouts = null,Object? isLoading = null,Object? error = freezed,Object? isTemplate = null,Object? templateId = freezed,Object? studentId = freezed,Object? editingPlanId = freezed,Object? basePlanId = freezed,Object? phaseType = freezed,Object? includeDiet = null,Object? dietType = freezed,Object? dailyCalories = freezed,Object? proteinGrams = freezed,Object? carbsGrams = freezed,Object? fatGrams = freezed,Object? mealsPerDay = freezed,Object? dietNotes = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? currentStep = null,Object? method = freezed,Object? planName = null,Object? goal = null,Object? difficulty = null,Object? splitType = null,Object? durationWeeks = freezed,Object? targetWorkoutMinutes = freezed,Object? workouts = null,Object? isLoading = null,Object? error = freezed,Object? isTemplate = null,Object? templateId = freezed,Object? studentId = freezed,Object? editingPlanId = freezed,Object? basePlanId = freezed,Object? phaseType = freezed,Object? includeDiet = null,Object? dietType = freezed,Object? dailyCalories = freezed,Object? proteinGrams = freezed,Object? carbsGrams = freezed,Object? fatGrams = freezed,Object? mealsPerDay = freezed,Object? dietNotes = freezed,Object? collapsedExerciseIds = null,Object? collapsedGroupIds = null,}) {
   return _then(_PlanWizardState(
 currentStep: null == currentStep ? _self.currentStep : currentStep // ignore: cast_nullable_to_non_nullable
 as int,method: freezed == method ? _self.method : method // ignore: cast_nullable_to_non_nullable
@@ -987,7 +1006,9 @@ as int?,carbsGrams: freezed == carbsGrams ? _self.carbsGrams : carbsGrams // ign
 as int?,fatGrams: freezed == fatGrams ? _self.fatGrams : fatGrams // ignore: cast_nullable_to_non_nullable
 as int?,mealsPerDay: freezed == mealsPerDay ? _self.mealsPerDay : mealsPerDay // ignore: cast_nullable_to_non_nullable
 as int?,dietNotes: freezed == dietNotes ? _self.dietNotes : dietNotes // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,collapsedExerciseIds: null == collapsedExerciseIds ? _self._collapsedExerciseIds : collapsedExerciseIds // ignore: cast_nullable_to_non_nullable
+as Set<String>,collapsedGroupIds: null == collapsedGroupIds ? _self._collapsedGroupIds : collapsedGroupIds // ignore: cast_nullable_to_non_nullable
+as Set<String>,
   ));
 }
 

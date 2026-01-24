@@ -280,6 +280,9 @@ sealed class PlanWizardState with _$PlanWizardState {
     int? fatGrams,
     int? mealsPerDay,
     String? dietNotes,
+    // UI state for collapse/expand (survives reordering)
+    @Default({}) Set<String> collapsedExerciseIds,
+    @Default({}) Set<String> collapsedGroupIds,
   }) = _PlanWizardState;
 
   /// Check if we're in edit mode
@@ -1279,7 +1282,15 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
       }
       return w;
     }).toList();
-    state = state.copyWith(workouts: workouts);
+
+    // Clean up collapsed state for removed exercise
+    final collapsedExercises = Set<String>.from(state.collapsedExerciseIds);
+    collapsedExercises.remove(exerciseId);
+
+    state = state.copyWith(
+      workouts: workouts,
+      collapsedExerciseIds: collapsedExercises,
+    );
   }
 
   void updateExercise(
@@ -1297,6 +1308,40 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
       return w;
     }).toList();
     state = state.copyWith(workouts: workouts);
+  }
+
+  // ==================== Collapse/Expand State ====================
+
+  /// Toggle expand/collapse state for an individual exercise
+  void toggleExerciseExpanded(String exerciseId) {
+    final collapsed = Set<String>.from(state.collapsedExerciseIds);
+    if (collapsed.contains(exerciseId)) {
+      collapsed.remove(exerciseId);
+    } else {
+      collapsed.add(exerciseId);
+    }
+    state = state.copyWith(collapsedExerciseIds: collapsed);
+  }
+
+  /// Toggle expand/collapse state for an exercise group
+  void toggleGroupExpanded(String groupId) {
+    final collapsed = Set<String>.from(state.collapsedGroupIds);
+    if (collapsed.contains(groupId)) {
+      collapsed.remove(groupId);
+    } else {
+      collapsed.add(groupId);
+    }
+    state = state.copyWith(collapsedGroupIds: collapsed);
+  }
+
+  /// Check if an exercise is expanded (not in collapsed set)
+  bool isExerciseExpanded(String exerciseId) {
+    return !state.collapsedExerciseIds.contains(exerciseId);
+  }
+
+  /// Check if a group is expanded (not in collapsed set)
+  bool isGroupExpanded(String groupId) {
+    return !state.collapsedGroupIds.contains(groupId);
   }
 
   /// Reorder exercises using UI indices (where groups count as 1 item).
@@ -1762,11 +1807,26 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
       }
       return w;
     }).toList();
-    state = state.copyWith(workouts: workouts);
+
+    // Clean up collapsed group state
+    final collapsedGroups = Set<String>.from(state.collapsedGroupIds);
+    collapsedGroups.remove(groupId);
+
+    state = state.copyWith(
+      workouts: workouts,
+      collapsedGroupIds: collapsedGroups,
+    );
   }
 
   /// Delete an entire exercise group (removes all exercises in the group)
   void deleteExerciseGroup(String workoutId, String groupId) {
+    // Get exercise IDs in this group before removing
+    final workout = state.workouts.firstWhere((w) => w.id == workoutId);
+    final exerciseIdsToRemove = workout.exercises
+        .where((e) => e.exerciseGroupId == groupId)
+        .map((e) => e.id)
+        .toSet();
+
     final workouts = state.workouts.map((w) {
       if (w.id == workoutId) {
         // Remove all exercises with this group ID
@@ -1775,7 +1835,18 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
       }
       return w;
     }).toList();
-    state = state.copyWith(workouts: workouts);
+
+    // Clean up collapsed state for removed group and its exercises
+    final collapsedGroups = Set<String>.from(state.collapsedGroupIds);
+    collapsedGroups.remove(groupId);
+    final collapsedExercises = Set<String>.from(state.collapsedExerciseIds);
+    collapsedExercises.removeAll(exerciseIdsToRemove);
+
+    state = state.copyWith(
+      workouts: workouts,
+      collapsedGroupIds: collapsedGroups,
+      collapsedExerciseIds: collapsedExercises,
+    );
   }
 
   /// Add an exercise to an existing group

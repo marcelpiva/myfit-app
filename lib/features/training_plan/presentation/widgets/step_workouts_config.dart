@@ -1796,12 +1796,14 @@ class _ExerciseGroupCard extends ConsumerStatefulWidget {
 }
 
 class _ExerciseGroupCardState extends ConsumerState<_ExerciseGroupCard> {
-  bool _isExpanded = true;
-
   @override
   Widget build(BuildContext context) {
     if (widget.exercises.isEmpty) return const SizedBox.shrink();
 
+    // Get expanded state from provider (survives reordering)
+    final isExpanded = ref.watch(
+      planWizardProvider.select((s) => !s.collapsedGroupIds.contains(widget.groupId)),
+    );
     final notifier = ref.read(planWizardProvider.notifier);
     final leader = widget.exercises.first;
     final techniqueType = leader.techniqueType;
@@ -1829,15 +1831,13 @@ class _ExerciseGroupCardState extends ConsumerState<_ExerciseGroupCard> {
           GestureDetector(
             onTap: () {
               HapticUtils.selectionClick();
-              setState(() {
-                _isExpanded = !_isExpanded;
-              });
+              notifier.toggleGroupExpanded(widget.groupId);
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               decoration: BoxDecoration(
                 color: techniqueColor.withValues(alpha: 0.15),
-                borderRadius: _isExpanded
+                borderRadius: isExpanded
                     ? const BorderRadius.only(
                         topLeft: Radius.circular(8),
                         topRight: Radius.circular(8),
@@ -1848,7 +1848,7 @@ class _ExerciseGroupCardState extends ConsumerState<_ExerciseGroupCard> {
                 children: [
                   // Expand/collapse icon
                   AnimatedRotation(
-                    turns: _isExpanded ? 0.25 : 0,
+                    turns: isExpanded ? 0.25 : 0,
                     duration: const Duration(milliseconds: 200),
                     child: Icon(
                       LucideIcons.chevronRight,
@@ -1873,14 +1873,14 @@ class _ExerciseGroupCardState extends ConsumerState<_ExerciseGroupCard> {
                   ),
                   const Spacer(),
                   // Drag handle when collapsed
-                  if (!_isExpanded)
+                  if (!isExpanded)
                     Icon(
                       LucideIcons.gripVertical,
                       size: 18,
                       color: techniqueColor.withValues(alpha: 0.6),
                     ),
                   // Action icons (only show when expanded)
-                  if (_isExpanded) ...[
+                  if (isExpanded) ...[
                     GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () => _showAddExerciseToGroup(context, ref, techniqueColor),
@@ -1990,7 +1990,7 @@ class _ExerciseGroupCardState extends ConsumerState<_ExerciseGroupCard> {
               ),
             ),
             secondChild: const SizedBox.shrink(),
-            crossFadeState: _isExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+            crossFadeState: isExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
             duration: const Duration(milliseconds: 200),
           ),
         ],
@@ -3002,8 +3002,6 @@ class _ExerciseItem extends ConsumerStatefulWidget {
 }
 
 class _ExerciseItemState extends ConsumerState<_ExerciseItem> {
-  bool _isExpanded = true;
-
   void _showExerciseDetails(BuildContext context, String exerciseId) async {
     final service = WorkoutService();
 
@@ -4715,6 +4713,9 @@ class _ExerciseItemState extends ConsumerState<_ExerciseItem> {
     final notifier = ref.read(planWizardProvider.notifier);
     final otherWorkouts = state.workouts.where((w) => w.id != widget.workoutId).toList();
 
+    // Get expanded state from provider (survives reordering)
+    final isExpanded = !state.collapsedExerciseIds.contains(widget.exercise.id);
+
     // Check if this is a single-exercise technique (dropset, rest-pause, etc.)
     final techniqueColor = ExerciseTheme.getColor(widget.exercise.techniqueType);
     final hasTechnique = widget.exercise.techniqueType != TechniqueType.normal;
@@ -4748,15 +4749,13 @@ class _ExerciseItemState extends ConsumerState<_ExerciseItem> {
             GestureDetector(
               onTap: () {
                 HapticUtils.selectionClick();
-                setState(() {
-                  _isExpanded = !_isExpanded;
-                });
+                notifier.toggleExerciseExpanded(widget.exercise.id);
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                 decoration: BoxDecoration(
                   color: accentColor.withValues(alpha: 0.15),
-                  borderRadius: _isExpanded
+                  borderRadius: isExpanded
                       ? const BorderRadius.only(
                           topLeft: Radius.circular(8),
                           topRight: Radius.circular(8),
@@ -4767,7 +4766,7 @@ class _ExerciseItemState extends ConsumerState<_ExerciseItem> {
                   children: [
                     // Expand/collapse icon
                     AnimatedRotation(
-                      turns: _isExpanded ? 0.25 : 0,
+                      turns: isExpanded ? 0.25 : 0,
                       duration: const Duration(milliseconds: 200),
                       child: Icon(
                         LucideIcons.chevronRight,
@@ -4797,14 +4796,14 @@ class _ExerciseItemState extends ConsumerState<_ExerciseItem> {
                       ),
                     ),
                     // Drag handle when collapsed
-                    if (!_isExpanded)
+                    if (!isExpanded)
                       Icon(
                         LucideIcons.gripVertical,
                         size: 18,
                         color: accentColor.withValues(alpha: 0.6),
                       ),
                     // Action icons only when expanded
-                    if (_isExpanded) ...[
+                    if (isExpanded) ...[
                       // Link button (only for simple strength exercises - no technique, no group, no cardio)
                       if (widget.exercise.exerciseGroupId == null && !hasTechnique && !isCardio)
                         GestureDetector(
@@ -5118,7 +5117,7 @@ class _ExerciseItemState extends ConsumerState<_ExerciseItem> {
                 ),
               ),
               secondChild: const SizedBox.shrink(),
-              crossFadeState: _isExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+              crossFadeState: isExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
               duration: const Duration(milliseconds: 200),
             ),
           ],
