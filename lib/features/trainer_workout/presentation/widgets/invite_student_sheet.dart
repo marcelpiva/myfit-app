@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/error/api_exceptions.dart';
 import '../../../../core/providers/context_provider.dart';
 import '../../../../core/services/organization_service.dart';
 
@@ -79,6 +80,66 @@ class _InviteStudentSheetContentState extends State<_InviteStudentSheetContent> 
     super.dispose();
   }
 
+  void _showReactivateDialog(String membershipId) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Aluno Inativo'),
+        content: const Text(
+          'Este aluno já está em seus alunos, mas está inativo. Deseja reativá-lo?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await _reactivateMember(membershipId);
+            },
+            child: const Text('Reativar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _reactivateMember(String membershipId) async {
+    setState(() => _isLoading = true);
+    try {
+      final orgService = OrganizationService();
+      await orgService.reactivateMember(widget.orgId, membershipId);
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(LucideIcons.checkCircle, color: Colors.white, size: 18),
+                SizedBox(width: 12),
+                Text('Aluno reativado com sucesso'),
+              ],
+            ),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        widget.onSuccess?.call();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao reativar aluno: $e'),
+            backgroundColor: AppColors.destructive,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _sendInvite() async {
     // Validate email
     final email = _emailController.text.trim();
@@ -139,6 +200,43 @@ class _InviteStudentSheetContentState extends State<_InviteStudentSheetContent> 
       if (mounted) {
         setState(() => _isLoading = false);
 
+        // Check for structured error response with code
+        String? errorCode;
+        String? membershipId;
+        if (e is ValidationException) {
+          // Try to extract code from detail
+          final detail = e.fieldErrors;
+          if (detail != null && detail.containsKey('code')) {
+            errorCode = detail['code']?.firstOrNull;
+          }
+          if (detail != null && detail.containsKey('membership_id')) {
+            membershipId = detail['membership_id']?.firstOrNull;
+          }
+        }
+
+        // Handle specific error codes from backend
+        if (errorCode == 'ALREADY_MEMBER') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Você já tem esse aluno'),
+              backgroundColor: AppColors.warning,
+            ),
+          );
+          return;
+        } else if (errorCode == 'PENDING_INVITE') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Este aluno já possui um convite pendente'),
+              backgroundColor: AppColors.warning,
+            ),
+          );
+          return;
+        } else if (errorCode == 'INACTIVE_MEMBER' && membershipId != null) {
+          // Show dialog to reactivate
+          _showReactivateDialog(membershipId);
+          return;
+        }
+
         // Extract a more user-friendly error message
         String errorMsg = 'Erro desconhecido';
         if (e.toString().contains('401')) {
@@ -147,8 +245,12 @@ class _InviteStudentSheetContentState extends State<_InviteStudentSheetContent> 
           errorMsg = 'Você não tem permissão para convidar alunos.';
         } else if (e.toString().contains('404')) {
           errorMsg = 'Organização não encontrada.';
-        } else if (e.toString().contains('409')) {
-          errorMsg = 'Este email já foi convidado.';
+        } else if (e.toString().contains('409') || e.toString().contains('ALREADY_MEMBER')) {
+          errorMsg = 'Você já tem esse aluno.';
+        } else if (e.toString().contains('PENDING_INVITE')) {
+          errorMsg = 'Este aluno já possui um convite pendente.';
+        } else if (e.toString().contains('INACTIVE_MEMBER')) {
+          errorMsg = 'Este aluno está inativo. Deseja reativá-lo?';
         } else {
           errorMsg = e.toString();
         }
