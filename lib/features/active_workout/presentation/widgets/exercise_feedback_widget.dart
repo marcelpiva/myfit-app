@@ -382,11 +382,12 @@ Future<void> showExerciseFeedbackDialog(
 
   return showModalBottomSheet(
     context: context,
+    isScrollControlled: true,
     backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
-    builder: (ctx) => Padding(
+    builder: (ctx) => SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
         24,
         20,
