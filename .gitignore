@@ -51,3 +51,4 @@ ios/fastlane/AuthKey.p8
 .env
 .env.*
 !.env.example
+android/app/firebase-credentials.json
