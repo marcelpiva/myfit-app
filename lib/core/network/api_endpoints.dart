@@ -211,6 +211,10 @@ class ApiEndpoints {
   static const String notificationsReadAll = '/notifications/read-all';
   static const String notificationsUnreadCount = '/notifications/unread-count';
 
+  // ==================== Push Notifications / Devices ====================
+  static const String registerDevice = '/notifications/devices';
+  static String unregisterDevice(String token) => '/notifications/devices/$token';
+
   // ==================== Schedule/Appointments ====================
   static const String schedule = '/schedule';
   static String scheduleDay(String date) => '/schedule/day/$date';

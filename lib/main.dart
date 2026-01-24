@@ -7,6 +7,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'app/app.dart';
 import 'core/config/environment.dart';
 import 'core/observability/observability.dart';
+import 'core/services/push_notification_service.dart';
 import 'core/storage/token_storage.dart';
 
 void main() async {
@@ -17,6 +18,11 @@ void main() async {
 
   // Initialize token storage
   await TokenStorage.init();
+
+  // Initialize push notifications (Firebase)
+  if (!kIsWeb) {
+    await PushNotificationService().init();
+  }
 
   // Configure timeago locales
   timeago.setLocaleMessages('pt_BR', timeago.PtBrMessages());

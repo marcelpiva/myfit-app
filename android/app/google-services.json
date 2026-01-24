@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "392447887985",
+    "project_id": "myfitplatform-7fa7b",
+    "storage_bucket": "myfitplatform-7fa7b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:392447887985:android:31b26b0bac547edd6aa9d0",
+        "android_client_info": {
+          "package_name": "com.marcelpiva.myfitplatform"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCM2yyfid5TMS7XqiTIwv1LY9nA6l68Uas"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

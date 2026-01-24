@@ -2,14 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>pt-BR</string>
-	<key>CFBundleLocalizations</key>
-	<array>
-		<string>pt-BR</string>
-		<string>en</string>
-		<string>es</string>
-	</array>
 	<key>CFBundleDisplayName</key>
 	<string>My Fit</string>
 	<key>CFBundleExecutable</key>
@@ -18,6 +14,12 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>pt-BR</string>
+		<string>en</string>
+		<string>es</string>
+	</array>
 	<key>CFBundleName</key>
 	<string>My Fit</string>
 	<key>CFBundlePackageType</key>
@@ -26,10 +28,50 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.myfit.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>myfit</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
-	<string>202601240925</string>
+	<string>202601241441</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>MyFit precisa acessar a câmera para escanear QR Codes de check-in</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>MyFit usa Face ID para um login rápido e seguro</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>MyFit precisa acessar a rede local para conectar ao servidor de desenvolvimento</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>MyFit usa sua localização para check-in automático na academia</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>MyFit usa sua localização para check-in automático na academia</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>MyFit precisa salvar fotos de progresso na sua galeria</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>MyFit precisa acessar suas fotos para definir sua foto de perfil</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -46,51 +88,6 @@
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	<!-- Camera permissions for QR Scanner -->
-	<key>NSCameraUsageDescription</key>
-	<string>MyFit precisa acessar a câmera para escanear QR Codes de check-in</string>
-	<!-- Photo Library permissions for profile photos -->
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>MyFit precisa acessar suas fotos para definir sua foto de perfil</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>MyFit precisa salvar fotos de progresso na sua galeria</string>
-	<!-- Location permissions for check-in -->
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>MyFit usa sua localização para check-in automático na academia</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>MyFit usa sua localização para check-in automático na academia</string>
-	<!-- Local network access for development -->
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>MyFit precisa acessar a rede local para conectar ao servidor de desenvolvimento</string>
-	<!-- Allow HTTP connections for development -->
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-		<key>NSAllowsLocalNetworking</key>
-		<true/>
-	</dict>
-	<!-- Biometric authentication (Face ID) -->
-	<key>NSFaceIDUsageDescription</key>
-	<string>MyFit usa Face ID para um login rápido e seguro</string>
-	<!-- Deep linking URL schemes -->
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>com.myfit.app</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>myfit</string>
-			</array>
-		</dict>
 	</array>
 </dict>
 </plist>
