@@ -77,7 +77,7 @@ class _WorkoutDetailPageState extends ConsumerState<WorkoutDetailPage>
                 color: AppColors.primary,
               ),
               const SizedBox(height: 16),
-              Text('Carregando: ${widget.workoutId}'),
+              const Text('Carregando treino...'),
             ],
           ),
         ),
