@@ -7,6 +7,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/exercise_theme.dart';
+import '../../../../core/services/timer_sound_service.dart';
+import '../../../../core/services/workout_service.dart';
 import '../../../training_plan/domain/models/training_plan.dart';
 import '../../../../core/providers/context_provider.dart';
 import '../../../../shared/presentation/components/animations/fade_in_up.dart';
@@ -16,6 +18,7 @@ import '../../../shared_session/presentation/widgets/live_indicator.dart';
 import '../../../shared_session/presentation/widgets/session_chat.dart';
 import '../../../workout/presentation/providers/workout_provider.dart';
 import '../widgets/exercise_card_compact.dart';
+import '../widgets/exercise_feedback_widget.dart';
 import '../widgets/exercise_page_view.dart';
 import '../widgets/pr_indicator.dart';
 import '../widgets/rest_timer_overlay.dart';
@@ -61,7 +64,14 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
   bool _isChatOpen = false;
   TrainerAdjustment? _pendingAdjustment;
 
+  // Workout session for recording sets and feedback
+  String? _workoutSessionId;
+
+  // Timer sound service
+  final _timerSoundService = TimerSoundService();
+
   bool get _isSharedSession => widget.sessionId != null;
+  bool get _hasWorkoutSession => _workoutSessionId != null;
 
   @override
   void initState() {
@@ -85,6 +95,40 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
             .updateStatus(SessionStatus.active);
       });
     }
+
+    // Create workout session for tracking sets and feedback
+    _createWorkoutSession();
+
+    // Initialize sound service for timer
+    _timerSoundService.init();
+  }
+
+  Future<void> _createWorkoutSession() async {
+    try {
+      final workoutService = WorkoutService();
+      final session = await workoutService.startWorkoutSession(
+        workoutId: widget.workoutId,
+      );
+      if (mounted) {
+        setState(() {
+          _workoutSessionId = session['id'] as String?;
+        });
+      }
+    } catch (e) {
+      // Session creation failed - continue without feedback capability
+      debugPrint('Failed to create workout session: $e');
+    }
+  }
+
+  Future<void> _completeWorkoutSession() async {
+    if (!_hasWorkoutSession) return;
+
+    try {
+      final workoutService = WorkoutService();
+      await workoutService.completeWorkoutSession(_workoutSessionId!);
+    } catch (e) {
+      debugPrint('Failed to complete workout session: $e');
+    }
   }
 
   @override
@@ -92,6 +136,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     _restTimer?.cancel();
     _durationTimer?.cancel();
     _stopwatch.stop();
+    _timerSoundService.dispose();
     super.dispose();
   }
 
@@ -192,7 +237,14 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_restTimeRemaining > 0) {
         setState(() => _restTimeRemaining--);
+
+        // Play countdown sounds for the last 3 seconds
+        if (_restTimeRemaining <= 3 && _restTimeRemaining > 0) {
+          _timerSoundService.playCountdownTick();
+        }
       } else {
+        // Timer completed - play completion sound
+        _timerSoundService.playTimerComplete();
         _skipRest();
       }
     });
@@ -245,7 +297,11 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         _currentSet++;
         _startRestTimer(exerciseRest);
       } else {
-        // Exercise complete, move to next
+        // Exercise complete - show feedback dialog before moving to next
+        final completedExercise = exercise;
+        final workoutExerciseId = completedExercise?['id'] as String?;
+        final exerciseName = completedExercise?['name'] as String? ?? 'Exercício';
+
         if (_currentExerciseIndex < exercises.length - 1) {
           _currentExerciseIndex++;
           _currentSet = 1;
@@ -256,6 +312,20 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
         } else {
           // Workout complete!
           _showWorkoutComplete(exercises.length);
+        }
+
+        // Show feedback dialog after state update (async)
+        if (_hasWorkoutSession && workoutExerciseId != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              showExerciseFeedbackDialog(
+                context,
+                sessionId: _workoutSessionId!,
+                workoutExerciseId: workoutExerciseId,
+                exerciseName: exerciseName,
+              );
+            }
+          });
         }
       }
     });
@@ -270,6 +340,9 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
       ref.read(sharedSessionProvider(widget.sessionId!).notifier)
           .updateStatus(SessionStatus.completed);
     }
+
+    // Complete workout session
+    _completeWorkoutSession();
 
     // Capture page context before showing sheet
     final pageContext = context;

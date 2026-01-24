@@ -24,6 +24,8 @@ class ApiEndpoints {
   static String organizationMembers(String id) => '/organizations/$id/members';
   static String organizationMember(String orgId, String userId) =>
       '/organizations/$orgId/members/$userId';
+  static String reactivateMember(String orgId, String membershipId) =>
+      '/organizations/$orgId/members/$membershipId/reactivate';
   static String organizationInvite(String id) => '/organizations/$id/invite';
   static String organizationInvites(String id) => '/organizations/$id/invites';
   static String cancelInvite(String orgId, String inviteId) =>
@@ -68,6 +70,17 @@ class ApiEndpoints {
       '/workouts/plans/$planId/workouts/$workoutId';
   static const String planAssignments = '/workouts/plans/assignments';
   static String planAssignment(String id) => '/workouts/plans/assignments/$id';
+  static String planAssignmentAcknowledge(String id) =>
+      '/workouts/plans/assignments/$id/acknowledge';
+
+  // ==================== Exercise Feedback ====================
+  static String exerciseFeedback(String sessionId, String workoutExerciseId) =>
+      '/workouts/sessions/$sessionId/exercises/$workoutExerciseId/feedback';
+  static String sessionFeedbacks(String sessionId) =>
+      '/workouts/sessions/$sessionId/feedbacks';
+  static const String trainerExerciseFeedbacks = '/workouts/trainer/exercise-feedbacks';
+  static String respondToFeedback(String feedbackId) =>
+      '/workouts/feedbacks/$feedbackId/respond';
 
   // ==================== Prescription Notes ====================
   static const String prescriptionNotes = '/workouts/notes';

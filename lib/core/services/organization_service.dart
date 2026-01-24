@@ -211,6 +211,26 @@ class OrganizationService {
     }
   }
 
+  /// Reactivate an inactive member
+  Future<Map<String, dynamic>> reactivateMember(
+    String orgId,
+    String membershipId,
+  ) async {
+    try {
+      final response = await _client.post(
+        ApiEndpoints.reactivateMember(orgId, membershipId),
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw const ServerException('Erro ao reativar membro');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao reativar membro', e);
+    }
+  }
+
   // ==================== Invites ====================
 
   /// Get pending invites for the current user

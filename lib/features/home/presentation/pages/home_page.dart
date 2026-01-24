@@ -664,15 +664,15 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
     bool isDark,
     StudentPendingPlansState pendingState,
   ) {
-    final count = pendingState.pendingCount;
-    final firstPlan = pendingState.pendingPlans.first;
+    final count = pendingState.newCount;
+    final firstPlan = pendingState.newPlans.first;
     final planName = firstPlan['plan_name'] as String? ?? 'Novo Plano';
     final trainerName = firstPlan['trainer_name'] as String?;
 
     return GestureDetector(
       onTap: () {
         HapticUtils.lightImpact();
-        _showRespondPlanSheet(context, firstPlan);
+        _showNewPlanSheet(context, firstPlan);
       },
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -682,17 +682,17 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppColors.warning.withAlpha(isDark ? 40 : 30),
-              AppColors.warning.withAlpha(isDark ? 20 : 15),
+              AppColors.primary.withAlpha(isDark ? 40 : 30),
+              AppColors.primary.withAlpha(isDark ? 20 : 15),
             ],
           ),
           border: Border.all(
-            color: AppColors.warning.withAlpha(100),
+            color: AppColors.primary.withAlpha(100),
             width: 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.warning.withAlpha(20),
+              color: AppColors.primary.withAlpha(20),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -705,14 +705,14 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.warning.withAlpha(30),
+                color: AppColors.primary.withAlpha(30),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Center(
                 child: Icon(
-                  LucideIcons.bellRing,
+                  LucideIcons.sparkles,
                   size: 24,
-                  color: AppColors.warning,
+                  color: AppColors.primary,
                 ),
               ),
             ),
@@ -727,11 +727,11 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppColors.warning,
+                          color: AppColors.primary,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          count > 1 ? '$count PENDENTES' : 'NOVO PLANO',
+                          count > 1 ? '$count NOVOS' : 'NOVO',
                           style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
@@ -745,7 +745,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                   const SizedBox(height: 6),
                   Text(
                     count > 1
-                        ? 'Voce tem $count planos aguardando resposta'
+                        ? 'Você tem $count novos planos de treino'
                         : planName,
                     style: TextStyle(
                       fontSize: 15,
@@ -774,14 +774,14 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.success,
+                color: AppColors.primary,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Responder',
+                    'Ver',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -803,7 +803,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
     );
   }
 
-  void _showRespondPlanSheet(BuildContext context, Map<String, dynamic> assignment) {
+  void _showNewPlanSheet(BuildContext context, Map<String, dynamic> assignment) {
     final currentUser = ref.read(currentUserProvider);
     if (currentUser == null) return;
 
@@ -811,61 +811,25 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => _StudentRespondPlanSheet(
+      builder: (ctx) => _StudentNewPlanSheet(
         assignment: assignment,
-        onAccept: () async {
+        onAcknowledge: () async {
           HapticUtils.mediumImpact();
           final success = await ref
-              .read(studentPendingPlansProvider.notifier)
-              .acceptPlan(assignment['id'] as String);
+              .read(studentNewPlansProvider.notifier)
+              .acknowledgePlan(assignment['id'] as String);
           if (ctx.mounted) {
             Navigator.of(ctx).pop();
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Row(
-                  children: [
-                    Icon(
-                      success ? LucideIcons.checkCircle : LucideIcons.alertCircle,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(success ? 'Plano aceito com sucesso!' : 'Erro ao aceitar plano'),
-                  ],
-                ),
-                backgroundColor: success ? AppColors.success : AppColors.destructive,
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
             // Refresh dashboard to update UI
             ref.read(studentDashboardProvider.notifier).refresh();
           }
         },
-        onDecline: (reason) async {
-          HapticUtils.mediumImpact();
-          final success = await ref
-              .read(studentPendingPlansProvider.notifier)
-              .declinePlan(assignment['id'] as String, reason: reason);
-          if (ctx.mounted) {
-            Navigator.of(ctx).pop();
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Row(
-                  children: [
-                    Icon(
-                      success ? LucideIcons.info : LucideIcons.alertCircle,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(success ? 'Plano recusado' : 'Erro ao recusar plano'),
-                  ],
-                ),
-                backgroundColor: success ? AppColors.mutedForeground : AppColors.destructive,
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-          }
+        onViewPlan: () {
+          HapticUtils.lightImpact();
+          Navigator.of(ctx).pop();
+          // Mark as seen and navigate to plan details
+          ref.read(studentNewPlansProvider.notifier).acknowledgePlan(assignment['id'] as String);
+          context.push('/plans/${assignment['plan_id']}');
         },
       ),
     );
@@ -2071,6 +2035,320 @@ class _StudentRespondPlanSheetState extends State<_StudentRespondPlanSheet> {
                     label: Text(_isProcessing ? 'Processando...' : 'Aceitar Plano'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.success,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Safe area padding
+          SizedBox(height: MediaQuery.of(context).padding.bottom),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailItem(
+    BuildContext context,
+    bool isDark,
+    IconData icon,
+    String label,
+    String value,
+  ) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              icon,
+              size: 12,
+              color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Bottom sheet for student to view a new plan assignment (auto-accepted)
+class _StudentNewPlanSheet extends StatelessWidget {
+  final Map<String, dynamic> assignment;
+  final VoidCallback onAcknowledge;
+  final VoidCallback onViewPlan;
+
+  const _StudentNewPlanSheet({
+    required this.assignment,
+    required this.onAcknowledge,
+    required this.onViewPlan,
+  });
+
+  String get _planName => assignment['plan_name'] as String? ?? 'Plano de Treino';
+  String? get _trainerName => assignment['trainer_name'] as String?;
+  String? get _notes => assignment['notes'] as String?;
+  String? get _startDateStr => assignment['start_date'] as String?;
+  String? get _endDateStr => assignment['end_date'] as String?;
+  String? get _goal => assignment['plan']?['goal'] as String?;
+
+  String _formatDate(String? dateStr) {
+    if (dateStr == null) return '--';
+    try {
+      final date = DateTime.parse(dateStr);
+      return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    } catch (_) {
+      return dateStr;
+    }
+  }
+
+  String _translateGoal(String? goal) {
+    if (goal == null) return '--';
+    switch (goal.toLowerCase()) {
+      case 'hypertrophy':
+        return 'Hipertrofia';
+      case 'strength':
+        return 'Força';
+      case 'fat_loss':
+        return 'Emagrecimento';
+      case 'endurance':
+        return 'Resistência';
+      case 'functional':
+        return 'Funcional';
+      default:
+        return goal;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.backgroundDark : AppColors.background,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Drag handle
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.borderDark : AppColors.border,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          // Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+            child: Column(
+              children: [
+                // New badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withAlpha(20),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.primary.withAlpha(50)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(LucideIcons.sparkles, size: 14, color: AppColors.primary),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Novo plano de treino',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Plan name
+                Text(
+                  _planName,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+
+                if (_trainerName != null) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        LucideIcons.user,
+                        size: 14,
+                        color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Prescrito por $_trainerName',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Plan details
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.cardDark : AppColors.card,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDark ? AppColors.borderDark : AppColors.border,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildDetailItem(
+                      context,
+                      isDark,
+                      LucideIcons.calendar,
+                      'Início',
+                      _formatDate(_startDateStr),
+                    ),
+                  ),
+                  Expanded(
+                    child: _buildDetailItem(
+                      context,
+                      isDark,
+                      LucideIcons.calendarCheck,
+                      'Término',
+                      _endDateStr != null ? _formatDate(_endDateStr) : 'Contínuo',
+                    ),
+                  ),
+                  if (_goal != null)
+                    Expanded(
+                      child: _buildDetailItem(
+                        context,
+                        isDark,
+                        LucideIcons.target,
+                        'Objetivo',
+                        _translateGoal(_goal),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+
+          // Trainer notes
+          if (_notes != null && _notes!.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.info.withAlpha(15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.info.withAlpha(40)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(LucideIcons.messageSquare, size: 16, color: AppColors.info),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Nota do Personal',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.info,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _notes!,
+                      style: theme.textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 24),
+
+          // Action buttons
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            child: Row(
+              children: [
+                // Mark as seen button
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: onAcknowledge,
+                    icon: const Icon(LucideIcons.check, size: 18),
+                    label: const Text('Marcar como visto'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // View plan button
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton.icon(
+                    onPressed: onViewPlan,
+                    icon: const Icon(LucideIcons.eye, size: 18),
+                    label: const Text('Ver Plano'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(

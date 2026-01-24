@@ -10,8 +10,8 @@ class StudentPlansState {
   /// Scheduled plans (is_active=true AND start_date > today AND status=accepted)
   final List<Map<String, dynamic>> scheduledPlans;
 
-  /// Pending plans awaiting student response (status=pending)
-  final List<Map<String, dynamic>> pendingPlans;
+  /// New plans not yet seen by student (acknowledged_at == null)
+  final List<Map<String, dynamic>> newPlans;
 
   /// Historical plans (is_active=false OR status=declined)
   final List<Map<String, dynamic>> historyAssignments;
@@ -23,7 +23,7 @@ class StudentPlansState {
   const StudentPlansState({
     this.activePlans = const [],
     this.scheduledPlans = const [],
-    this.pendingPlans = const [],
+    this.newPlans = const [],
     this.historyAssignments = const [],
     this.isLoading = false,
     this.isResponding = false,
@@ -33,7 +33,7 @@ class StudentPlansState {
   StudentPlansState copyWith({
     List<Map<String, dynamic>>? activePlans,
     List<Map<String, dynamic>>? scheduledPlans,
-    List<Map<String, dynamic>>? pendingPlans,
+    List<Map<String, dynamic>>? newPlans,
     List<Map<String, dynamic>>? historyAssignments,
     bool? isLoading,
     bool? isResponding,
@@ -42,7 +42,7 @@ class StudentPlansState {
     return StudentPlansState(
       activePlans: activePlans ?? this.activePlans,
       scheduledPlans: scheduledPlans ?? this.scheduledPlans,
-      pendingPlans: pendingPlans ?? this.pendingPlans,
+      newPlans: newPlans ?? this.newPlans,
       historyAssignments: historyAssignments ?? this.historyAssignments,
       isLoading: isLoading ?? this.isLoading,
       isResponding: isResponding ?? this.isResponding,
@@ -55,9 +55,14 @@ class StudentPlansState {
 
   bool get hasCurrentPlan => activePlans.isNotEmpty;
   bool get hasScheduledPlans => scheduledPlans.isNotEmpty;
-  bool get hasPendingPlans => pendingPlans.isNotEmpty;
+  bool get hasNewPlans => newPlans.isNotEmpty;
   bool get hasMultipleActivePlans => activePlans.length > 1;
-  int get pendingCount => pendingPlans.length;
+  int get newCount => newPlans.length;
+
+  // Backwards compatibility aliases
+  bool get hasPendingPlans => hasNewPlans;
+  int get pendingCount => newCount;
+  List<Map<String, dynamic>> get pendingPlans => newPlans;
 
   String? get currentPlanName => currentAssignment?['plan_name'] as String?;
   String? get currentPlanId => currentAssignment?['plan_id'] as String?;
@@ -92,20 +97,15 @@ class StudentPlansNotifier extends StateNotifier<StudentPlansState> {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
 
-      // Separate into: pending, active, scheduled, and history
-      final pending = <Map<String, dynamic>>[];
+      // Separate into: new (unacknowledged), active, scheduled, and history
+      final newPlans = <Map<String, dynamic>>[];
       final active = <Map<String, dynamic>>[];
       final scheduled = <Map<String, dynamic>>[];
       final history = <Map<String, dynamic>>[];
 
       for (final assignment in allAssignments) {
         final status = assignment['status'] as String?;
-
-        // Check if pending (awaiting student response)
-        if (status == 'pending') {
-          pending.add(assignment);
-          continue;
-        }
+        final acknowledgedAt = assignment['acknowledged_at'];
 
         // Check if declined
         if (status == 'declined') {
@@ -128,18 +128,28 @@ class StudentPlansNotifier extends StateNotifier<StudentPlansState> {
               } else {
                 // Already started = active
                 active.add(assignment);
+                // Also track if it's new (unacknowledged)
+                if (acknowledgedAt == null) {
+                  newPlans.add(assignment);
+                }
               }
             } catch (_) {
               active.add(assignment);
+              if (acknowledgedAt == null) {
+                newPlans.add(assignment);
+              }
             }
           } else {
             active.add(assignment);
+            if (acknowledgedAt == null) {
+              newPlans.add(assignment);
+            }
           }
         }
       }
 
-      // Sort pending by created_at descending (newest first)
-      pending.sort((a, b) {
+      // Sort new plans by created_at descending (newest first)
+      newPlans.sort((a, b) {
         final aDate = DateTime.tryParse(a['created_at'] as String? ?? '');
         final bDate = DateTime.tryParse(b['created_at'] as String? ?? '');
         if (aDate == null || bDate == null) return 0;
@@ -171,7 +181,7 @@ class StudentPlansNotifier extends StateNotifier<StudentPlansState> {
       });
 
       state = state.copyWith(
-        pendingPlans: pending,
+        newPlans: newPlans,
         activePlans: active,
         scheduledPlans: scheduled,
         historyAssignments: history,

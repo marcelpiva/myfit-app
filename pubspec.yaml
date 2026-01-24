@@ -77,6 +77,9 @@ dependencies:
   video_player: ^2.9.2
   chewie: ^1.8.5
 
+  # Audio
+  audioplayers: ^6.1.0
+
   # Permissions
   permission_handler: ^11.4.0
 
@@ -120,3 +123,4 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/sounds/

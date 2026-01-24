@@ -64,6 +64,7 @@ import '../../features/students/presentation/pages/student_detail_page.dart';
 import '../../features/students/presentation/pages/student_plan_history_page.dart';
 import '../../features/trainer_workout/presentation/pages/trainer_student_progress_page.dart';
 import '../../features/trainer_workout/presentation/pages/trainer_plans_page.dart';
+import '../../features/trainer_workout/presentation/pages/trainer_feedbacks_page.dart';
 import '../../features/schedule/presentation/pages/schedule_page.dart';
 import '../../features/schedule/presentation/pages/student_schedule_page.dart';
 import '../../features/nutrition/presentation/pages/patients_list_page.dart';
@@ -587,6 +588,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: RouteNames.trainerPlans,
         name: 'trainer-plans',
         builder: (context, state) => _devLabel('trainer-plans', const TrainerPlansPage()),
+      ),
+      GoRoute(
+        path: RouteNames.trainerFeedbacks,
+        name: 'trainer-feedbacks',
+        builder: (context, state) => _devLabel('trainer-feedbacks', const TrainerFeedbacksPage()),
+      ),
+      GoRoute(
+        path: RouteNames.studentFeedbacks,
+        name: 'student-feedbacks',
+        builder: (context, state) => _devLabel(
+          'student-feedbacks',
+          TrainerFeedbacksPage(studentId: state.pathParameters['studentId']),
+        ),
       ),
 
       // Nutritionist routes

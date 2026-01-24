@@ -988,6 +988,122 @@ class WorkoutService {
     }
   }
 
+  /// Acknowledge a plan assignment as seen by the student
+  Future<Map<String, dynamic>> acknowledgePlanAssignment(String assignmentId) async {
+    try {
+      final response = await _client.post(
+        ApiEndpoints.planAssignmentAcknowledge(assignmentId),
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw const ServerException('Erro ao marcar plano como visto');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao marcar plano como visto', e);
+    }
+  }
+
+  // ==================== Exercise Feedback ====================
+
+  /// Submit feedback for an exercise in a workout session
+  Future<Map<String, dynamic>> submitExerciseFeedback(
+    String sessionId,
+    String workoutExerciseId, {
+    required String feedbackType, // 'liked', 'disliked', or 'swap'
+    String? comment,
+  }) async {
+    try {
+      final data = <String, dynamic>{
+        'feedback_type': feedbackType,
+      };
+      if (comment != null) data['comment'] = comment;
+
+      final response = await _client.post(
+        ApiEndpoints.exerciseFeedback(sessionId, workoutExerciseId),
+        data: data,
+      );
+      if (response.statusCode == 201 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw const ServerException('Erro ao enviar feedback');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao enviar feedback', e);
+    }
+  }
+
+  /// Get all feedbacks for a workout session
+  Future<List<Map<String, dynamic>>> getSessionFeedbacks(String sessionId) async {
+    try {
+      final response = await _client.get(ApiEndpoints.sessionFeedbacks(sessionId));
+      if (response.statusCode == 200 && response.data != null) {
+        return (response.data as List).cast<Map<String, dynamic>>();
+      }
+      return [];
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao carregar feedbacks', e);
+    }
+  }
+
+  /// Get all exercise feedbacks for a trainer (optionally filtered by student)
+  Future<List<Map<String, dynamic>>> getTrainerExerciseFeedbacks({
+    String? studentId,
+    bool pendingOnly = false,
+  }) async {
+    try {
+      final params = <String, dynamic>{};
+      if (studentId != null) params['student_id'] = studentId;
+      if (pendingOnly) params['pending_only'] = true;
+
+      final response = await _client.get(
+        ApiEndpoints.trainerExerciseFeedbacks,
+        queryParameters: params,
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return (response.data as List).cast<Map<String, dynamic>>();
+      }
+      return [];
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao carregar feedbacks', e);
+    }
+  }
+
+  /// Respond to an exercise feedback (trainer only, mainly for swap requests)
+  Future<Map<String, dynamic>> respondToExerciseFeedback(
+    String feedbackId, {
+    required String response,
+    String? replacementExerciseId,
+  }) async {
+    try {
+      final data = <String, dynamic>{
+        'response': response,
+      };
+      if (replacementExerciseId != null) {
+        data['replacement_exercise_id'] = replacementExerciseId;
+      }
+
+      final res = await _client.put(
+        ApiEndpoints.respondToFeedback(feedbackId),
+        data: data,
+      );
+      if (res.statusCode == 200 && res.data != null) {
+        return res.data as Map<String, dynamic>;
+      }
+      throw const ServerException('Erro ao responder feedback');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao responder feedback', e);
+    }
+  }
+
   // ==================== AI Exercise Suggestions ====================
 
   /// Suggest exercises based on muscle groups, training goal, and workout context

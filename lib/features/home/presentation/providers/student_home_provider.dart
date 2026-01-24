@@ -140,69 +140,78 @@ final isStudentDashboardLoadingProvider = Provider<bool>((ref) {
   return ref.watch(studentDashboardProvider).isLoading;
 });
 
-// ==================== Student Pending Plans Provider ====================
+// ==================== Student New Plans Provider ====================
 
-/// State for student's own pending plan assignments
-class StudentPendingPlansState {
-  final List<Map<String, dynamic>> pendingPlans;
+/// State for student's new (unacknowledged) plan assignments
+/// Plans are now auto-accepted, so we show "new" plans instead of "pending"
+class StudentNewPlansState {
+  final List<Map<String, dynamic>> newPlans;
   final bool isLoading;
-  final bool isResponding;
+  final bool isAcknowledging;
   final String? error;
 
-  const StudentPendingPlansState({
-    this.pendingPlans = const [],
+  const StudentNewPlansState({
+    this.newPlans = const [],
     this.isLoading = false,
-    this.isResponding = false,
+    this.isAcknowledging = false,
     this.error,
   });
 
-  StudentPendingPlansState copyWith({
-    List<Map<String, dynamic>>? pendingPlans,
+  StudentNewPlansState copyWith({
+    List<Map<String, dynamic>>? newPlans,
     bool? isLoading,
-    bool? isResponding,
+    bool? isAcknowledging,
     String? error,
   }) {
-    return StudentPendingPlansState(
-      pendingPlans: pendingPlans ?? this.pendingPlans,
+    return StudentNewPlansState(
+      newPlans: newPlans ?? this.newPlans,
       isLoading: isLoading ?? this.isLoading,
-      isResponding: isResponding ?? this.isResponding,
+      isAcknowledging: isAcknowledging ?? this.isAcknowledging,
       error: error,
     );
   }
 
-  bool get hasPendingPlans => pendingPlans.isNotEmpty;
-  int get pendingCount => pendingPlans.length;
+  bool get hasNewPlans => newPlans.isNotEmpty;
+  int get newCount => newPlans.length;
+
+  // Backwards compatibility aliases
+  bool get hasPendingPlans => hasNewPlans;
+  int get pendingCount => newCount;
+  List<Map<String, dynamic>> get pendingPlans => newPlans;
 }
 
-class StudentPendingPlansNotifier extends StateNotifier<StudentPendingPlansState> {
+class StudentNewPlansNotifier extends StateNotifier<StudentNewPlansState> {
   final ApiClient _client;
 
-  StudentPendingPlansNotifier({ApiClient? client})
+  StudentNewPlansNotifier({ApiClient? client})
       : _client = client ?? ApiClient.instance,
-        super(const StudentPendingPlansState()) {
-    loadPendingPlans();
+        super(const StudentNewPlansState()) {
+    loadNewPlans();
   }
 
-  Future<void> loadPendingPlans() async {
+  Future<void> loadNewPlans() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final response = await _client.get(
         ApiEndpoints.planAssignments,
         queryParameters: {
           'as_trainer': false,
-          'active_only': false,
+          'active_only': true,
         },
       );
 
       if (response.statusCode == 200 && response.data != null) {
         final allPlans = (response.data as List).cast<Map<String, dynamic>>();
-        // Filter only pending plans
-        final pending = allPlans
-            .where((p) => p['status'] == 'pending')
+        // Filter plans where acknowledged_at is null (new/unseen plans)
+        final newPlans = allPlans
+            .where((p) =>
+                p['acknowledged_at'] == null &&
+                p['status'] == 'accepted' &&
+                p['is_active'] == true)
             .toList();
 
-        // Sort by created_at descending
-        pending.sort((a, b) {
+        // Sort by created_at descending (newest first)
+        newPlans.sort((a, b) {
           final aDate = DateTime.tryParse(a['created_at'] as String? ?? '');
           final bDate = DateTime.tryParse(b['created_at'] as String? ?? '');
           if (aDate == null || bDate == null) return 0;
@@ -210,19 +219,19 @@ class StudentPendingPlansNotifier extends StateNotifier<StudentPendingPlansState
         });
 
         state = state.copyWith(
-          pendingPlans: pending,
+          newPlans: newPlans,
           isLoading: false,
         );
       } else {
         state = state.copyWith(
           isLoading: false,
-          error: 'Erro ao carregar planos pendentes',
+          error: 'Erro ao carregar novos planos',
         );
       }
     } on DioException catch (e) {
       final message = e.error is ApiException
           ? (e.error as ApiException).message
-          : 'Erro ao carregar planos pendentes';
+          : 'Erro ao carregar novos planos';
       state = state.copyWith(isLoading: false, error: message);
     } catch (e) {
       state = state.copyWith(
@@ -232,55 +241,35 @@ class StudentPendingPlansNotifier extends StateNotifier<StudentPendingPlansState
     }
   }
 
-  Future<bool> acceptPlan(String assignmentId) async {
-    state = state.copyWith(isResponding: true, error: null);
+  /// Mark a plan as acknowledged/seen
+  Future<bool> acknowledgePlan(String assignmentId) async {
+    state = state.copyWith(isAcknowledging: true, error: null);
     try {
       final response = await _client.post(
-        '${ApiEndpoints.planAssignments}/$assignmentId/respond',
-        data: {'accept': true},
+        '${ApiEndpoints.planAssignments}/$assignmentId/acknowledge',
       );
       if (response.statusCode == 200) {
-        await loadPendingPlans();
-        state = state.copyWith(isResponding: false);
+        await loadNewPlans();
+        state = state.copyWith(isAcknowledging: false);
         return true;
       }
-      state = state.copyWith(isResponding: false, error: 'Erro ao aceitar plano');
+      state = state.copyWith(isAcknowledging: false, error: 'Erro ao marcar plano como visto');
       return false;
     } catch (e) {
-      state = state.copyWith(isResponding: false, error: e.toString());
+      state = state.copyWith(isAcknowledging: false, error: e.toString());
       return false;
     }
   }
 
-  Future<bool> declinePlan(String assignmentId, {String? reason}) async {
-    state = state.copyWith(isResponding: true, error: null);
-    try {
-      final data = <String, dynamic>{'accept': false};
-      if (reason != null && reason.isNotEmpty) {
-        data['declined_reason'] = reason;
-      }
-
-      final response = await _client.post(
-        '${ApiEndpoints.planAssignments}/$assignmentId/respond',
-        data: data,
-      );
-      if (response.statusCode == 200) {
-        await loadPendingPlans();
-        state = state.copyWith(isResponding: false);
-        return true;
-      }
-      state = state.copyWith(isResponding: false, error: 'Erro ao recusar plano');
-      return false;
-    } catch (e) {
-      state = state.copyWith(isResponding: false, error: e.toString());
-      return false;
-    }
-  }
-
-  void refresh() => loadPendingPlans();
+  void refresh() => loadNewPlans();
 }
 
-final studentPendingPlansProvider =
-    StateNotifierProvider<StudentPendingPlansNotifier, StudentPendingPlansState>(
-  (ref) => StudentPendingPlansNotifier(),
+final studentNewPlansProvider =
+    StateNotifierProvider<StudentNewPlansNotifier, StudentNewPlansState>(
+  (ref) => StudentNewPlansNotifier(),
 );
+
+// Backwards compatibility alias
+final studentPendingPlansProvider = studentNewPlansProvider;
+typedef StudentPendingPlansState = StudentNewPlansState;
+typedef StudentPendingPlansNotifier = StudentNewPlansNotifier;

@@ -46,21 +46,21 @@ class StudentPlansTab extends ConsumerWidget {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Pending Plans Section (read-only for trainer - awaiting student response)
-          if (state.pendingPlans.isNotEmpty) ...[
+          // New Plans Section (not yet seen by student)
+          if (state.newPlans.isNotEmpty) ...[
             _buildSectionHeader(
               theme,
               isDark,
-              'Aguardando Resposta do Aluno',
-              LucideIcons.clock,
+              'Novos Planos',
+              LucideIcons.sparkles,
               trailing: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.warning,
+                  color: AppColors.primary,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '${state.pendingPlans.length}',
+                  '${state.newPlans.length}',
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -69,7 +69,7 @@ class StudentPlansTab extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 12),
-            _buildPendingList(context, theme, isDark, state.pendingPlans, ref),
+            _buildNewPlansList(context, theme, isDark, state.newPlans, ref),
             const SizedBox(height: 24),
           ],
 
@@ -289,23 +289,23 @@ class StudentPlansTab extends ConsumerWidget {
     );
   }
 
-  /// Builds the pending plans list for trainer view (view/edit/cancel - no accept/decline)
-  Widget _buildPendingList(
+  /// Builds the new plans list for trainer view (plans not yet seen by student)
+  Widget _buildNewPlansList(
     BuildContext context,
     ThemeData theme,
     bool isDark,
-    List<Map<String, dynamic>> pending,
+    List<Map<String, dynamic>> newPlans,
     WidgetRef ref,
   ) {
     return Column(
-      children: pending.map((assignment) {
+      children: newPlans.map((assignment) {
         final planName = assignment['plan_name'] as String? ?? 'Plano sem nome';
         final startDateStr = assignment['start_date'] as String?;
         final notes = assignment['notes'] as String?;
 
         String dateInfo = '';
         if (startDateStr != null) {
-          dateInfo = 'Inicio previsto: ${_formatDate(startDateStr)}';
+          dateInfo = 'Início: ${_formatDate(startDateStr)}';
         }
 
         return Container(
@@ -315,7 +315,7 @@ class StudentPlansTab extends ConsumerWidget {
             color: isDark ? AppColors.cardDark : AppColors.card,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: AppColors.warning.withAlpha(80),
+              color: AppColors.primary.withAlpha(80),
               width: 1.5,
             ),
           ),
@@ -324,13 +324,13 @@ class StudentPlansTab extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppColors.warning.withAlpha(isDark ? 30 : 20),
+                  color: AppColors.primary.withAlpha(isDark ? 30 : 20),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
-                  LucideIcons.clock,
+                  LucideIcons.sparkles,
                   size: 18,
-                  color: AppColors.warning,
+                  color: AppColors.primary,
                 ),
               ),
               const SizedBox(width: 12),
@@ -354,11 +354,11 @@ class StudentPlansTab extends ConsumerWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.warning,
+                            color: AppColors.primary,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            'Aguardando',
+                            'Novo',
                             style: theme.textTheme.labelSmall?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
@@ -387,10 +387,18 @@ class StudentPlansTab extends ConsumerWidget {
                           ),
                         ),
                       ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Aluno ainda não visualizou',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: AppColors.primary.withAlpha(180),
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              // Menu with view, edit, cancel options
+              // Menu with view, edit options
               PopupMenuButton<String>(
                 icon: Icon(
                   LucideIcons.moreVertical,
@@ -398,15 +406,12 @@ class StudentPlansTab extends ConsumerWidget {
                   color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                 ),
                 onSelected: (value) {
-                  final assignmentId = assignment['id'] as String;
                   final planId = assignment['plan_id'] as String;
                   switch (value) {
                     case 'view':
                       _viewPlanDetails(context, planId);
                     case 'edit':
                       _editPrescription(context, planId);
-                    case 'cancel':
-                      _confirmCancelAssignment(context, ref, assignmentId);
                   }
                 },
                 itemBuilder: (context) => [
@@ -427,16 +432,6 @@ class StudentPlansTab extends ConsumerWidget {
                         Icon(LucideIcons.pencil, size: 16),
                         SizedBox(width: 8),
                         Text('Editar plano'),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'cancel',
-                    child: Row(
-                      children: [
-                        Icon(LucideIcons.trash2, size: 16, color: AppColors.destructive),
-                        const SizedBox(width: 8),
-                        Text('Cancelar', style: TextStyle(color: AppColors.destructive)),
                       ],
                     ),
                   ),
