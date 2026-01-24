@@ -1,5 +1,6 @@
 import 'dart:math' show max;
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -1347,6 +1348,9 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
   /// Reorder exercises using UI indices (where groups count as 1 item).
   /// This method converts UI indices to data indices and handles groups properly.
   void reorderExercises(String workoutId, int uiOldIndex, int uiNewIndex) {
+    debugPrint('=== REORDER START ===');
+    debugPrint('uiOldIndex: $uiOldIndex, uiNewIndex: $uiNewIndex');
+
     final workouts = state.workouts.map((w) {
       if (w.id == workoutId) {
         final exercises = List<WizardExercise>.from(w.exercises);
@@ -1354,7 +1358,17 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
         // Build UI-to-data index mapping
         final uiToDataMapping = _buildUiToDataMapping(exercises);
 
-        if (uiOldIndex >= uiToDataMapping.length) return w;
+        debugPrint('UI mapping (${uiToDataMapping.length} items):');
+        for (var i = 0; i < uiToDataMapping.length; i++) {
+          final m = uiToDataMapping[i];
+          final name = exercises[m.dataStartIndex].name;
+          debugPrint('  [$i] ${m.isGroup ? "GROUP" : "SINGLE"} "$name" data:${m.dataStartIndex}-${m.dataEndIndex}');
+        }
+
+        if (uiOldIndex >= uiToDataMapping.length) {
+          debugPrint('ERROR: uiOldIndex out of bounds');
+          return w;
+        }
 
         final oldMapping = uiToDataMapping[uiOldIndex];
         final isMovingGroup = oldMapping.isGroup;
@@ -1366,8 +1380,13 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
         }
         adjustedUiNewIndex = adjustedUiNewIndex.clamp(0, uiToDataMapping.length - 1);
 
+        debugPrint('adjustedUiNewIndex: $adjustedUiNewIndex, isMovingGroup: $isMovingGroup');
+
         // If moving to same position, no change needed
-        if (adjustedUiNewIndex == uiOldIndex) return w;
+        if (adjustedUiNewIndex == uiOldIndex) {
+          debugPrint('Same position, no change');
+          return w;
+        }
 
         if (isMovingGroup) {
           // Moving an entire group
@@ -1450,33 +1469,23 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
     int uiNewIndex,
     List<_UiDataMapping> mapping,
   ) {
-    final result = List<WizardExercise>.from(exercises);
-    final item = result.removeAt(dataIndex);
+    debugPrint('_reorderSingleExercise: dataIndex=$dataIndex, uiOld=$uiOldIndex, uiNew=$uiNewIndex');
 
-    // Calculate new data index based on target UI position
-    int newDataIndex;
-    if (uiNewIndex >= mapping.length) {
-      newDataIndex = result.length;
-    } else if (uiNewIndex < uiOldIndex) {
-      // Moving up - insert at the start of the target UI position
-      newDataIndex = mapping[uiNewIndex].dataStartIndex;
-      // Adjust because we removed an item before this position
-      if (dataIndex < newDataIndex) {
-        newDataIndex -= 1;
-      }
-    } else {
-      // Moving down - insert AFTER the target UI position
-      // So we use dataEndIndex + 1 to place after the target item
-      newDataIndex = mapping[uiNewIndex].dataEndIndex + 1;
-      // Adjust because we removed an item before this position
-      if (dataIndex < newDataIndex) {
-        newDataIndex -= 1;
-      }
+    // Simple approach: rebuild the list based on UI order
+    // First, create a list of UI items (groups as units, singles as singles)
+    final uiItems = <List<WizardExercise>>[];
+    for (final m in mapping) {
+      uiItems.add(exercises.sublist(m.dataStartIndex, m.dataEndIndex + 1));
     }
 
-    newDataIndex = newDataIndex.clamp(0, result.length);
-    result.insert(newDataIndex, item);
+    // Move the item in UI space
+    final item = uiItems.removeAt(uiOldIndex);
+    uiItems.insert(uiNewIndex, item);
 
+    // Flatten back to exercise list
+    final result = uiItems.expand((x) => x).toList();
+
+    debugPrint('Result order: ${result.map((e) => e.name).join(", ")}');
     return result;
   }
 
@@ -1488,36 +1497,23 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
     int uiNewIndex,
     List<_UiDataMapping> mapping,
   ) {
-    final oldMapping = mapping[uiOldIndex];
-    final groupSize = oldMapping.dataEndIndex - oldMapping.dataStartIndex + 1;
+    debugPrint('_reorderGroup: groupId=$groupId, uiOld=$uiOldIndex, uiNew=$uiNewIndex');
 
-    // Extract group exercises
-    final groupExercises = exercises
-        .sublist(oldMapping.dataStartIndex, oldMapping.dataEndIndex + 1);
-
-    // Remove group from list
-    final result = <WizardExercise>[
-      ...exercises.sublist(0, oldMapping.dataStartIndex),
-      ...exercises.sublist(oldMapping.dataEndIndex + 1),
-    ];
-
-    // Calculate new insertion point
-    int insertIndex;
-    if (uiNewIndex >= mapping.length - 1) {
-      insertIndex = result.length;
-    } else if (uiNewIndex < uiOldIndex) {
-      // Moving up - insert at the start of the target UI position
-      insertIndex = mapping[uiNewIndex].dataStartIndex;
-    } else {
-      // Moving down - we need to recalculate because we removed items
-      // Find the target in the new mapping (after group removal)
-      final targetMapping = mapping[uiNewIndex + 1]; // +1 because we removed one UI item
-      insertIndex = targetMapping.dataStartIndex - groupSize;
+    // Simple approach: rebuild the list based on UI order
+    // First, create a list of UI items (groups as units, singles as singles)
+    final uiItems = <List<WizardExercise>>[];
+    for (final m in mapping) {
+      uiItems.add(exercises.sublist(m.dataStartIndex, m.dataEndIndex + 1));
     }
 
-    insertIndex = insertIndex.clamp(0, result.length);
-    result.insertAll(insertIndex, groupExercises);
+    // Move the group in UI space
+    final group = uiItems.removeAt(uiOldIndex);
+    uiItems.insert(uiNewIndex, group);
 
+    // Flatten back to exercise list
+    final result = uiItems.expand((x) => x).toList();
+
+    debugPrint('Result order: ${result.map((e) => e.name).join(", ")}');
     return result;
   }
 
