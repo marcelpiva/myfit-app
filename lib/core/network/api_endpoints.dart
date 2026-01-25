@@ -205,11 +205,11 @@ class ApiEndpoints {
   static const String trainerInviteCode = '/trainers/my-invite-code';
 
   // ==================== Notifications ====================
-  static const String notifications = '/notifications';
-  static String notification(String id) => '/notifications/$id';
-  static String notificationRead(String id) => '/notifications/$id/read';
-  static const String notificationsReadAll = '/notifications/read-all';
-  static const String notificationsUnreadCount = '/notifications/unread-count';
+  static const String notifications = '/notifications/notifications';
+  static String notification(String id) => '/notifications/notifications/$id';
+  static String notificationRead(String id) => '/notifications/notifications/$id/read';
+  static const String notificationsReadAll = '/notifications/notifications/read-all';
+  static const String notificationsUnreadCount = '/notifications/notifications/unread-count';
 
   // ==================== Push Notifications / Devices ====================
   static const String registerDevice = '/notifications/notifications/devices';
