@@ -74,6 +74,12 @@ sealed class WizardExercise with _$WizardExercise {
         final distance = distanceKm ?? 5.0;
         final pace = targetPaceMinPerKm ?? 6.0;
         return (distance * pace * 60).toInt();
+      case ExerciseMode.stretching:
+        // Stretching - sets * (hold time + rest)
+        final holdTime = isometricSeconds ?? 30;
+        final setsCount = sets;
+        final restBetween = restSeconds;
+        return setsCount * (holdTime + restBetween);
       case ExerciseMode.strength:
         // Fall through to strength mode logic below
         break;
@@ -1186,32 +1192,50 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
     state = state.copyWith(workouts: workouts);
   }
 
-  void addExerciseToWorkout(String workoutId, Exercise exercise) {
+  void addExerciseToWorkout(String workoutId, Exercise exercise, {ExerciseMode? exerciseMode}) {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final isCardio = exercise.muscleGroupName.toLowerCase() == 'cardio';
+    final isStretching = exerciseMode == ExerciseMode.stretching;
 
     final workouts = state.workouts.map((w) {
       if (w.id == workoutId) {
-        final wizardExercise = isCardio
-            ? WizardExercise(
-                id: '${timestamp}_${exercise.id.hashCode}',
-                exerciseId: exercise.id,
-                name: exercise.name,
-                muscleGroup: exercise.muscleGroupName,
-                // Cardio defaults: no sets/reps/rest, use duration mode
-                sets: 1,
-                reps: '',
-                restSeconds: 0,
-                exerciseMode: ExerciseMode.duration,
-                durationMinutes: 30,
-                intensity: 'moderate',
-              )
-            : WizardExercise(
-                id: '${timestamp}_${exercise.id.hashCode}',
-                exerciseId: exercise.id,
-                name: exercise.name,
-                muscleGroup: exercise.muscleGroupName,
-              );
+        final WizardExercise wizardExercise;
+        if (isStretching) {
+          // Stretching defaults: use isometric seconds for hold time
+          wizardExercise = WizardExercise(
+            id: '${timestamp}_${exercise.id.hashCode}',
+            exerciseId: exercise.id,
+            name: exercise.name,
+            muscleGroup: exercise.muscleGroupName,
+            sets: 3,
+            reps: '',
+            restSeconds: 30,
+            exerciseMode: ExerciseMode.stretching,
+            isometricSeconds: 30,
+          );
+        } else if (isCardio) {
+          // Cardio defaults: no sets/reps/rest, use duration mode
+          wizardExercise = WizardExercise(
+            id: '${timestamp}_${exercise.id.hashCode}',
+            exerciseId: exercise.id,
+            name: exercise.name,
+            muscleGroup: exercise.muscleGroupName,
+            sets: 1,
+            reps: '',
+            restSeconds: 0,
+            exerciseMode: ExerciseMode.duration,
+            durationMinutes: 30,
+            intensity: 'moderate',
+          );
+        } else {
+          // Strength defaults
+          wizardExercise = WizardExercise(
+            id: '${timestamp}_${exercise.id.hashCode}',
+            exerciseId: exercise.id,
+            name: exercise.name,
+            muscleGroup: exercise.muscleGroupName,
+          );
+        }
         return w.copyWith(exercises: [...w.exercises, wizardExercise]);
       }
       return w;

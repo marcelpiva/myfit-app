@@ -1196,6 +1196,9 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
         onSimpleExercise: () {
           _showExercisePicker(context, ref, workoutId, muscleGroups);
         },
+        onStretchingExercise: () {
+          _showExercisePicker(context, ref, workoutId, muscleGroups, exerciseMode: ExerciseMode.stretching);
+        },
       ),
     );
   }
@@ -1366,7 +1369,8 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
   }
 
   void _showExercisePicker(
-      BuildContext context, WidgetRef ref, String workoutId, List<String> muscleGroups) {
+      BuildContext context, WidgetRef ref, String workoutId, List<String> muscleGroups,
+      {ExerciseMode? exerciseMode}) {
     final notifier = ref.read(planWizardProvider.notifier);
 
     showModalBottomSheet(
@@ -1386,7 +1390,7 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
             allowedMuscleGroups: muscleGroups,
             onExercisesSelected: (exercises, _) {
               for (final exercise in exercises) {
-                notifier.addExerciseToWorkout(workoutId, exercise);
+                notifier.addExerciseToWorkout(workoutId, exercise, exerciseMode: exerciseMode);
               }
               // MultiExercisePicker already pops itself
             },
@@ -3476,8 +3480,77 @@ class _ExerciseItemState extends ConsumerState<_ExerciseItem> {
                   const SizedBox(height: 16),
                 ],
 
-                // Strength Mode Controls (Sets/Reps/Rest) - only for non-cardio exercises
-                if (!isCardio) ...[
+                // Stretching Mode Controls
+                if (exerciseMode == ExerciseMode.stretching) ...[
+                  Text('Tempo de Manutenção', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [15, 20, 30, 45, 60].map((s) {
+                      final isSelected = (isometricSeconds ?? 30) == s;
+                      return ChoiceChip(
+                        label: Text('${s}s', style: TextStyle(color: isSelected ? Colors.white : null)),
+                        selected: isSelected,
+                        selectedColor: const Color(0xFF8B5CF6), // Violet
+                        checkmarkColor: Colors.white,
+                        onSelected: (_) => setState(() => isometricSeconds = s),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                  Text('Séries', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      IconButton.filled(
+                        onPressed: sets > 1 ? () => setState(() => sets--) : null,
+                        icon: Icon(LucideIcons.minus, size: 18, color: isDark ? Colors.white : Colors.black87),
+                        style: IconButton.styleFrom(
+                          backgroundColor: isDark ? AppColors.mutedDark : AppColors.muted,
+                        ),
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            '$sets',
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      IconButton.filled(
+                        onPressed: sets < 10 ? () => setState(() => sets++) : null,
+                        icon: Icon(LucideIcons.plus, size: 18, color: Colors.white),
+                        style: IconButton.styleFrom(
+                          backgroundColor: const Color(0xFF8B5CF6), // Violet
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text('Descanso', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [0, 15, 30, 45, 60].map((s) {
+                      final isSelected = restSeconds == s;
+                      return ChoiceChip(
+                        label: Text(s == 0 ? 'Nenhum' : '${s}s', style: TextStyle(color: isSelected ? Colors.white : null)),
+                        selected: isSelected,
+                        selectedColor: const Color(0xFF8B5CF6), // Violet
+                        checkmarkColor: Colors.white,
+                        onSelected: (_) => setState(() => restSeconds = s),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Strength Mode Controls (Sets/Reps/Rest) - only for non-cardio and non-stretching exercises
+                if (!isCardio && exerciseMode != ExerciseMode.stretching) ...[
                 // Sets
                 Text('Séries', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),

@@ -12,12 +12,14 @@ import '../../domain/models/training_plan.dart';
 class TechniqueSelectionModal extends StatefulWidget {
   final Function(TechniqueType) onTechniqueSelected;
   final VoidCallback onSimpleExercise;
+  final VoidCallback? onStretchingExercise;
   final List<String> muscleGroups;
 
   const TechniqueSelectionModal({
     super.key,
     required this.onTechniqueSelected,
     required this.onSimpleExercise,
+    this.onStretchingExercise,
     this.muscleGroups = const [],
   });
 
@@ -93,11 +95,29 @@ class _TechniqueSelectionModalState extends State<TechniqueSelectionModal> {
 
         const Divider(height: 1),
 
-        // Option 1: Simple Exercise
+        // Option 1: Stretching Exercise
+        if (widget.onStretchingExercise != null)
+          _OptionTile(
+            icon: LucideIcons.accessibility,
+            iconColor: const Color(0xFF8B5CF6), // Violet
+            title: 'Alongamento',
+            subtitle: 'Exercícios de flexibilidade com tempo de manutenção',
+            onTap: () {
+              HapticUtils.selectionClick();
+              Navigator.pop(context);
+              widget.onStretchingExercise!();
+            },
+            isDark: isDark,
+          ),
+
+        if (widget.onStretchingExercise != null)
+          const Divider(height: 1, indent: 72),
+
+        // Option 2: Simple Exercise (renamed to "Exercício")
         _OptionTile(
           icon: LucideIcons.dumbbell,
           iconColor: AppColors.primary,
-          title: 'Exercício Simples',
+          title: 'Exercício',
           subtitle: 'Adicionar um exercício individual com séries e repetições',
           onTap: () {
             HapticUtils.selectionClick();
@@ -109,7 +129,7 @@ class _TechniqueSelectionModalState extends State<TechniqueSelectionModal> {
 
         const Divider(height: 1, indent: 72),
 
-        // Option 2: Advanced Technique
+        // Option 3: Advanced Technique
         _OptionTile(
           icon: LucideIcons.layers,
           iconColor: AppColors.warning,

@@ -112,6 +112,28 @@ class ExerciseCardCompact extends StatelessWidget {
 
   int get _rest => (exercise?['rest_seconds'] ?? exercise?['rest'] ?? 60) as int;
 
+  String? get _exerciseModeStr => exercise?['exercise_mode'] as String?;
+
+  /// Converts exercise_mode string to ExerciseMode enum
+  ExerciseMode get _exerciseMode {
+    switch (_exerciseModeStr?.toLowerCase()) {
+      case 'duration':
+        return ExerciseMode.duration;
+      case 'interval':
+        return ExerciseMode.interval;
+      case 'distance':
+        return ExerciseMode.distance;
+      case 'stretching':
+        return ExerciseMode.stretching;
+      default:
+        return ExerciseMode.strength;
+    }
+  }
+
+  int? get _isometricSeconds => exercise?['isometric_seconds'] as int?;
+
+  bool get _isStretching => _exerciseMode == ExerciseMode.stretching;
+
   String? get _videoUrl {
     final exerciseData = exercise?['exercise'] as Map<String, dynamic>?;
     return exercise?['video_url'] as String? ?? exerciseData?['video_url'] as String?;
@@ -170,8 +192,13 @@ class ExerciseCardCompact extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Stretching mode badge
+                if (_isStretching) ...[
+                  _buildStretchingBadge(theme),
+                  const SizedBox(height: 8),
+                ]
                 // Technique type badge (bi-set, tri-set, superset, etc.)
-                if (_techniqueType != null && _techniqueType!.isNotEmpty) ...[
+                else if (_techniqueType != null && _techniqueType!.isNotEmpty) ...[
                   _buildTechniqueBadge(theme),
                   const SizedBox(height: 8),
                 ],
@@ -394,48 +421,73 @@ class ExerciseCardCompact extends StatelessWidget {
   }
 
   Widget _buildStatsRow(ThemeData theme) {
+    final stretchingColor = const Color(0xFF8B5CF6); // Violet for stretching
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: isDark
-            ? AppColors.mutedDark.withAlpha(80)
-            : AppColors.muted.withAlpha(120),
+        color: _isStretching
+            ? stretchingColor.withAlpha(isDark ? 30 : 20)
+            : (isDark
+                ? AppColors.mutedDark.withAlpha(80)
+                : AppColors.muted.withAlpha(120)),
         borderRadius: BorderRadius.circular(10),
+        border: _isStretching
+            ? Border.all(color: stretchingColor.withAlpha(60))
+            : null,
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildStatItem(theme, LucideIcons.repeat, '$_sets', 'Séries'),
-          _buildDivider(theme),
-          _buildStatItem(theme, LucideIcons.hash, _reps, 'Reps'),
-          _buildDivider(theme),
-          _buildStatItem(
-            theme,
-            LucideIcons.dumbbell,
-            _weight > 0
-                ? '${_weight.toStringAsFixed(_weight.truncateToDouble() == _weight ? 0 : 1)}kg'
-                : '--',
-            'Peso',
-          ),
-          _buildDivider(theme),
-          _buildStatItem(theme, LucideIcons.timer, '${_rest}s', 'Descanso'),
-        ],
-      ),
+      child: _isStretching
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildStatItem(theme, LucideIcons.repeat, '$_sets', 'Séries',
+                    color: stretchingColor),
+                _buildDivider(theme),
+                _buildStatItem(theme, LucideIcons.timer,
+                    '${_isometricSeconds ?? 30}s', 'Manter',
+                    color: stretchingColor),
+                _buildDivider(theme),
+                _buildStatItem(theme, LucideIcons.pause, '${_rest}s', 'Descanso',
+                    color: stretchingColor),
+              ],
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildStatItem(theme, LucideIcons.repeat, '$_sets', 'Séries'),
+                _buildDivider(theme),
+                _buildStatItem(theme, LucideIcons.hash, _reps, 'Reps'),
+                _buildDivider(theme),
+                _buildStatItem(
+                  theme,
+                  LucideIcons.dumbbell,
+                  _weight > 0
+                      ? '${_weight.toStringAsFixed(_weight.truncateToDouble() == _weight ? 0 : 1)}kg'
+                      : '--',
+                  'Peso',
+                ),
+                _buildDivider(theme),
+                _buildStatItem(
+                    theme, LucideIcons.timer, '${_rest}s', 'Descanso'),
+              ],
+            ),
     );
   }
 
-  Widget _buildStatItem(ThemeData theme, IconData icon, String value, String label) {
+  Widget _buildStatItem(ThemeData theme, IconData icon, String value, String label,
+      {Color? color}) {
     return Column(
       children: [
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 12, color: theme.colorScheme.onSurfaceVariant),
+            Icon(icon, size: 12, color: color ?? theme.colorScheme.onSurfaceVariant),
             const SizedBox(width: 4),
             Text(
               value,
               style: theme.textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.bold,
+                color: color,
               ),
             ),
           ],
@@ -443,7 +495,7 @@ class ExerciseCardCompact extends StatelessWidget {
         Text(
           label,
           style: theme.textTheme.labelSmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+            color: color ?? theme.colorScheme.onSurfaceVariant,
             fontSize: 10,
           ),
         ),
@@ -456,6 +508,42 @@ class ExerciseCardCompact extends StatelessWidget {
       height: 24,
       width: 1,
       color: theme.colorScheme.outline.withValues(alpha: 0.2),
+    );
+  }
+
+  Widget _buildStretchingBadge(ThemeData theme) {
+    const color = Color(0xFF8B5CF6); // Violet
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [color, color.withAlpha(180)],
+        ),
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: color.withAlpha(60),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(LucideIcons.accessibility, size: 14, color: Colors.white),
+          const SizedBox(width: 6),
+          Text(
+            'ALONGAMENTO',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

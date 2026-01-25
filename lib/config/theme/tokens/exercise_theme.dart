@@ -37,6 +37,7 @@ abstract class ExerciseTheme {
     ExerciseMode.duration: Color(0xFF22C55E), // Green - continuous cardio
     ExerciseMode.interval: Color(0xFFF59E0B), // Amber - high intensity intervals (distinct from giantset red)
     ExerciseMode.distance: Color(0xFF06B6D4), // Cyan - distance/endurance (distinct from dropset blue)
+    ExerciseMode.stretching: Color(0xFF8B5CF6), // Violet - calm and relaxation for flexibility
   };
 
   /// Get the color for a specific exercise mode.
@@ -58,6 +59,7 @@ abstract class ExerciseTheme {
       ExerciseMode.duration => LucideIcons.timer,
       ExerciseMode.interval => LucideIcons.zap,
       ExerciseMode.distance => LucideIcons.mapPin,
+      ExerciseMode.stretching => LucideIcons.accessibility,
     };
   }
 

@@ -77,6 +77,8 @@ enum ExerciseMode {
   interval, // HIIT, Tabata (work/rest intervals)
   @JsonValue('distance')
   distance, // Distance-based (running)
+  @JsonValue('stretching')
+  stretching, // Flexibility exercises with hold time (alongamento)
 }
 
 /// Extension to get display name for ExerciseMode
@@ -91,6 +93,8 @@ extension ExerciseModeDisplay on ExerciseMode {
         return 'Intervalado';
       case ExerciseMode.distance:
         return 'Distância';
+      case ExerciseMode.stretching:
+        return 'Alongamento';
     }
   }
 
@@ -104,6 +108,8 @@ extension ExerciseModeDisplay on ExerciseMode {
         return 'HIIT, Tabata (intervalos de trabalho/descanso)';
       case ExerciseMode.distance:
         return 'Corrida por distância com pace alvo';
+      case ExerciseMode.stretching:
+        return 'Exercícios de flexibilidade com tempo de manutenção';
     }
   }
 
@@ -117,6 +123,8 @@ extension ExerciseModeDisplay on ExerciseMode {
         return 'interval';
       case ExerciseMode.distance:
         return 'distance';
+      case ExerciseMode.stretching:
+        return 'stretching';
     }
   }
 }
@@ -131,6 +139,8 @@ extension ExerciseModeParsing on String {
         return ExerciseMode.interval;
       case 'distance':
         return ExerciseMode.distance;
+      case 'stretching':
+        return ExerciseMode.stretching;
       default:
         return ExerciseMode.strength;
     }
