@@ -58,6 +58,16 @@ class PushNotificationService {
       debugPrint('🔔 [PUSH] Solicitando permissão de notificação...');
       await _requestPermission();
 
+      // Configure iOS foreground notification presentation
+      if (Platform.isIOS) {
+        await _messaging.setForegroundNotificationPresentationOptions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+        debugPrint('🔔 [PUSH] ✅ iOS foreground presentation options configuradas');
+      }
+
       // Initialize local notifications
       debugPrint('🔔 [PUSH] Inicializando notificações locais...');
       await _initLocalNotifications();
@@ -156,10 +166,34 @@ class PushNotificationService {
   /// Get FCM token and send to backend
   Future<void> _getToken() async {
     try {
+      // On iOS, we need to ensure APNs token is available first
+      if (Platform.isIOS) {
+        debugPrint('🔔 [PUSH] iOS detectado - verificando token APNs...');
+
+        // Wait a bit for APNs token to be available
+        String? apnsToken;
+        for (int i = 0; i < 5; i++) {
+          apnsToken = await _messaging.getAPNSToken();
+          if (apnsToken != null) {
+            debugPrint('🔔 [PUSH] ✅ APNs Token obtido (${apnsToken.length} chars)');
+            break;
+          }
+          debugPrint('🔔 [PUSH] ⏳ Aguardando APNs token... (tentativa ${i + 1}/5)');
+          await Future.delayed(const Duration(seconds: 2));
+        }
+
+        if (apnsToken == null) {
+          debugPrint('🔔 [PUSH] ❌ APNs Token não disponível após 5 tentativas');
+          debugPrint('🔔 [PUSH] Verifique: Push Notifications capability no Xcode');
+          return;
+        }
+      }
+
       _fcmToken = await _messaging.getToken();
 
       if (_fcmToken != null) {
-        debugPrint('🔔 [PUSH] ✅ FCM Token obtido: ${_fcmToken!.substring(0, 30)}...');
+        debugPrint('🔔 [PUSH] ✅ FCM Token obtido (${_fcmToken!.length} chars)');
+        debugPrint('🔔 [PUSH] Token prefix: ${_fcmToken!.substring(0, 30)}...');
         await _sendTokenToBackend(_fcmToken!);
       } else {
         debugPrint('🔔 [PUSH] ❌ FCM Token é NULL - Verifique configuração do Firebase');

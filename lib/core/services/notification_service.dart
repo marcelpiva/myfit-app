@@ -28,7 +28,15 @@ class NotificationService {
         queryParameters: params,
       );
       if (response.statusCode == 200 && response.data != null) {
-        return (response.data as List).cast<Map<String, dynamic>>();
+        // API returns: {"notifications": [...], "total": N, "unread_count": N}
+        final data = response.data;
+        if (data is Map && data['notifications'] != null) {
+          return (data['notifications'] as List).cast<Map<String, dynamic>>();
+        }
+        // Fallback for list response
+        if (data is List) {
+          return data.cast<Map<String, dynamic>>();
+        }
       }
       return [];
     } on DioException catch (e) {
@@ -43,7 +51,8 @@ class NotificationService {
     try {
       final response = await _client.get(ApiEndpoints.notificationsUnreadCount);
       if (response.statusCode == 200 && response.data != null) {
-        return response.data['count'] as int? ?? 0;
+        // API returns: {"unread_count": N}
+        return response.data['unread_count'] as int? ?? response.data['count'] as int? ?? 0;
       }
       return 0;
     } on DioException catch (e) {
