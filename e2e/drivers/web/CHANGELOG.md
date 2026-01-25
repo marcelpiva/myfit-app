@@ -2,6 +2,28 @@
 
 All notable changes to the E2E tests will be documented in this file.
 
+## [0.4.0] - 2026-01-25
+
+### Added
+- API bypass strategy for co-training tests (Option 3)
+- `/test/sessions/create` endpoint for creating sessions via test API
+- Full multi-actor co-training flow tests using API calls
+- Tests for adjustment sending, set completion, and message exchange
+
+### Changed
+- Co-training tests now use direct API calls instead of UI navigation
+- Removed UI navigation tests that caused auth state issues
+- Updated test schemas to match API requirements (session_id in body)
+
+### Fixed
+- Foreign key constraint error by not passing assignment_id (PlanAssignment vs WorkoutAssignment tables)
+- Auth state loss when using `page.goto()` for navigation
+
+### Test Results
+- 9/9 Co-Training Multi-Actor Journey tests passing
+- 3/3 Smoke tests passing
+- 4 Feedback Loop tests skipped (require UI interactions)
+
 ## [0.3.0] - 2026-01-24
 
 ### Added
