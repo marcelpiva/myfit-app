@@ -825,7 +825,6 @@ class _ExerciseLibrarySheetState extends ConsumerState<_ExerciseLibrarySheet> {
     _MuscleGroupItem(MuscleGroup.triceps, 'Tríceps', LucideIcons.dumbbell),
     _MuscleGroupItem(MuscleGroup.legs, 'Pernas', LucideIcons.footprints),
     _MuscleGroupItem(MuscleGroup.abs, 'Abdômen', LucideIcons.alignCenter),
-    _MuscleGroupItem(MuscleGroup.cardio, 'Cardio', LucideIcons.activity),
   ];
 
   @override

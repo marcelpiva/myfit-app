@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.9.2] - 2026-01-25
 
 ### Fixed
+- **Exercise Library Filters** - Removed "Cardio" from muscle group filters
+  - Cardio exercises are now only accessible via the "Aeróbico" option
+  - Consistent behavior with other pickers in the app
+
 - **Push Notifications** - Complete overhaul of push notification system
   - Fixed FCM token registration endpoint path (`/notifications/notifications/devices`)
   - Added APNs token verification before FCM token retrieval on iOS
