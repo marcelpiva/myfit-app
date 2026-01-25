@@ -39,6 +39,14 @@ Quick upload - just build and upload
 
 Upload only - skip build
 
+### ios testflight_external
+
+```sh
+[bundle exec] fastlane ios testflight_external
+```
+
+Upload to TestFlight and distribute to external testers
+
 ### ios release
 
 ```sh
