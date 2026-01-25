@@ -745,7 +745,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                   const SizedBox(height: 6),
                   Text(
                     count > 1
-                        ? 'Você tem $count novos planos de treino'
+                        ? 'Você tem $count novas prescrições'
                         : planName,
                     style: TextStyle(
                       fontSize: 15,
@@ -2178,7 +2178,7 @@ class _StudentNewPlanSheet extends StatelessWidget {
                       const Icon(LucideIcons.sparkles, size: 14, color: AppColors.primary),
                       const SizedBox(width: 6),
                       Text(
-                        'Novo plano de treino',
+                        'Nova prescrição',
                         style: theme.textTheme.labelSmall?.copyWith(
                           fontWeight: FontWeight.w600,
                           color: AppColors.primary,

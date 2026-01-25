@@ -49,7 +49,7 @@ class CurrentPlanCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final planName = assignment['plan_name'] as String? ?? 'Plano de Treino';
+    final planName = assignment['plan_name'] as String? ?? 'Prescrição de Treino';
     final objective = assignment['plan_objective'] as String?;
     final startDateStr = assignment['start_date'] as String?;
     final endDateStr = assignment['end_date'] as String?;
@@ -402,7 +402,7 @@ class CurrentPlanCard extends StatelessWidget {
                           children: [
                             Icon(LucideIcons.xCircle, size: 16, color: Colors.red),
                             SizedBox(width: 8),
-                            Text('Encerrar plano', style: TextStyle(color: Colors.red)),
+                            Text('Encerrar prescrição', style: TextStyle(color: Colors.red)),
                           ],
                         ),
                       ),

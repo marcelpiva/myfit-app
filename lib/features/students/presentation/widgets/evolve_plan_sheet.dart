@@ -58,8 +58,8 @@ class _EvolvePlanSheetState extends ConsumerState<EvolvePlanSheet> {
           SnackBar(
             content: Text(
               success
-                  ? 'Plano renovado até ${_formatDate(_newEndDate!)}'
-                  : 'Erro ao renovar plano',
+                  ? 'Prescrição renovada até ${_formatDate(_newEndDate!)}'
+                  : 'Erro ao renovar prescrição',
             ),
             backgroundColor: success ? AppColors.success : AppColors.destructive,
             behavior: SnackBarBehavior.floating,
@@ -130,7 +130,7 @@ class _EvolvePlanSheetState extends ConsumerState<EvolvePlanSheet> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Evoluir Plano',
+                    'Evoluir Prescrição',
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -163,8 +163,8 @@ class _EvolvePlanSheetState extends ConsumerState<EvolvePlanSheet> {
                   _EvolutionOption(
                     icon: LucideIcons.calendarPlus,
                     iconColor: AppColors.success,
-                    title: 'Renovar Plano',
-                    description: 'Estender a data de término do plano atual',
+                    title: 'Renovar Prescrição',
+                    description: 'Estender a data de término da prescrição atual',
                     isDark: isDark,
                     expandable: true,
                     expandedContent: _buildExtendContent(theme, isDark),
@@ -202,7 +202,7 @@ class _EvolvePlanSheetState extends ConsumerState<EvolvePlanSheet> {
                     icon: LucideIcons.refreshCcw,
                     iconColor: AppColors.info,
                     title: 'Novo Ciclo',
-                    description: 'Iniciar novo ciclo baseado no plano atual',
+                    description: 'Iniciar novo ciclo baseado na prescrição atual',
                     isDark: isDark,
                     onTap: () => _createNewPhase('new_cycle'),
                   ),

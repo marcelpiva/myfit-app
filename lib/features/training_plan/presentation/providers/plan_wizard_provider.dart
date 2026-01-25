@@ -273,6 +273,7 @@ sealed class PlanWizardState with _$PlanWizardState {
     @Default(false) bool isTemplate,
     String? templateId,
     String? studentId,
+    @Default(false) bool isDirectPrescription, // Create directly for student (not saved as Model)
     String? editingPlanId,
     // Periodization fields
     String? basePlanId, // Source plan for periodization
@@ -448,6 +449,11 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
 
   void setStudentId(String? studentId) {
     state = state.copyWith(studentId: studentId);
+  }
+
+  /// Set direct prescription mode (not saved as Model in library)
+  void setDirectPrescription(bool isDirect) {
+    state = state.copyWith(isDirectPrescription: isDirect);
   }
 
   // Diet configuration methods
@@ -2214,6 +2220,9 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
         planId = state.editingPlanId;
       } else {
         // Create new plan
+        // If direct prescription, don't save as template (won't appear in "Meus Modelos")
+        // Otherwise, save as template by default so it appears in the library
+        final shouldBeTemplate = !state.isDirectPrescription;
         planId = await workoutService.createPlan(
           name: state.planName,
           goal: state.goal.toApiValue(),
@@ -2221,7 +2230,7 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
           splitType: state.splitType.toApiValue(),
           durationWeeks: state.durationWeeks,
           targetWorkoutMinutes: state.targetWorkoutMinutes,
-          isTemplate: state.isTemplate,
+          isTemplate: shouldBeTemplate,
           workouts: workoutsData,
           // Diet fields
           includeDiet: state.includeDiet,

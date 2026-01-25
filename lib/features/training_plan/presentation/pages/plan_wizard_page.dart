@@ -120,7 +120,7 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
         break;
       case 1: // Program info
         if (state.planName.trim().isEmpty) {
-          return 'Informe o nome do plano';
+          return 'Informe o nome do modelo';
         }
         if (state.planName.trim().length < 3) {
           return 'O nome deve ter pelo menos 3 caracteres';
@@ -174,7 +174,7 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
     final shouldClose = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Descartar plano?'),
+        title: const Text('Descartar modelo?'),
         content: const Text('As alterações não salvas serão perdidas.'),
         actions: [
           TextButton(
@@ -272,8 +272,19 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
       ref.invalidate(allPlansProvider);
       ref.invalidate(planDetailNotifierProvider(planId));
 
+      // Determine success message based on mode
+      String successMessage;
+      if (state.isEditing) {
+        successMessage = 'Modelo atualizado com sucesso!';
+      } else if (state.isDirectPrescription && state.studentId != null) {
+        successMessage = 'Prescrição criada com sucesso!';
+      } else if (state.studentId != null) {
+        successMessage = 'Modelo criado e prescrito com sucesso!';
+      } else {
+        successMessage = 'Modelo criado com sucesso!';
+      }
       scaffoldMessenger.showSnackBar(
-        SnackBar(content: Text(state.isEditing ? 'Plano atualizado com sucesso!' : 'Plano criado com sucesso!')),
+        SnackBar(content: Text(successMessage)),
       );
       // Navigate back to previous screen
       if (mounted) {
@@ -292,14 +303,14 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
   String? _validateAllSteps(PlanWizardState state) {
     // Validate program name
     if (state.planName.trim().isEmpty) {
-      return 'O nome do plano é obrigatório';
+      return 'O nome do modelo é obrigatório';
     }
     if (state.planName.trim().length < 3) {
-      return 'O nome do plano deve ter pelo menos 3 caracteres';
+      return 'O nome do modelo deve ter pelo menos 3 caracteres';
     }
     // Validate workouts
     if (state.workouts.isEmpty) {
-      return 'Adicione pelo menos um treino ao plano';
+      return 'Adicione pelo menos um treino ao modelo';
     }
     for (final workout in state.workouts) {
       if (workout.exercises.isEmpty) {
@@ -338,7 +349,7 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
                 const CircularProgressIndicator(),
                 const SizedBox(height: 16),
                 Text(
-                  'Carregando plano...',
+                  'Carregando modelo...',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurface.withAlpha(180),
                   ),
@@ -378,7 +389,7 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Erro ao carregar plano',
+                    'Erro ao carregar modelo',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -610,7 +621,7 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
                           state.isLastStep ? LucideIcons.check : LucideIcons.arrowRight,
                           size: 18,
                         ),
-                  label: Text(state.isLastStep ? (state.isEditing ? 'Salvar Alterações' : 'Criar Plano') : 'Continuar'),
+                  label: Text(state.isLastStep ? (state.isEditing ? 'Salvar Alterações' : 'Criar Modelo') : 'Continuar'),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -628,12 +639,12 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
 
   String _getPageTitle(PlanWizardState state) {
     if (state.isEditing) {
-      return 'Editar Plano';
+      return 'Editar Modelo';
     }
     if (state.phaseType != null) {
       return state.phaseType!.displayName;
     }
-    return 'Criar Plano';
+    return 'Criar Modelo';
   }
 
   String _getStepTitle(int step, PlanWizardState state) {
@@ -643,11 +654,11 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
     // Step titles (description only, number is dynamic)
     final titles = {
       0: 'Método de Criação',
-      1: 'Informações do Plano',
+      1: 'Informações do Modelo',
       2: 'Divisão de Treino',
       3: 'Configurar Treinos',
       4: 'Dieta (Opcional)',
-      5: 'Atribuir a Aluno',
+      5: 'Prescrever para Aluno',
       6: 'Revisão Final',
     };
 

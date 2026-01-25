@@ -63,7 +63,7 @@ class PrescribePlanSheet extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Prescrever Novo Plano',
+                    'Prescrever',
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -93,7 +93,7 @@ class PrescribePlanSheet extends StatelessWidget {
                     icon: LucideIcons.sparkles,
                     iconColor: AppColors.primary,
                     title: 'Criar do Zero',
-                    description: 'Crie um plano personalizado passo a passo',
+                    description: 'Crie uma prescrição personalizada passo a passo',
                     isDark: isDark,
                     onTap: () => _createFromScratch(context),
                   ),
@@ -101,8 +101,8 @@ class PrescribePlanSheet extends StatelessWidget {
                   _OptionTile(
                     icon: LucideIcons.layoutTemplate,
                     iconColor: AppColors.secondary,
-                    title: 'A Partir de Template',
-                    description: 'Use um modelo pronto como base',
+                    title: 'A Partir de Modelo',
+                    description: 'Use um modelo da sua biblioteca',
                     isDark: isDark,
                     onTap: () => _createFromTemplate(context),
                   ),
@@ -110,8 +110,8 @@ class PrescribePlanSheet extends StatelessWidget {
                   _OptionTile(
                     icon: LucideIcons.copy,
                     iconColor: AppColors.info,
-                    title: 'Duplicar Plano Existente',
-                    description: 'Copie e adapte um plano já criado',
+                    title: 'Duplicar Modelo Existente',
+                    description: 'Copie e adapte um modelo já criado',
                     isDark: isDark,
                     onTap: () => _duplicateExisting(context),
                   ),

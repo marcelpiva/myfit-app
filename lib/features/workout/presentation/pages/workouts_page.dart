@@ -539,8 +539,8 @@ class _WorkoutsList extends ConsumerWidget {
             const SizedBox(height: 8),
             Text(
               hasTrainer
-                  ? 'Seu Personal ainda não prescreveu um plano de treino'
-                  : 'Crie seu primeiro plano de treino',
+                  ? 'Seu Personal ainda não prescreveu seu treino'
+                  : 'Crie seu primeiro treino',
               style: TextStyle(
                 fontSize: 14,
                 color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
@@ -591,7 +591,7 @@ class _WorkoutsList extends ConsumerWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  hasTrainer ? 'Planos Prescritos' : 'Planos',
+                  hasTrainer ? 'Minhas Prescrições' : 'Meus Treinos',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -696,7 +696,7 @@ class _PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = plan['name'] as String? ?? 'Plano';
+    final name = plan['name'] as String? ?? 'Prescrição';
     final goal = plan['goal'] as String?;
     final difficulty = plan['difficulty'] as String?;
     final splitType = plan['split_type'] as String?;

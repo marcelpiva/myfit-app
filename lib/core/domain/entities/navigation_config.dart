@@ -76,9 +76,9 @@ class NavigationConfig {
       route: '/students',
     ),
     NavDestination(
-      label: 'Planos',
+      label: 'Modelos',
       icon: LucideIcons.dumbbell,
-      route: '/trainer-plans',  // Trainer's plans list (Meus Planos)
+      route: '/trainer-plans',  // Trainer's models list (Meus Modelos)
     ),
     NavDestination(
       label: 'Agenda',

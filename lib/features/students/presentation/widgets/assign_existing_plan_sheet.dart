@@ -175,13 +175,13 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
             ),
             const SizedBox(width: 12),
             const Expanded(
-              child: Text('Plano já atribuído'),
+              child: Text('Modelo já prescrito'),
             ),
           ],
         ),
         content: Text(
-          'O plano "$_selectedPlanName" já está atribuído a este aluno.\n\n'
-          'Se deseja substituí-lo, primeiro encerre a atribuição atual na aba de planos.',
+          'O modelo "$_selectedPlanName" já foi prescrito para este aluno.\n\n'
+          'Se deseja substituí-lo, primeiro encerre a prescrição atual.',
         ),
         actions: [
           FilledButton(
@@ -197,7 +197,7 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
   Future<_ConflictAction?> _showConflictDialog(StudentPlansState plansState) async {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final currentPlanName = plansState.currentPlanName ?? 'Plano atual';
+    final currentPlanName = plansState.currentPlanName ?? 'Prescrição atual';
     final currentEndDateStr = plansState.currentAssignment?['end_date'] as String?;
     String endDateDisplay = '';
     if (currentEndDateStr != null) {
@@ -219,7 +219,7 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
             ),
             const SizedBox(width: 12),
             const Expanded(
-              child: Text('Plano ativo existente'),
+              child: Text('Prescrição ativa existente'),
             ),
           ],
         ),
@@ -228,7 +228,7 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Este aluno já possui um plano ativo:',
+              'Este aluno já possui uma prescrição ativa:',
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 8),
@@ -272,8 +272,8 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
             children: [
               _ConflictOptionButton(
                 icon: LucideIcons.replace,
-                label: 'Substituir plano atual',
-                description: 'Encerra o plano atual e ativa o novo',
+                label: 'Substituir prescrição atual',
+                description: 'Encerra a prescrição atual e ativa a nova',
                 isDark: isDark,
                 onTap: () => Navigator.pop(ctx, _ConflictAction.replace),
               ),
@@ -281,7 +281,7 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
               _ConflictOptionButton(
                 icon: LucideIcons.layers,
                 label: 'Adicionar como complementar',
-                description: 'Ambos os planos ficam ativos',
+                description: 'Ambas as prescrições ficam ativas',
                 isDark: isDark,
                 onTap: () => Navigator.pop(ctx, _ConflictAction.addComplementary),
               ),
@@ -290,7 +290,7 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
                 _ConflictOptionButton(
                   icon: LucideIcons.calendarPlus,
                   label: 'Agendar para depois',
-                  description: 'Inicia quando o plano atual terminar',
+                  description: 'Inicia quando a prescrição atual terminar',
                   isDark: isDark,
                   onTap: () => Navigator.pop(ctx, _ConflictAction.scheduleAfter),
                 ),
@@ -386,11 +386,11 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
         String message;
         switch (action) {
           case _ConflictAction.replace:
-            message = 'Plano substituído com sucesso';
+            message = 'Prescrição substituída com sucesso';
           case _ConflictAction.addComplementary:
             message = '$_selectedPlanName adicionado como complementar';
           case _ConflictAction.scheduleAfter:
-            message = '$_selectedPlanName agendado para após o plano atual';
+            message = '$_selectedPlanName agendado para após a prescrição atual';
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -516,7 +516,7 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Atribuir Plano Existente',
+                        'Usar Modelo Existente',
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -575,7 +575,7 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Buscar plano...',
+                hintText: 'Buscar modelo...',
                 prefixIcon: const Icon(LucideIcons.search, size: 20),
                 filled: true,
                 fillColor: isDark ? AppColors.cardDark : AppColors.card,
@@ -607,7 +607,7 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Erro ao carregar planos',
+                      'Erro ao carregar modelos',
                       style: theme.textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
@@ -645,14 +645,14 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
                         const SizedBox(height: 16),
                         Text(
                           search.isEmpty
-                              ? 'Nenhum plano criado'
-                              : 'Nenhum plano encontrado',
+                              ? 'Nenhum modelo criado'
+                              : 'Nenhum modelo encontrado',
                           style: theme.textTheme.titleMedium,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           search.isEmpty
-                              ? 'Crie um plano primeiro para atribuir'
+                              ? 'Crie um modelo primeiro para prescrever'
                               : 'Tente uma busca diferente',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: isDark
@@ -671,7 +671,7 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
                   itemBuilder: (context, index) {
                     final plan = filteredPlans[index];
                     final planId = plan['id'] as String;
-                    final planName = plan['name'] as String? ?? 'Plano sem nome';
+                    final planName = plan['name'] as String? ?? 'Modelo sem nome';
                     final objective = plan['objective'] as String? ?? plan['goal'] as String?;
                     final difficulty = plan['difficulty'] as String?;
                     final splitType = plan['split_type'] as String?;
@@ -855,7 +855,7 @@ class _AssignExistingPlanSheetState extends ConsumerState<AssignExistingPlanShee
                         ),
                       )
                     : const Icon(LucideIcons.checkCircle, size: 20),
-                label: Text(_isLoading ? 'Atribuindo...' : 'Atribuir Plano'),
+                label: Text(_isLoading ? 'Prescrevendo...' : 'Prescrever'),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(

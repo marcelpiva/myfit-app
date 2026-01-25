@@ -51,7 +51,7 @@ class StudentPlansTab extends ConsumerWidget {
             _buildSectionHeader(
               theme,
               isDark,
-              'Novos Planos',
+              'Novas Prescrições',
               LucideIcons.sparkles,
               trailing: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -77,7 +77,7 @@ class StudentPlansTab extends ConsumerWidget {
           _buildSectionHeader(
             theme,
             isDark,
-            'Planos Ativos',
+            'Prescrição Ativa',
             LucideIcons.target,
             trailing: state.activePlans.length > 1
                 ? Text(
@@ -119,7 +119,7 @@ class StudentPlansTab extends ConsumerWidget {
             _buildSectionHeader(
               theme,
               isDark,
-              'Planos Agendados',
+              'Prescrições Agendadas',
               LucideIcons.calendarClock,
               trailing: Text(
                 '${state.scheduledPlans.length}',
@@ -145,7 +145,7 @@ class StudentPlansTab extends ConsumerWidget {
           _buildSectionHeader(
             theme,
             isDark,
-            'Histórico de Planos',
+            'Histórico de Prescrições',
             LucideIcons.history,
             trailing: state.historyAssignments.isNotEmpty
                 ? Text(
@@ -234,14 +234,14 @@ class StudentPlansTab extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Nenhum plano ativo',
+            'Nenhuma prescrição ativa',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Este aluno não possui um plano de treino atribuído',
+            'Este aluno não possui uma prescrição de treino',
             style: theme.textTheme.bodySmall?.copyWith(
               color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
             ),
@@ -251,7 +251,7 @@ class StudentPlansTab extends ConsumerWidget {
           FilledButton.icon(
             onPressed: () => _showPrescribeSheet(context),
             icon: const Icon(LucideIcons.plus, size: 18),
-            label: const Text('Prescrever Plano'),
+            label: const Text('Prescrever'),
           ),
         ],
       ),
@@ -270,7 +270,7 @@ class StudentPlansTab extends ConsumerWidget {
           child: _QuickActionCard(
             icon: LucideIcons.filePlus,
             label: 'Prescrever Novo',
-            description: 'Criar plano personalizado',
+            description: 'Criar prescrição personalizada',
             isDark: isDark,
             onTap: () => _showPrescribeSheet(context),
           ),
@@ -279,8 +279,8 @@ class StudentPlansTab extends ConsumerWidget {
         Expanded(
           child: _QuickActionCard(
             icon: LucideIcons.fileSymlink,
-            label: 'Atribuir Existente',
-            description: 'Usar plano já criado',
+            label: 'Usar Modelo',
+            description: 'Prescrever a partir de modelo',
             isDark: isDark,
             onTap: () => _showAssignExistingSheet(context, ref),
           ),
@@ -299,7 +299,7 @@ class StudentPlansTab extends ConsumerWidget {
   ) {
     return Column(
       children: newPlans.map((assignment) {
-        final planName = assignment['plan_name'] as String? ?? 'Plano sem nome';
+        final planName = assignment['plan_name'] as String? ?? 'Prescrição sem nome';
         final startDateStr = assignment['start_date'] as String?;
         final notes = assignment['notes'] as String?;
 
@@ -421,7 +421,7 @@ class StudentPlansTab extends ConsumerWidget {
                       children: [
                         Icon(LucideIcons.eye, size: 16),
                         SizedBox(width: 8),
-                        Text('Ver plano'),
+                        Text('Ver prescrição'),
                       ],
                     ),
                   ),
@@ -431,7 +431,7 @@ class StudentPlansTab extends ConsumerWidget {
                       children: [
                         Icon(LucideIcons.pencil, size: 16),
                         SizedBox(width: 8),
-                        Text('Editar plano'),
+                        Text('Editar prescrição'),
                       ],
                     ),
                   ),
@@ -453,7 +453,7 @@ class StudentPlansTab extends ConsumerWidget {
   ) {
     return Column(
       children: scheduled.map((assignment) {
-        final planName = assignment['plan_name'] as String? ?? 'Plano sem nome';
+        final planName = assignment['plan_name'] as String? ?? 'Prescrição sem nome';
         final startDateStr = assignment['start_date'] as String?;
         final endDateStr = assignment['end_date'] as String?;
         final status = assignment['status'] as String?;
@@ -561,7 +561,7 @@ class StudentPlansTab extends ConsumerWidget {
                       children: [
                         Icon(LucideIcons.eye, size: 16),
                         SizedBox(width: 8),
-                        Text('Ver plano'),
+                        Text('Ver prescrição'),
                       ],
                     ),
                   ),
@@ -604,7 +604,7 @@ class StudentPlansTab extends ConsumerWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Nenhum plano anterior',
+              'Nenhuma prescrição anterior',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
               ),
@@ -623,7 +623,7 @@ class StudentPlansTab extends ConsumerWidget {
   ) {
     return Column(
       children: history.map((assignment) {
-        final planName = assignment['plan_name'] as String? ?? 'Plano sem nome';
+        final planName = assignment['plan_name'] as String? ?? 'Prescrição sem nome';
         final endDateStr = assignment['end_date'] as String?;
         final startDateStr = assignment['start_date'] as String?;
         final status = assignment['status'] as String?;
@@ -782,7 +782,7 @@ class StudentPlansTab extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Erro ao carregar planos',
+              'Erro ao carregar prescrições',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -878,7 +878,7 @@ class StudentPlansTab extends ConsumerWidget {
         studentUserId: studentUserId,
         studentName: studentName,
         currentPlanId: assignment['plan_id'] as String,
-        currentPlanName: assignment['plan_name'] as String? ?? 'Plano atual',
+        currentPlanName: assignment['plan_name'] as String? ?? 'Prescrição atual',
         currentAssignmentId: assignment['id'] as String?,
         currentEndDate: endDate,
       ),
@@ -890,10 +890,10 @@ class StudentPlansTab extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Encerrar plano?'),
+        title: const Text('Encerrar prescrição?'),
         content: const Text(
-          'O plano será movido para o histórico. '
-          'O aluno não terá mais acesso a este plano.',
+          'A prescrição será movida para o histórico. '
+          'O aluno não terá mais acesso a esta prescrição.',
         ),
         actions: [
           TextButton(
@@ -911,8 +911,8 @@ class StudentPlansTab extends ConsumerWidget {
                   SnackBar(
                     content: Text(
                       success
-                          ? 'Plano encerrado com sucesso'
-                          : 'Erro ao encerrar plano',
+                          ? 'Prescrição encerrada com sucesso'
+                          : 'Erro ao encerrar prescrição',
                     ),
                     backgroundColor: success ? AppColors.success : AppColors.destructive,
                     behavior: SnackBarBehavior.floating,
@@ -938,7 +938,7 @@ class StudentPlansTab extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         title: const Text('Cancelar atribuição?'),
         content: const Text(
-          'A atribuição pendente será cancelada e o aluno não receberá este plano.',
+          'A atribuição pendente será cancelada e o aluno não receberá esta prescrição.',
         ),
         actions: [
           TextButton(
@@ -1007,7 +1007,7 @@ class StudentPlansTab extends ConsumerWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              'Ver todo o histórico ($totalCount planos)',
+              'Ver todo o histórico ($totalCount prescrições)',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: AppColors.primary,
                 fontWeight: FontWeight.w600,

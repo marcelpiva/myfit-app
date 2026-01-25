@@ -191,13 +191,13 @@ class _TemplateBrowserSheetState extends ConsumerState<TemplateBrowserSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Meus Planos',
+                            'Meus Modelos',
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
-                            'Selecione um plano como base',
+                            'Selecione um modelo como base',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                             ),

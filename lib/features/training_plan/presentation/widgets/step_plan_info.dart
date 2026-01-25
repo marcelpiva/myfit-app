@@ -133,7 +133,7 @@ class _StepPlanInfoState extends ConsumerState<StepPlanInfo>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Informações do Plano',
+                    'Informações do Modelo',
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: isDark ? AppColors.foregroundDark : AppColors.foreground,
@@ -141,7 +141,7 @@ class _StepPlanInfoState extends ConsumerState<StepPlanInfo>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Personalize seu plano de treino',
+                    'Personalize seu modelo de treino',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: isDark
                           ? AppColors.mutedForegroundDark
@@ -169,7 +169,7 @@ class _StepPlanInfoState extends ConsumerState<StepPlanInfo>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionLabel(theme, isDark, 'Nome do Plano', isRequired: true),
+        _buildSectionLabel(theme, isDark, 'Nome do Modelo', isRequired: true),
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(

@@ -11,17 +11,19 @@ import '../../../../core/services/workout_service.dart';
 import '../../../../shared/presentation/components/role_bottom_navigation.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
-// Provider for all user's plans (both created and imported)
+// Provider for all user's models (templates only - not direct prescriptions)
 final allPlansProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   final service = WorkoutService();
   final plans = await service.getPlans(templatesOnly: false);
   final currentUser = ref.read(currentUserProvider);
   final userId = currentUser?.id;
   if (userId == null) return [];
-  // Filter plans created by current user
+  // Filter plans created by current user that are templates (models)
+  // Direct prescriptions (is_template=false) should not appear here
   return plans.where((p) {
     final createdById = p['created_by_id'];
-    return createdById != null && createdById.toString() == userId;
+    final isTemplate = p['is_template'] as bool? ?? true;
+    return createdById != null && createdById.toString() == userId && isTemplate;
   }).toList();
 });
 
@@ -54,14 +56,14 @@ class TrainerPlansPage extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Meus Planos',
+                          'Meus Modelos',
                           style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Crie e gerencie seus planos de treino',
+                          'Crie e gerencie seus modelos de treino',
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: isDark
                                 ? AppColors.mutedForegroundDark
@@ -117,9 +119,9 @@ class _PlansList extends ConsumerWidget {
         if (plans.isEmpty) {
           return _EmptyState(
             icon: LucideIcons.dumbbell,
-            message: 'Nenhum plano criado',
-            subtitle: 'Crie seu primeiro plano de treino',
-            actionLabel: 'Criar Plano',
+            message: 'Nenhum modelo criado',
+            subtitle: 'Crie seu primeiro modelo de treino',
+            actionLabel: 'Criar Modelo',
             onAction: () {
               HapticUtils.lightImpact();
               context.push(RouteNames.planWizard);
@@ -172,7 +174,7 @@ class _PlansList extends ConsumerWidget {
   ) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final name = plan['name'] as String? ?? 'Plano';
+    final name = plan['name'] as String? ?? 'Modelo';
     final description = plan['description'] as String?;
     final goal = plan['goal'] as String? ?? '';
     final difficulty = plan['difficulty'] as String? ?? '';
@@ -344,10 +346,10 @@ class _PlansList extends ConsumerWidget {
     bool isImported,
   ) async {
     final planId = plan['id'] as String?;
-    final planName = plan['name'] as String? ?? 'Plano';
+    final planName = plan['name'] as String? ?? 'Modelo';
     if (planId == null) return;
 
-    final title = isImported ? 'Remover Plano' : 'Excluir Plano';
+    final title = isImported ? 'Remover Modelo' : 'Excluir Modelo';
     final message = isImported
         ? 'Deseja remover "$planName" da sua lista?'
         : 'Deseja excluir "$planName"? Esta ação não pode ser desfeita.';
@@ -379,7 +381,7 @@ class _PlansList extends ConsumerWidget {
         ref.invalidate(allPlansProvider);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Plano ${isImported ? 'removido' : 'excluído'} com sucesso')),
+            SnackBar(content: Text('Modelo ${isImported ? 'removido' : 'excluído'} com sucesso')),
           );
         }
       } catch (e) {
@@ -398,7 +400,7 @@ class _PlansList extends ConsumerWidget {
     Map<String, dynamic> plan,
   ) async {
     final planId = plan['id'] as String?;
-    final planName = plan['name'] as String? ?? 'Plano';
+    final planName = plan['name'] as String? ?? 'Modelo';
     final isPublic = plan['is_public'] as bool? ?? false;
     if (planId == null) return;
 
@@ -436,7 +438,7 @@ class _PlansList extends ConsumerWidget {
         ref.invalidate(allPlansProvider);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Plano ${isPublic ? 'despublicado' : 'publicado'} com sucesso')),
+            SnackBar(content: Text('Modelo ${isPublic ? 'despublicado' : 'publicado'} com sucesso')),
           );
         }
       } catch (e) {
@@ -455,21 +457,21 @@ class _PlansList extends ConsumerWidget {
     Map<String, dynamic> plan,
   ) async {
     final planId = plan['id'] as String?;
-    final planName = plan['name'] as String? ?? 'Plano';
+    final planName = plan['name'] as String? ?? 'Modelo';
     if (planId == null) return;
 
-    // Show dialog to get new plan name
+    // Show dialog to get new model name
     final nameController = TextEditingController(text: '$planName (Cópia)');
     final newName = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Duplicar Plano'),
+        title: const Text('Duplicar Modelo'),
         content: TextField(
           controller: nameController,
           autofocus: true,
           decoration: const InputDecoration(
-            labelText: 'Nome do novo plano',
-            hintText: 'Digite o nome do plano',
+            labelText: 'Nome do novo modelo',
+            hintText: 'Digite o nome do modelo',
           ),
         ),
         actions: [
@@ -497,7 +499,7 @@ class _PlansList extends ConsumerWidget {
       if (context.mounted && newPlanId != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Plano "$newName" duplicado com sucesso'),
+            content: Text('Modelo "$newName" duplicado com sucesso'),
             action: SnackBarAction(
               label: 'Editar',
               onPressed: () {
@@ -635,7 +637,7 @@ class _UnifiedPlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final name = plan['name'] as String? ?? 'Plano';
+    final name = plan['name'] as String? ?? 'Modelo';
     final goal = plan['goal'] as String? ?? '';
     final difficulty = plan['difficulty'] as String? ?? '';
     final splitType = plan['split_type'] as String? ?? '';

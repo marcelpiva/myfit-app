@@ -544,10 +544,12 @@ class PlansNotifier extends CachedStateNotifier<PlansState> {
         final assignments = await _service.getPlanAssignments(activeOnly: true);
 
         // Transform assignments to plan format for UI consistency
+        // Use plan_snapshot if available (independent copy), fallback to plan (backwards compatibility)
         plans = assignments.map((assignment) {
-          final plan = assignment['plan'] as Map<String, dynamic>? ?? {};
+          final planSnapshot = assignment['plan_snapshot'] as Map<String, dynamic>?;
+          final plan = planSnapshot ?? (assignment['plan'] as Map<String, dynamic>? ?? {});
           // Map plan_workouts to workouts for UI compatibility
-          final planWorkouts = plan['plan_workouts'] as List? ?? [];
+          final planWorkouts = plan['plan_workouts'] as List? ?? plan['workouts'] as List? ?? [];
           return <String, dynamic>{
             ...plan,
             'workouts': planWorkouts, // UI expects 'workouts' field

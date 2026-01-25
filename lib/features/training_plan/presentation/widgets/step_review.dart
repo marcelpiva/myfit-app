@@ -23,7 +23,7 @@ class StepReview extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Revisar Plano',
+            'Revisar Modelo',
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -78,7 +78,7 @@ class StepReview extends ConsumerWidget {
                         children: [
                           Text(
                             state.planName.isEmpty
-                                ? 'Plano sem nome'
+                                ? 'Modelo sem nome'
                                 : state.planName,
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
@@ -207,7 +207,7 @@ class StepReview extends ConsumerWidget {
 
           // Workouts List
           Text(
-            'Treinos do Plano',
+            'Treinos do Modelo',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),

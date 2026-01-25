@@ -29,7 +29,7 @@ class StudentPlanHistoryPage extends ConsumerWidget {
         title: Text(
           studentName != null
               ? 'Histórico - $studentName'
-              : 'Histórico de Planos',
+              : 'Histórico de Prescrições',
         ),
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft),
@@ -107,14 +107,14 @@ class StudentPlanHistoryPage extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Nenhum plano no histórico',
+              'Nenhuma prescrição no histórico',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Planos encerrados aparecerão aqui',
+              'Prescrições encerradas aparecerão aqui',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: isDark
                     ? AppColors.mutedForegroundDark
@@ -150,7 +150,7 @@ class StudentPlanHistoryPage extends ConsumerWidget {
     bool isDark,
     Map<String, dynamic> assignment,
   ) {
-    final planName = assignment['plan_name'] as String? ?? 'Plano';
+    final planName = assignment['plan_name'] as String? ?? 'Prescrição';
     final startDate = assignment['start_date'] as String?;
     final endDate = assignment['end_date'] as String?;
     final planId = assignment['plan_id'] as String?;

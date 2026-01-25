@@ -33,51 +33,175 @@ class StepStudentAssignment extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Atribuir a um Aluno',
+            'Prescrever para Aluno',
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Opcional: selecione um aluno para atribuir este plano automaticamente',
+            'Opcional: selecione um aluno para prescrever este modelo',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 16),
 
-          // Pre-selected student banner
-          if (state.studentId != null)
+          // Direct prescription toggle (only shown when student is selected)
+          if (state.studentId != null) ...[
             Container(
               margin: const EdgeInsets.only(bottom: 16),
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.success.withAlpha(isDark ? 30 : 20),
-                borderRadius: BorderRadius.circular(10),
+                color: isDark ? AppColors.cardDark : AppColors.card,
+                borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: AppColors.success.withAlpha(isDark ? 60 : 40),
+                  color: isDark ? AppColors.borderDark : AppColors.border,
                 ),
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    LucideIcons.userCheck,
-                    size: 20,
-                    color: AppColors.success,
+                  Row(
+                    children: [
+                      Icon(
+                        LucideIcons.info,
+                        size: 18,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Como deseja criar este treino?',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Aluno pré-selecionado. Você pode alterar ou pular esta etapa.',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                  const SizedBox(height: 12),
+                  // Option 1: Save as Model
+                  GestureDetector(
+                    onTap: () {
+                      HapticUtils.lightImpact();
+                      notifier.setDirectPrescription(false);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: !state.isDirectPrescription
+                            ? AppColors.primary.withAlpha(isDark ? 25 : 15)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: !state.isDirectPrescription
+                              ? AppColors.primary
+                              : (isDark ? AppColors.borderDark : AppColors.border),
+                          width: !state.isDirectPrescription ? 2 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            !state.isDirectPrescription
+                                ? LucideIcons.checkCircle2
+                                : LucideIcons.circle,
+                            size: 20,
+                            color: !state.isDirectPrescription
+                                ? AppColors.primary
+                                : (isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Salvar como Modelo',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Aparecerá em "Meus Modelos" para reutilizar',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: isDark
+                                        ? AppColors.mutedForegroundDark
+                                        : AppColors.mutedForeground,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Option 2: Direct Prescription
+                  GestureDetector(
+                    onTap: () {
+                      HapticUtils.lightImpact();
+                      notifier.setDirectPrescription(true);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: state.isDirectPrescription
+                            ? AppColors.secondary.withAlpha(isDark ? 25 : 15)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: state.isDirectPrescription
+                              ? AppColors.secondary
+                              : (isDark ? AppColors.borderDark : AppColors.border),
+                          width: state.isDirectPrescription ? 2 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            state.isDirectPrescription
+                                ? LucideIcons.checkCircle2
+                                : LucideIcons.circle,
+                            size: 20,
+                            color: state.isDirectPrescription
+                                ? AppColors.secondary
+                                : (isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Criar direto para o aluno',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Não aparece em "Meus Modelos"',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: isDark
+                                        ? AppColors.mutedForegroundDark
+                                        : AppColors.mutedForeground,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ],
               ),
             ),
+          ],
 
           // Skip option
           GestureDetector(
@@ -227,7 +351,7 @@ class StepStudentAssignment extends ConsumerWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Adicione alunos para poder atribuir planos',
+                          'Adicione alunos para prescrever treinos',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                           ),
