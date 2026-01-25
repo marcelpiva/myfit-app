@@ -59,9 +59,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier(this._authService, this._ref) : super(const AuthState());
 
   /// Initialize push notifications (only on mobile platforms)
-  void _initPushNotifications() {
+  Future<void> _initPushNotifications() async {
     if (!kIsWeb) {
-      PushNotificationService().init();
+      final pushService = PushNotificationService();
+      await pushService.init();
+      // Re-register token to ensure it's sent with valid auth
+      await pushService.registerToken();
     }
   }
 

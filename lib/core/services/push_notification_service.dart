@@ -177,11 +177,12 @@ class PushNotificationService {
     _sendTokenToBackend(token);
   }
 
-  /// Send FCM token to backend
-  Future<void> _sendTokenToBackend(String token) async {
-    debugPrint('🔔 [PUSH] Enviando FCM token para backend...');
+  /// Send FCM token to backend with retry logic
+  Future<void> _sendTokenToBackend(String token, {int retryCount = 0}) async {
+    debugPrint('🔔 [PUSH] Enviando FCM token para backend... (tentativa ${retryCount + 1})');
     debugPrint('🔔 [PUSH] Endpoint: ${ApiEndpoints.registerDevice}');
     debugPrint('🔔 [PUSH] Platform: ${Platform.isIOS ? 'ios' : 'android'}');
+    debugPrint('🔔 [PUSH] Token length: ${token.length}');
 
     try {
       final client = ApiClient.instance;
@@ -192,25 +193,59 @@ class PushNotificationService {
           'platform': Platform.isIOS ? 'ios' : 'android',
         },
       );
-      debugPrint('🔔 [PUSH] ✅ FCM token enviado para backend com sucesso!');
-      debugPrint('🔔 [PUSH] Response status: ${response.statusCode}');
 
-      // Log success to GlitchTip
-      ObservabilityService.captureMessage(
-        'FCM token registered',
-        severity: EventSeverity.info,
-        extras: {
-          'platform': Platform.isIOS ? 'iOS' : 'Android',
-          'token_prefix': token.substring(0, 20),
-        },
-      );
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        debugPrint('🔔 [PUSH] ✅ FCM token enviado para backend com sucesso!');
+        debugPrint('🔔 [PUSH] Response status: ${response.statusCode}');
+
+        // Log success to GlitchTip
+        ObservabilityService.captureMessage(
+          'FCM token registered',
+          severity: EventSeverity.info,
+          extras: {
+            'platform': Platform.isIOS ? 'iOS' : 'Android',
+            'token_prefix': token.substring(0, 20),
+          },
+        );
+      } else {
+        debugPrint('🔔 [PUSH] ⚠️ Resposta inesperada: ${response.statusCode}');
+        debugPrint('🔔 [PUSH] Response data: ${response.data}');
+        // Retry on unexpected status
+        if (retryCount < 3) {
+          await Future.delayed(Duration(seconds: 2 * (retryCount + 1)));
+          await _sendTokenToBackend(token, retryCount: retryCount + 1);
+        }
+      }
     } catch (e, stackTrace) {
       debugPrint('🔔 [PUSH] ❌ Erro ao enviar FCM token para backend: $e');
       debugPrint('🔔 [PUSH] StackTrace: $stackTrace');
-      ObservabilityService.captureException(
-        e,
-        message: 'Failed to register FCM token',
-      );
+
+      // Retry up to 3 times with exponential backoff
+      if (retryCount < 3) {
+        final delay = Duration(seconds: 2 * (retryCount + 1));
+        debugPrint('🔔 [PUSH] Tentando novamente em ${delay.inSeconds}s...');
+        await Future.delayed(delay);
+        await _sendTokenToBackend(token, retryCount: retryCount + 1);
+      } else {
+        debugPrint('🔔 [PUSH] ❌ Falha após ${retryCount + 1} tentativas');
+        ObservabilityService.captureException(
+          e,
+          message: 'Failed to register FCM token after retries',
+        );
+      }
+    }
+  }
+
+  /// Force re-registration of FCM token (call after login)
+  Future<void> registerToken() async {
+    debugPrint('🔔 [PUSH] registerToken() chamado');
+
+    if (_fcmToken != null) {
+      debugPrint('🔔 [PUSH] Re-registrando token existente...');
+      await _sendTokenToBackend(_fcmToken!);
+    } else {
+      debugPrint('🔔 [PUSH] Token não disponível, obtendo novo token...');
+      await _getToken();
     }
   }
 
