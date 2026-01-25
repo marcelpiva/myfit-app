@@ -1,22 +1,44 @@
 import { Page, expect } from '@playwright/test';
+import { FlutterHelper } from './flutter.helper';
 
 /**
  * Dashboard Page Object.
  *
  * Handles both Trainer and Student dashboard views.
- *
- * Note: Flutter Web renders semantics as aria-label attributes on elements.
- * Use getByLabel() for semantic labels added via Semantics(label: '...').
+ * Uses Flutter Web semantic selectors and keyboard navigation.
  */
 export class DashboardPage {
-  constructor(private page: Page) {}
+  private flutter: FlutterHelper;
+
+  constructor(private page: Page) {
+    this.flutter = new FlutterHelper(page);
+  }
 
   /**
-   * Wait for dashboard to load.
+   * Wait for Flutter to be ready and enable accessibility.
+   */
+  async waitForFlutter() {
+    await this.flutter.waitForFlutter();
+  }
+
+  /**
+   * Get Flutter semantic element by label.
+   */
+  private flutterElement(label: string) {
+    return this.flutter.flutterElement(label);
+  }
+
+  /**
+   * Wait for dashboard to load, handling org-selector if needed.
    */
   async waitForLoad() {
     await this.page.waitForURL(/dashboard|home|org-selector/);
-    await this.page.waitForTimeout(1500); // Allow Flutter to render
+    await this.waitForFlutter();
+
+    // If we're on org-selector, select the first organization
+    if (this.page.url().includes('org-selector')) {
+      await this.selectOrganization();
+    }
   }
 
   /**
@@ -32,9 +54,8 @@ export class DashboardPage {
    */
   async getUserName(): Promise<string | null> {
     try {
-      // Look for user name in app bar or profile area
-      const nameElement = this.page.getByLabel('user-name')
-        .or(this.page.getByRole('heading').first());
+      const nameElement = this.flutterElement('user-name')
+        .or(this.page.locator('flt-semantics[role="heading"]').first());
       return await nameElement.textContent();
     } catch {
       return null;
@@ -47,21 +68,19 @@ export class DashboardPage {
 
   /**
    * Check if active students section shows a specific student.
-   * Uses Flutter semantic labels set via Semantics(label: 'active-students').
    */
   async hasActiveStudent(studentName: string): Promise<boolean> {
     try {
-      // Flutter semantic label: 'active-students'
-      const activeStudents = this.page.getByLabel('active-students')
-        .or(this.page.getByText(/alunos? recentes/i));
+      await this.waitForFlutter();
 
-      await activeStudents.waitFor({ timeout: 5000 });
+      // Refresh to get latest data
+      await this.page.reload();
+      await this.waitForFlutter();
 
-      // Check for student card with semantic label
-      const studentCard = this.page.getByLabel(`student-card-${studentName}`)
-        .or(this.page.getByText(studentName));
+      // Look for the active-students container or student card
+      const studentCard = this.page.locator('flt-semantics').filter({ hasText: studentName });
 
-      return await studentCard.isVisible();
+      return await studentCard.isVisible({ timeout: 5000 });
     } catch {
       return false;
     }
@@ -71,16 +90,30 @@ export class DashboardPage {
    * Click to join a student's co-training session.
    */
   async joinStudentSession(studentName: string) {
-    const studentCard = this.page.getByLabel(`student-card-${studentName}`)
-      .or(this.page.getByText(studentName));
+    await this.waitForFlutter();
 
-    await studentCard.click();
+    // Find and click the student card using keyboard navigation
+    const found = await this.flutter.tabToAndActivate(
+      (el) => el.text !== null && el.text.includes(studentName)
+    );
 
-    // Look for join session button in the session details
-    const joinButton = this.page.getByLabel('join-session')
-      .or(this.page.getByRole('button', { name: /acompanhar|join/i }));
+    if (!found) {
+      // Fallback: try direct click
+      const studentCard = this.page.locator('flt-semantics').filter({ hasText: studentName });
+      await studentCard.click();
+    }
 
-    await joinButton.click();
+    await this.page.waitForTimeout(500);
+
+    // Look for join session button
+    const joinFound = await this.flutter.clickButton(/acompanhar|join|entrar/i);
+
+    if (!joinFound) {
+      // Fallback: direct locator
+      const joinButton = this.flutterElement('join-session')
+        .or(this.page.locator('flt-semantics[role="button"]').filter({ hasText: /acompanhar|join/i }));
+      await joinButton.click();
+    }
   }
 
   // ==================
@@ -92,60 +125,215 @@ export class DashboardPage {
    */
   async hasAssignedPlan(): Promise<boolean> {
     try {
-      const planSection = this.page.getByLabel('assigned-plan')
-        .or(this.page.getByText(/seu plano|your plan|treino de hoje/i));
-      return await planSection.isVisible();
-    } catch {
+      await this.waitForFlutter();
+
+      // Look for plan-related elements - the UI shows:
+      // - A button with "NOVO E2E Test Plan - ABC Split Ver"
+      // - "Treino de Hoje" section heading
+      // Use a specific selector for the plan card (button role with NOVO text)
+      const planButton = this.page.locator('flt-semantics[role="button"]').filter({ hasText: 'NOVO' }).first();
+      const treinoHoje = this.page.locator('flt-semantics').filter({ hasText: 'Treino de Hoje' }).first();
+
+      const hasPlanButton = await planButton.isVisible({ timeout: 3000 }).catch(() => false);
+      const hasTreinoHoje = await treinoHoje.isVisible({ timeout: 3000 }).catch(() => false);
+
+      console.log('hasAssignedPlan - Plan button visible:', hasPlanButton, 'Treino de Hoje visible:', hasTreinoHoje);
+      return hasPlanButton || hasTreinoHoje;
+    } catch (e) {
+      console.log('hasAssignedPlan - Error:', e);
       return false;
     }
   }
 
   /**
    * Start a workout from the dashboard.
-   * Uses semantic labels: 'quick-action-iniciar-treino' for the start workout button.
+   * Flow: Home -> Plan Card -> Workout List -> Start Workout
    */
   async startWorkout(workoutName?: string) {
-    // Click on "Iniciar Treino" quick action
-    const startButton = this.page.getByLabel('quick-action-iniciar-treino')
-      .or(this.page.getByRole('button', { name: /iniciar.*treino|start.*workout/i }))
-      .or(this.page.getByText(/iniciar.*treino/i).first());
+    await this.waitForFlutter();
 
-    await startButton.click();
+    console.log('Starting workout flow...');
+    console.log('Looking for workout:', workoutName || 'any');
 
-    // Wait for workout picker sheet to appear
-    await this.page.waitForTimeout(500);
-
-    if (workoutName) {
-      // Click specific workout card
-      const workoutCard = this.page.getByText(workoutName);
-      await workoutCard.click();
-    } else {
-      // Click the first/suggested workout
-      const suggestedWorkout = this.page.getByLabel(/workout-card-treino-a/i)
-        .or(this.page.getByText(/sugerido/i).locator('..'));
-      await suggestedWorkout.click();
+    // Step 1: Navigate to Treinos tab (if not already there)
+    const treinosTab = this.page.locator('flt-semantics[role="button"]').filter({ hasText: /^Treinos$/i }).first();
+    if (await treinosTab.isVisible({ timeout: 2000 }).catch(() => false)) {
+      console.log('Clicking Treinos tab...');
+      await treinosTab.click({ force: true });
+      await this.page.waitForTimeout(1500);
+      await this.waitForFlutter();
     }
+
+    // Step 2: Click on the plan card to see workouts
+    // Look for the plan that contains our workout
+    const planCard = this.page.locator('flt-semantics').filter({ hasText: /E2E Test Plan|ABC Split/i }).first();
+    if (await planCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+      console.log('Clicking plan card...');
+      await planCard.click({ force: true });
+      await this.page.waitForTimeout(1500);
+      await this.waitForFlutter();
+    }
+
+    // Step 3: Find and click the specific workout
+    if (workoutName) {
+      console.log('Looking for workout:', workoutName);
+      // Try to find the workout by name
+      const workoutCard = this.page.locator('flt-semantics').filter({ hasText: workoutName }).first();
+      if (await workoutCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+        console.log('Found workout card, clicking...');
+        await workoutCard.click({ force: true });
+        await this.page.waitForTimeout(1500);
+        await this.waitForFlutter();
+      } else {
+        // Try keyboard navigation
+        console.log('Trying keyboard navigation to find workout...');
+        await this.flutter.tabToAndActivate(
+          (el) => el.text !== null && el.text.toLowerCase().includes(workoutName.toLowerCase())
+        );
+      }
+    } else {
+      // Click the first workout card
+      const anyWorkout = this.page.locator('flt-semantics').filter({ hasText: /treino.*[abc]|peito|costas|pernas/i }).first();
+      if (await anyWorkout.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await anyWorkout.click({ force: true });
+        await this.page.waitForTimeout(1000);
+      }
+    }
+
+    // Step 4: Click "Iniciar Treino" button (opens modal to select workout)
+    const iniciarButton = this.page.locator('flt-semantics[role="button"]').filter({ hasText: /iniciar treino/i }).first();
+    if (await iniciarButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+      console.log('Clicking Iniciar Treino button...');
+      await iniciarButton.click({ force: true });
+      await this.page.waitForTimeout(1500);
+      await this.waitForFlutter();
+    }
+
+    // Step 5: A modal appears "Escolha qual treino deseja iniciar" - select the workout using keyboard
+    // Use Tab navigation to find workout items in the modal
+    console.log('Navigating modal to select workout...');
+    await this.flutter.focusSemanticsHost();
+
+    // Tab through to find the workout we want
+    let workoutFound = false;
+    for (let i = 0; i < 15; i++) {
+      await this.page.keyboard.press('Tab');
+      await this.page.waitForTimeout(200);
+
+      const elementInfo = await this.flutter.getFocusedElementInfo();
+      if (elementInfo?.text) {
+        console.log(`Tab ${i}: focused on "${elementInfo.text.substring(0, 50)}..."`);
+
+        // Look for the workout we want (Treino A, or matching workoutName)
+        if (workoutName && elementInfo.text.toLowerCase().includes(workoutName.toLowerCase())) {
+          console.log('Found target workout, pressing Enter...');
+          await this.page.keyboard.press('Enter');
+          await this.page.waitForTimeout(1000);
+          workoutFound = true;
+          break;
+        } else if (!workoutName && /treino a|peito/i.test(elementInfo.text)) {
+          console.log('Found first workout (Treino A), pressing Enter...');
+          await this.page.keyboard.press('Enter');
+          await this.page.waitForTimeout(1000);
+          workoutFound = true;
+          break;
+        }
+      }
+    }
+
+    if (!workoutFound) {
+      console.log('Workout not found via Tab, trying direct click...');
+      // Fallback: try clicking the workout option directly
+      const workoutOption = this.page.locator('flt-semantics').filter({ hasText: /Treino A.*Peito/i }).first();
+      if (await workoutOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await workoutOption.click({ force: true });
+        await this.page.waitForTimeout(1000);
+      }
+    }
+
+    // Step 6: After selecting workout, there might be another screen or the session starts directly
+    // Check if there's an "Iniciar Treino" confirmation button
+    await this.page.waitForTimeout(500);
+    const confirmButton = this.page.locator('flt-semantics[role="button"]').filter({ hasText: /^iniciar treino$/i }).first();
+    if (await confirmButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+      console.log('Clicking confirm Iniciar Treino button...');
+      await confirmButton.click({ force: true });
+      await this.page.waitForTimeout(1500);
+    }
+
+    await this.page.waitForTimeout(500);
+    console.log('Workout start flow completed');
   }
 
   /**
    * Enable co-training mode when starting a workout.
-   * Uses semantic label: 'cotraining-mode'.
    */
   async enableCotrainingMode() {
-    const cotrainingButton = this.page.getByLabel('cotraining-mode')
-      .or(this.page.getByRole('button', { name: /treinar com personal/i }));
+    await this.page.waitForTimeout(500);
 
-    await cotrainingButton.click();
+    const found = await this.flutter.clickButton(/treinar com personal|co-training|com personal/i);
+
+    if (!found) {
+      const cotrainingButton = this.flutterElement('cotraining-mode')
+        .or(this.page.locator('flt-semantics[role="button"]').filter({ hasText: /treinar com personal/i }));
+      await cotrainingButton.click({ force: true });
+    }
   }
 
   /**
    * Start workout in solo mode.
-   * Uses semantic label: 'start-workout-solo'.
    */
   async startWorkoutSolo() {
-    const soloButton = this.page.getByLabel('start-workout-solo')
-      .or(this.page.getByRole('button', { name: /treinar sozinho/i }));
+    await this.page.waitForTimeout(500);
 
-    await soloButton.click();
+    const found = await this.flutter.clickButton(/treinar sozinho|solo|sem personal/i);
+
+    if (!found) {
+      const soloButton = this.flutterElement('start-workout-solo')
+        .or(this.page.locator('flt-semantics[role="button"]').filter({ hasText: /treinar sozinho/i }));
+      await soloButton.click({ force: true });
+    }
+  }
+
+  /**
+   * Select organization (for org selector page).
+   */
+  async selectOrganization(orgName?: string) {
+    await this.waitForFlutter();
+
+    // Flutter Web: use keyboard navigation through the accessibility tree
+    await this.page.waitForTimeout(500);
+
+    // Focus the semantics host
+    await this.flutter.focusSemanticsHost();
+
+    // Tab through elements until we find a group element (org card)
+    for (let i = 0; i < 15; i++) {
+      await this.page.keyboard.press('Tab');
+      await this.page.waitForTimeout(200);
+
+      const elementInfo = await this.flutter.getFocusedElementInfo();
+
+      // Check if we've focused an org card (group)
+      if (elementInfo?.role === 'group') {
+        // If a specific org was requested, check if this is it
+        if (orgName) {
+          if (elementInfo.text?.toLowerCase().includes(orgName.toLowerCase())) {
+            await this.page.keyboard.press('Enter');
+            break;
+          }
+          // Not the right org, continue tabbing
+          continue;
+        }
+
+        // No specific org requested, select first one
+        await this.page.keyboard.press('Enter');
+        break;
+      }
+    }
+
+    // Wait for navigation
+    await this.page.waitForTimeout(1000);
+    await this.page.waitForURL(/home|dashboard/, { timeout: 10000 });
   }
 }

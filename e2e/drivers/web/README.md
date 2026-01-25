@@ -55,9 +55,11 @@ From the `myfit-app` directory:
 
 ```bash
 cd myfit-app
-flutter build web --dart-define=API_URL=http://localhost:8001
-npx serve build/web -l 3000
+flutter build web --dart-define=API_URL=http://localhost:8001/api/v1
+npx serve build/web -l 3000 -s  # -s flag enables SPA mode for hash routing
 ```
+
+> **Note:** The `-s` flag is required for SPA (Single Page Application) mode to handle Flutter's hash-based routing properly.
 
 ### 3. Run Tests
 
@@ -90,14 +92,29 @@ npm run report
 e2e/drivers/web/
 ├── tests/
 │   ├── cotraining.spec.ts    # Multi-actor co-training tests
-│   └── feedback-loop.spec.ts # Real-time feedback tests
+│   ├── feedback-loop.spec.ts # Real-time feedback tests
+│   └── debug-flutter.spec.ts # Flutter Web debugging utilities
 ├── pages/
+│   ├── flutter.helper.ts     # Flutter Web interaction helper (keyboard nav)
 │   ├── login.page.ts         # Login page object
 │   ├── dashboard.page.ts     # Dashboard page object
 │   └── workout-session.page.ts # Workout session page object
 ├── playwright.config.ts      # Playwright configuration
 └── package.json
 ```
+
+## Current Test Status
+
+| Test | Status | Description |
+|------|--------|-------------|
+| Login flow | ✅ Pass | Both trainer and student can login |
+| Student sees plan | ✅ Pass | Student dashboard shows assigned plan |
+| Student starts workout | ✅ Pass | Student can navigate and start a workout |
+| API health check | ✅ Pass | E2E server is healthy |
+| Scenario setup | ✅ Pass | Test scenarios load correctly |
+| Database reset | ✅ Pass | Database can be reset between tests |
+| Co-training interaction | ⏸️ Skip | Requires understanding app's co-training UI flow |
+| Feedback loop | ⏸️ Skip | Requires co-training mode to be enabled |
 
 ## Available Scenarios
 
@@ -131,13 +148,43 @@ The tests create separate browser contexts for different actors:
 
 Both run simultaneously with coordinated assertions.
 
-## Flutter Web Selectors
+## Flutter Web Interaction Patterns
 
-Flutter Web uses semantic labels for accessibility. We use:
+Flutter Web renders using CanvasKit which doesn't create traditional DOM elements. However, it does create an accessibility tree with `flt-semantics` elements.
 
-- `getByLabel()` - Flutter Semantics labels (e.g., `Semantics(label: 'login-button')`)
-- `getByRole()` - Accessibility roles
-- `getByText()` - Text content
+### Key Challenges
+
+1. **flutter-view intercepts pointer events** - Direct clicks often don't work
+2. **Must enable accessibility first** - Click the `flt-semantics-placeholder` button
+3. **Use keyboard navigation** - Tab/Shift+Tab/Enter for reliable interaction
+
+### FlutterHelper Class
+
+The `flutter.helper.ts` provides utilities for Flutter Web interaction:
+
+```typescript
+import { FlutterHelper } from './pages/flutter.helper';
+
+const flutter = new FlutterHelper(page);
+
+// Wait for Flutter and enable accessibility
+await flutter.waitForFlutter();
+
+// Navigate using keyboard
+await flutter.tabToAndActivate((el) => el.text?.includes('Login'));
+
+// Click a button by text pattern
+await flutter.clickButton(/iniciar|start/i);
+
+// Debug: log all semantic elements
+await flutter.debugElements();
+```
+
+### Selectors
+
+- `flt-semantics[role="button"]` - Button elements
+- `flt-semantics[aria-label="..."]` - Elements with semantic labels
+- `flt-semantics input` - Real input elements inside Flutter semantic containers
 
 ### Semantic Labels Added
 

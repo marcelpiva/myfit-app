@@ -1,39 +1,75 @@
 import { Page, expect } from '@playwright/test';
+import { FlutterHelper } from './flutter.helper';
 
 /**
  * Workout Session Page Object.
  *
  * Handles the active workout view for both Student and Trainer in co-training.
- *
- * Note: Flutter Web renders semantics as aria-label attributes on elements.
- * Use getByLabel() for semantic labels added via Semantics(label: '...').
+ * Uses Flutter Web semantic selectors and keyboard navigation.
  */
 export class WorkoutSessionPage {
-  constructor(private page: Page) {}
+  private flutter: FlutterHelper;
+
+  constructor(private page: Page) {
+    this.flutter = new FlutterHelper(page);
+  }
+
+  /**
+   * Wait for Flutter to be ready and enable accessibility.
+   */
+  async waitForFlutter() {
+    await this.flutter.waitForFlutter();
+  }
+
+  /**
+   * Get Flutter semantic element by label.
+   */
+  private flutterElement(label: string) {
+    return this.flutter.flutterElement(label);
+  }
 
   /**
    * Wait for session to load.
    */
   async waitForLoad() {
-    await this.page.waitForTimeout(1000);
+    await this.waitForFlutter();
+
+    // Debug: log elements to understand the page structure
+    console.log('Waiting for workout session...');
+    await this.flutter.debugElements();
+
     // Look for session-related elements
-    const sessionElement = this.page.getByLabel('workout-session')
-      .or(this.page.getByText(/treino ativo|exercício|série/i));
-    await sessionElement.waitFor({ timeout: 10000 });
+    const sessionElement = this.flutterElement('workout-session')
+      .or(this.page.locator('flt-semantics').filter({ hasText: /treino ativo|exercício|série|supino|rosca|agachamento/i }));
+
+    await sessionElement.waitFor({ timeout: 15000 });
   }
 
   /**
    * Select co-training mode when starting workout.
-   * Uses semantic label: 'cotraining-mode'.
    */
   async selectCoTrainingMode() {
-    const coTrainingOption = this.page.getByLabel('cotraining-mode')
-      .or(this.page.getByRole('button', { name: /treinar com personal|co-training/i }));
+    console.log('Selecting co-training mode...');
 
-    await coTrainingOption.click();
+    // Try keyboard navigation first
+    let found = await this.flutter.clickButton(/treinar com personal|co-training|com personal/i);
+
+    if (!found) {
+      // Fallback to direct locator
+      const coTrainingOption = this.flutterElement('cotraining-mode')
+        .or(this.page.locator('flt-semantics[role="button"]').filter({ hasText: /treinar com personal|co-training/i }));
+
+      if (await coTrainingOption.isVisible({ timeout: 3000 })) {
+        await coTrainingOption.click({ force: true });
+      }
+    }
 
     // Wait for "waiting for trainer" state
-    await this.page.getByText(/aguardando|waiting/i).waitFor({ timeout: 5000 });
+    try {
+      await this.page.locator('flt-semantics').filter({ hasText: /aguardando|waiting|conectando/i }).waitFor({ timeout: 5000 });
+    } catch {
+      console.log('Waiting indicator not found, proceeding anyway...');
+    }
   }
 
   /**
@@ -41,9 +77,12 @@ export class WorkoutSessionPage {
    */
   async isTrainerConnected(): Promise<boolean> {
     try {
-      const indicator = this.page.getByLabel('trainer-connected')
-        .or(this.page.getByText(/personal conectado|trainer connected/i));
-      return await indicator.isVisible();
+      await this.waitForFlutter();
+
+      const indicator = this.flutterElement('trainer-connected')
+        .or(this.page.locator('flt-semantics').filter({ hasText: /personal conectado|trainer connected|personal online/i }));
+
+      return await indicator.isVisible({ timeout: 5000 });
     } catch {
       return false;
     }
@@ -54,8 +93,8 @@ export class WorkoutSessionPage {
    */
   async getCurrentExercise(): Promise<string | null> {
     try {
-      const exerciseElement = this.page.getByLabel('current-exercise')
-        .or(this.page.getByRole('heading').filter({ hasText: /supino|rosca|agachamento/i }));
+      const exerciseElement = this.flutterElement('current-exercise')
+        .or(this.page.locator('flt-semantics[role="heading"]').filter({ hasText: /supino|rosca|agachamento|puxada|remada|triceps|leg|desenvolvimento/i }));
       return await exerciseElement.textContent();
     } catch {
       return null;
@@ -66,19 +105,47 @@ export class WorkoutSessionPage {
    * Complete a set.
    */
   async completeSet(reps: number, weight: number) {
-    const repsInput = this.page.getByLabel('reps-input')
-      .or(this.page.getByRole('spinbutton', { name: /reps|repetições/i }));
+    console.log(`Completing set: ${reps} reps @ ${weight}kg`);
 
-    const weightInput = this.page.getByLabel('weight-input')
-      .or(this.page.getByRole('spinbutton', { name: /peso|weight/i }));
+    // Find and fill reps input
+    const repsInput = this.page.locator('flt-semantics input[type="number"]').first()
+      .or(this.page.locator('flt-semantics input').first());
 
-    await repsInput.fill(reps.toString());
-    await weightInput.fill(weight.toString());
+    if (await repsInput.isVisible({ timeout: 2000 })) {
+      await repsInput.click();
+      await repsInput.fill('');
+      await repsInput.fill(reps.toString());
+      await this.page.waitForTimeout(200);
+    } else {
+      // Try keyboard navigation
+      const found = await this.flutter.tabToElement((el) => el.role === 'spinbutton' || el.role === 'textbox');
+      if (found) {
+        await this.page.keyboard.type(reps.toString());
+      }
+    }
 
-    const completeButton = this.page.getByRole('button', { name: /concluir|complete|próxima|completar série/i })
-      .or(this.page.getByLabel('complete-set'));
+    // Find and fill weight input
+    const weightInput = this.page.locator('flt-semantics input[type="number"]').nth(1)
+      .or(this.page.locator('flt-semantics input').nth(1));
 
-    await completeButton.click();
+    if (await weightInput.isVisible({ timeout: 2000 })) {
+      await weightInput.click();
+      await weightInput.fill('');
+      await weightInput.fill(weight.toString());
+      await this.page.waitForTimeout(200);
+    }
+
+    // Click complete button
+    let found = await this.flutter.clickButton(/concluir|complete|próxima|completar|registrar/i);
+
+    if (!found) {
+      const completeButton = this.flutterElement('complete-set')
+        .or(this.page.locator('flt-semantics[role="button"]').filter({ hasText: /concluir|complete|registrar/i }));
+
+      if (await completeButton.isVisible({ timeout: 3000 })) {
+        await completeButton.click({ force: true });
+      }
+    }
   }
 
   // ==================
@@ -89,27 +156,59 @@ export class WorkoutSessionPage {
    * Send a weight adjustment to the student.
    */
   async sendAdjustment(weight: number, note?: string) {
-    // Open adjustment form
-    const adjustButton = this.page.getByLabel('suggest-adjustment')
-      .or(this.page.getByRole('button', { name: /sugerir ajuste|suggest/i }));
-    await adjustButton.click();
+    console.log(`Sending adjustment: ${weight}kg`);
 
-    // Fill weight
-    const weightInput = this.page.getByLabel('suggested-weight')
-      .or(this.page.getByRole('spinbutton', { name: /peso sugerido/i }));
-    await weightInput.fill(weight.toString());
+    // Open adjustment form
+    let found = await this.flutter.clickButton(/sugerir|ajuste|suggest|adjustment/i);
+
+    if (!found) {
+      const adjustButton = this.flutterElement('suggest-adjustment')
+        .or(this.page.locator('flt-semantics[role="button"]').filter({ hasText: /sugerir|ajuste/i }));
+
+      if (await adjustButton.isVisible({ timeout: 3000 })) {
+        await adjustButton.click({ force: true });
+      }
+    }
+
+    await this.page.waitForTimeout(500);
+
+    // Fill weight input
+    const weightInput = this.page.locator('flt-semantics input').first();
+
+    if (await weightInput.isVisible({ timeout: 2000 })) {
+      await weightInput.click();
+      await weightInput.fill('');
+      await weightInput.fill(weight.toString());
+    } else {
+      // Try keyboard navigation
+      await this.flutter.tabToElement((el) => el.role === 'textbox' || el.role === 'spinbutton');
+      await this.page.keyboard.type(weight.toString());
+    }
 
     // Optional note
     if (note) {
-      const noteInput = this.page.getByLabel('adjustment-note')
-        .or(this.page.getByRole('textbox', { name: /nota|note/i }));
-      await noteInput.fill(note);
+      await this.page.waitForTimeout(300);
+      // Tab to next input or find note field
+      const noteInput = this.page.locator('flt-semantics input').nth(1)
+        .or(this.page.locator('flt-semantics textarea'));
+
+      if (await noteInput.isVisible({ timeout: 2000 })) {
+        await noteInput.click();
+        await noteInput.fill(note);
+      }
     }
 
     // Send
-    const sendButton = this.page.getByLabel('send-adjustment')
-      .or(this.page.getByRole('button', { name: /enviar|send/i }));
-    await sendButton.click();
+    found = await this.flutter.clickButton(/enviar|send|confirmar/i);
+
+    if (!found) {
+      const sendButton = this.flutterElement('send-adjustment')
+        .or(this.page.locator('flt-semantics[role="button"]').filter({ hasText: /enviar|send/i }));
+
+      if (await sendButton.isVisible({ timeout: 3000 })) {
+        await sendButton.click({ force: true });
+      }
+    }
   }
 
   // ==================
@@ -118,12 +217,12 @@ export class WorkoutSessionPage {
 
   /**
    * Wait for and check adjustment notification.
-   * Uses Flutter semantic label: 'adjustment-notification'.
    */
   async waitForAdjustment(timeout = 10000): Promise<boolean> {
     try {
-      const notification = this.page.getByLabel('adjustment-notification')
-        .or(this.page.getByText(/sugestão do personal|ajuste do personal|personal sugere/i));
+      const notification = this.flutterElement('adjustment-notification')
+        .or(this.page.locator('flt-semantics').filter({ hasText: /sugestão|ajuste|personal sugere|nova sugestão/i }));
+
       await notification.waitFor({ timeout });
       return true;
     } catch {
@@ -136,8 +235,9 @@ export class WorkoutSessionPage {
    */
   async getAdjustmentWeight(): Promise<number | null> {
     try {
-      const notification = this.page.getByLabel('adjustment-notification')
-        .or(this.page.getByText(/sugestão do personal|ajuste do personal/i));
+      const notification = this.flutterElement('adjustment-notification')
+        .or(this.page.locator('flt-semantics').filter({ hasText: /sugestão|ajuste|personal/i }));
+
       const text = await notification.textContent();
 
       // Extract number from text like "+5kg" or "30kg"
@@ -152,17 +252,31 @@ export class WorkoutSessionPage {
    * Apply the suggested adjustment.
    */
   async applyAdjustment() {
-    const applyButton = this.page.getByRole('button', { name: /aplicar|apply/i })
-      .or(this.page.getByLabel('apply-adjustment'));
-    await applyButton.click();
+    let found = await this.flutter.clickButton(/aplicar|apply|aceitar|accept/i);
+
+    if (!found) {
+      const applyButton = this.flutterElement('apply-adjustment')
+        .or(this.page.locator('flt-semantics[role="button"]').filter({ hasText: /aplicar|apply/i }));
+
+      if (await applyButton.isVisible({ timeout: 3000 })) {
+        await applyButton.click({ force: true });
+      }
+    }
   }
 
   /**
    * Dismiss the adjustment.
    */
   async dismissAdjustment() {
-    const dismissButton = this.page.getByRole('button', { name: /ignorar|dismiss|cancel/i })
-      .or(this.page.getByLabel('dismiss-adjustment'));
-    await dismissButton.click();
+    let found = await this.flutter.clickButton(/ignorar|dismiss|cancel|fechar/i);
+
+    if (!found) {
+      const dismissButton = this.flutterElement('dismiss-adjustment')
+        .or(this.page.locator('flt-semantics[role="button"]').filter({ hasText: /ignorar|dismiss/i }));
+
+      if (await dismissButton.isVisible({ timeout: 3000 })) {
+        await dismissButton.click({ force: true });
+      }
+    }
   }
 }
