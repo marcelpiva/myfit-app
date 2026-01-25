@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-01-25
+
+### Added
+- **Plan Accept/Decline UI** - Students can now accept or decline prescribed training plans
+  - New card on home page showing pending plans (orange) with "Responder" button
+  - Bottom sheet with plan details, accept button, and decline with optional reason
+  - Visual distinction between pending plans (needs response) and new plans (auto-accepted)
+  - Trainer receives notification when student accepts or declines
+
+- **Plan Assignment Response Endpoint** - Added `planAssignmentRespond` API endpoint
+  - Supports accept/decline with optional decline reason
+  - Automatic dashboard refresh after response
+
+### Changed
+- **Student Plans Provider** - Enhanced to handle both pending and new plans
+  - `pendingPlans` - Plans awaiting acceptance (status == 'pending')
+  - `newPlans` - Auto-accepted plans not yet acknowledged
+  - New `respondToPlan()` method for accept/decline
+  - `hasPlansNeedingAttention` getter for UI visibility
+
+- **Home Page Plans Card** - Updated to show different states
+  - Pending plans show orange accent with clipboard icon
+  - New/unacknowledged plans show blue accent with sparkles icon
+  - Priority: pending plans shown before new plans
+
 ## [1.9.2] - 2026-01-25
 
 ### Fixed

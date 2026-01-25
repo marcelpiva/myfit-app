@@ -72,6 +72,8 @@ class ApiEndpoints {
   static String planAssignment(String id) => '/workouts/plans/assignments/$id';
   static String planAssignmentAcknowledge(String id) =>
       '/workouts/plans/assignments/$id/acknowledge';
+  static String planAssignmentRespond(String id) =>
+      '/workouts/plans/assignments/$id/respond';
 
   // ==================== Exercise Feedback ====================
   static String exerciseFeedback(String sessionId, String workoutExerciseId) =>

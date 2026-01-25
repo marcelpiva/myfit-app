@@ -128,9 +128,9 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                               const SizedBox(height: 24),
                             ],
 
-                            // Pending Plans Notification (if has pending plans)
-                            if (pendingPlansState != null && pendingPlansState.hasPendingPlans) ...[
-                              _buildPendingPlansCard(context, isDark, pendingPlansState),
+                            // Pending Plans Notification (if has plans needing attention)
+                            if (pendingPlansState != null && pendingPlansState.hasPlansNeedingAttention) ...[
+                              _buildPlansNeedingAttentionCard(context, isDark, pendingPlansState),
                               const SizedBox(height: 24),
                             ],
 
@@ -659,20 +659,33 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
     );
   }
 
-  Widget _buildPendingPlansCard(
+  Widget _buildPlansNeedingAttentionCard(
     BuildContext context,
     bool isDark,
-    StudentPendingPlansState pendingState,
+    StudentPendingPlansState plansState,
   ) {
-    final count = pendingState.newCount;
-    final firstPlan = pendingState.newPlans.first;
+    // Priority: pending plans (need accept/decline) > new plans (need acknowledgement)
+    final hasPending = plansState.hasPendingPlans;
+    final firstPlan = hasPending ? plansState.pendingPlans.first : plansState.newPlans.first;
+    final count = hasPending ? plansState.pendingCount : plansState.newCount;
     final planName = firstPlan['plan_name'] as String? ?? 'Novo Plano';
     final trainerName = firstPlan['trainer_name'] as String?;
+
+    // Different colors for pending (orange/warning) vs new (primary/blue)
+    final accentColor = hasPending ? Colors.orange : AppColors.primary;
+    final badgeText = hasPending
+        ? (count > 1 ? '$count PENDENTES' : 'PENDENTE')
+        : (count > 1 ? '$count NOVOS' : 'NOVO');
+    final buttonText = hasPending ? 'Responder' : 'Ver';
 
     return GestureDetector(
       onTap: () {
         HapticUtils.lightImpact();
-        _showNewPlanSheet(context, firstPlan);
+        if (hasPending) {
+          _showPendingPlanSheet(context, firstPlan);
+        } else {
+          _showNewPlanSheet(context, firstPlan);
+        }
       },
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -682,17 +695,17 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppColors.primary.withAlpha(isDark ? 40 : 30),
-              AppColors.primary.withAlpha(isDark ? 20 : 15),
+              accentColor.withAlpha(isDark ? 40 : 30),
+              accentColor.withAlpha(isDark ? 20 : 15),
             ],
           ),
           border: Border.all(
-            color: AppColors.primary.withAlpha(100),
+            color: accentColor.withAlpha(100),
             width: 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withAlpha(20),
+              color: accentColor.withAlpha(20),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -705,14 +718,14 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.primary.withAlpha(30),
+                color: accentColor.withAlpha(30),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Center(
+              child: Center(
                 child: Icon(
-                  LucideIcons.sparkles,
+                  hasPending ? LucideIcons.clipboardCheck : LucideIcons.sparkles,
                   size: 24,
-                  color: AppColors.primary,
+                  color: accentColor,
                 ),
               ),
             ),
@@ -727,11 +740,11 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
+                          color: accentColor,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
-                          count > 1 ? '$count NOVOS' : 'NOVO',
+                          badgeText,
                           style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
@@ -745,7 +758,9 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                   const SizedBox(height: 6),
                   Text(
                     count > 1
-                        ? 'Você tem $count novas prescrições'
+                        ? (hasPending
+                            ? 'Você tem $count planos aguardando aprovação'
+                            : 'Você tem $count novas prescrições')
                         : planName,
                     style: TextStyle(
                       fontSize: 15,
@@ -774,22 +789,22 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                color: accentColor,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Ver',
-                    style: TextStyle(
+                    buttonText,
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(width: 4),
-                  Icon(
+                  const SizedBox(width: 4),
+                  const Icon(
                     LucideIcons.chevronRight,
                     size: 14,
                     color: Colors.white,
@@ -799,6 +814,56 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Show sheet for pending plan (needs accept/decline)
+  void _showPendingPlanSheet(BuildContext context, Map<String, dynamic> assignment) {
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _StudentRespondPlanSheet(
+        assignment: assignment,
+        onAccept: () async {
+          HapticUtils.mediumImpact();
+          final success = await ref.read(studentNewPlansProvider.notifier).respondToPlan(
+            assignment['id'] as String,
+            accept: true,
+          );
+          if (success && ctx.mounted) {
+            Navigator.of(ctx).pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Plano aceito com sucesso!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            // Navigate to plan details
+            context.push('/plans/${assignment['plan_id']}');
+          }
+        },
+        onDecline: (String? reason) async {
+          HapticUtils.lightImpact();
+          final success = await ref.read(studentNewPlansProvider.notifier).respondToPlan(
+            assignment['id'] as String,
+            accept: false,
+            declinedReason: reason,
+          );
+          if (success && ctx.mounted) {
+            Navigator.of(ctx).pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Plano recusado'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+        },
       ),
     );
   }
