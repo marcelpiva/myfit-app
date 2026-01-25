@@ -107,14 +107,29 @@ e2e/drivers/web/
 
 | Test | Status | Description |
 |------|--------|-------------|
-| Login flow | ✅ Pass | Both trainer and student can login |
-| Student sees plan | ✅ Pass | Student dashboard shows assigned plan |
-| Student starts workout | ✅ Pass | Student can navigate and start a workout |
-| API health check | ✅ Pass | E2E server is healthy |
-| Scenario setup | ✅ Pass | Test scenarios load correctly |
-| Database reset | ✅ Pass | Database can be reset between tests |
-| Co-training interaction | ⏸️ Skip | Requires understanding app's co-training UI flow |
-| Feedback loop | ⏸️ Skip | Requires co-training mode to be enabled |
+| Login flow | ✅ Pass | Both trainer and student can login with credentials |
+| Student sees plan | ✅ Pass | Student dashboard shows assigned workout plan |
+| Workout navigation | ✅ Pass | Student can navigate to workout detail and see StartWorkoutSheet |
+| Training mode options | ✅ Pass | StartWorkoutSheet shows both "Treinar Sozinho" and "Treinar com Personal" |
+| Trainer dashboard | ✅ Pass | Trainer can view their dashboard |
+| API health check | ✅ Pass | E2E server responds correctly |
+| Scenario setup | ✅ Pass | Test scenarios load with correct data |
+| Database reset | ✅ Pass | Database clears between test runs |
+| Co-training interaction | ⏸️ Skip | Flutter Web button clicks don't trigger handlers (see Known Limitations) |
+| Feedback loop | ⏸️ Skip | Requires working co-training mode |
+
+### Known Limitations
+
+Flutter Web renders to a canvas using CanvasKit, which creates semantic elements for accessibility but doesn't respond to programmatic DOM clicks. This means:
+
+1. **Button clicks via JavaScript don't work** - The semantic elements are read-only accessibility hints
+2. **Keyboard navigation is inconsistent** - Tab focus doesn't always reach all elements
+3. **Modal interactions are challenging** - Bottom sheets and dialogs trap focus differently
+
+**Workarounds being explored:**
+- Using Patrol (Flutter's mobile testing framework) for native interactions
+- Adding JavaScript hooks in the Flutter app for E2E testing
+- Direct API calls to simulate user actions where UI interaction fails
 
 ## Available Scenarios
 

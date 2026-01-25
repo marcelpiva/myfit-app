@@ -147,122 +147,228 @@ export class DashboardPage {
 
   /**
    * Start a workout from the dashboard.
-   * Flow: Home -> Plan Card -> Workout List -> Start Workout
+   *
+   * Flow to show StartWorkoutSheet (for co-training option):
+   * Navigate to /workouts/{workoutId} -> WorkoutDetailPage -> "Iniciar Treino" -> StartWorkoutSheet
+   *
+   * @param workoutName - Optional name to identify the workout (used for logging)
+   * @param workoutId - Optional workout UUID for direct navigation to WorkoutDetailPage
    */
-  async startWorkout(workoutName?: string) {
+  async startWorkout(workoutName?: string, workoutId?: string) {
     await this.waitForFlutter();
 
-    console.log('Starting workout flow...');
+    console.log('Starting workout flow (navigating to WorkoutDetailPage)...');
     console.log('Looking for workout:', workoutName || 'any');
 
-    // Step 1: Navigate to Treinos tab (if not already there)
-    const treinosTab = this.page.locator('flt-semantics[role="button"]').filter({ hasText: /^Treinos$/i }).first();
-    if (await treinosTab.isVisible({ timeout: 2000 }).catch(() => false)) {
-      console.log('Clicking Treinos tab...');
-      await treinosTab.click({ force: true });
-      await this.page.waitForTimeout(1500);
+    // If workoutId is provided, navigate directly to WorkoutDetailPage
+    if (workoutId) {
+      console.log('Navigating directly to WorkoutDetailPage with ID:', workoutId);
+      // Flutter uses hash-based routing (e.g., /#/workouts/{id})
+      const baseUrl = this.page.url().split('#')[0];
+      await this.page.goto(`${baseUrl}#/workouts/${workoutId}`);
+      await this.page.waitForTimeout(2000);
       await this.waitForFlutter();
-    }
-
-    // Step 2: Click on the plan card to see workouts
-    // Look for the plan that contains our workout
-    const planCard = this.page.locator('flt-semantics').filter({ hasText: /E2E Test Plan|ABC Split/i }).first();
-    if (await planCard.isVisible({ timeout: 3000 }).catch(() => false)) {
-      console.log('Clicking plan card...');
-      await planCard.click({ force: true });
-      await this.page.waitForTimeout(1500);
-      await this.waitForFlutter();
-    }
-
-    // Step 3: Find and click the specific workout
-    if (workoutName) {
-      console.log('Looking for workout:', workoutName);
-      // Try to find the workout by name
-      const workoutCard = this.page.locator('flt-semantics').filter({ hasText: workoutName }).first();
-      if (await workoutCard.isVisible({ timeout: 3000 }).catch(() => false)) {
-        console.log('Found workout card, clicking...');
-        await workoutCard.click({ force: true });
+    } else {
+      // Step 1: Navigate to Treinos tab (if not already there)
+      const treinosTab = this.page.locator('flt-semantics[role="button"]').filter({ hasText: /^Treinos$/i }).first();
+      if (await treinosTab.isVisible({ timeout: 2000 }).catch(() => false)) {
+        console.log('Clicking Treinos tab...');
+        await treinosTab.click({ force: true });
         await this.page.waitForTimeout(1500);
         await this.waitForFlutter();
+      }
+
+      // Step 2: Click on the plan card to see workouts list
+      const planCard = this.page.locator('flt-semantics').filter({ hasText: /E2E Test Plan|ABC Split/i }).first();
+      if (await planCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+        console.log('Clicking plan card...');
+        await planCard.click({ force: true });
+        await this.page.waitForTimeout(1500);
+        await this.waitForFlutter();
+      }
+
+      // Step 3: Find and click the specific workout card to navigate to WorkoutDetailPage
+      // Important: We need to click on the workout NAME, not the "Iniciar Treino" button
+      if (workoutName) {
+        console.log('Looking for workout card:', workoutName);
+
+        // Look for the workout card with specific name
+        // The workout card should be a group or button element with the workout name
+        const workoutCard = this.page.locator('flt-semantics').filter({ hasText: new RegExp(workoutName, 'i') }).first();
+
+        if (await workoutCard.isVisible({ timeout: 3000 }).catch(() => false)) {
+          console.log('Found workout card, clicking to go to WorkoutDetailPage...');
+          await workoutCard.click({ force: true });
+          await this.page.waitForTimeout(2000);
+          await this.waitForFlutter();
+        } else {
+          // Try keyboard navigation
+          console.log('Trying keyboard navigation to find workout...');
+          await this.flutter.tabToAndActivate(
+            (el) => el.text !== null && el.text.toLowerCase().includes(workoutName.toLowerCase())
+          );
+          await this.page.waitForTimeout(1500);
+        }
       } else {
-        // Try keyboard navigation
-        console.log('Trying keyboard navigation to find workout...');
-        await this.flutter.tabToAndActivate(
-          (el) => el.text !== null && el.text.toLowerCase().includes(workoutName.toLowerCase())
-        );
-      }
-    } else {
-      // Click the first workout card
-      const anyWorkout = this.page.locator('flt-semantics').filter({ hasText: /treino.*[abc]|peito|costas|pernas/i }).first();
-      if (await anyWorkout.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await anyWorkout.click({ force: true });
-        await this.page.waitForTimeout(1000);
-      }
-    }
-
-    // Step 4: Click "Iniciar Treino" button (opens modal to select workout)
-    const iniciarButton = this.page.locator('flt-semantics[role="button"]').filter({ hasText: /iniciar treino/i }).first();
-    if (await iniciarButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-      console.log('Clicking Iniciar Treino button...');
-      await iniciarButton.click({ force: true });
-      await this.page.waitForTimeout(1500);
-      await this.waitForFlutter();
-    }
-
-    // Step 5: A modal appears "Escolha qual treino deseja iniciar" - select the workout using keyboard
-    // Use Tab navigation to find workout items in the modal
-    console.log('Navigating modal to select workout...');
-    await this.flutter.focusSemanticsHost();
-
-    // Tab through to find the workout we want
-    let workoutFound = false;
-    for (let i = 0; i < 15; i++) {
-      await this.page.keyboard.press('Tab');
-      await this.page.waitForTimeout(200);
-
-      const elementInfo = await this.flutter.getFocusedElementInfo();
-      if (elementInfo?.text) {
-        console.log(`Tab ${i}: focused on "${elementInfo.text.substring(0, 50)}..."`);
-
-        // Look for the workout we want (Treino A, or matching workoutName)
-        if (workoutName && elementInfo.text.toLowerCase().includes(workoutName.toLowerCase())) {
-          console.log('Found target workout, pressing Enter...');
-          await this.page.keyboard.press('Enter');
-          await this.page.waitForTimeout(1000);
-          workoutFound = true;
-          break;
-        } else if (!workoutName && /treino a|peito/i.test(elementInfo.text)) {
-          console.log('Found first workout (Treino A), pressing Enter...');
-          await this.page.keyboard.press('Enter');
-          await this.page.waitForTimeout(1000);
-          workoutFound = true;
-          break;
+        // Click the first workout card
+        const anyWorkout = this.page.locator('flt-semantics').filter({ hasText: /treino.*[abc]|peito|costas|pernas/i }).first();
+        if (await anyWorkout.isVisible({ timeout: 3000 }).catch(() => false)) {
+          await anyWorkout.click({ force: true });
+          await this.page.waitForTimeout(1500);
         }
       }
     }
 
-    if (!workoutFound) {
-      console.log('Workout not found via Tab, trying direct click...');
-      // Fallback: try clicking the workout option directly
-      const workoutOption = this.page.locator('flt-semantics').filter({ hasText: /Treino A.*Peito/i }).first();
-      if (await workoutOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await workoutOption.click({ force: true });
-        await this.page.waitForTimeout(1000);
+    // Step 4: We should now be on WorkoutDetailPage
+    // Wait for the page to load and verify we're there
+    await this.waitForFlutter();
+
+    // Debug: log current URL and page elements
+    console.log('Current URL after navigation:', this.page.url());
+
+    // Look for WorkoutDetailPage indicators (exercise list, "Iniciar Treino" button)
+    const detailPageIndicators = await this.page.locator('flt-semantics').filter({
+      hasText: /exercícios|série|séries|iniciar treino|dificuldade/i
+    }).first().isVisible({ timeout: 3000 }).catch(() => false);
+
+    console.log('On WorkoutDetailPage:', detailPageIndicators);
+
+    // Step 5: Click "Iniciar Treino" button on WorkoutDetailPage
+    // This should open the StartWorkoutSheet with co-training options
+    const iniciarButton = this.page.locator('flt-semantics[role="button"]').filter({ hasText: /iniciar treino/i }).first();
+    if (await iniciarButton.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('Clicking "Iniciar Treino" button to show StartWorkoutSheet...');
+      await iniciarButton.click({ force: true });
+      await this.page.waitForTimeout(2000);
+      await this.waitForFlutter();
+    } else {
+      console.log('Warning: "Iniciar Treino" button not found on WorkoutDetailPage');
+    }
+
+    // Debug: Check if StartWorkoutSheet appeared
+    const hasCoTrainingOption = await this.page.locator('flt-semantics').filter({
+      hasText: /treinar com personal|com personal/i
+    }).first().isVisible({ timeout: 2000 }).catch(() => false);
+
+    const hasSoloOption = await this.page.locator('flt-semantics').filter({
+      hasText: /treinar sozinho|sozinho/i
+    }).first().isVisible({ timeout: 2000 }).catch(() => false);
+
+    console.log('StartWorkoutSheet visible - Co-training option:', hasCoTrainingOption, 'Solo option:', hasSoloOption);
+
+    console.log('Workout flow completed - ready for training mode selection');
+  }
+
+  /**
+   * Select training mode from the StartWorkoutSheet.
+   * This sheet appears after selecting a workout and offers "Treinar Sozinho" or "Treinar com Personal".
+   *
+   * @param withPersonal - If true, selects "Treinar com Personal" (co-training mode)
+   */
+  async selectTrainingMode(withPersonal: boolean = false) {
+    await this.waitForFlutter();
+
+    console.log(`Selecting training mode: ${withPersonal ? 'with Personal' : 'Solo'}`);
+
+    // Wait for the StartWorkoutSheet to appear
+    await this.page.waitForTimeout(1000);
+
+    if (withPersonal) {
+      // Look for "Treinar com Personal" option using semantic label
+      // The button has semanticsLabel 'cotraining-mode'
+      console.log('Looking for "Treinar com Personal" button...');
+
+      // First try keyboard navigation which is most reliable for Flutter Web
+      await this.flutter.focusSemanticsHost();
+
+      // Tab through to find the co-training button, logging each step
+      let found = false;
+      for (let i = 0; i < 25; i++) {
+        await this.page.keyboard.press('Tab');
+        await this.page.waitForTimeout(100);
+
+        const elementInfo = await this.flutter.getFocusedElementInfo();
+        const text = elementInfo?.text?.toLowerCase() || '';
+        const role = elementInfo?.role || 'unknown';
+
+        // Debug: log what we're tabbing through
+        if (i < 10 || text.includes('treinar') || text.includes('personal') || text.includes('cotraining')) {
+          console.log(`Tab ${i}: role=${role}, text="${text.substring(0, 60)}..."`);
+        }
+
+        if (text.includes('cotraining-mode') || (text.includes('treinar') && text.includes('personal'))) {
+          console.log(`Found co-training button at Tab ${i}!`);
+          await this.page.keyboard.press('Enter');
+          found = true;
+          await this.page.waitForTimeout(3000);
+          break;
+        }
+      }
+
+      if (!found) {
+        console.log('Keyboard navigation failed after 25 tabs');
+
+        // Try using Playwright's built-in click with multiple strategies
+        const buttonLocator = this.page.locator('flt-semantics[role="button"]').filter({
+          hasText: /cotraining-mode/i
+        }).first();
+
+        if (await buttonLocator.isVisible({ timeout: 2000 }).catch(() => false)) {
+          console.log('Trying Playwright click on cotraining-mode button...');
+          try {
+            // Try dispatchEvent
+            await buttonLocator.dispatchEvent('click');
+            await this.page.waitForTimeout(2000);
+          } catch (e) {
+            console.log('dispatchEvent failed:', e);
+          }
+        }
+      }
+
+      // Should now be on WaitingForTrainerPage
+      // Wait for navigation or "Aguardando Personal" text
+      console.log('Checking for WaitingForTrainerPage...');
+      const url = this.page.url();
+      console.log('Current URL after clicking co-training:', url);
+
+      const waitingIndicator = this.page.locator('flt-semantics').filter({
+        hasText: /aguardando|waiting|conectando|criando sessão/i
+      }).first();
+
+      if (await waitingIndicator.isVisible({ timeout: 5000 }).catch(() => false)) {
+        console.log('Successfully entered waiting for trainer mode');
+      } else if (url.includes('waiting-trainer')) {
+        console.log('Navigated to WaitingForTrainerPage via URL');
+      } else {
+        console.log('Warning: Not on WaitingForTrainerPage after clicking co-training');
+      }
+    } else {
+      // Look for "Treinar Sozinho" option
+      const soloOption = this.page.locator('flt-semantics[role="button"]').filter({
+        hasText: /start-workout-solo|treinar sozinho/i
+      }).first();
+
+      if (await soloOption.isVisible({ timeout: 5000 }).catch(() => false)) {
+        console.log('Found "Treinar Sozinho" button, using keyboard navigation...');
+        const found = await this.flutter.tabToAndActivate(
+          (el) => el.text !== null && /start-workout-solo|treinar sozinho/i.test(el.text)
+        );
+
+        if (!found) {
+          await soloOption.click({ force: true });
+        }
+
+        await this.page.waitForTimeout(1500);
+      } else {
+        console.log('Trying keyboard navigation for solo option...');
+        await this.flutter.tabToAndActivate(
+          (el) => el.text !== null && /start-workout-solo|treinar sozinho/i.test(el.text)
+        );
+        await this.page.waitForTimeout(1500);
       }
     }
 
-    // Step 6: After selecting workout, there might be another screen or the session starts directly
-    // Check if there's an "Iniciar Treino" confirmation button
     await this.page.waitForTimeout(500);
-    const confirmButton = this.page.locator('flt-semantics[role="button"]').filter({ hasText: /^iniciar treino$/i }).first();
-    if (await confirmButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-      console.log('Clicking confirm Iniciar Treino button...');
-      await confirmButton.click({ force: true });
-      await this.page.waitForTimeout(1500);
-    }
-
-    await this.page.waitForTimeout(500);
-    console.log('Workout start flow completed');
   }
 
   /**

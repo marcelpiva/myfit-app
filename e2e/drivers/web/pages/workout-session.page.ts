@@ -46,29 +46,105 @@ export class WorkoutSessionPage {
   }
 
   /**
-   * Select co-training mode when starting workout.
+   * Check if we're on the WaitingForTrainerPage.
    */
-  async selectCoTrainingMode() {
-    console.log('Selecting co-training mode...');
+  async isOnWaitingForTrainerPage(): Promise<boolean> {
+    try {
+      const waitingIndicator = this.page.locator('flt-semantics').filter({
+        hasText: /aguardando personal|waiting for trainer/i
+      }).first();
+      return await waitingIndicator.isVisible({ timeout: 3000 });
+    } catch {
+      return false;
+    }
+  }
 
-    // Try keyboard navigation first
-    let found = await this.flutter.clickButton(/treinar com personal|co-training|com personal/i);
+  /**
+   * Wait for trainer to connect (on WaitingForTrainerPage).
+   * Returns true if trainer connected, false if timeout.
+   */
+  async waitForTrainerToConnect(timeoutMs: number = 30000): Promise<boolean> {
+    console.log('Waiting for trainer to connect...');
 
-    if (!found) {
-      // Fallback to direct locator
-      const coTrainingOption = this.flutterElement('cotraining-mode')
-        .or(this.page.locator('flt-semantics[role="button"]').filter({ hasText: /treinar com personal|co-training/i }));
+    const startTime = Date.now();
 
-      if (await coTrainingOption.isVisible({ timeout: 3000 })) {
-        await coTrainingOption.click({ force: true });
+    while (Date.now() - startTime < timeoutMs) {
+      // Check for "Personal conectado" success message
+      const connectedIndicator = this.page.locator('flt-semantics').filter({
+        hasText: /personal conectado|trainer connected|conectado/i
+      }).first();
+
+      if (await connectedIndicator.isVisible({ timeout: 1000 }).catch(() => false)) {
+        console.log('Trainer connected!');
+        return true;
       }
+
+      // Check if we've navigated to active workout (URL contains active or sessionId)
+      const url = this.page.url();
+      if (url.includes('active') && url.includes('sessionId')) {
+        console.log('Navigated to active workout page with sessionId');
+        return true;
+      }
+
+      await this.page.waitForTimeout(2000);
     }
 
-    // Wait for "waiting for trainer" state
-    try {
-      await this.page.locator('flt-semantics').filter({ hasText: /aguardando|waiting|conectando/i }).waitFor({ timeout: 5000 });
-    } catch {
-      console.log('Waiting indicator not found, proceeding anyway...');
+    console.log('Timeout waiting for trainer to connect');
+    return false;
+  }
+
+  /**
+   * Click "Treinar Sozinho" fallback button on WaitingForTrainerPage.
+   */
+  async fallbackToSoloTraining() {
+    console.log('Falling back to solo training...');
+
+    const soloButton = this.page.locator('flt-semantics[role="button"]').filter({
+      hasText: /treinar sozinho|solo|continuar sozinho/i
+    }).first();
+
+    if (await soloButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await soloButton.click({ force: true });
+      await this.page.waitForTimeout(1000);
+    }
+  }
+
+  /**
+   * Select co-training mode from StartWorkoutSheet and enter waiting state.
+   */
+  async selectCoTrainingMode() {
+    console.log('Selecting co-training mode from StartWorkoutSheet...');
+
+    // Look for "Treinar com Personal" option in the StartWorkoutSheet
+    const coTrainingOption = this.page.locator('flt-semantics').filter({
+      hasText: /treinar com personal|com personal/i
+    }).first();
+
+    if (await coTrainingOption.isVisible({ timeout: 5000 }).catch(() => false)) {
+      console.log('Found "Treinar com Personal" option, clicking...');
+      await coTrainingOption.click({ force: true });
+      await this.page.waitForTimeout(1500);
+
+      // Should now be on WaitingForTrainerPage
+      const isWaiting = await this.isOnWaitingForTrainerPage();
+      if (isWaiting) {
+        console.log('Successfully entered WaitingForTrainerPage');
+      } else {
+        console.log('Not on WaitingForTrainerPage, checking URL...');
+        console.log('Current URL:', this.page.url());
+      }
+    } else {
+      // Try keyboard navigation
+      console.log('Trying keyboard navigation for co-training option...');
+      const found = await this.flutter.tabToAndActivate(
+        (el) => el.text !== null && /treinar com personal|com personal/i.test(el.text)
+      );
+
+      if (found) {
+        await this.page.waitForTimeout(1500);
+      } else {
+        console.log('Co-training option not found');
+      }
     }
   }
 

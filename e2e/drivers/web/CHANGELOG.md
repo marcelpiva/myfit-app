@@ -2,6 +2,27 @@
 
 All notable changes to the E2E tests will be documented in this file.
 
+## [0.3.0] - 2026-01-24
+
+### Added
+- Direct navigation to WorkoutDetailPage using workout ID
+- StartWorkoutSheet detection with co-training and solo options
+- Multiple click strategies for Flutter Web buttons (Tab/Enter, JS click, dispatchEvent)
+- `/test/waiting-sessions` and `/test/sessions/{id}/trainer-join` E2E helper endpoints
+
+### Changed
+- `startWorkout()` now accepts optional `workoutId` for direct navigation
+- `selectTrainingMode()` uses more robust button detection
+- Tests renamed to reflect actual functionality being tested
+
+### Fixed
+- Hash-based routing for direct navigation (`/#/workouts/{id}`)
+- Better handling of StartWorkoutSheet modal interactions
+
+### Documented
+- Known limitations with Flutter Web button interactions
+- Workarounds being explored for co-training tests
+
 ## [0.2.0] - 2025-01-24
 
 ### Added
