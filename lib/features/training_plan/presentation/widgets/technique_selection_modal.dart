@@ -173,9 +173,10 @@ class _TechniqueSelectionModalState extends State<TechniqueSelectionModal> {
   Widget _buildTechniqueTypesView(ThemeData theme) {
     final isDark = theme.brightness == Brightness.dark;
 
-    // Check if Super-Set is available (workout has antagonist muscle pairs)
-    // Only show Super-Set if workout has defined muscle groups with antagonist pairs
-    final hasAntagonists = widget.muscleGroups.isNotEmpty &&
+    // Check if Super-Set is available:
+    // - Show if no muscle groups are selected (Full Body - user can pick any exercises)
+    // - Show if workout has defined muscle groups with antagonist pairs
+    final hasAntagonists = widget.muscleGroups.isEmpty ||
         MuscleGroupTechniqueDetector.hasAntagonistPairsFromStrings(widget.muscleGroups);
 
     // Group techniques: Multi-exercise vs Single-exercise
