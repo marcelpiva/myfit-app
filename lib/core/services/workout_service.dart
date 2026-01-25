@@ -266,12 +266,21 @@ class WorkoutService {
       if (difficulty != null) params['difficulty'] = difficulty;
       if (query != null) params['search'] = query;
 
+      debugPrint('getExercises: calling ${ApiEndpoints.exercises} with params: $params');
       final response = await _client.get(ApiEndpoints.exercises, queryParameters: params);
+      debugPrint('getExercises: response status: ${response.statusCode}');
+      debugPrint('getExercises: response data type: ${response.data?.runtimeType}');
+
       if (response.statusCode == 200 && response.data != null) {
-        return (response.data as List).cast<Map<String, dynamic>>();
+        final result = (response.data as List).cast<Map<String, dynamic>>();
+        debugPrint('getExercises: returning ${result.length} exercises');
+        return result;
       }
+      debugPrint('getExercises: unexpected response, returning empty list');
       return [];
     } on DioException catch (e) {
+      debugPrint('getExercises: DioException: ${e.message}');
+      debugPrint('getExercises: response data: ${e.response?.data}');
       throw e.error is ApiException
           ? e.error as ApiException
           : UnknownApiException(e.message ?? 'Erro ao carregar exercícios', e);

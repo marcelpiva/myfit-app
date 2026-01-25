@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/services/workout_service.dart';
@@ -47,15 +48,37 @@ final filteredExercisesProvider = FutureProvider<List<Exercise>>((ref) async {
 final exercisesByMuscleGroupProvider = FutureProvider<Map<MuscleGroup, List<Exercise>>>((ref) async {
   final service = ref.read(workoutServiceProvider);
 
-  final data = await service.getExercises(limit: 200);
-  final exercises = data.map((json) => _parseExercise(json)).toList();
+  debugPrint('exercisesByMuscleGroupProvider: fetching exercises from API...');
 
-  final grouped = <MuscleGroup, List<Exercise>>{};
-  for (final muscleGroup in MuscleGroup.values) {
-    grouped[muscleGroup] = exercises.where((e) => e.muscleGroup == muscleGroup).toList();
+  try {
+    final data = await service.getExercises(limit: 200);
+    debugPrint('exercisesByMuscleGroupProvider: received ${data.length} exercises from API');
+
+    final exercises = data.map((json) {
+      try {
+        return _parseExercise(json);
+      } catch (e) {
+        debugPrint('exercisesByMuscleGroupProvider: error parsing exercise: $e, json: $json');
+        rethrow;
+      }
+    }).toList();
+
+    final grouped = <MuscleGroup, List<Exercise>>{};
+    for (final muscleGroup in MuscleGroup.values) {
+      final matching = exercises.where((e) => e.muscleGroup == muscleGroup).toList();
+      grouped[muscleGroup] = matching;
+      if (matching.isNotEmpty) {
+        debugPrint('exercisesByMuscleGroupProvider: ${muscleGroup.name}: ${matching.length} exercises');
+      }
+    }
+
+    debugPrint('exercisesByMuscleGroupProvider: total exercises loaded: ${exercises.length}');
+    return grouped;
+  } catch (e, stack) {
+    debugPrint('exercisesByMuscleGroupProvider: ERROR fetching exercises: $e');
+    debugPrint('exercisesByMuscleGroupProvider: stack: $stack');
+    rethrow;
   }
-
-  return grouped;
 });
 
 /// Parse JSON to Exercise
