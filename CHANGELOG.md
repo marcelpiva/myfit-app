@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.2] - 2026-01-25
+
+### Fixed
+- **Push Notifications** - Complete overhaul of push notification system
+  - Fixed FCM token registration endpoint path (`/notifications/notifications/devices`)
+  - Added APNs token verification before FCM token retrieval on iOS
+  - Added `setForegroundNotificationPresentationOptions` for iOS foreground notifications
+  - Push notifications now work in foreground, background, and terminated states
+
+- **In-App Notifications Screen** - Fixed "Erro ao carregar" on notifications page
+  - Fixed response parsing (API returns `{notifications: [...]}` not plain list)
+  - Fixed `unread_count` response field parsing
+
+### Added
+- **Fastlane External Testing** - New `testflight_external` lane
+  - Distributes builds to external testing groups automatically
+
 ## [1.9.1] - 2026-01-24
 
 ### Added

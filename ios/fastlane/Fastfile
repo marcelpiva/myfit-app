@@ -59,6 +59,22 @@ platform :ios do
     )
   end
 
+  desc "Upload to TestFlight and distribute to external testers"
+  lane :testflight_external do |options|
+    group = options[:group] || "My Testers"
+
+    # Upload to TestFlight and distribute to external group
+    upload_to_testflight(
+      ipa: "../build/ios/ipa/My Fit.ipa",
+      skip_waiting_for_build_processing: false,
+      distribute_external: true,
+      groups: [group],
+      changelog: options[:changelog] || "Bug fixes and improvements"
+    )
+
+    puts "Successfully uploaded and distributed to #{group}!"
+  end
+
   desc "Increment version and upload"
   lane :release do |options|
     version = options[:version] || "1.0.0"
