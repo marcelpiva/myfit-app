@@ -12,6 +12,7 @@ import '../../domain/models/training_plan.dart';
 class TechniqueSelectionModal extends StatefulWidget {
   final Function(TechniqueType) onTechniqueSelected;
   final VoidCallback onSimpleExercise;
+  final VoidCallback? onAerobicExercise;
   final VoidCallback? onStretchingExercise;
   final List<String> muscleGroups;
 
@@ -19,6 +20,7 @@ class TechniqueSelectionModal extends StatefulWidget {
     super.key,
     required this.onTechniqueSelected,
     required this.onSimpleExercise,
+    this.onAerobicExercise,
     this.onStretchingExercise,
     this.muscleGroups = const [],
   });
@@ -95,7 +97,25 @@ class _TechniqueSelectionModalState extends State<TechniqueSelectionModal> {
 
         const Divider(height: 1),
 
-        // Option 1: Stretching Exercise
+        // Option 1: Aerobic Exercise
+        if (widget.onAerobicExercise != null)
+          _OptionTile(
+            icon: LucideIcons.heartPulse,
+            iconColor: const Color(0xFFEF4444), // Red (cardio color)
+            title: 'Aeróbico',
+            subtitle: 'Exercícios cardiovasculares como corrida, bike e HIIT',
+            onTap: () {
+              HapticUtils.selectionClick();
+              Navigator.pop(context);
+              widget.onAerobicExercise!();
+            },
+            isDark: isDark,
+          ),
+
+        if (widget.onAerobicExercise != null)
+          const Divider(height: 1, indent: 72),
+
+        // Option 2: Stretching Exercise
         if (widget.onStretchingExercise != null)
           _OptionTile(
             icon: LucideIcons.move,

@@ -1198,6 +1198,10 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
         onSimpleExercise: () {
           _showExercisePicker(context, ref, workoutId, muscleGroups);
         },
+        onAerobicExercise: () {
+          // Para aeróbico, filtrar apenas exercícios com muscle_group = 'cardio'
+          _showExercisePicker(context, ref, workoutId, ['cardio']);
+        },
         onStretchingExercise: () {
           // Para alongamento, filtrar apenas exercícios com muscle_group = 'stretching'
           _showExercisePicker(context, ref, workoutId, ['stretching'], exerciseMode: ExerciseMode.stretching);

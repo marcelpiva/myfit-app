@@ -391,9 +391,12 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
                       checkmarkColor: _techniqueColor,
                     ),
                   ),
-                // Filter out cardio for advanced techniques
+                // Filter out fullBody (redundant), stretching (has own button), and cardio (has own button)
                 ...(widget.hasRestriction ? widget.allowedGroups : MuscleGroup.values)
-                    .where((group) => widget.technique == TechniqueType.normal || group != MuscleGroup.cardio)
+                    .where((group) =>
+                        group != MuscleGroup.fullBody &&
+                        group != MuscleGroup.stretching &&
+                        group != MuscleGroup.cardio)
                     .map((group) => Padding(
                           padding: const EdgeInsets.only(right: 8),
                           child: FilterChip(
