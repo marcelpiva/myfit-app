@@ -813,22 +813,13 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
       backgroundColor: Colors.transparent,
       builder: (ctx) => _StudentNewPlanSheet(
         assignment: assignment,
-        onAcknowledge: () async {
-          HapticUtils.mediumImpact();
-          final success = await ref
-              .read(studentNewPlansProvider.notifier)
-              .acknowledgePlan(assignment['id'] as String);
-          if (ctx.mounted) {
-            Navigator.of(ctx).pop();
-            // Refresh dashboard to update UI
-            ref.read(studentDashboardProvider.notifier).refresh();
-          }
-        },
         onViewPlan: () {
           HapticUtils.lightImpact();
           Navigator.of(ctx).pop();
           // Mark as seen and navigate to plan details
           ref.read(studentNewPlansProvider.notifier).acknowledgePlan(assignment['id'] as String);
+          // Refresh dashboard to update UI
+          ref.read(studentDashboardProvider.notifier).refresh();
           context.push('/plans/${assignment['plan_id']}');
         },
       ),
@@ -2102,12 +2093,10 @@ class _StudentRespondPlanSheetState extends State<_StudentRespondPlanSheet> {
 /// Bottom sheet for student to view a new plan assignment (auto-accepted)
 class _StudentNewPlanSheet extends StatelessWidget {
   final Map<String, dynamic> assignment;
-  final VoidCallback onAcknowledge;
   final VoidCallback onViewPlan;
 
   const _StudentNewPlanSheet({
     required this.assignment,
-    required this.onAcknowledge,
     required this.onViewPlan,
   });
 
@@ -2325,45 +2314,24 @@ class _StudentNewPlanSheet extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // Action buttons
+          // Action button - Ver Plano (marca como visto automaticamente)
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-            child: Row(
-              children: [
-                // Mark as seen button
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: onAcknowledge,
-                    icon: const Icon(LucideIcons.check, size: 18),
-                    label: const Text('Marcar como visto'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: isDark ? AppColors.foregroundDark : AppColors.foreground,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: onViewPlan,
+                icon: const Icon(LucideIcons.eye, size: 18),
+                label: const Text('Ver Plano'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                const SizedBox(width: 12),
-                // View plan button
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton.icon(
-                    onPressed: onViewPlan,
-                    icon: const Icon(LucideIcons.eye, size: 18),
-                    label: const Text('Ver Plano'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
 

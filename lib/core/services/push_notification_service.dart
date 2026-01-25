@@ -37,24 +37,33 @@ class PushNotificationService {
   Future<void> init() async {
     if (_initialized) return;
 
+    debugPrint('🔔 [PUSH] Iniciando PushNotificationService...');
+
     try {
       // Initialize Firebase if not already initialized
       if (Firebase.apps.isEmpty) {
+        debugPrint('🔔 [PUSH] Inicializando Firebase...');
         await Firebase.initializeApp(
           options: DefaultFirebaseOptions.currentPlatform,
         );
+        debugPrint('🔔 [PUSH] Firebase inicializado com sucesso');
+      } else {
+        debugPrint('🔔 [PUSH] Firebase já estava inicializado');
       }
 
       // Set background message handler
       FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
       // Request permission
+      debugPrint('🔔 [PUSH] Solicitando permissão de notificação...');
       await _requestPermission();
 
       // Initialize local notifications
+      debugPrint('🔔 [PUSH] Inicializando notificações locais...');
       await _initLocalNotifications();
 
       // Get FCM token
+      debugPrint('🔔 [PUSH] Obtendo FCM token...');
       await _getToken();
 
       // Listen for token refresh
@@ -73,7 +82,7 @@ class PushNotificationService {
       }
 
       _initialized = true;
-      debugPrint('PushNotificationService initialized');
+      debugPrint('🔔 [PUSH] ✅ PushNotificationService inicializado com sucesso!');
 
       // Log to GlitchTip
       ObservabilityService.captureMessage(
@@ -81,8 +90,9 @@ class PushNotificationService {
         severity: EventSeverity.info,
         extras: {'platform': Platform.isIOS ? 'iOS' : 'Android'},
       );
-    } catch (e) {
-      debugPrint('PushNotificationService init error: $e');
+    } catch (e, stackTrace) {
+      debugPrint('🔔 [PUSH] ❌ Erro ao inicializar: $e');
+      debugPrint('🔔 [PUSH] StackTrace: $stackTrace');
       ObservabilityService.captureException(e, message: 'Failed to init push notifications');
     }
   }
@@ -99,7 +109,14 @@ class PushNotificationService {
       sound: true,
     );
 
-    debugPrint('Notification permission: ${settings.authorizationStatus}');
+    debugPrint('🔔 [PUSH] Permissão de notificação: ${settings.authorizationStatus}');
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      debugPrint('🔔 [PUSH] ✅ Permissão concedida');
+    } else if (settings.authorizationStatus == AuthorizationStatus.denied) {
+      debugPrint('🔔 [PUSH] ❌ Permissão NEGADA - Usuário precisa habilitar nas configurações');
+    } else {
+      debugPrint('🔔 [PUSH] ⚠️ Permissão: ${settings.authorizationStatus}');
+    }
   }
 
   /// Initialize local notifications for foreground display
@@ -140,13 +157,16 @@ class PushNotificationService {
   Future<void> _getToken() async {
     try {
       _fcmToken = await _messaging.getToken();
-      debugPrint('FCM Token: $_fcmToken');
 
       if (_fcmToken != null) {
+        debugPrint('🔔 [PUSH] ✅ FCM Token obtido: ${_fcmToken!.substring(0, 30)}...');
         await _sendTokenToBackend(_fcmToken!);
+      } else {
+        debugPrint('🔔 [PUSH] ❌ FCM Token é NULL - Verifique configuração do Firebase');
       }
-    } catch (e) {
-      debugPrint('Error getting FCM token: $e');
+    } catch (e, stackTrace) {
+      debugPrint('🔔 [PUSH] ❌ Erro ao obter FCM token: $e');
+      debugPrint('🔔 [PUSH] StackTrace: $stackTrace');
     }
   }
 
@@ -159,16 +179,21 @@ class PushNotificationService {
 
   /// Send FCM token to backend
   Future<void> _sendTokenToBackend(String token) async {
+    debugPrint('🔔 [PUSH] Enviando FCM token para backend...');
+    debugPrint('🔔 [PUSH] Endpoint: ${ApiEndpoints.registerDevice}');
+    debugPrint('🔔 [PUSH] Platform: ${Platform.isIOS ? 'ios' : 'android'}');
+
     try {
       final client = ApiClient.instance;
-      await client.post(
+      final response = await client.post(
         ApiEndpoints.registerDevice,
         data: {
           'token': token,
           'platform': Platform.isIOS ? 'ios' : 'android',
         },
       );
-      debugPrint('FCM token sent to backend');
+      debugPrint('🔔 [PUSH] ✅ FCM token enviado para backend com sucesso!');
+      debugPrint('🔔 [PUSH] Response status: ${response.statusCode}');
 
       // Log success to GlitchTip
       ObservabilityService.captureMessage(
@@ -179,8 +204,9 @@ class PushNotificationService {
           'token_prefix': token.substring(0, 20),
         },
       );
-    } catch (e) {
-      debugPrint('Error sending FCM token to backend: $e');
+    } catch (e, stackTrace) {
+      debugPrint('🔔 [PUSH] ❌ Erro ao enviar FCM token para backend: $e');
+      debugPrint('🔔 [PUSH] StackTrace: $stackTrace');
       ObservabilityService.captureException(
         e,
         message: 'Failed to register FCM token',
