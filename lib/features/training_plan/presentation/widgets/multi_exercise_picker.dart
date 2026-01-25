@@ -71,11 +71,15 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
   String get _displayName => widget.technique.displayName;
 
   /// Check if a muscle group is blocked based on technique type
+  /// - Normal: no restrictions, all muscle groups allowed
   /// - Super-Set: blocks SAME group, only allows antagonist
   /// - Bi-Set/Tri-Set/Giant Set: blocks ANTAGONIST groups, only allows same area
   bool _isBlockedMuscleGroup(MuscleGroup group) {
     // If no exercises selected yet, nothing is blocked
     if (_selectedExercises.isEmpty) return false;
+
+    // Normal technique: no muscle group restrictions
+    if (widget.technique == TechniqueType.normal) return false;
 
     final firstSelected = _selectedExercises.first;
 
@@ -104,8 +108,10 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
   Set<MuscleGroup> get _blockedMuscleGroups {
     if (_selectedExercises.isEmpty) return {};
 
+    // Normal technique: no blocked groups
+    if (widget.technique == TechniqueType.normal) return {};
+
     final blocked = <MuscleGroup>{};
-    final firstSelected = _selectedExercises.first;
 
     if (widget.technique == TechniqueType.superset) {
       // For Super-Set: show which groups are allowed (the antagonist)

@@ -251,9 +251,12 @@ class _LoginPageState extends ConsumerState<LoginPage>
             opacity: _fadeAnimation,
             child: SlideTransition(
               position: _slideAnimation,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
+              child: GestureDetector(
+                onTap: () => FocusScope.of(context).unfocus(),
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
                   children: [
                     // Top section with back button
                     Row(
@@ -533,7 +536,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                       ],
                     ),
 
-                    const SizedBox(height: 16),
+                      const SizedBox(height: 16),
                   ],
                 ),
               ),
@@ -541,6 +544,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

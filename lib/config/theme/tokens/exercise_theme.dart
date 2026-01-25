@@ -59,7 +59,7 @@ abstract class ExerciseTheme {
       ExerciseMode.duration => LucideIcons.timer,
       ExerciseMode.interval => LucideIcons.zap,
       ExerciseMode.distance => LucideIcons.mapPin,
-      ExerciseMode.stretching => LucideIcons.accessibility,
+      ExerciseMode.stretching => LucideIcons.move,
     };
   }
 

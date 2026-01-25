@@ -98,7 +98,7 @@ class _TechniqueSelectionModalState extends State<TechniqueSelectionModal> {
         // Option 1: Stretching Exercise
         if (widget.onStretchingExercise != null)
           _OptionTile(
-            icon: LucideIcons.accessibility,
+            icon: LucideIcons.move,
             iconColor: const Color(0xFF8B5CF6), // Violet
             title: 'Alongamento',
             subtitle: 'Exercícios de flexibilidade com tempo de manutenção',

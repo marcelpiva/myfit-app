@@ -532,7 +532,7 @@ class ExerciseCardCompact extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(LucideIcons.accessibility, size: 14, color: Colors.white),
+          const Icon(LucideIcons.move, size: 14, color: Colors.white),
           const SizedBox(width: 6),
           Text(
             'ALONGAMENTO',

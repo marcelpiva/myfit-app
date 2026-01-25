@@ -22,6 +22,15 @@ class OrgSelectorPage extends ConsumerStatefulWidget {
 }
 
 class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Invalidar para buscar convites frescos ao entrar na página
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.invalidate(pendingInvitesForUserProvider);
+    });
+  }
+
   void _selectMembership(OrganizationMembership membership) {
     HapticUtils.mediumImpact();
     final activeContext = ActiveContext(membership: membership);
@@ -35,7 +44,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
     context.go(activeContext.homeRoute);
   }
 
-  bool _isAccepting = false;
+  String? _acceptingInviteId;
   bool _isDeleting = false;
 
   Future<void> _deleteProfile(OrganizationMembership membership) async {
@@ -197,8 +206,8 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
   }
 
   Future<void> _acceptInvite(PendingInvite invite) async {
-    if (_isAccepting) return;
-    setState(() => _isAccepting = true);
+    if (_acceptingInviteId != null) return;
+    setState(() => _acceptingInviteId = invite.id);
 
     try {
       final service = OrganizationService();
@@ -225,7 +234,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
         );
       }
     } finally {
-      if (mounted) setState(() => _isAccepting = false);
+      if (mounted) setState(() => _acceptingInviteId = null);
     }
   }
 
@@ -320,7 +329,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
             child: _PendingInviteCard(
               invite: invite,
               isDark: isDark,
-              isAccepting: _isAccepting,
+              isAccepting: _acceptingInviteId == invite.id,
               onAccept: () => _acceptInvite(invite),
             ),
           )),

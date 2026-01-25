@@ -559,7 +559,9 @@ class _StepWorkoutsConfigState extends ConsumerState<StepWorkoutsConfig> {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: MuscleGroup.values.map((group) {
+                  children: MuscleGroup.values
+                      .where((group) => group != MuscleGroup.fullBody && group != MuscleGroup.stretching)
+                      .map((group) {
                     final isSelected = selectedMuscleGroups.contains(group.name);
                     return FilterChip(
                       label: Text(group.displayName),
@@ -1197,7 +1199,8 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
           _showExercisePicker(context, ref, workoutId, muscleGroups);
         },
         onStretchingExercise: () {
-          _showExercisePicker(context, ref, workoutId, muscleGroups, exerciseMode: ExerciseMode.stretching);
+          // Para alongamento, filtrar apenas exercícios com muscle_group = 'stretching'
+          _showExercisePicker(context, ref, workoutId, ['stretching'], exerciseMode: ExerciseMode.stretching);
         },
       ),
     );
@@ -1520,7 +1523,9 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: MuscleGroup.values.map((group) {
+                  children: MuscleGroup.values
+                      .where((group) => group != MuscleGroup.fullBody && group != MuscleGroup.stretching)
+                      .map((group) {
                     final isSelected = selectedMuscleGroups.contains(group.name);
                     return FilterChip(
                       label: Text(group.displayName),
