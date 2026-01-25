@@ -1014,14 +1014,8 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
               label: 'Full',
               name: 'Full Body (Corpo Inteiro)',
               order: 0,
-              muscleGroups: [
-                'chest',
-                'back',
-                'shoulders',
-                'legs',
-                'biceps',
-                'triceps'
-              ]),
+              // Empty array = no restriction = all exercises available
+              muscleGroups: []),
         ]);
         break;
       case SplitType.custom:
