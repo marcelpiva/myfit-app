@@ -14,7 +14,12 @@ enum MuscleGroup {
   glutes,
   abs,
   cardio,
-  fullBody;
+  fullBody,
+  stretching,
+  quadriceps,
+  hamstrings,
+  calves,
+  forearms;
 
   /// Display name in Portuguese
   String get displayName {
@@ -39,6 +44,16 @@ enum MuscleGroup {
         return 'Cardio';
       case MuscleGroup.fullBody:
         return 'Corpo Inteiro';
+      case MuscleGroup.stretching:
+        return 'Alongamento';
+      case MuscleGroup.quadriceps:
+        return 'Quadríceps';
+      case MuscleGroup.hamstrings:
+        return 'Posterior';
+      case MuscleGroup.calves:
+        return 'Panturrilha';
+      case MuscleGroup.forearms:
+        return 'Antebraço';
     }
   }
 }
@@ -80,30 +95,7 @@ sealed class Exercise with _$Exercise {
       _$ExerciseFromJson(json);
 
   /// Display name for muscle group
-  String get muscleGroupName {
-    switch (muscleGroup) {
-      case MuscleGroup.chest:
-        return 'Peito';
-      case MuscleGroup.back:
-        return 'Costas';
-      case MuscleGroup.shoulders:
-        return 'Ombros';
-      case MuscleGroup.biceps:
-        return 'Bíceps';
-      case MuscleGroup.triceps:
-        return 'Tríceps';
-      case MuscleGroup.legs:
-        return 'Pernas';
-      case MuscleGroup.glutes:
-        return 'Glúteos';
-      case MuscleGroup.abs:
-        return 'Abdômen';
-      case MuscleGroup.cardio:
-        return 'Cardio';
-      case MuscleGroup.fullBody:
-        return 'Corpo Inteiro';
-    }
-  }
+  String get muscleGroupName => muscleGroup.displayName;
 
   /// Display name for equipment
   String? get equipmentName {
@@ -143,6 +135,10 @@ extension MuscleGroupAntagonist on MuscleGroup {
         return MuscleGroup.triceps;
       case MuscleGroup.triceps:
         return MuscleGroup.biceps;
+      case MuscleGroup.quadriceps:
+        return MuscleGroup.hamstrings;
+      case MuscleGroup.hamstrings:
+        return MuscleGroup.quadriceps;
       // These don't have clear antagonists
       case MuscleGroup.shoulders:
       case MuscleGroup.legs:
@@ -150,6 +146,9 @@ extension MuscleGroupAntagonist on MuscleGroup {
       case MuscleGroup.abs:
       case MuscleGroup.cardio:
       case MuscleGroup.fullBody:
+      case MuscleGroup.stretching:
+      case MuscleGroup.calves:
+      case MuscleGroup.forearms:
         return null;
     }
   }
@@ -235,14 +234,22 @@ extension MuscleGroupParsing on String {
         return MuscleGroup.triceps;
       case 'legs':
       case 'pernas':
+        return MuscleGroup.legs;
       case 'quadriceps':
       case 'quadríceps':
+        return MuscleGroup.quadriceps;
       case 'hamstrings':
       case 'isquiotibiais':
+      case 'posterior':
+        return MuscleGroup.hamstrings;
       case 'calves':
       case 'panturrilha':
       case 'panturrilhas':
-        return MuscleGroup.legs;
+        return MuscleGroup.calves;
+      case 'forearms':
+      case 'antebraço':
+      case 'antebraco':
+        return MuscleGroup.forearms;
       case 'glutes':
       case 'glúteos':
         return MuscleGroup.glutes;
@@ -256,6 +263,9 @@ extension MuscleGroupParsing on String {
       case 'fullbody':
       case 'corpo inteiro':
         return MuscleGroup.fullBody;
+      case 'stretching':
+      case 'alongamento':
+        return MuscleGroup.stretching;
       default:
         return MuscleGroup.fullBody;
     }

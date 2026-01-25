@@ -55,6 +55,11 @@ const _$MuscleGroupEnumMap = {
   MuscleGroup.abs: 'abs',
   MuscleGroup.cardio: 'cardio',
   MuscleGroup.fullBody: 'fullBody',
+  MuscleGroup.stretching: 'stretching',
+  MuscleGroup.quadriceps: 'quadriceps',
+  MuscleGroup.hamstrings: 'hamstrings',
+  MuscleGroup.calves: 'calves',
+  MuscleGroup.forearms: 'forearms',
 };
 
 const _$EquipmentTypeEnumMap = {
