@@ -3,6 +3,15 @@
 
 default_platform(:ios)
 
+# Build Flutter with CocoaPods workaround
+def flutter_build(args = "")
+  # First, run pod install separately to ensure pods are installed
+  sh("cd ios && bundle exec pod install --repo-update")
+
+  # Then build Flutter (pods are already installed)
+  sh("flutter build ipa #{args}")
+end
+
 platform :ios do
   # API Key configuration
   before_all do
@@ -24,7 +33,7 @@ platform :ios do
 
     # Build Flutter IPA with production environment
     Dir.chdir("../..") do
-      sh("flutter build ipa --release --dart-define=ENV=prod --export-options-plist=ios/ExportOptions.plist")
+      flutter_build("--release --dart-define=ENV=prod --export-options-plist=ios/ExportOptions.plist")
     end
 
     # Upload to TestFlight
@@ -40,7 +49,7 @@ platform :ios do
   lane :upload do
     # Build Flutter IPA with production environment
     Dir.chdir("../..") do
-      sh("flutter build ipa --release --dart-define=ENV=prod")
+      flutter_build("--release --dart-define=ENV=prod")
     end
 
     # Upload to TestFlight
