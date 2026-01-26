@@ -447,6 +447,33 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
               ],
             ),
           ),
+          // Settings button
+          GestureDetector(
+            onTap: () {
+              HapticUtils.lightImpact();
+              context.push(RouteNames.settings);
+            },
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: isDark ? AppColors.cardDark : AppColors.card,
+                border: Border.all(
+                  color: isDark ? AppColors.borderDark : AppColors.border,
+                ),
+              ),
+              child: Icon(
+                LucideIcons.settings,
+                size: 18,
+                color: isDark
+                    ? AppColors.foregroundDark
+                    : AppColors.foreground,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Logout button
           GestureDetector(
             onTap: () async {
               HapticUtils.lightImpact();
