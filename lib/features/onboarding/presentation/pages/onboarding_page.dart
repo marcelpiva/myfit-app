@@ -16,6 +16,8 @@ import '../../../../core/services/user_service.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/onboarding_provider.dart';
+import '../widgets/animated_progress_bar.dart';
+import 'student_steps/student_steps.dart';
 import 'trainer_steps/trainer_steps.dart';
 
 /// Main onboarding page that routes to trainer or student flow
@@ -419,64 +421,73 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
   ) {
     switch (state.currentStep) {
       case StudentOnboardingStep.welcome:
-        return _StudentWelcomeStep(
+        return StudentWelcomeStep(
           onNext: () => notifier.nextStep(),
           onSkip: _skip,
         );
       case StudentOnboardingStep.fitnessGoal:
-        return _StudentGoalStep(
-          state: state,
-          onSelect: (goal, other) {
+        return StudentGoalStep(
+          initialGoal: state.fitnessGoal,
+          initialOtherGoal: state.otherGoal,
+          onContinue: (goal, other) {
             notifier.setFitnessGoal(goal, otherGoal: other);
             notifier.nextStep();
           },
           onBack: () => notifier.previousStep(),
           onSkip: _skip,
+          progress: 0.17,
         );
       case StudentOnboardingStep.experienceLevel:
-        return _StudentExperienceStep(
-          state: state,
-          onSelect: (level) {
+        return StudentExperienceStep(
+          initialLevel: state.experienceLevel,
+          onContinue: (level) {
             notifier.setExperienceLevel(level);
             notifier.nextStep();
           },
           onBack: () => notifier.previousStep(),
           onSkip: _skip,
+          progress: 0.33,
         );
       case StudentOnboardingStep.physicalData:
-        return _StudentPhysicalDataStep(
-          state: state,
-          onNext: (weight, height, age) {
+        return StudentPhysicalDataStep(
+          initialWeight: state.weight,
+          initialHeight: state.height,
+          initialAge: state.age,
+          onContinue: (weight, height, age) {
             notifier.setPhysicalData(weight: weight, height: height, age: age);
             notifier.nextStep();
           },
           onBack: () => notifier.previousStep(),
           onSkip: _skip,
+          progress: 0.5,
         );
       case StudentOnboardingStep.weeklyFrequency:
-        return _StudentFrequencyStep(
-          state: state,
-          onSelect: (frequency) {
+        return StudentFrequencyStep(
+          initialFrequency: state.weeklyFrequency,
+          onContinue: (frequency) {
             notifier.setWeeklyFrequency(frequency);
             notifier.nextStep();
           },
           onBack: () => notifier.previousStep(),
           onSkip: _skip,
+          progress: 0.67,
         );
       case StudentOnboardingStep.injuries:
-        return _StudentInjuriesStep(
-          state: state,
-          onNext: (injuries, other) {
-            notifier.setInjuries(injuries, otherInjuries: other);
+        return StudentInjuriesStep(
+          initialInjuries: state.injuries,
+          onContinue: (injuries) {
+            notifier.setInjuries(injuries);
             notifier.nextStep();
           },
           onBack: () => notifier.previousStep(),
           onSkip: _skip,
+          progress: 0.83,
         );
       case StudentOnboardingStep.complete:
-        return _CompleteStep(
-          isTrainer: false,
+        return StudentCompleteStep(
+          state: state,
           onComplete: _complete,
+          isLoading: _isLoading,
         );
     }
   }
