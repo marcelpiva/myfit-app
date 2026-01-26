@@ -25,10 +25,10 @@ class ObservabilityConfig {
           defaultValue: 'https://03477ed5d1d9409ca758097f8f29b3d8@app.glitchtip.com/19780',
         );
       case Environment.development:
-        // Development can use same DSN or empty to disable
+        // Development: disabled by default (empty DSN)
         return const String.fromEnvironment(
           'GLITCHTIP_DSN_DEV',
-          defaultValue: 'https://03477ed5d1d9409ca758097f8f29b3d8@app.glitchtip.com/19780',
+          defaultValue: '',
         );
     }
   }

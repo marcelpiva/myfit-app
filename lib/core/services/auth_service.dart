@@ -122,15 +122,21 @@ class AuthService {
   }
 
   /// Login with Google
-  Future<AuthResponse> loginWithGoogle({required String idToken}) async {
+  Future<SocialAuthResponse> loginWithGoogle({
+    required String idToken,
+    String? userType,
+  }) async {
     try {
       final response = await _client.post(
         ApiEndpoints.authGoogle,
-        data: {'id_token': idToken},
+        data: {
+          'id_token': idToken,
+          if (userType != null) 'user_type': userType,
+        },
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        final authResponse = AuthResponse.fromJson(response.data);
+        final authResponse = SocialAuthResponse.fromJson(response.data);
 
         await TokenStorage.saveTokens(
           accessToken: authResponse.tokens.accessToken,
@@ -150,9 +156,10 @@ class AuthService {
   }
 
   /// Login with Apple
-  Future<AuthResponse> loginWithApple({
+  Future<SocialAuthResponse> loginWithApple({
     required String idToken,
     String? userName,
+    String? userType,
   }) async {
     try {
       final response = await _client.post(
@@ -160,11 +167,12 @@ class AuthService {
         data: {
           'id_token': idToken,
           if (userName != null) 'user_name': userName,
+          if (userType != null) 'user_type': userType,
         },
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        final authResponse = AuthResponse.fromJson(response.data);
+        final authResponse = SocialAuthResponse.fromJson(response.data);
 
         await TokenStorage.saveTokens(
           accessToken: authResponse.tokens.accessToken,

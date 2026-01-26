@@ -3,12 +3,8 @@
 
 default_platform(:ios)
 
-# Build Flutter with CocoaPods workaround
+# Build Flutter IPA
 def flutter_build(args = "")
-  # First, run pod install separately to ensure pods are installed
-  sh("cd ios && bundle exec pod install --repo-update")
-
-  # Then build Flutter (pods are already installed)
   sh("flutter build ipa #{args}")
 end
 

@@ -36,12 +36,24 @@ class ErrorInterceptor extends Interceptor {
     }
 
     // Check for connection errors (works on both mobile and web)
-    if (err.type == DioExceptionType.connectionError ||
-        err.type == DioExceptionType.unknown ||
-        err.message?.contains('XMLHttpRequest') == true ||
-        err.message?.contains('Network') == true ||
-        err.message?.contains('CORS') == true) {
+    if (err.type == DioExceptionType.connectionError) {
       return NetworkException.noConnection();
+    }
+
+    // Handle unknown errors that are actually network errors
+    if (err.type == DioExceptionType.unknown) {
+      final errorString = err.error?.toString().toLowerCase() ?? '';
+      final messageString = err.message?.toLowerCase() ?? '';
+
+      // Only treat as network error if it's actually a network-related issue
+      if (errorString.contains('socketexception') ||
+          errorString.contains('connection refused') ||
+          errorString.contains('network is unreachable') ||
+          errorString.contains('no route to host') ||
+          messageString.contains('xmlhttprequest') ||
+          messageString.contains('cors')) {
+        return NetworkException.noConnection();
+      }
     }
 
     // Handle HTTP response errors

@@ -168,15 +168,22 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
 
     final success = await ref.read(authProvider.notifier).loginWithGoogle(
       idToken: idToken,
+      userType: widget.userType,
     );
 
     if (mounted) {
       setState(() => _loading = false);
 
       if (success) {
+        final authState = ref.read(authProvider);
         ref.invalidate(membershipsProvider);
         ref.invalidate(pendingInvitesForUserProvider);
-        context.go(RouteNames.orgSelector);
+        // New users go to onboarding with the already selected user type
+        if (authState.isNewUser == true) {
+          context.go(RouteNames.onboarding, extra: {'userType': widget.userType});
+        } else {
+          context.go(RouteNames.orgSelector);
+        }
       } else {
         final authState = ref.read(authProvider);
         _showError(authState.errorMessage ?? 'Erro ao fazer login com Google');
@@ -201,15 +208,22 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
     final success = await ref.read(authProvider.notifier).loginWithApple(
       idToken: result.idToken,
       userName: result.userName,
+      userType: widget.userType,
     );
 
     if (mounted) {
       setState(() => _loading = false);
 
       if (success) {
+        final authState = ref.read(authProvider);
         ref.invalidate(membershipsProvider);
         ref.invalidate(pendingInvitesForUserProvider);
-        context.go(RouteNames.orgSelector);
+        // New users go to onboarding with the already selected user type
+        if (authState.isNewUser == true) {
+          context.go(RouteNames.onboarding, extra: {'userType': widget.userType});
+        } else {
+          context.go(RouteNames.orgSelector);
+        }
       } else {
         final authState = ref.read(authProvider);
         _showError(authState.errorMessage ?? 'Erro ao fazer login com Apple');

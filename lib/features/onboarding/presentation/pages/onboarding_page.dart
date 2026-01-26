@@ -211,6 +211,14 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
         );
       } else {
         final state = ref.read(studentOnboardingProvider);
+        debugPrint('Saving student onboarding data:');
+        debugPrint('  fitnessGoal: ${state.fitnessGoal?.name}');
+        debugPrint('  experienceLevel: ${state.experienceLevel?.name}');
+        debugPrint('  weight: ${state.weight}');
+        debugPrint('  height: ${state.height}');
+        debugPrint('  age: ${state.age}');
+        debugPrint('  weeklyFrequency: ${state.weeklyFrequency}');
+        debugPrint('  injuries: ${state.injuries}');
         await userService.updateProfile(
           fitnessGoal: state.fitnessGoal?.name,
           fitnessGoalOther: state.otherGoal,
