@@ -20,11 +20,13 @@ import '../providers/onboarding_provider.dart';
 class OnboardingPage extends ConsumerStatefulWidget {
   final String userType;
   final bool skipOrgCreation;
+  final bool editMode;
 
   const OnboardingPage({
     super.key,
     this.userType = 'student',
     this.skipOrgCreation = false,
+    this.editMode = false,
   });
 
   @override
@@ -59,6 +61,13 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
 
   Future<void> _skip() async {
     HapticUtils.lightImpact();
+
+    // If in edit mode, just go back
+    if (widget.editMode) {
+      if (mounted) context.pop();
+      return;
+    }
+
     if (_isTrainer) {
       ref.read(trainerOnboardingProvider.notifier).skip();
       // Create organization for trainer even on skip
@@ -75,6 +84,14 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
     if (_isCreatingOrg) return;
 
     HapticUtils.mediumImpact();
+
+    // If in edit mode, just go back to previous screen
+    if (widget.editMode) {
+      if (mounted) {
+        context.pop();
+      }
+      return;
+    }
 
     // For trainers, create organization automatically (unless already created)
     if (_isTrainer) {
