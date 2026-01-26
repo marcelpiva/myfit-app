@@ -1011,7 +1011,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                 AppColors.secondary,
                 () {
                   HapticUtils.lightImpact();
-                  Clipboard.setData(const ClipboardData(text: 'https://myfit.app/invite/MYFIT-JP2024'));
+                  Clipboard.setData(const ClipboardData(text: 'https://myfitplatform.com/invite/MYFIT-JP2024'));
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -2358,7 +2358,7 @@ class _AddStudentSheetState extends State<_AddStudentSheet> with SingleTickerPro
                             child: ElevatedButton.icon(
                               onPressed: () async {
                                 HapticUtils.lightImpact();
-                                final inviteUrl = 'https://myfit.app/invite/${_inviteCode ?? ''}';
+                                final inviteUrl = 'https://myfitplatform.com/invite/${_inviteCode ?? ''}';
                                 final message = 'Olá! Estou te convidando para ser meu aluno no MyFit. '
                                     'Use meu código de convite: ${_inviteCode ?? ''}\n\n'
                                     'Ou acesse direto: $inviteUrl';
@@ -2397,7 +2397,7 @@ class _AddStudentSheetState extends State<_AddStudentSheet> with SingleTickerPro
                                 child: OutlinedButton.icon(
                                   onPressed: () async {
                                     HapticUtils.lightImpact();
-                                    final inviteUrl = 'https://myfit.app/invite/${_inviteCode ?? ''}';
+                                    final inviteUrl = 'https://myfitplatform.com/invite/${_inviteCode ?? ''}';
                                     final message = 'Te convidei para ser meu aluno no MyFit! '
                                         'Use o código ${_inviteCode ?? ''} ou acesse: $inviteUrl';
                                     await Share.share(message);
@@ -2415,7 +2415,7 @@ class _AddStudentSheetState extends State<_AddStudentSheet> with SingleTickerPro
                                 child: ElevatedButton.icon(
                                   onPressed: () {
                                     HapticUtils.lightImpact();
-                                    Clipboard.setData(ClipboardData(text: 'https://myfit.app/invite/${_inviteCode ?? ''}'));
+                                    Clipboard.setData(ClipboardData(text: 'https://myfitplatform.com/invite/${_inviteCode ?? ''}'));
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: const Text('Link copiado!'),
@@ -2469,7 +2469,7 @@ class _AddStudentSheetState extends State<_AddStudentSheet> with SingleTickerPro
   }
 
   void _showQRCodeModal(BuildContext context, String inviteCode) {
-    final inviteUrl = 'https://myfit.app/invite/$inviteCode';
+    final inviteUrl = 'https://myfitplatform.com/invite/$inviteCode';
     showDialog(
       context: context,
       builder: (context) => Dialog(

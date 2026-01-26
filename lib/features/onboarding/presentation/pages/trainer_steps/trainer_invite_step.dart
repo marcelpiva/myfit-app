@@ -59,7 +59,7 @@ class _TrainerInviteStepState extends ConsumerState<TrainerInviteStep> {
         // No org yet - will be created on completion
         // Generate a preview token for display
         setState(() {
-          _inviteLink = 'https://myfit.app/join/preview';
+          _inviteLink = 'https://myfitplatform.com/join/preview';
           _isLoading = false;
         });
         return;
@@ -74,20 +74,20 @@ class _TrainerInviteStepState extends ConsumerState<TrainerInviteStep> {
         final token = response.data['token'] as String?;
         if (token != null) {
           setState(() {
-            _inviteLink = 'https://myfit.app/join/$token';
+            _inviteLink = 'https://myfitplatform.com/join/$token';
             _isLoading = false;
           });
         } else {
           // No token returned - use preview link
           setState(() {
-            _inviteLink = 'https://myfit.app/join/preview';
+            _inviteLink = 'https://myfitplatform.com/join/preview';
             _isLoading = false;
           });
         }
       } else {
         // Non-200 response - use preview link
         setState(() {
-          _inviteLink = 'https://myfit.app/join/preview';
+          _inviteLink = 'https://myfitplatform.com/join/preview';
           _isLoading = false;
         });
       }

@@ -297,6 +297,7 @@ class InviteIllustration extends StatelessWidget {
 
     return Container(
       height: 120,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -308,89 +309,62 @@ class InviteIllustration extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Stack(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Trainer icon
-          Positioned(
-            left: 40,
-            top: 20,
-            child: Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withAlpha(50),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                LucideIcons.userCog,
-                size: 30,
-                color: AppColors.primary,
-              ),
-            ),
-          ),
-          // Connection line
-          Positioned(
-            left: 100,
-            top: 45,
-            child: Container(
-              width: 60,
-              height: 2,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primary.withAlpha(100),
-                    AppColors.success.withAlpha(100),
-                  ],
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Trainer icon
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withAlpha(50),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  LucideIcons.userCog,
+                  size: 28,
+                  color: AppColors.primary,
                 ),
               ),
-            ),
+              const SizedBox(width: 12),
+              // Arrow
+              Icon(
+                LucideIcons.arrowRight,
+                size: 24,
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+              const SizedBox(width: 12),
+              // Student icon
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: AppColors.success.withAlpha(50),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  LucideIcons.user,
+                  size: 28,
+                  color: AppColors.success,
+                ),
+              ),
+            ],
           ),
-          // Arrow icon
-          Positioned(
-            left: 125,
-            top: 35,
-            child: Icon(
-              LucideIcons.arrowRight,
-              size: 20,
+          const SizedBox(height: 12),
+          // Label
+          Text(
+            'Conecte-se com seus alunos',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
               color: isDark
                   ? AppColors.mutedForegroundDark
                   : AppColors.mutedForeground,
-            ),
-          ),
-          // Student icon
-          Positioned(
-            right: 40,
-            top: 20,
-            child: Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: AppColors.success.withAlpha(50),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                LucideIcons.user,
-                size: 30,
-                color: AppColors.success,
-              ),
-            ),
-          ),
-          // Label
-          Positioned(
-            bottom: 15,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Text(
-                'Conecte-se com seus alunos',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: isDark
-                      ? AppColors.mutedForegroundDark
-                      : AppColors.mutedForeground,
-                ),
-              ),
             ),
           ),
         ],

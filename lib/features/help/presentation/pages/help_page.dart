@@ -577,7 +577,7 @@ class _HelpPageState extends ConsumerState<HelpPage> {
   }
 
   Future<void> _sendEmail() async {
-    final uri = Uri.parse('mailto:suporte@myfit.app?subject=Ajuda MyFit');
+    final uri = Uri.parse('mailto:suporte@myfitplatform.com?subject=Ajuda MyFit');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
