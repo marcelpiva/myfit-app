@@ -121,18 +121,8 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
     }
   }
 
-  Future<void> _completeWorkoutSession() async {
-    if (!_hasWorkoutSession) return;
-
-    try {
-      final workoutService = WorkoutService();
-      await workoutService.completeWorkoutSession(_workoutSessionId!);
-
-      // Emit cache event to refresh dashboard and related providers
-      ref.read(cacheEventEmitterProvider).workoutCompleted(widget.workoutId);
-    } catch (e) {
-      debugPrint('Failed to complete workout session: $e');
-    }
+  void _emitWorkoutCompletedEvent() {
+    ref.read(cacheEventEmitterProvider).workoutCompleted(widget.workoutId);
   }
 
   @override
@@ -345,20 +335,20 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
           .updateStatus(SessionStatus.completed);
     }
 
-    // Complete workout session
-    _completeWorkoutSession();
-
     // Capture page context before showing sheet
     final pageContext = context;
 
     showModalBottomSheet(
       context: context,
       isDismissible: false,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => _WorkoutCompleteSheet(
         duration: _workoutDuration,
         exercisesCompleted: exerciseCount,
         totalSets: _completedSets.fold(0, (sum, sets) => sum + sets.length),
+        sessionId: _workoutSessionId,
+        onWorkoutCompleted: _emitWorkoutCompletedEvent,
         onFinish: () {
           Navigator.pop(sheetContext); // Close sheet
           pageContext.pop(); // Exit workout page
@@ -1235,12 +1225,16 @@ class _WorkoutCompleteSheet extends StatefulWidget {
   final String duration;
   final int exercisesCompleted;
   final int totalSets;
+  final String? sessionId;
+  final VoidCallback? onWorkoutCompleted;
   final VoidCallback onFinish;
 
   const _WorkoutCompleteSheet({
     required this.duration,
     required this.exercisesCompleted,
     required this.totalSets,
+    this.sessionId,
+    this.onWorkoutCompleted,
     required this.onFinish,
   });
 
@@ -1250,6 +1244,9 @@ class _WorkoutCompleteSheet extends StatefulWidget {
 
 class _WorkoutCompleteSheetState extends State<_WorkoutCompleteSheet> {
   bool _showCelebration = true;
+  int _rating = 0; // 0 = not rated, 1-5 = rating
+  final _notesController = TextEditingController();
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -1263,6 +1260,38 @@ class _WorkoutCompleteSheetState extends State<_WorkoutCompleteSheet> {
   }
 
   @override
+  void dispose() {
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitAndFinish() async {
+    if (_isSubmitting) return;
+
+    setState(() => _isSubmitting = true);
+
+    // Save rating and complete session
+    if (widget.sessionId != null) {
+      try {
+        final workoutService = WorkoutService();
+        await workoutService.completeWorkoutSession(
+          widget.sessionId!,
+          rating: _rating > 0 ? _rating : null,
+          notes: _notesController.text.trim().isNotEmpty
+              ? _notesController.text.trim()
+              : null,
+        );
+        // Emit event to refresh dashboard and related providers
+        widget.onWorkoutCompleted?.call();
+      } catch (e) {
+        debugPrint('Error completing workout session: $e');
+      }
+    }
+
+    widget.onFinish();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
@@ -1270,93 +1299,202 @@ class _WorkoutCompleteSheetState extends State<_WorkoutCompleteSheet> {
     return WorkoutCelebration(
       isPlaying: _showCelebration,
       child: Container(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.fromLTRB(32, 32, 32, 32 + MediaQuery.of(context).viewInsets.bottom),
         decoration: BoxDecoration(
           color: isDark
               ? theme.colorScheme.surface
               : theme.colorScheme.surface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Animated trophy
-            const AnimatedTrophy(
-              size: 64,
-              color: AppColors.success,
-            ),
-
-            const SizedBox(height: 24),
-
-            Text(
-              'Treino Concluído!',
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Animated trophy
+              const AnimatedTrophy(
+                size: 64,
+                color: AppColors.success,
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _getMotivationalMessage(),
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
 
-            const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
-            // Animated stats
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                AnimatedStatCounter(
-                  value: widget.duration,
-                  label: 'Duração',
-                  icon: LucideIcons.clock,
-                  color: AppColors.primary,
-                  delay: const Duration(milliseconds: 200),
-                ),
-                AnimatedStatCounter(
-                  value: '${widget.exercisesCompleted}',
-                  label: 'Exercícios',
-                  icon: LucideIcons.dumbbell,
-                  color: AppColors.secondary,
-                  delay: const Duration(milliseconds: 400),
-                ),
-                AnimatedStatCounter(
-                  value: '${widget.totalSets}',
-                  label: 'Séries',
-                  icon: LucideIcons.repeat,
-                  color: AppColors.accent,
-                  delay: const Duration(milliseconds: 600),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 32),
-
-            // CTA button
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () {
-                  HapticUtils.mediumImpact();
-                  widget.onFinish();
-                },
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text(
-                  'Finalizar',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+              Text(
+                'Treino Concluído!',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                _getMotivationalMessage(),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 32),
+
+              // Animated stats
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  AnimatedStatCounter(
+                    value: widget.duration,
+                    label: 'Duração',
+                    icon: LucideIcons.clock,
+                    color: AppColors.primary,
+                    delay: const Duration(milliseconds: 200),
+                  ),
+                  AnimatedStatCounter(
+                    value: '${widget.exercisesCompleted}',
+                    label: 'Exercícios',
+                    icon: LucideIcons.dumbbell,
+                    color: AppColors.secondary,
+                    delay: const Duration(milliseconds: 400),
+                  ),
+                  AnimatedStatCounter(
+                    value: '${widget.totalSets}',
+                    label: 'Séries',
+                    icon: LucideIcons.repeat,
+                    color: AppColors.accent,
+                    delay: const Duration(milliseconds: 600),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 32),
+
+              // Rating section
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? AppColors.cardDark.withAlpha(150)
+                      : AppColors.card.withAlpha(200),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark ? AppColors.borderDark : AppColors.border,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Como foi seu treino?',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Star rating
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(5, (index) {
+                        final starValue = index + 1;
+                        final isSelected = starValue <= _rating;
+                        return GestureDetector(
+                          onTap: () {
+                            HapticUtils.lightImpact();
+                            setState(() => _rating = starValue);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            child: Icon(
+                              LucideIcons.star,
+                              size: 36,
+                              color: isSelected
+                                  ? AppColors.warning
+                                  : (isDark
+                                      ? AppColors.mutedForegroundDark
+                                      : AppColors.mutedForeground),
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                    if (_rating > 0) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        _getRatingLabel(_rating),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: AppColors.warning,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    // Optional notes
+                    TextField(
+                      controller: _notesController,
+                      maxLines: 2,
+                      decoration: InputDecoration(
+                        hintText: 'Comentário (opcional)',
+                        hintStyle: TextStyle(
+                          color: isDark
+                              ? AppColors.mutedForegroundDark
+                              : AppColors.mutedForeground,
+                        ),
+                        filled: true,
+                        fillColor: isDark ? AppColors.backgroundDark : AppColors.background,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.all(12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // CTA button
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _isSubmitting ? null : _submitAndFinish,
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Finalizar',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  String _getRatingLabel(int rating) {
+    switch (rating) {
+      case 1:
+        return 'Muito difícil';
+      case 2:
+        return 'Difícil';
+      case 3:
+        return 'Normal';
+      case 4:
+        return 'Bom';
+      case 5:
+        return 'Excelente!';
+      default:
+        return '';
+    }
   }
 
   String _getMotivationalMessage() {

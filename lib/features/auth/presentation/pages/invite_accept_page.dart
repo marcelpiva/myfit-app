@@ -7,7 +7,6 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
-import '../../../../core/providers/context_provider.dart';
 import '../providers/auth_provider.dart';
 import '../../../../core/services/organization_service.dart';
 import '../../../../shared/presentation/components/animations/fade_in_up.dart';
@@ -29,13 +28,22 @@ class InviteAcceptPage extends ConsumerStatefulWidget {
 class _InviteAcceptPageState extends ConsumerState<InviteAcceptPage> {
   bool _isLoading = true;
   bool _isAccepting = false;
+  bool _isDeclining = false;
+  bool _showDeclineForm = false;
   String? _error;
   Map<String, dynamic>? _inviteData;
+  final _declineReasonController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadInvitePreview();
+  }
+
+  @override
+  void dispose() {
+    _declineReasonController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadInvitePreview() async {
@@ -104,6 +112,51 @@ class _InviteAcceptPageState extends ConsumerState<InviteAcceptPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erro ao aceitar convite: ${e.toString()}'),
+            backgroundColor: AppColors.destructive,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _declineInvite() async {
+    setState(() => _isDeclining = true);
+
+    try {
+      final orgService = OrganizationService();
+      await orgService.declineInvite(
+        widget.token,
+        reason: _declineReasonController.text.trim().isNotEmpty
+            ? _declineReasonController.text.trim()
+            : null,
+      );
+
+      // Emit cache event
+      final inviteId = _inviteData?['id'] as String? ?? '';
+      ref.read(cacheEventEmitterProvider).inviteDeclined(inviteId);
+
+      if (mounted) {
+        HapticUtils.mediumImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(LucideIcons.info, color: Colors.white, size: 18),
+                SizedBox(width: 12),
+                Text('Convite recusado'),
+              ],
+            ),
+            backgroundColor: AppColors.warning,
+          ),
+        );
+        context.go(RouteNames.orgSelector);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isDeclining = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao recusar convite: ${e.toString()}'),
             backgroundColor: AppColors.destructive,
           ),
         );
@@ -372,43 +425,63 @@ class _InviteAcceptPageState extends ConsumerState<InviteAcceptPage> {
           if (isAuthenticated)
             FadeInUp(
               delay: const Duration(milliseconds: 300),
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: FilledButton(
-                      onPressed: _isAccepting ? null : _acceptInvite,
-                      child: _isAccepting
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
+              child: _showDeclineForm
+                  ? _buildDeclineForm(isDark)
+                  : Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: FilledButton(
+                            onPressed: _isAccepting ? null : _acceptInvite,
+                            child: _isAccepting
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor:
+                                          AlwaysStoppedAnimation<Color>(Colors.white),
+                                    ),
+                                  )
+                                : const Text('Aceitar Convite'),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              HapticUtils.lightImpact();
+                              setState(() => _showDeclineForm = true);
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.destructive,
+                              side: BorderSide(
+                                color: AppColors.destructive.withAlpha(100),
                               ),
-                            )
-                          : const Text('Aceitar Convite'),
+                            ),
+                            child: const Text('Recusar'),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: () {
+                            HapticUtils.lightImpact();
+                            context.go(RouteNames.orgSelector);
+                          },
+                          child: Text(
+                            'Voltar',
+                            style: TextStyle(
+                              color: isDark
+                                  ? AppColors.mutedForegroundDark
+                                  : AppColors.mutedForeground,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () {
-                      HapticUtils.lightImpact();
-                      context.go(RouteNames.orgSelector);
-                    },
-                    child: Text(
-                      'Voltar',
-                      style: TextStyle(
-                        color: isDark
-                            ? AppColors.mutedForegroundDark
-                            : AppColors.mutedForeground,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             )
           else
             FadeInUp(
@@ -443,6 +516,107 @@ class _InviteAcceptPageState extends ConsumerState<InviteAcceptPage> {
             ),
 
           const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDeclineForm(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.destructive.withAlpha(isDark ? 20 : 10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.destructive.withAlpha(60),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                LucideIcons.messageSquare,
+                size: 20,
+                color: AppColors.destructive,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Recusar convite',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.destructive,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Se desejar, informe o motivo da recusa:',
+            style: TextStyle(
+              fontSize: 14,
+              color: isDark
+                  ? AppColors.mutedForegroundDark
+                  : AppColors.mutedForeground,
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _declineReasonController,
+            maxLines: 3,
+            decoration: InputDecoration(
+              hintText: 'Motivo (opcional)',
+              hintStyle: TextStyle(
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+              filled: true,
+              fillColor: isDark ? AppColors.cardDark : AppColors.card,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _isDeclining
+                      ? null
+                      : () {
+                          HapticUtils.lightImpact();
+                          setState(() => _showDeclineForm = false);
+                        },
+                  child: const Text('Cancelar'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: _isDeclining ? null : _declineInvite,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.destructive,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: _isDeclining
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('Confirmar Recusa'),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

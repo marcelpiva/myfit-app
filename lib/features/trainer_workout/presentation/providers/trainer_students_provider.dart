@@ -16,6 +16,15 @@ final trainerStudentsWorkoutServiceProvider = Provider<WorkoutService>((ref) {
 
 // ==================== Student with Workout Info ====================
 
+/// Prescription status for a student
+enum PrescriptionStatus {
+  none,     // No prescription
+  pending,  // Waiting for student response
+  accepted, // Student accepted
+  declined, // Student declined
+  active,   // Active prescription
+}
+
 class TrainerStudent {
   final String id;
   final String name;
@@ -31,6 +40,8 @@ class TrainerStudent {
   final double adherencePercent;
   final String? goal;
   final Map<String, dynamic>? stats;
+  final PrescriptionStatus prescriptionStatus;
+  final String? declinedReason;
 
   const TrainerStudent({
     required this.id,
@@ -47,6 +58,8 @@ class TrainerStudent {
     this.adherencePercent = 0,
     this.goal,
     this.stats,
+    this.prescriptionStatus = PrescriptionStatus.none,
+    this.declinedReason,
   });
 
   /// Returns true if student joined within the last 30 days
@@ -91,6 +104,8 @@ class TrainerStudent {
     double? adherencePercent,
     String? goal,
     Map<String, dynamic>? stats,
+    PrescriptionStatus? prescriptionStatus,
+    String? declinedReason,
   }) {
     return TrainerStudent(
       id: id ?? this.id,
@@ -107,6 +122,8 @@ class TrainerStudent {
       adherencePercent: adherencePercent ?? this.adherencePercent,
       goal: goal ?? this.goal,
       stats: stats ?? this.stats,
+      prescriptionStatus: prescriptionStatus ?? this.prescriptionStatus,
+      declinedReason: declinedReason ?? this.declinedReason,
     );
   }
 }
@@ -202,6 +219,9 @@ class TrainerStudentsNotifier
       // Load workout assignments to get workout info per student
       final workouts = await _workoutService.getWorkoutAssignments();
 
+      // Load plan assignments to get prescription status
+      final planAssignments = await _workoutService.getPlanAssignments();
+
       // Build student list with workout info
       final students = members.map((member) {
         final userId = member['user_id'] as String;
@@ -212,6 +232,43 @@ class TrainerStudentsNotifier
             studentWorkouts.where((w) => w['status'] == 'active').firstOrNull;
         final completedCount =
             studentWorkouts.where((w) => w['status'] == 'completed').length;
+
+        // Get current prescription status from plan assignments
+        final studentAssignments = planAssignments
+            .where((a) => a['student_id'] == userId)
+            .toList();
+
+        // Find most recent assignment to determine status
+        PrescriptionStatus prescStatus = PrescriptionStatus.none;
+        String? declineReason;
+
+        if (studentAssignments.isNotEmpty) {
+          // Sort by created_at descending to get most recent
+          studentAssignments.sort((a, b) {
+            final aDate = DateTime.tryParse(a['created_at'] as String? ?? '') ?? DateTime(1900);
+            final bDate = DateTime.tryParse(b['created_at'] as String? ?? '') ?? DateTime(1900);
+            return bDate.compareTo(aDate);
+          });
+
+          final latestAssignment = studentAssignments.first;
+          final status = latestAssignment['status'] as String?;
+
+          switch (status?.toLowerCase()) {
+            case 'pending':
+              prescStatus = PrescriptionStatus.pending;
+              break;
+            case 'accepted':
+              prescStatus = PrescriptionStatus.accepted;
+              break;
+            case 'declined':
+              prescStatus = PrescriptionStatus.declined;
+              declineReason = latestAssignment['declined_reason'] as String?;
+              break;
+            case 'active':
+              prescStatus = PrescriptionStatus.active;
+              break;
+          }
+        }
 
         return TrainerStudent(
           id: userId,
@@ -232,6 +289,8 @@ class TrainerStudentsNotifier
               ? (completedCount / studentWorkouts.length) * 100
               : 0,
           goal: member['goal'] as String?,
+          prescriptionStatus: prescStatus,
+          declinedReason: declineReason,
         );
       }).toList();
 

@@ -308,6 +308,27 @@ class OrganizationService {
     }
   }
 
+  /// Decline invite with optional reason
+  Future<void> declineInvite(String inviteToken, {String? reason}) async {
+    try {
+      final data = <String, dynamic>{
+        'token': inviteToken,
+        'decline': true,
+      };
+      if (reason != null && reason.isNotEmpty) {
+        data['declined_reason'] = reason;
+      }
+      await _client.post(
+        ApiEndpoints.acceptInvite, // Uses same endpoint with decline flag
+        data: data,
+      );
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao recusar convite', e);
+    }
+  }
+
   /// Cancel a pending invite
   Future<void> cancelInvite(String orgId, String inviteId) async {
     try {

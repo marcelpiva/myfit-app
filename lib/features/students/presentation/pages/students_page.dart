@@ -366,6 +366,8 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                             'completedWorkouts': student.completedWorkouts,
                             'totalWorkouts': student.totalWorkouts,
                             'goal': student.goal ?? 'Não definido',
+                            'prescriptionStatus': student.prescriptionStatus,
+                            'declinedReason': student.declinedReason,
                           };
                           return _StudentCard(
                             student: studentMap,
@@ -1808,8 +1810,29 @@ class _StudentCard extends StatelessWidget {
     required this.onTap,
   });
 
+  /// Get prescription status info (color, label, icon)
+  ({Color color, String label, IconData icon})? _getPrescriptionStatusInfo() {
+    final status = student['prescriptionStatus'] as PrescriptionStatus?;
+    if (status == null || status == PrescriptionStatus.none) return null;
+
+    switch (status) {
+      case PrescriptionStatus.pending:
+        return (color: AppColors.warning, label: 'Pendente', icon: LucideIcons.clock);
+      case PrescriptionStatus.accepted:
+        return (color: AppColors.success, label: 'Aceito', icon: LucideIcons.checkCircle);
+      case PrescriptionStatus.declined:
+        return (color: AppColors.destructive, label: 'Recusado', icon: LucideIcons.xCircle);
+      case PrescriptionStatus.active:
+        return (color: AppColors.primary, label: 'Ativo', icon: LucideIcons.play);
+      case PrescriptionStatus.none:
+        return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final statusInfo = _getPrescriptionStatusInfo();
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -1877,15 +1900,52 @@ class _StudentCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    student['name'],
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: isDark
-                          ? AppColors.foregroundDark
-                          : AppColors.foreground,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          student['name'],
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: isDark
+                                ? AppColors.foregroundDark
+                                : AppColors.foreground,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      // Prescription status badge
+                      if (statusInfo != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: statusInfo.color.withAlpha(isDark ? 40 : 25),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                statusInfo.icon,
+                                size: 10,
+                                color: statusInfo.color,
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                statusInfo.label,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: statusInfo.color,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Row(
