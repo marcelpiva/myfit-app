@@ -586,7 +586,14 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
   Widget _buildProfileSection(BuildContext context, bool isDark) {
     final user = ref.watch(currentUserProvider);
     final activeContext = ref.watch(activeContextProvider);
-    final isTrainer = activeContext?.isTrainer ?? false;
+    final memberships = ref.watch(membershipsProvider).valueOrNull ?? [];
+
+    // Check context: null = org selector, otherwise check role
+    final isFromOrgSelector = activeContext == null;
+    final isTrainerContext = activeContext?.isTrainer ?? false;
+
+    // Check if user has student profile (for showing objectives option)
+    final hasStudentProfile = memberships.any((m) => m.role.name == 'student');
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -655,35 +662,37 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(6),
-                            color: isTrainer
-                                ? AppColors.primary.withAlpha(25)
-                                : AppColors.secondary.withAlpha(25),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                isTrainer ? LucideIcons.dumbbell : LucideIcons.user,
-                                size: 12,
-                                color: isTrainer ? AppColors.primary : AppColors.secondary,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                isTrainer ? 'Personal Trainer' : 'Aluno',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: isTrainer ? AppColors.primary : AppColors.secondary,
+                        if (!isFromOrgSelector) ...[
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              color: isTrainerContext
+                                  ? AppColors.primary.withAlpha(25)
+                                  : AppColors.secondary.withAlpha(25),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isTrainerContext ? LucideIcons.dumbbell : LucideIcons.user,
+                                  size: 12,
+                                  color: isTrainerContext ? AppColors.primary : AppColors.secondary,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 4),
+                                Text(
+                                  isTrainerContext ? 'Personal Trainer' : 'Aluno',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: isTrainerContext ? AppColors.primary : AppColors.secondary,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
@@ -694,7 +703,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               height: 1,
               color: isDark ? AppColors.borderDark : AppColors.border,
             ),
-            // Profile options
+            // Always show: Edit Profile (account data)
             _buildProfileTile(
               context,
               isDark,
@@ -706,50 +715,56 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 _showEditProfileSheet(context, isDark);
               },
             ),
-            Container(
-              height: 1,
-              color: isDark ? AppColors.borderDark : AppColors.border,
-            ),
-            _buildProfileTile(
-              context,
-              isDark,
-              LucideIcons.target,
-              'Meus Objetivos',
-              'Objetivo, experiência, dados físicos',
-              () {
-                HapticUtils.lightImpact();
-                context.push(
-                  RouteNames.onboarding,
-                  extra: {
-                    'userType': 'student',
-                    'editMode': true,
-                    'skipOrgCreation': true,
-                  },
-                );
-              },
-            ),
-            Container(
-              height: 1,
-              color: isDark ? AppColors.borderDark : AppColors.border,
-            ),
-            _buildProfileTile(
-              context,
-              isDark,
-              LucideIcons.clipboardList,
-              'Dados Profissionais',
-              'CREF, especialidades',
-              () {
-                HapticUtils.lightImpact();
-                context.push(
-                  RouteNames.onboarding,
-                  extra: {
-                    'userType': 'personal',
-                    'editMode': true,
-                    'skipOrgCreation': true,
-                  },
-                );
-              },
-            ),
+            // From Org Selector: Show "Meus Objetivos" if has student profile
+            if (isFromOrgSelector && hasStudentProfile) ...[
+              Container(
+                height: 1,
+                color: isDark ? AppColors.borderDark : AppColors.border,
+              ),
+              _buildProfileTile(
+                context,
+                isDark,
+                LucideIcons.target,
+                'Meus Objetivos',
+                'Objetivo, experiência, dados físicos',
+                () {
+                  HapticUtils.lightImpact();
+                  context.push(
+                    RouteNames.onboarding,
+                    extra: {
+                      'userType': 'student',
+                      'editMode': true,
+                      'skipOrgCreation': true,
+                    },
+                  );
+                },
+              ),
+            ],
+            // From Trainer context: Show "Dados Profissionais"
+            if (isTrainerContext) ...[
+              Container(
+                height: 1,
+                color: isDark ? AppColors.borderDark : AppColors.border,
+              ),
+              _buildProfileTile(
+                context,
+                isDark,
+                LucideIcons.clipboardList,
+                'Dados Profissionais',
+                'CREF, especialidades',
+                () {
+                  HapticUtils.lightImpact();
+                  context.push(
+                    RouteNames.onboarding,
+                    extra: {
+                      'userType': 'personal',
+                      'editMode': true,
+                      'skipOrgCreation': true,
+                    },
+                  );
+                },
+              ),
+            ],
           ],
         ),
       ),
