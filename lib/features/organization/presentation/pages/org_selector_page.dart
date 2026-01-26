@@ -25,8 +25,10 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
   @override
   void initState() {
     super.initState();
-    // Invalidar para buscar convites frescos ao entrar na página
+    // Clear active context when entering org selector
+    // This ensures settings show correct options for this screen
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(activeContextProvider.notifier).clearContext();
       ref.invalidate(pendingInvitesForUserProvider);
     });
   }

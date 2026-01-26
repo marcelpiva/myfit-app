@@ -10,6 +10,7 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../config/theme/tokens/animations.dart';
 import '../../../../core/providers/biometric_provider.dart';
+import '../../../../core/domain/entities/user_role.dart';
 import '../../../../core/providers/context_provider.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import '../../../../core/utils/platform_utils.dart';
@@ -590,10 +591,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
     // Check context: null = org selector, otherwise check role
     final isFromOrgSelector = activeContext == null;
-    final isTrainerContext = activeContext?.isTrainer ?? false;
+    final isTrainerContext = !isFromOrgSelector && (activeContext?.isTrainer ?? false);
 
     // Check if user has student profile (for showing objectives option)
-    final hasStudentProfile = memberships.any((m) => m.role.name == 'student');
+    final hasStudentProfile = memberships.any((m) => m.role == UserRole.student);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
