@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:crypto/crypto.dart';
@@ -12,8 +13,14 @@ class SocialAuthService {
 
   static final SocialAuthService instance = SocialAuthService._();
 
+  // iOS Client ID for Google Sign-In
+  static const _googleClientIdIOS =
+      '222322190794-17k4dgir29v5n12td5ne1bjtv8r1e98r.apps.googleusercontent.com';
+
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
+    // On iOS, we need to specify the clientId
+    clientId: !kIsWeb && Platform.isIOS ? _googleClientIdIOS : null,
   );
 
   /// Sign in with Google and return the ID token

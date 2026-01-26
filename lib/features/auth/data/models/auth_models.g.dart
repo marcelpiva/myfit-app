@@ -33,6 +33,10 @@ _UserResponse _$UserResponseFromJson(Map<String, dynamic> json) =>
       bio: json['bio'] as String?,
       isActive: json['is_active'] as bool? ?? true,
       isVerified: json['is_verified'] as bool? ?? false,
+      userType: json['user_type'] as String? ?? 'student',
+      authProvider: json['auth_provider'] as String? ?? 'email',
+      cref: json['cref'] as String?,
+      crefVerified: json['cref_verified'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$UserResponseToJson(_UserResponse instance) =>
@@ -48,6 +52,10 @@ Map<String, dynamic> _$UserResponseToJson(_UserResponse instance) =>
       'bio': instance.bio,
       'is_active': instance.isActive,
       'is_verified': instance.isVerified,
+      'user_type': instance.userType,
+      'auth_provider': instance.authProvider,
+      'cref': instance.cref,
+      'cref_verified': instance.crefVerified,
     };
 
 _AuthResponse _$AuthResponseFromJson(Map<String, dynamic> json) =>
@@ -73,6 +81,7 @@ _RegisterRequest _$RegisterRequestFromJson(Map<String, dynamic> json) =>
       email: json['email'] as String,
       password: json['password'] as String,
       name: json['name'] as String,
+      userType: json['user_type'] as String? ?? 'student',
     );
 
 Map<String, dynamic> _$RegisterRequestToJson(_RegisterRequest instance) =>
@@ -80,6 +89,68 @@ Map<String, dynamic> _$RegisterRequestToJson(_RegisterRequest instance) =>
       'email': instance.email,
       'password': instance.password,
       'name': instance.name,
+      'user_type': instance.userType,
+    };
+
+_SendVerificationCodeRequest _$SendVerificationCodeRequestFromJson(
+  Map<String, dynamic> json,
+) => _SendVerificationCodeRequest(email: json['email'] as String);
+
+Map<String, dynamic> _$SendVerificationCodeRequestToJson(
+  _SendVerificationCodeRequest instance,
+) => <String, dynamic>{'email': instance.email};
+
+_VerifyCodeRequest _$VerifyCodeRequestFromJson(Map<String, dynamic> json) =>
+    _VerifyCodeRequest(
+      email: json['email'] as String,
+      code: json['code'] as String,
+    );
+
+Map<String, dynamic> _$VerifyCodeRequestToJson(_VerifyCodeRequest instance) =>
+    <String, dynamic>{'email': instance.email, 'code': instance.code};
+
+_VerifyCodeResponse _$VerifyCodeResponseFromJson(Map<String, dynamic> json) =>
+    _VerifyCodeResponse(
+      verified: json['verified'] as bool,
+      message: json['message'] as String,
+    );
+
+Map<String, dynamic> _$VerifyCodeResponseToJson(_VerifyCodeResponse instance) =>
+    <String, dynamic>{
+      'verified': instance.verified,
+      'message': instance.message,
+    };
+
+_GoogleLoginRequest _$GoogleLoginRequestFromJson(Map<String, dynamic> json) =>
+    _GoogleLoginRequest(idToken: json['id_token'] as String);
+
+Map<String, dynamic> _$GoogleLoginRequestToJson(_GoogleLoginRequest instance) =>
+    <String, dynamic>{'id_token': instance.idToken};
+
+_AppleLoginRequest _$AppleLoginRequestFromJson(Map<String, dynamic> json) =>
+    _AppleLoginRequest(
+      idToken: json['id_token'] as String,
+      userName: json['user_name'] as String?,
+    );
+
+Map<String, dynamic> _$AppleLoginRequestToJson(_AppleLoginRequest instance) =>
+    <String, dynamic>{
+      'id_token': instance.idToken,
+      'user_name': instance.userName,
+    };
+
+_SocialAuthResponse _$SocialAuthResponseFromJson(Map<String, dynamic> json) =>
+    _SocialAuthResponse(
+      user: UserResponse.fromJson(json['user'] as Map<String, dynamic>),
+      tokens: TokenResponse.fromJson(json['tokens'] as Map<String, dynamic>),
+      isNewUser: json['is_new_user'] as bool,
+    );
+
+Map<String, dynamic> _$SocialAuthResponseToJson(_SocialAuthResponse instance) =>
+    <String, dynamic>{
+      'user': instance.user,
+      'tokens': instance.tokens,
+      'is_new_user': instance.isNewUser,
     };
 
 _RefreshRequest _$RefreshRequestFromJson(Map<String, dynamic> json) =>

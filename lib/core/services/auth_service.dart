@@ -55,6 +55,7 @@ class AuthService {
     required String email,
     required String password,
     required String name,
+    String userType = 'student',
   }) async {
     try {
       final response = await _client.post(
@@ -63,6 +64,7 @@ class AuthService {
           'email': email,
           'password': password,
           'name': name,
+          'user_type': userType,
         },
       );
 
@@ -84,6 +86,100 @@ class AuthService {
       throw e.error is ApiException
           ? e.error as ApiException
           : UnknownApiException(e.message ?? 'Erro ao criar conta', e);
+    }
+  }
+
+  /// Send email verification code
+  Future<bool> sendVerificationCode({required String email}) async {
+    try {
+      final response = await _client.post(
+        ApiEndpoints.authSendVerification,
+        data: {'email': email},
+      );
+      return response.statusCode == 200;
+    } on DioException {
+      return false;
+    }
+  }
+
+  /// Verify email with code
+  Future<bool> verifyEmailCode({
+    required String email,
+    required String code,
+  }) async {
+    try {
+      final response = await _client.post(
+        ApiEndpoints.authVerifyCode,
+        data: {'email': email, 'code': code},
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data['verified'] == true;
+      }
+      return false;
+    } on DioException {
+      return false;
+    }
+  }
+
+  /// Login with Google
+  Future<AuthResponse> loginWithGoogle({required String idToken}) async {
+    try {
+      final response = await _client.post(
+        ApiEndpoints.authGoogle,
+        data: {'id_token': idToken},
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final authResponse = AuthResponse.fromJson(response.data);
+
+        await TokenStorage.saveTokens(
+          accessToken: authResponse.tokens.accessToken,
+          refreshToken: authResponse.tokens.refreshToken,
+          userId: authResponse.user.id,
+        );
+
+        return authResponse;
+      }
+
+      throw const ServerException('Erro ao fazer login com Google');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao fazer login com Google', e);
+    }
+  }
+
+  /// Login with Apple
+  Future<AuthResponse> loginWithApple({
+    required String idToken,
+    String? userName,
+  }) async {
+    try {
+      final response = await _client.post(
+        ApiEndpoints.authApple,
+        data: {
+          'id_token': idToken,
+          if (userName != null) 'user_name': userName,
+        },
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final authResponse = AuthResponse.fromJson(response.data);
+
+        await TokenStorage.saveTokens(
+          accessToken: authResponse.tokens.accessToken,
+          refreshToken: authResponse.tokens.refreshToken,
+          userId: authResponse.user.id,
+        );
+
+        return authResponse;
+      }
+
+      throw const ServerException('Erro ao fazer login com Apple');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao fazer login com Apple', e);
     }
   }
 

@@ -25,6 +25,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage>
   late final TextEditingController _phoneController;
   late final TextEditingController _birthDateController;
   late final TextEditingController _bioController;
+  late final TextEditingController _crefController;
 
   String _selectedGoal = 'hipertrofia';
 
@@ -54,6 +55,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage>
     _phoneController = TextEditingController(text: currentUser?.phone ?? '');
     _birthDateController = TextEditingController(text: currentUser?.birthDate ?? '');
     _bioController = TextEditingController(text: currentUser?.bio ?? '');
+    _crefController = TextEditingController(text: currentUser?.cref ?? '');
   }
 
   @override
@@ -63,6 +65,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage>
     _phoneController.dispose();
     _birthDateController.dispose();
     _bioController.dispose();
+    _crefController.dispose();
     super.dispose();
   }
 
@@ -309,6 +312,12 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage>
                           LucideIcons.calendar,
                         ),
 
+                        // CREF field (only for Personal Trainers)
+                        if (ref.watch(currentUserProvider)?.userType == 'personal') ...[
+                          const SizedBox(height: 20),
+                          _buildCrefField(isDark),
+                        ],
+
                         const SizedBox(height: 20),
 
                         // Goal selector
@@ -430,6 +439,105 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage>
           contentPadding: const EdgeInsets.all(16),
         ),
       ),
+    );
+  }
+
+  Widget _buildCrefField(bool isDark) {
+    final currentUser = ref.watch(currentUserProvider);
+    final isVerified = currentUser?.crefVerified ?? false;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            _buildSectionTitle(isDark, 'CREF (Registro Profissional)'),
+            if (isVerified) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withAlpha(30),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: AppColors.success.withAlpha(50)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      LucideIcons.badgeCheck,
+                      size: 14,
+                      color: AppColors.success,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Verificado',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.success,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: isDark
+                ? AppColors.cardDark.withAlpha(150)
+                : AppColors.card.withAlpha(200),
+            border: Border.all(
+              color: isVerified
+                  ? AppColors.success.withAlpha(100)
+                  : (isDark ? AppColors.borderDark : AppColors.border),
+            ),
+          ),
+          child: TextField(
+            controller: _crefController,
+            style: TextStyle(
+              fontSize: 15,
+              color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Ex: 012345-G/SP',
+              hintStyle: TextStyle(
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+              prefixIcon: Icon(
+                LucideIcons.award,
+                size: 20,
+                color: isVerified
+                    ? AppColors.success
+                    : (isDark
+                        ? AppColors.mutedForegroundDark
+                        : AppColors.mutedForeground),
+              ),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Informe seu registro no Conselho Regional de Educação Física',
+          style: TextStyle(
+            fontSize: 12,
+            color: isDark
+                ? AppColors.mutedForegroundDark
+                : AppColors.mutedForeground,
+          ),
+        ),
+      ],
     );
   }
 

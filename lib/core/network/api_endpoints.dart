@@ -10,6 +10,11 @@ class ApiEndpoints {
   static const String authRefresh = '/auth/refresh';
   static const String authLogout = '/auth/logout';
   static const String authMe = '/auth/me';
+  static const String authGoogle = '/auth/google';
+  static const String authApple = '/auth/apple';
+  static const String authSendVerification = '/auth/send-verification';
+  static const String authVerifyCode = '/auth/verify-code';
+  static const String authResendVerification = '/auth/resend-verification';
 
   // ==================== Users ====================
   static const String userProfile = '/users/profile';
