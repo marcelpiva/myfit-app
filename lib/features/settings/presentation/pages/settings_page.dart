@@ -29,6 +29,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
   bool _emailNotifications = true;
   bool _workoutReminders = true;
   bool _nutritionReminders = false;
+  bool _dndEnabled = false;
+  TimeOfDay _dndStartTime = const TimeOfDay(hour: 22, minute: 0);
+  TimeOfDay _dndEndTime = const TimeOfDay(hour: 7, minute: 0);
   String _cacheSize = '45.2 MB';
   bool _isClearing = false;
 
@@ -194,6 +197,39 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                               setState(() => _nutritionReminders = val);
                             },
                           ),
+                          _buildDivider(isDark),
+                          _buildToggleTile(
+                            context,
+                            isDark,
+                            LucideIcons.moonStar,
+                            'Modo Não Perturbe',
+                            'Silenciar notificações em horários específicos',
+                            _dndEnabled,
+                            (val) {
+                              HapticUtils.selectionClick();
+                              setState(() => _dndEnabled = val);
+                            },
+                          ),
+                          if (_dndEnabled) ...[
+                            _buildDivider(isDark),
+                            _buildTimeTile(
+                              context,
+                              isDark,
+                              LucideIcons.clock,
+                              'Início',
+                              _formatTimeOfDay(_dndStartTime),
+                              () => _selectDndTime(context, isDark, true),
+                            ),
+                            _buildDivider(isDark),
+                            _buildTimeTile(
+                              context,
+                              isDark,
+                              LucideIcons.alarmClockOff,
+                              'Fim',
+                              _formatTimeOfDay(_dndEndTime),
+                              () => _selectDndTime(context, isDark, false),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -1767,6 +1803,103 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
         ],
       ),
     );
+  }
+
+  Widget _buildTimeTile(
+    BuildContext context,
+    bool isDark,
+    IconData icon,
+    String title,
+    String time,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: isDark ? AppColors.mutedDark : AppColors.muted,
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    time,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    LucideIcons.chevronRight,
+                    size: 14,
+                    color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatTimeOfDay(TimeOfDay time) {
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
+  Future<void> _selectDndTime(BuildContext context, bool isDark, bool isStart) async {
+    final initialTime = isStart ? _dndStartTime : _dndEndTime;
+
+    final selectedTime = await showTimePicker(
+      context: context,
+      initialTime: initialTime,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: AppColors.primary,
+              brightness: isDark ? Brightness.dark : Brightness.light,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (selectedTime != null) {
+      HapticUtils.selectionClick();
+      setState(() {
+        if (isStart) {
+          _dndStartTime = selectedTime;
+        } else {
+          _dndEndTime = selectedTime;
+        }
+      });
+    }
   }
 
   Future<void> _toggleBiometric(BuildContext context, WidgetRef ref, bool enable) async {

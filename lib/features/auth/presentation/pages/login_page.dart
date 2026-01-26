@@ -8,6 +8,7 @@ import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/providers/biometric_provider.dart';
 import '../../../../core/providers/context_provider.dart';
+import '../../../../core/services/social_auth_service.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import '../../../../core/utils/platform_utils.dart';
 import '../../../../shared/presentation/components/components.dart';
@@ -154,6 +155,69 @@ class _LoginPageState extends ConsumerState<LoginPage>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
+  }
+
+  Future<void> _signInWithGoogle() async {
+    HapticUtils.lightImpact();
+    setState(() => _loading = true);
+
+    final idToken = await SocialAuthService.instance.signInWithGoogle();
+
+    if (idToken == null) {
+      if (mounted) {
+        setState(() => _loading = false);
+        _showError('Login com Google cancelado');
+      }
+      return;
+    }
+
+    final success = await ref.read(authProvider.notifier).loginWithGoogle(
+      idToken: idToken,
+    );
+
+    if (mounted) {
+      setState(() => _loading = false);
+
+      if (success) {
+        ref.invalidate(membershipsProvider);
+        context.go(RouteNames.orgSelector);
+      } else {
+        final authState = ref.read(authProvider);
+        _showError(authState.errorMessage ?? 'Erro ao fazer login com Google');
+      }
+    }
+  }
+
+  Future<void> _signInWithApple() async {
+    HapticUtils.lightImpact();
+    setState(() => _loading = true);
+
+    final result = await SocialAuthService.instance.signInWithApple();
+
+    if (result == null) {
+      if (mounted) {
+        setState(() => _loading = false);
+        _showError('Login com Apple cancelado');
+      }
+      return;
+    }
+
+    final success = await ref.read(authProvider.notifier).loginWithApple(
+      idToken: result.idToken,
+      userName: result.userName,
+    );
+
+    if (mounted) {
+      setState(() => _loading = false);
+
+      if (success) {
+        ref.invalidate(membershipsProvider);
+        context.go(RouteNames.orgSelector);
+      } else {
+        final authState = ref.read(authProvider);
+        _showError(authState.errorMessage ?? 'Erro ao fazer login com Apple');
+      }
+    }
   }
 
   Future<void> _loginWithBiometric() async {
@@ -477,32 +541,14 @@ class _LoginPageState extends ConsumerState<LoginPage>
                     // Social buttons
                     SocialButton.google(
                       label: l10n.continueWithGoogle,
-                      onTap: () {
-                        HapticUtils.lightImpact();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text('Login com Google em desenvolvimento'),
-                            backgroundColor: AppColors.primary,
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                      },
+                      onTap: _loading ? null : _signInWithGoogle,
                     ),
 
                     const SizedBox(height: 8),
 
                     SocialButton.apple(
                       label: l10n.continueWithApple,
-                      onTap: () {
-                        HapticUtils.lightImpact();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text('Login com Apple em desenvolvimento'),
-                            backgroundColor: AppColors.primary,
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                      },
+                      onTap: _loading ? null : _signInWithApple,
                     ),
 
                     const SizedBox(height: 20),

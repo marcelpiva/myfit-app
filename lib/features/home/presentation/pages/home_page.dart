@@ -14,6 +14,7 @@ import '../../../nutritionist_home/presentation/pages/nutritionist_home_page.dar
 import '../../../gym_home/presentation/pages/gym_home_page.dart';
 import '../../data/models/student_dashboard.dart';
 import '../providers/student_home_provider.dart';
+import '../widgets/plan_review_sheet.dart';
 import '../widgets/streak_calendar.dart';
 import '../../../workout/presentation/widgets/workout_picker_sheet.dart';
 
@@ -823,49 +824,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
     final currentUser = ref.read(currentUserProvider);
     if (currentUser == null) return;
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => _StudentRespondPlanSheet(
-        assignment: assignment,
-        onAccept: () async {
-          HapticUtils.mediumImpact();
-          final success = await ref.read(studentNewPlansProvider.notifier).respondToPlan(
-            assignment['id'] as String,
-            accept: true,
-          );
-          if (success && ctx.mounted) {
-            Navigator.of(ctx).pop();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Plano aceito com sucesso!'),
-                backgroundColor: Colors.green,
-              ),
-            );
-            // Navigate to plan details
-            context.push('/plans/${assignment['plan_id']}');
-          }
-        },
-        onDecline: (String? reason) async {
-          HapticUtils.lightImpact();
-          final success = await ref.read(studentNewPlansProvider.notifier).respondToPlan(
-            assignment['id'] as String,
-            accept: false,
-            declinedReason: reason,
-          );
-          if (success && ctx.mounted) {
-            Navigator.of(ctx).pop();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Plano recusado'),
-                backgroundColor: Colors.orange,
-              ),
-            );
-          }
-        },
-      ),
-    );
+    showPlanReviewSheet(context, assignment);
   }
 
   void _showNewPlanSheet(BuildContext context, Map<String, dynamic> assignment) {

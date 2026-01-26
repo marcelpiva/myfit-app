@@ -1,0 +1,2059 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+
+import '../../../../config/routes/route_names.dart';
+import '../../../../config/theme/app_colors.dart';
+import '../../../../core/utils/haptic_utils.dart';
+import '../providers/onboarding_provider.dart';
+
+/// Main onboarding page that routes to trainer or student flow
+class OnboardingPage extends ConsumerStatefulWidget {
+  final String userType;
+
+  const OnboardingPage({
+    super.key,
+    this.userType = 'student',
+  });
+
+  @override
+  ConsumerState<OnboardingPage> createState() => _OnboardingPageState();
+}
+
+class _OnboardingPageState extends ConsumerState<OnboardingPage>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<double> _fadeAnimation;
+
+  bool get _isTrainer => widget.userType == 'trainer';
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeOut),
+    );
+    _animController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  void _skip() {
+    HapticUtils.lightImpact();
+    if (_isTrainer) {
+      ref.read(trainerOnboardingProvider.notifier).skip();
+    } else {
+      ref.read(studentOnboardingProvider.notifier).skip();
+    }
+    context.go(RouteNames.orgSelector);
+  }
+
+  void _complete() {
+    HapticUtils.mediumImpact();
+    // TODO: Save onboarding data to profile
+    context.go(RouteNames.orgSelector);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isTrainer) {
+      return _buildTrainerOnboarding(context);
+    } else {
+      return _buildStudentOnboarding(context);
+    }
+  }
+
+  Widget _buildTrainerOnboarding(BuildContext context) {
+    final state = ref.watch(trainerOnboardingProvider);
+    final notifier = ref.read(trainerOnboardingProvider.notifier);
+
+    return Scaffold(
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: _buildTrainerStep(context, state, notifier),
+      ),
+    );
+  }
+
+  Widget _buildStudentOnboarding(BuildContext context) {
+    final state = ref.watch(studentOnboardingProvider);
+    final notifier = ref.read(studentOnboardingProvider.notifier);
+
+    return Scaffold(
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: _buildStudentStep(context, state, notifier),
+      ),
+    );
+  }
+
+  Widget _buildTrainerStep(
+    BuildContext context,
+    TrainerOnboardingState state,
+    TrainerOnboardingNotifier notifier,
+  ) {
+    switch (state.currentStep) {
+      case TrainerOnboardingStep.welcome:
+        return _TrainerWelcomeStep(
+          onNext: () => notifier.nextStep(),
+          onSkip: _skip,
+        );
+      case TrainerOnboardingStep.inviteStudent:
+        return _TrainerInviteStep(
+          onNext: () => notifier.nextStep(),
+          onBack: () => notifier.previousStep(),
+          onSkip: _skip,
+        );
+      case TrainerOnboardingStep.createPlan:
+        return _TrainerCreatePlanStep(
+          onNext: () => notifier.nextStep(),
+          onBack: () => notifier.previousStep(),
+          onSkip: _skip,
+        );
+      case TrainerOnboardingStep.exploreTemplates:
+        return _TrainerExploreStep(
+          onNext: () => notifier.nextStep(),
+          onBack: () => notifier.previousStep(),
+          onSkip: _skip,
+        );
+      case TrainerOnboardingStep.complete:
+        return _CompleteStep(
+          isTrainer: true,
+          onComplete: _complete,
+        );
+    }
+  }
+
+  Widget _buildStudentStep(
+    BuildContext context,
+    StudentOnboardingState state,
+    StudentOnboardingNotifier notifier,
+  ) {
+    switch (state.currentStep) {
+      case StudentOnboardingStep.welcome:
+        return _StudentWelcomeStep(
+          onNext: () => notifier.nextStep(),
+          onSkip: _skip,
+        );
+      case StudentOnboardingStep.fitnessGoal:
+        return _StudentGoalStep(
+          state: state,
+          onSelect: (goal, other) {
+            notifier.setFitnessGoal(goal, otherGoal: other);
+            notifier.nextStep();
+          },
+          onBack: () => notifier.previousStep(),
+          onSkip: _skip,
+        );
+      case StudentOnboardingStep.experienceLevel:
+        return _StudentExperienceStep(
+          state: state,
+          onSelect: (level) {
+            notifier.setExperienceLevel(level);
+            notifier.nextStep();
+          },
+          onBack: () => notifier.previousStep(),
+          onSkip: _skip,
+        );
+      case StudentOnboardingStep.physicalData:
+        return _StudentPhysicalDataStep(
+          state: state,
+          onNext: (weight, height, age) {
+            notifier.setPhysicalData(weight: weight, height: height, age: age);
+            notifier.nextStep();
+          },
+          onBack: () => notifier.previousStep(),
+          onSkip: _skip,
+        );
+      case StudentOnboardingStep.weeklyFrequency:
+        return _StudentFrequencyStep(
+          state: state,
+          onSelect: (frequency) {
+            notifier.setWeeklyFrequency(frequency);
+            notifier.nextStep();
+          },
+          onBack: () => notifier.previousStep(),
+          onSkip: _skip,
+        );
+      case StudentOnboardingStep.injuries:
+        return _StudentInjuriesStep(
+          state: state,
+          onNext: (injuries, other) {
+            notifier.setInjuries(injuries, otherInjuries: other);
+            notifier.nextStep();
+          },
+          onBack: () => notifier.previousStep(),
+          onSkip: _skip,
+        );
+      case StudentOnboardingStep.complete:
+        return _CompleteStep(
+          isTrainer: false,
+          onComplete: _complete,
+        );
+    }
+  }
+}
+
+// ============ TRAINER STEPS ============
+
+class _TrainerWelcomeStep extends StatelessWidget {
+  final VoidCallback onNext;
+  final VoidCallback onSkip;
+
+  const _TrainerWelcomeStep({
+    required this.onNext,
+    required this.onSkip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return _OnboardingStepScaffold(
+      progress: 0.0,
+      onSkip: onSkip,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withAlpha(25),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              LucideIcons.dumbbell,
+              size: 56,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'Bem-vindo ao MyFit!',
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              'Vamos configurar sua conta de Personal Trainer e ajudá-lo a começar com o pé direito.',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 48),
+          _buildFeatureItem(
+            context,
+            LucideIcons.users,
+            'Gerencie seus alunos',
+            'Acompanhe o progresso de cada um',
+          ),
+          const SizedBox(height: 16),
+          _buildFeatureItem(
+            context,
+            LucideIcons.clipboardList,
+            'Crie planos personalizados',
+            'Prescreva treinos sob medida',
+          ),
+          const SizedBox(height: 16),
+          _buildFeatureItem(
+            context,
+            LucideIcons.messageSquare,
+            'Comunique-se facilmente',
+            'Chat integrado com seus alunos',
+          ),
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: onNext,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Começar',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureItem(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String subtitle,
+  ) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withAlpha(15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: AppColors.primary, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: isDark
+                        ? AppColors.mutedForegroundDark
+                        : AppColors.mutedForeground,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TrainerInviteStep extends StatelessWidget {
+  final VoidCallback onNext;
+  final VoidCallback onBack;
+  final VoidCallback onSkip;
+
+  const _TrainerInviteStep({
+    required this.onNext,
+    required this.onBack,
+    required this.onSkip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return _OnboardingStepScaffold(
+      progress: 0.25,
+      onSkip: onSkip,
+      onBack: onBack,
+      child: Column(
+        children: [
+          const Spacer(),
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: AppColors.info.withAlpha(25),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              LucideIcons.userPlus,
+              size: 48,
+              color: AppColors.info,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'Convide seu primeiro aluno',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              'Compartilhe um link de convite ou código QR para que seus alunos se conectem a você.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.cardDark : AppColors.card,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDark ? AppColors.borderDark : AppColors.border,
+                ),
+              ),
+              child: Column(
+                children: [
+                  _buildOptionTile(
+                    context,
+                    LucideIcons.link,
+                    'Copiar link de convite',
+                    'Envie via WhatsApp, email, etc.',
+                  ),
+                  const SizedBox(height: 16),
+                  _buildOptionTile(
+                    context,
+                    LucideIcons.qrCode,
+                    'Mostrar QR Code',
+                    'Seu aluno escaneia e se conecta',
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: onNext,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Continuar',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: onNext,
+                  child: Text(
+                    'Fazer isso depois',
+                    style: TextStyle(
+                      color: isDark
+                          ? AppColors.mutedForegroundDark
+                          : AppColors.mutedForeground,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptionTile(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String subtitle,
+  ) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return InkWell(
+      onTap: () {
+        HapticUtils.lightImpact();
+        // TODO: Implement action
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.mutedDark : AppColors.muted,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withAlpha(20),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: AppColors.primary, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: isDark
+                          ? AppColors.mutedForegroundDark
+                          : AppColors.mutedForeground,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              LucideIcons.chevronRight,
+              size: 20,
+              color: isDark
+                  ? AppColors.mutedForegroundDark
+                  : AppColors.mutedForeground,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TrainerCreatePlanStep extends StatelessWidget {
+  final VoidCallback onNext;
+  final VoidCallback onBack;
+  final VoidCallback onSkip;
+
+  const _TrainerCreatePlanStep({
+    required this.onNext,
+    required this.onBack,
+    required this.onSkip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return _OnboardingStepScaffold(
+      progress: 0.5,
+      onSkip: onSkip,
+      onBack: onBack,
+      child: Column(
+        children: [
+          const Spacer(),
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: AppColors.success.withAlpha(25),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              LucideIcons.clipboardList,
+              size: 48,
+              color: AppColors.success,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'Crie seu primeiro plano',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              'Monte um plano de treino personalizado para seus alunos com nosso assistente inteligente.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 40),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                _buildStepItem(context, '1', 'Defina o objetivo do plano'),
+                const SizedBox(height: 12),
+                _buildStepItem(context, '2', 'Escolha os treinos da semana'),
+                const SizedBox(height: 12),
+                _buildStepItem(context, '3', 'Adicione exercícios'),
+                const SizedBox(height: 12),
+                _buildStepItem(context, '4', 'Prescreva para seus alunos'),
+              ],
+            ),
+          ),
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: onNext,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Continuar',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: onNext,
+                  child: Text(
+                    'Fazer isso depois',
+                    style: TextStyle(
+                      color: isDark
+                          ? AppColors.mutedForegroundDark
+                          : AppColors.mutedForeground,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepItem(BuildContext context, String number, String text) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Row(
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withAlpha(20),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              number,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Text(
+            text,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: isDark
+                  ? AppColors.foregroundDark
+                  : AppColors.foreground,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TrainerExploreStep extends StatelessWidget {
+  final VoidCallback onNext;
+  final VoidCallback onBack;
+  final VoidCallback onSkip;
+
+  const _TrainerExploreStep({
+    required this.onNext,
+    required this.onBack,
+    required this.onSkip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return _OnboardingStepScaffold(
+      progress: 0.75,
+      onSkip: onSkip,
+      onBack: onBack,
+      child: Column(
+        children: [
+          const Spacer(),
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: AppColors.warning.withAlpha(25),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              LucideIcons.layoutTemplate,
+              size: 48,
+              color: AppColors.warning,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'Explore os templates',
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              'Use nossos templates prontos como base para criar planos de treino mais rapidamente.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 40),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              alignment: WrapAlignment.center,
+              children: [
+                _buildTemplateChip(context, 'Hipertrofia'),
+                _buildTemplateChip(context, 'Emagrecimento'),
+                _buildTemplateChip(context, 'Força'),
+                _buildTemplateChip(context, 'Funcional'),
+                _buildTemplateChip(context, 'Iniciante'),
+                _buildTemplateChip(context, 'Avançado'),
+              ],
+            ),
+          ),
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: onNext,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Finalizar',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTemplateChip(BuildContext context, String label) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.card,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? AppColors.borderDark : AppColors.border,
+        ),
+      ),
+      child: Text(
+        label,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+}
+
+// ============ STUDENT STEPS ============
+
+class _StudentWelcomeStep extends StatelessWidget {
+  final VoidCallback onNext;
+  final VoidCallback onSkip;
+
+  const _StudentWelcomeStep({
+    required this.onNext,
+    required this.onSkip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return _OnboardingStepScaffold(
+      progress: 0.0,
+      onSkip: onSkip,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withAlpha(25),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              LucideIcons.trophy,
+              size: 56,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'Vamos personalizar\nsua experiência!',
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              'Responda algumas perguntas rápidas para que possamos criar a melhor experiência de treino para você.',
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: onNext,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Começar',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StudentGoalStep extends StatefulWidget {
+  final StudentOnboardingState state;
+  final Function(FitnessGoal, String?) onSelect;
+  final VoidCallback onBack;
+  final VoidCallback onSkip;
+
+  const _StudentGoalStep({
+    required this.state,
+    required this.onSelect,
+    required this.onBack,
+    required this.onSkip,
+  });
+
+  @override
+  State<_StudentGoalStep> createState() => _StudentGoalStepState();
+}
+
+class _StudentGoalStepState extends State<_StudentGoalStep> {
+  FitnessGoal? _selectedGoal;
+  final _otherController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedGoal = widget.state.fitnessGoal;
+    _otherController.text = widget.state.otherGoal ?? '';
+  }
+
+  @override
+  void dispose() {
+    _otherController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final goals = [
+      (FitnessGoal.loseWeight, 'Perder peso', LucideIcons.flame),
+      (FitnessGoal.gainMuscle, 'Ganhar massa muscular', LucideIcons.dumbbell),
+      (FitnessGoal.improveEndurance, 'Melhorar condicionamento', LucideIcons.activity),
+      (FitnessGoal.maintainHealth, 'Manter a saúde', LucideIcons.heart),
+      (FitnessGoal.flexibility, 'Flexibilidade', LucideIcons.move),
+      (FitnessGoal.other, 'Outro objetivo', LucideIcons.target),
+    ];
+
+    return _OnboardingStepScaffold(
+      progress: 1 / 6,
+      onSkip: widget.onSkip,
+      onBack: widget.onBack,
+      child: Column(
+        children: [
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Qual é seu principal objetivo?',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Isso nos ajuda a personalizar suas recomendações.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: isDark
+                        ? AppColors.mutedForegroundDark
+                        : AppColors.mutedForeground,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              itemCount: goals.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final (goal, label, icon) = goals[index];
+                final isSelected = _selectedGoal == goal;
+
+                return GestureDetector(
+                  onTap: () {
+                    HapticUtils.selectionClick();
+                    setState(() => _selectedGoal = goal);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.primary.withAlpha(15)
+                          : (isDark ? AppColors.cardDark : AppColors.card),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColors.primary
+                            : (isDark ? AppColors.borderDark : AppColors.border),
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          icon,
+                          size: 24,
+                          color: isSelected
+                              ? AppColors.primary
+                              : (isDark
+                                  ? AppColors.foregroundDark
+                                  : AppColors.foreground),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            label,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight:
+                                  isSelected ? FontWeight.w600 : FontWeight.w500,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : (isDark
+                                      ? AppColors.foregroundDark
+                                      : AppColors.foreground),
+                            ),
+                          ),
+                        ),
+                        if (isSelected)
+                          Icon(
+                            LucideIcons.check,
+                            size: 20,
+                            color: AppColors.primary,
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          if (_selectedGoal == FitnessGoal.other)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              child: TextField(
+                controller: _otherController,
+                decoration: InputDecoration(
+                  hintText: 'Descreva seu objetivo...',
+                  filled: true,
+                  fillColor: isDark ? AppColors.mutedDark : AppColors.muted,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: _selectedGoal != null
+                    ? () => widget.onSelect(
+                          _selectedGoal!,
+                          _selectedGoal == FitnessGoal.other
+                              ? _otherController.text
+                              : null,
+                        )
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: AppColors.primary.withAlpha(100),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Continuar',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StudentExperienceStep extends StatefulWidget {
+  final StudentOnboardingState state;
+  final Function(ExperienceLevel) onSelect;
+  final VoidCallback onBack;
+  final VoidCallback onSkip;
+
+  const _StudentExperienceStep({
+    required this.state,
+    required this.onSelect,
+    required this.onBack,
+    required this.onSkip,
+  });
+
+  @override
+  State<_StudentExperienceStep> createState() => _StudentExperienceStepState();
+}
+
+class _StudentExperienceStepState extends State<_StudentExperienceStep> {
+  ExperienceLevel? _selectedLevel;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedLevel = widget.state.experienceLevel;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final levels = [
+      (
+        ExperienceLevel.beginner,
+        'Iniciante',
+        'Estou começando ou voltando após muito tempo',
+        LucideIcons.sprout,
+      ),
+      (
+        ExperienceLevel.intermediate,
+        'Intermediário',
+        'Treino há alguns meses regularmente',
+        LucideIcons.trendingUp,
+      ),
+      (
+        ExperienceLevel.advanced,
+        'Avançado',
+        'Treino há anos e conheço bem os exercícios',
+        LucideIcons.award,
+      ),
+    ];
+
+    return _OnboardingStepScaffold(
+      progress: 2 / 6,
+      onSkip: widget.onSkip,
+      onBack: widget.onBack,
+      child: Column(
+        children: [
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Qual seu nível de experiência?',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Seja honesto - isso nos ajuda a calibrar a intensidade.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: isDark
+                        ? AppColors.mutedForegroundDark
+                        : AppColors.mutedForeground,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              itemCount: levels.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 16),
+              itemBuilder: (context, index) {
+                final (level, title, subtitle, icon) = levels[index];
+                final isSelected = _selectedLevel == level;
+
+                return GestureDetector(
+                  onTap: () {
+                    HapticUtils.selectionClick();
+                    setState(() => _selectedLevel = level);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.primary.withAlpha(15)
+                          : (isDark ? AppColors.cardDark : AppColors.card),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColors.primary
+                            : (isDark ? AppColors.borderDark : AppColors.border),
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.primary.withAlpha(25)
+                                : (isDark ? AppColors.mutedDark : AppColors.muted),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Icon(
+                            icon,
+                            size: 28,
+                            color: isSelected
+                                ? AppColors.primary
+                                : (isDark
+                                    ? AppColors.foregroundDark
+                                    : AppColors.foreground),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : (isDark
+                                          ? AppColors.foregroundDark
+                                          : AppColors.foreground),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                subtitle,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: isDark
+                                      ? AppColors.mutedForegroundDark
+                                      : AppColors.mutedForeground,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (isSelected)
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              LucideIcons.check,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed:
+                    _selectedLevel != null ? () => widget.onSelect(_selectedLevel!) : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: AppColors.primary.withAlpha(100),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Continuar',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StudentPhysicalDataStep extends StatefulWidget {
+  final StudentOnboardingState state;
+  final Function(double?, double?, int?) onNext;
+  final VoidCallback onBack;
+  final VoidCallback onSkip;
+
+  const _StudentPhysicalDataStep({
+    required this.state,
+    required this.onNext,
+    required this.onBack,
+    required this.onSkip,
+  });
+
+  @override
+  State<_StudentPhysicalDataStep> createState() => _StudentPhysicalDataStepState();
+}
+
+class _StudentPhysicalDataStepState extends State<_StudentPhysicalDataStep> {
+  final _weightController = TextEditingController();
+  final _heightController = TextEditingController();
+  final _ageController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.state.weight != null) {
+      _weightController.text = widget.state.weight!.toStringAsFixed(1);
+    }
+    if (widget.state.height != null) {
+      _heightController.text = widget.state.height!.toStringAsFixed(0);
+    }
+    if (widget.state.age != null) {
+      _ageController.text = widget.state.age!.toString();
+    }
+  }
+
+  @override
+  void dispose() {
+    _weightController.dispose();
+    _heightController.dispose();
+    _ageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return _OnboardingStepScaffold(
+      progress: 3 / 6,
+      onSkip: widget.onSkip,
+      onBack: widget.onBack,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Dados físicos',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Opcional, mas ajuda a personalizar seus treinos.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+            ),
+            const SizedBox(height: 32),
+            _buildInputField(
+              context,
+              controller: _weightController,
+              label: 'Peso (kg)',
+              icon: LucideIcons.scale,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            ),
+            const SizedBox(height: 20),
+            _buildInputField(
+              context,
+              controller: _heightController,
+              label: 'Altura (cm)',
+              icon: LucideIcons.ruler,
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 20),
+            _buildInputField(
+              context,
+              controller: _ageController,
+              label: 'Idade',
+              icon: LucideIcons.calendar,
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () {
+                  final weight = double.tryParse(_weightController.text);
+                  final height = double.tryParse(_heightController.text);
+                  final age = int.tryParse(_ageController.text);
+                  widget.onNext(weight, height, age);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Continuar',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInputField(
+    BuildContext context, {
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType? keyboardType,
+  }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, size: 20),
+        filled: true,
+        fillColor: isDark ? AppColors.cardDark : AppColors.card,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: isDark ? AppColors.borderDark : AppColors.border,
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: isDark ? AppColors.borderDark : AppColors.border,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.primary, width: 2),
+        ),
+      ),
+    );
+  }
+}
+
+class _StudentFrequencyStep extends StatefulWidget {
+  final StudentOnboardingState state;
+  final Function(int) onSelect;
+  final VoidCallback onBack;
+  final VoidCallback onSkip;
+
+  const _StudentFrequencyStep({
+    required this.state,
+    required this.onSelect,
+    required this.onBack,
+    required this.onSkip,
+  });
+
+  @override
+  State<_StudentFrequencyStep> createState() => _StudentFrequencyStepState();
+}
+
+class _StudentFrequencyStepState extends State<_StudentFrequencyStep> {
+  int? _selectedFrequency;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedFrequency = widget.state.weeklyFrequency;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return _OnboardingStepScaffold(
+      progress: 4 / 6,
+      onSkip: widget.onSkip,
+      onBack: widget.onBack,
+      child: Column(
+        children: [
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Quantas vezes por semana\nvocê pretende treinar?',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Seja realista com sua disponibilidade.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: isDark
+                        ? AppColors.mutedForegroundDark
+                        : AppColors.mutedForeground,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 40),
+          Expanded(
+            child: GridView.count(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              crossAxisCount: 3,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: 1,
+              children: List.generate(7, (index) {
+                final frequency = index + 1;
+                final isSelected = _selectedFrequency == frequency;
+
+                return GestureDetector(
+                  onTap: () {
+                    HapticUtils.selectionClick();
+                    setState(() => _selectedFrequency = frequency);
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.primary
+                          : (isDark ? AppColors.cardDark : AppColors.card),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColors.primary
+                            : (isDark ? AppColors.borderDark : AppColors.border),
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '$frequency',
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: isSelected
+                                ? Colors.white
+                                : (isDark
+                                    ? AppColors.foregroundDark
+                                    : AppColors.foreground),
+                          ),
+                        ),
+                        Text(
+                          frequency == 1 ? 'vez' : 'vezes',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: isSelected
+                                ? Colors.white.withAlpha(200)
+                                : (isDark
+                                    ? AppColors.mutedForegroundDark
+                                    : AppColors.mutedForeground),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: _selectedFrequency != null
+                    ? () => widget.onSelect(_selectedFrequency!)
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: AppColors.primary.withAlpha(100),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Continuar',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StudentInjuriesStep extends StatefulWidget {
+  final StudentOnboardingState state;
+  final Function(List<String>, String?) onNext;
+  final VoidCallback onBack;
+  final VoidCallback onSkip;
+
+  const _StudentInjuriesStep({
+    required this.state,
+    required this.onNext,
+    required this.onBack,
+    required this.onSkip,
+  });
+
+  @override
+  State<_StudentInjuriesStep> createState() => _StudentInjuriesStepState();
+}
+
+class _StudentInjuriesStepState extends State<_StudentInjuriesStep> {
+  final Set<String> _selectedInjuries = {};
+  final _otherController = TextEditingController();
+
+  final _commonInjuries = [
+    'Ombro',
+    'Joelho',
+    'Lombar',
+    'Cervical',
+    'Tornozelo',
+    'Punho',
+    'Cotovelo',
+    'Quadril',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedInjuries.addAll(widget.state.injuries);
+    _otherController.text = widget.state.otherInjuries ?? '';
+  }
+
+  @override
+  void dispose() {
+    _otherController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return _OnboardingStepScaffold(
+      progress: 5 / 6,
+      onSkip: widget.onSkip,
+      onBack: widget.onBack,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Tem alguma lesão ou\nrestrição de movimento?',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Selecione todas que se aplicam ou deixe em branco.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+            ),
+            const SizedBox(height: 32),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: _commonInjuries.map((injury) {
+                final isSelected = _selectedInjuries.contains(injury);
+
+                return GestureDetector(
+                  onTap: () {
+                    HapticUtils.selectionClick();
+                    setState(() {
+                      if (isSelected) {
+                        _selectedInjuries.remove(injury);
+                      } else {
+                        _selectedInjuries.add(injury);
+                      }
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.warning.withAlpha(20)
+                          : (isDark ? AppColors.cardDark : AppColors.card),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColors.warning
+                            : (isDark ? AppColors.borderDark : AppColors.border),
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isSelected) ...[
+                          Icon(
+                            LucideIcons.check,
+                            size: 16,
+                            color: AppColors.warning,
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        Text(
+                          injury,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight:
+                                isSelected ? FontWeight.w600 : FontWeight.w500,
+                            color: isSelected
+                                ? AppColors.warning
+                                : (isDark
+                                    ? AppColors.foregroundDark
+                                    : AppColors.foreground),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 24),
+            TextField(
+              controller: _otherController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'Outras lesões ou restrições...',
+                filled: true,
+                fillColor: isDark ? AppColors.cardDark : AppColors.card,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: isDark ? AppColors.borderDark : AppColors.border,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: isDark ? AppColors.borderDark : AppColors.border,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.primary, width: 2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () {
+                  widget.onNext(
+                    _selectedInjuries.toList(),
+                    _otherController.text.isNotEmpty
+                        ? _otherController.text
+                        : null,
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Continuar',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ============ SHARED WIDGETS ============
+
+class _CompleteStep extends StatelessWidget {
+  final bool isTrainer;
+  final VoidCallback onComplete;
+
+  const _CompleteStep({
+    required this.isTrainer,
+    required this.onComplete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      color: isDark ? AppColors.backgroundDark : AppColors.background,
+      child: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                color: AppColors.success.withAlpha(25),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                LucideIcons.checkCircle2,
+                size: 72,
+                color: AppColors.success,
+              ),
+            ),
+            const SizedBox(height: 32),
+            Text(
+              'Tudo pronto!',
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Text(
+                isTrainer
+                    ? 'Sua conta está configurada. Agora você pode começar a gerenciar seus alunos e criar planos de treino.'
+                    : 'Seu perfil está configurado. Agora você pode começar sua jornada de treinos!',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: isDark
+                      ? AppColors.mutedForegroundDark
+                      : AppColors.mutedForeground,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 48),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: onComplete,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    isTrainer ? 'Ir para o Dashboard' : 'Começar a treinar',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OnboardingStepScaffold extends StatelessWidget {
+  final double progress;
+  final VoidCallback onSkip;
+  final VoidCallback? onBack;
+  final Widget child;
+
+  const _OnboardingStepScaffold({
+    required this.progress,
+    required this.onSkip,
+    this.onBack,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      color: isDark ? AppColors.backgroundDark : AppColors.background,
+      child: SafeArea(
+        child: Column(
+          children: [
+            // Header with progress and skip
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  if (onBack != null)
+                    GestureDetector(
+                      onTap: () {
+                        HapticUtils.lightImpact();
+                        onBack!();
+                      },
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: isDark ? AppColors.cardDark : AppColors.card,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color:
+                                isDark ? AppColors.borderDark : AppColors.border,
+                          ),
+                        ),
+                        child: Icon(
+                          LucideIcons.arrowLeft,
+                          size: 20,
+                          color: isDark
+                              ? AppColors.foregroundDark
+                              : AppColors.foreground,
+                        ),
+                      ),
+                    )
+                  else
+                    const SizedBox(width: 40),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        backgroundColor: isDark
+                            ? AppColors.mutedDark
+                            : AppColors.muted,
+                        valueColor: AlwaysStoppedAnimation(AppColors.primary),
+                        minHeight: 6,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  TextButton(
+                    onPressed: onSkip,
+                    child: Text(
+                      'Pular',
+                      style: TextStyle(
+                        color: isDark
+                            ? AppColors.mutedForegroundDark
+                            : AppColors.mutedForeground,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Content
+            Expanded(child: child),
+          ],
+        ),
+      ),
+    );
+  }
+}

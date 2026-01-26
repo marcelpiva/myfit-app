@@ -2260,6 +2260,11 @@ class PlanWizardNotifier extends StateNotifier<PlanWizardState> {
     }
   }
 
+  /// Restore state from a draft
+  void restoreState(PlanWizardState savedState) {
+    state = savedState;
+  }
+
   // Reset
   void reset() {
     state = const PlanWizardState();

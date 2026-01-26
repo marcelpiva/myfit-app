@@ -4,10 +4,12 @@ abstract class RouteNames {
   static const welcome = '/';
   static const login = '/login';
   static const register = '/register';
+  static const userTypeSelection = '/user-type';
   static const forgotPassword = '/forgot-password';
   static const resetPassword = '/reset-password';
   static const verifyEmail = '/verify-email';
   static const orgSelector = '/org-selector';
+  static const onboarding = '/onboarding';
 
   // Main tabs
   static const home = '/home';

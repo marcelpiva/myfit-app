@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -7,11 +6,18 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/providers/context_provider.dart';
+import '../../../../core/services/social_auth_service.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import '../../../../shared/presentation/components/components.dart';
 import '../providers/auth_provider.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
-  const RegisterPage({super.key});
+  final String userType;
+
+  const RegisterPage({
+    super.key,
+    this.userType = 'student',
+  });
 
   @override
   ConsumerState<RegisterPage> createState() => _RegisterPageState();
@@ -99,6 +105,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
       email: email,
       password: password,
       name: name,
+      userType: widget.userType,
     );
 
     if (mounted) {
@@ -109,7 +116,19 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
         ref.invalidate(membershipsProvider);
         ref.invalidate(pendingInvitesForUserProvider);
 
-        context.go(RouteNames.orgSelector);
+        // Send verification code and redirect to verify email page
+        await ref.read(authProvider.notifier).sendVerificationCode(email: email);
+
+        if (mounted) {
+          context.go(
+            RouteNames.verifyEmail,
+            extra: {
+              'email': email,
+              'redirectTo': RouteNames.onboarding,
+              'userType': widget.userType,
+            },
+          );
+        }
       } else {
         final authState = ref.read(authProvider);
         _showError(authState.errorMessage ?? 'Erro ao criar conta');
@@ -131,6 +150,71 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
+  }
+
+  Future<void> _signInWithGoogle() async {
+    HapticUtils.lightImpact();
+    setState(() => _loading = true);
+
+    final idToken = await SocialAuthService.instance.signInWithGoogle();
+
+    if (idToken == null) {
+      if (mounted) {
+        setState(() => _loading = false);
+        _showError('Login com Google cancelado');
+      }
+      return;
+    }
+
+    final success = await ref.read(authProvider.notifier).loginWithGoogle(
+      idToken: idToken,
+    );
+
+    if (mounted) {
+      setState(() => _loading = false);
+
+      if (success) {
+        ref.invalidate(membershipsProvider);
+        ref.invalidate(pendingInvitesForUserProvider);
+        context.go(RouteNames.orgSelector);
+      } else {
+        final authState = ref.read(authProvider);
+        _showError(authState.errorMessage ?? 'Erro ao fazer login com Google');
+      }
+    }
+  }
+
+  Future<void> _signInWithApple() async {
+    HapticUtils.lightImpact();
+    setState(() => _loading = true);
+
+    final result = await SocialAuthService.instance.signInWithApple();
+
+    if (result == null) {
+      if (mounted) {
+        setState(() => _loading = false);
+        _showError('Login com Apple cancelado');
+      }
+      return;
+    }
+
+    final success = await ref.read(authProvider.notifier).loginWithApple(
+      idToken: result.idToken,
+      userName: result.userName,
+    );
+
+    if (mounted) {
+      setState(() => _loading = false);
+
+      if (success) {
+        ref.invalidate(membershipsProvider);
+        ref.invalidate(pendingInvitesForUserProvider);
+        context.go(RouteNames.orgSelector);
+      } else {
+        final authState = ref.read(authProvider);
+        _showError(authState.errorMessage ?? 'Erro ao fazer login com Apple');
+      }
+    }
   }
 
   @override
@@ -387,32 +471,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
                       // Social buttons
                       SocialButton.google(
                         label: 'Continuar com Google',
-                        onTap: () {
-                          HapticUtils.lightImpact();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text('Login com Google em desenvolvimento'),
-                              backgroundColor: AppColors.primary,
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        },
+                        onTap: _loading ? null : _signInWithGoogle,
                       ),
 
                       const SizedBox(height: 12),
 
                       SocialButton.apple(
                         label: 'Continuar com Apple',
-                        onTap: () {
-                          HapticUtils.lightImpact();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text('Login com Apple em desenvolvimento'),
-                              backgroundColor: AppColors.primary,
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        },
+                        onTap: _loading ? null : _signInWithApple,
                       ),
 
                       const SizedBox(height: 40),

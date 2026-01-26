@@ -10,6 +10,9 @@ import '../../../../core/domain/entities/user_role.dart';
 import '../../../../core/services/workout_service.dart';
 import '../../../../shared/presentation/components/role_bottom_navigation.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../students/presentation/widgets/batch_prescription_sheet.dart';
+import '../../../training_plan/presentation/providers/plan_drafts_provider.dart';
+import '../../../training_plan/presentation/widgets/drafts_list_sheet.dart';
 
 // Provider for all user's models (templates only - not direct prescriptions)
 final allPlansProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
@@ -73,19 +76,40 @@ class TrainerPlansPage extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  FilledButton.icon(
-                    onPressed: () {
-                      HapticUtils.lightImpact();
-                      context.push(RouteNames.planWizard);
-                    },
-                    icon: const Icon(LucideIcons.plus, size: 18),
-                    label: const Text('Novo'),
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                  Row(
+                    children: [
+                      // Batch prescription button
+                      IconButton(
+                        onPressed: () {
+                          HapticUtils.lightImpact();
+                          showBatchPrescriptionSheet(context);
+                        },
+                        icon: const Icon(LucideIcons.users, size: 20),
+                        tooltip: 'Prescrição em Massa',
+                        style: IconButton.styleFrom(
+                          backgroundColor: isDark
+                              ? AppColors.cardDark
+                              : AppColors.card,
+                          side: BorderSide(
+                            color: isDark
+                                ? AppColors.borderDark
+                                : AppColors.border,
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      FilledButton.icon(
+                        onPressed: () => _showNewPlanOptions(context, ref, isDark),
+                        icon: const Icon(LucideIcons.plus, size: 18),
+                        label: const Text('Novo'),
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -99,6 +123,38 @@ class TrainerPlansPage extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  void _showNewPlanOptions(BuildContext context, WidgetRef ref, bool isDark) {
+    HapticUtils.lightImpact();
+
+    // Check if there are any drafts
+    final draftsAsync = ref.read(planDraftsProvider);
+    final hasDrafts = draftsAsync.whenOrNull(data: (d) => d.isNotEmpty) ?? false;
+
+    if (hasDrafts) {
+      // Show drafts sheet to let user choose
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (ctx) => DraftsListSheet(
+          onCreateNew: () {
+            context.push(RouteNames.planWizard);
+          },
+          onDraftSelected: (draft) {
+            // Load draft into wizard
+            final autoSave = ref.read(planAutoSaveProvider);
+            autoSave.setCurrentDraftId(draft.id);
+            ref.read(currentDraftIdProvider.notifier).state = draft.id;
+            context.push('${RouteNames.planWizard}?draft=${draft.id}');
+          },
+        ),
+      );
+    } else {
+      // No drafts, go directly to wizard
+      context.push(RouteNames.planWizard);
+    }
   }
 }
 

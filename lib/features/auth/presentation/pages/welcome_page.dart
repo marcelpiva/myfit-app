@@ -438,7 +438,7 @@ class _WelcomePageState extends ConsumerState<WelcomePage>
                       label: l10n.getStartedFree,
                       onPressed: () {
                         HapticUtils.lightImpact();
-                        context.go(RouteNames.register);
+                        context.go(RouteNames.userTypeSelection);
                       },
                     ),
 

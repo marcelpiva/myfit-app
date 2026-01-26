@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
 import '../../../../core/services/trainer_service.dart';
+import '../../../../core/utils/haptic_utils.dart';
 import '../../../trainer_workout/presentation/providers/trainer_students_provider.dart';
 
 /// Students management page for Personal Trainers
@@ -2289,21 +2292,55 @@ class _AddStudentSheetState extends State<_AddStudentSheet> with SingleTickerPro
                             ),
                           ),
                           const SizedBox(height: 20),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: () {
-                                    HapticUtils.lightImpact();
-                                    // TODO: Share functionality
+                          // WhatsApp button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () async {
+                                HapticUtils.lightImpact();
+                                final inviteUrl = 'https://myfit.app/invite/${_inviteCode ?? ''}';
+                                final message = 'Olá! Estou te convidando para ser meu aluno no MyFit. '
+                                    'Use meu código de convite: ${_inviteCode ?? ''}\n\n'
+                                    'Ou acesse direto: $inviteUrl';
+                                final whatsappUrl = Uri.parse(
+                                  'whatsapp://send?text=${Uri.encodeComponent(message)}',
+                                );
+                                if (await canLaunchUrl(whatsappUrl)) {
+                                  await launchUrl(whatsappUrl);
+                                } else {
+                                  if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: const Text('Compartilhando...'),
-                                        backgroundColor: AppColors.primary,
+                                        content: const Text('WhatsApp não encontrado'),
+                                        backgroundColor: AppColors.destructive,
                                         behavior: SnackBarBehavior.floating,
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                       ),
                                     );
+                                  }
+                                }
+                              },
+                              icon: const Icon(LucideIcons.messageCircle, size: 18),
+                              label: const Text('Enviar via WhatsApp'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF25D366),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () async {
+                                    HapticUtils.lightImpact();
+                                    final inviteUrl = 'https://myfit.app/invite/${_inviteCode ?? ''}';
+                                    final message = 'Te convidei para ser meu aluno no MyFit! '
+                                        'Use o código ${_inviteCode ?? ''} ou acesse: $inviteUrl';
+                                    await Share.share(message);
                                   },
                                   icon: const Icon(LucideIcons.share2, size: 18),
                                   label: const Text('Compartilhar'),
@@ -2340,11 +2377,187 @@ class _AddStudentSheetState extends State<_AddStudentSheet> with SingleTickerPro
                               ),
                             ],
                           ),
+                          const SizedBox(height: 12),
+                          // QR Code button
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                HapticUtils.lightImpact();
+                                _showQRCodeModal(context, _inviteCode ?? '');
+                              },
+                              icon: const Icon(LucideIcons.qrCode, size: 18),
+                              label: const Text('Mostrar QR Code'),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                            ),
+                          ),
                           const SizedBox(height: 24),
                         ],
                       ),
                     ),
                   ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showQRCodeModal(BuildContext context, String inviteCode) {
+    final inviteUrl = 'https://myfit.app/invite/$inviteCode';
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: widget.isDark ? AppColors.cardDark : AppColors.card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Icon(
+                    LucideIcons.qrCode,
+                    size: 24,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'QR Code do Convite',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: widget.isDark
+                            ? AppColors.foregroundDark
+                            : AppColors.foreground,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Icon(
+                      LucideIcons.x,
+                      size: 24,
+                      color: widget.isDark
+                          ? AppColors.mutedForegroundDark
+                          : AppColors.mutedForeground,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // QR Code
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: QrImageView(
+                  data: inviteUrl,
+                  version: QrVersions.auto,
+                  size: 200,
+                  backgroundColor: Colors.white,
+                  eyeStyle: const QrEyeStyle(
+                    eyeShape: QrEyeShape.square,
+                    color: Colors.black,
+                  ),
+                  dataModuleStyle: const QrDataModuleStyle(
+                    dataModuleShape: QrDataModuleShape.square,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Invite code display
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: widget.isDark
+                      ? AppColors.mutedDark.withAlpha(100)
+                      : AppColors.muted.withAlpha(100),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Código: ',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: widget.isDark
+                            ? AppColors.mutedForegroundDark
+                            : AppColors.mutedForeground,
+                      ),
+                    ),
+                    Text(
+                      inviteCode,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'monospace',
+                        letterSpacing: 1.5,
+                        color: widget.isDark
+                            ? AppColors.foregroundDark
+                            : AppColors.foreground,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Instruction
+              Text(
+                'Peça ao aluno escanear este código',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: widget.isDark
+                      ? AppColors.mutedForegroundDark
+                      : AppColors.mutedForeground,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: 20),
+
+              // Copy link button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    HapticUtils.lightImpact();
+                    Clipboard.setData(ClipboardData(text: inviteUrl));
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('Link copiado!'),
+                        backgroundColor: AppColors.success,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    );
+                  },
+                  icon: const Icon(LucideIcons.copy, size: 18),
+                  label: const Text('Copiar Link'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
                 ),
               ),
             ],

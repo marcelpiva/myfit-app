@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../trainer_workout/presentation/pages/trainer_plans_page.dart';
 import '../../../workout/presentation/providers/workout_provider.dart';
+import '../providers/plan_drafts_provider.dart';
 import '../providers/plan_wizard_provider.dart';
 import '../widgets/step_ai_questionnaire.dart';
 import '../widgets/step_diet_configuration.dart';
@@ -23,6 +24,7 @@ class PlanWizardPage extends ConsumerStatefulWidget {
   final String? planId;
   final String? basePlanId; // For periodization: the source plan to base new plan on
   final String? phaseType; // For periodization: 'progress', 'deload', or 'new_cycle'
+  final String? draftId; // For loading a saved draft
 
   const PlanWizardPage({
     super.key,
@@ -30,6 +32,7 @@ class PlanWizardPage extends ConsumerStatefulWidget {
     this.planId,
     this.basePlanId,
     this.phaseType,
+    this.draftId,
   });
 
   /// Check if this is an edit operation
@@ -38,12 +41,17 @@ class PlanWizardPage extends ConsumerStatefulWidget {
   /// Check if this is a periodization operation
   bool get isPeriodization => basePlanId != null && phaseType != null;
 
+  /// Check if loading from draft
+  bool get isLoadingDraft => draftId != null;
+
   @override
   ConsumerState<PlanWizardPage> createState() => _PlanWizardPageState();
 }
 
 class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
   late final PageController _pageController;
+  bool _isAutoSaving = false;
+  bool _hasUnsavedChanges = false;
 
   @override
   void initState() {
@@ -52,9 +60,21 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
     // Edit mode starts at step 3 (workouts config)
     _pageController = PageController(initialPage: widget.planId != null ? 3 : 0);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Load draft if draftId is provided
+      if (widget.draftId != null) {
+        final success = await ref.read(planAutoSaveProvider).loadDraft(
+          widget.draftId!,
+          ref.read(planWizardProvider.notifier),
+        );
+        if (success) {
+          // Jump to the step stored in the draft
+          final state = ref.read(planWizardProvider);
+          _pageController.jumpToPage(state.currentStep);
+        }
+      }
       // Load program for editing if planId is provided
-      if (widget.planId != null) {
+      else if (widget.planId != null) {
         ref.read(planWizardProvider.notifier).loadPlanForEdit(widget.planId!);
       }
       // Load program for periodization if basePlanId and phaseType are provided
@@ -73,11 +93,53 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
       if (widget.studentId != null) {
         ref.read(planWizardProvider.notifier).setStudentId(widget.studentId);
       }
+
+      // Set up auto-save listener (only for new plans, not edits)
+      if (widget.planId == null) {
+        ref.listenManual(planWizardProvider, (previous, next) {
+          _scheduleAutoSave(next);
+        });
+      }
     });
+  }
+
+  void _scheduleAutoSave(PlanWizardState state) {
+    // Only auto-save if there's meaningful data
+    if (state.planName.isEmpty && state.workouts.isEmpty) {
+      return;
+    }
+    if (state.editingPlanId != null) {
+      return; // Don't auto-save when editing existing plan
+    }
+
+    _hasUnsavedChanges = true;
+    ref.read(planAutoSaveProvider).scheduleAutoSave(state);
+  }
+
+  Future<void> _saveDraftNow() async {
+    if (_isAutoSaving) return;
+
+    setState(() => _isAutoSaving = true);
+    final state = ref.read(planWizardProvider);
+    await ref.read(planAutoSaveProvider).saveNow(state);
+
+    if (mounted) {
+      setState(() {
+        _isAutoSaving = false;
+        _hasUnsavedChanges = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Rascunho salvo'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   @override
   void dispose() {
+    ref.read(planAutoSaveProvider).cancel();
     _pageController.dispose();
     super.dispose();
   }
@@ -170,19 +232,25 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
       return;
     }
 
-    // Show confirmation dialog
-    final shouldClose = await showDialog<bool>(
+    // Show confirmation dialog with draft save option
+    final result = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Descartar modelo?'),
-        content: const Text('As alterações não salvas serão perdidas.'),
+        title: const Text('Sair do editor?'),
+        content: const Text('Você pode salvar como rascunho para continuar depois.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
+            onPressed: () => Navigator.pop(ctx, 'cancel'),
             child: const Text('Cancelar'),
           ),
+          if (state.editingPlanId == null) ...[
+            OutlinedButton(
+              onPressed: () => Navigator.pop(ctx, 'save_draft'),
+              child: const Text('Salvar Rascunho'),
+            ),
+          ],
           FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
+            onPressed: () => Navigator.pop(ctx, 'discard'),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.destructive,
               foregroundColor: Colors.white,
@@ -193,7 +261,15 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
       ),
     );
 
-    if (shouldClose == true && mounted) {
+    if (result == 'save_draft') {
+      await _saveDraftNow();
+      if (mounted) {
+        ref.read(planWizardProvider.notifier).reset();
+        Navigator.of(context).pop();
+      }
+    } else if (result == 'discard' && mounted) {
+      // Delete any existing draft for this session
+      ref.read(planAutoSaveProvider).cancel();
       ref.read(planWizardProvider.notifier).reset();
       Navigator.of(context).pop();
     }
@@ -268,6 +344,9 @@ class _PlanWizardPageState extends ConsumerState<PlanWizardPage> {
     final planId = await notifier.createPlan();
 
     if (planId != null && mounted) {
+      // Clear draft after successful save
+      await ref.read(planAutoSaveProvider).clearDraftAfterSave();
+
       // Invalidate providers to refresh data
       ref.invalidate(allPlansProvider);
       ref.invalidate(planDetailNotifierProvider(planId));

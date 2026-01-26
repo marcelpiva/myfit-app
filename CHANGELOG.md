@@ -5,6 +5,72 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0] - 2026-01-25
+
+### Added
+- **Onboarding Wizard** - Guided onboarding flow after registration
+  - Trainer flow: Welcome → Invite Student → Create Plan → Explore Templates → Complete
+  - Student flow: Welcome → Fitness Goal → Experience Level → Physical Data → Weekly Frequency → Injuries → Complete
+  - Skip option to complete later
+  - Data saved to user profile
+  - New files: `onboarding_provider.dart`, `onboarding_page.dart`
+
+- **Plan Version History UI** - View and compare plan versions
+  - `plan_version_history_sheet.dart` - Bottom sheet with version list
+  - Version comparison view with diff visualization
+  - Shows changes between versions (added, removed, modified)
+  - Select two versions to compare (A/B comparison)
+
+- **Do Not Disturb (DND) Settings** - Silence notifications during specific hours
+  - Toggle in Settings → Notifications section
+  - Time pickers for start and end times
+  - Default: 22:00 - 07:00
+
+- **Batch Prescription** - Prescribe plans to multiple students at once
+  - Multi-select student list
+  - Plan dropdown selection
+  - Optional start/end date pickers
+  - Progress indicator during prescription
+  - Success/failure summary
+
+- **Plan Draft System** - Save and restore plan wizard state
+  - Auto-save with 30-second debounce
+  - `plan_draft_service.dart` for SharedPreferences storage
+  - `plan_drafts_provider.dart` for draft management
+  - `drafts_list_sheet.dart` for draft selection UI
+  - Maximum 10 drafts with automatic cleanup
+
+- **QR Code for Invites** - Show QR code modal for student invites
+  - Uses `qr_flutter` package
+  - Copy link button
+  - Integrated in students page
+
+- **WhatsApp Sharing** - Share invite links via WhatsApp
+  - Uses `share_plus` package
+  - Pre-formatted message with invite link
+
+- **Social Login** - Google and Apple Sign-In support
+  - `social_auth_service.dart` for OAuth handling
+  - Apple Sign In for iOS
+  - Google Sign In for all platforms
+  - Integrated in login and welcome pages
+
+- **Email Verification** - OTP verification flow
+  - `verify_email_page.dart` with 6-digit code input
+  - Auto-submit on complete code
+  - Resend with cooldown timer
+  - Skip option for later verification
+
+- **User Type Selection** - Personal Trainer vs Student registration
+  - `user_type_selection_page.dart` with visual cards
+  - CREF field for trainers (with verification badge)
+  - Routes to appropriate onboarding flow
+
+### Changed
+- Updated `app_router.dart` with onboarding route and userType parameter
+- Enhanced `register_page.dart` to redirect to onboarding
+- Updated `verify_email_page.dart` to pass userType on redirect
+
 ## [1.10.0] - 2026-01-25
 
 ### Added
