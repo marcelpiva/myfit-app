@@ -441,12 +441,14 @@ class _MultiExercisePickerState extends ConsumerState<MultiExercisePicker> {
               ),
               data: (grouped) {
                 final allExercises = <Exercise>[];
-                // Cardio exercises should not be available for advanced techniques
-                final excludeCardio = widget.technique != TechniqueType.normal;
+                // Cardio and stretching exercises should not be available for advanced techniques
+                // These exercise types don't benefit from dropset, superset, etc.
+                final excludeCardioAndStretching = widget.technique != TechniqueType.normal;
 
                 for (final entry in grouped.entries) {
-                  // Skip cardio muscle group for advanced techniques
-                  if (excludeCardio && entry.key == MuscleGroup.cardio) {
+                  // Skip cardio and stretching muscle groups for advanced techniques
+                  if (excludeCardioAndStretching &&
+                      (entry.key == MuscleGroup.cardio || entry.key == MuscleGroup.stretching)) {
                     continue;
                   }
 

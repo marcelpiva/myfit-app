@@ -1177,12 +1177,18 @@ class _WorkoutConfigCardState extends ConsumerState<_WorkoutConfigCard> {
   /// Show options for adding exercises: simple or with advanced technique
   void _showAddExerciseOptions(
       BuildContext context, WidgetRef ref, String workoutId, List<String> muscleGroups) {
-    // If workout is cardio-only, skip technique selection and go directly to exercise picker
-    // Cardio exercises don't use advanced techniques like dropset, superset, etc.
+    // If workout is cardio-only or stretching-only, skip technique selection
+    // These exercise types don't use advanced techniques like dropset, superset, etc.
     final isCardioOnly = muscleGroups.length == 1 && muscleGroups.first.toLowerCase() == 'cardio';
+    final isStretchingOnly = muscleGroups.length == 1 && muscleGroups.first.toLowerCase() == 'stretching';
 
     if (isCardioOnly) {
       _showExercisePicker(context, ref, workoutId, muscleGroups);
+      return;
+    }
+
+    if (isStretchingOnly) {
+      _showExercisePicker(context, ref, workoutId, muscleGroups, exerciseMode: ExerciseMode.stretching);
       return;
     }
 
