@@ -117,7 +117,7 @@ class StudentWelcomeStep extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     _buildFeatureItem(
-                      icon: LucideIcons.chartBar,
+                      icon: LucideIcons.barChart3,
                       title: 'Acompanhe seu progresso',
                       description: 'Veja sua evolução ao longo do tempo',
                       isDark: isDark,

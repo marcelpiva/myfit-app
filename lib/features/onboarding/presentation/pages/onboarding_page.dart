@@ -487,7 +487,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
         return StudentCompleteStep(
           state: state,
           onComplete: _complete,
-          isLoading: _isLoading,
+          isLoading: _isSaving,
         );
     }
   }
