@@ -10,6 +10,7 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../config/theme/tokens/animations.dart';
 import '../../../../core/providers/biometric_provider.dart';
+import '../../../../core/providers/context_provider.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import '../../../../core/utils/platform_utils.dart';
 
@@ -104,6 +105,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                       ],
                     ),
                   ),
+
+                  // Profile section
+                  _buildProfileSection(context, isDark),
+
+                  const SizedBox(height: 24),
 
                   // Appearance
                   _buildSectionTitle(context, isDark, 'Aparência'),
@@ -572,6 +578,448 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
           color: isDark
               ? AppColors.mutedForegroundDark
               : AppColors.mutedForeground,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileSection(BuildContext context, bool isDark) {
+    final user = ref.watch(currentUserProvider);
+    final activeContext = ref.watch(activeContextProvider);
+    final isTrainer = activeContext?.isTrainer ?? false;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.primary.withAlpha(isDark ? 30 : 15),
+              (isDark ? AppColors.cardDark : AppColors.card).withAlpha(isDark ? 150 : 200),
+            ],
+          ),
+          border: Border.all(
+            color: AppColors.primary.withAlpha(50),
+          ),
+        ),
+        child: Column(
+          children: [
+            // User info header
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  // Avatar
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.primary.withAlpha(25),
+                      border: Border.all(
+                        color: AppColors.primary,
+                        width: 2,
+                      ),
+                    ),
+                    child: user?.avatarUrl != null
+                        ? ClipOval(
+                            child: Image.network(
+                              user!.avatarUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => _buildAvatarPlaceholder(user.name),
+                            ),
+                          )
+                        : _buildAvatarPlaceholder(user?.name ?? 'U'),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user?.name ?? 'Usuário',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          user?.email ?? '',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(6),
+                            color: isTrainer
+                                ? AppColors.primary.withAlpha(25)
+                                : AppColors.secondary.withAlpha(25),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isTrainer ? LucideIcons.dumbbell : LucideIcons.user,
+                                size: 12,
+                                color: isTrainer ? AppColors.primary : AppColors.secondary,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                isTrainer ? 'Personal Trainer' : 'Aluno',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: isTrainer ? AppColors.primary : AppColors.secondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              height: 1,
+              color: isDark ? AppColors.borderDark : AppColors.border,
+            ),
+            // Profile options
+            _buildNavTile(
+              context,
+              isDark,
+              LucideIcons.userCog,
+              'Editar Perfil',
+              'Nome, foto e dados pessoais',
+              () {
+                HapticUtils.lightImpact();
+                _showEditProfileSheet(context, isDark);
+              },
+            ),
+            Container(
+              height: 1,
+              color: isDark ? AppColors.borderDark : AppColors.border,
+            ),
+            _buildNavTile(
+              context,
+              isDark,
+              isTrainer ? LucideIcons.clipboardList : LucideIcons.target,
+              isTrainer ? 'Dados Profissionais' : 'Meus Objetivos',
+              isTrainer ? 'CREF, especialidades' : 'Objetivo, experiência, dados físicos',
+              () {
+                HapticUtils.lightImpact();
+                // Navigate to onboarding in edit mode
+                context.push(
+                  RouteNames.onboarding,
+                  extra: {
+                    'userType': isTrainer ? 'personal' : 'student',
+                    'editMode': true,
+                    'skipOrgCreation': true,
+                  },
+                );
+              },
+            ),
+            Container(
+              height: 1,
+              color: isDark ? AppColors.borderDark : AppColors.border,
+            ),
+            _buildNavTile(
+              context,
+              isDark,
+              LucideIcons.userPlus,
+              isTrainer ? 'Adicionar Perfil Aluno' : 'Adicionar Perfil Personal',
+              'Ter ambos os perfis na mesma conta',
+              () {
+                HapticUtils.lightImpact();
+                _showAddProfileDialog(context, isDark, isTrainer);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvatarPlaceholder(String name) {
+    final initials = name.isNotEmpty
+        ? name.split(' ').take(2).map((e) => e.isNotEmpty ? e[0].toUpperCase() : '').join()
+        : 'U';
+    return Center(
+      child: Text(
+        initials,
+        style: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.w700,
+          color: AppColors.primary,
+        ),
+      ),
+    );
+  }
+
+  void _showEditProfileSheet(BuildContext context, bool isDark) {
+    final user = ref.read(currentUserProvider);
+    final nameController = TextEditingController(text: user?.name ?? '');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: 24,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Editar Perfil',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Avatar edit
+            Center(
+              child: Stack(
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.primary.withAlpha(25),
+                      border: Border.all(color: AppColors.primary, width: 2),
+                    ),
+                    child: _buildAvatarPlaceholder(user?.name ?? 'U'),
+                  ),
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticUtils.lightImpact();
+                        // TODO: Implement photo picker
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Funcionalidade em breve'),
+                            backgroundColor: AppColors.primary,
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.primary,
+                        ),
+                        child: const Icon(LucideIcons.camera, size: 14, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Name field
+            Text(
+              'Nome',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(
+                hintText: 'Seu nome completo',
+                filled: true,
+                fillColor: isDark ? AppColors.mutedDark : AppColors.muted,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      HapticUtils.lightImpact();
+                      Navigator.pop(context);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Text('Cancelar'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      HapticUtils.mediumImpact();
+                      // TODO: Save profile changes to API
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('Perfil atualizado!'),
+                          backgroundColor: AppColors.success,
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: const Text('Salvar'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAddProfileDialog(BuildContext context, bool isDark, bool isCurrentlyTrainer) {
+    final newProfileType = isCurrentlyTrainer ? 'Aluno' : 'Personal Trainer';
+    final newUserType = isCurrentlyTrainer ? 'student' : 'personal';
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: AppColors.primary.withAlpha(25),
+                    ),
+                    child: Icon(
+                      isCurrentlyTrainer ? LucideIcons.user : LucideIcons.dumbbell,
+                      size: 24,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Adicionar Perfil',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                          ),
+                        ),
+                        Text(
+                          newProfileType,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Text(
+                isCurrentlyTrainer
+                    ? 'Você poderá treinar como aluno e receber treinos de outros personais.'
+                    : 'Você poderá criar treinos e acompanhar alunos como Personal Trainer.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        HapticUtils.lightImpact();
+                        Navigator.pop(context);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text('Cancelar'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        HapticUtils.mediumImpact();
+                        Navigator.pop(context);
+                        // Navigate to onboarding for the new profile type
+                        context.push(
+                          RouteNames.onboarding,
+                          extra: {
+                            'userType': newUserType,
+                            'addingProfile': true,
+                            'skipOrgCreation': !isCurrentlyTrainer, // Only create org if becoming trainer
+                          },
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text('Continuar'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
