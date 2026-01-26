@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../auth/auth_event_notifier.dart';
 import '../../storage/token_storage.dart';
 import '../api_endpoints.dart';
 
@@ -179,13 +180,18 @@ class AuthInterceptor extends Interceptor {
     _pendingRequests.clear();
   }
 
-  /// Handle authentication failure (clear tokens, redirect to login)
+  /// Handle authentication failure (clear tokens, notify listeners)
   Future<void> _handleAuthFailure() async {
     await TokenStorage.clearTokens();
-    // Note: Navigation to login is handled by the app's auth state listener
-    // The UI should watch the auth state and redirect accordingly
+
+    // Emit force logout event - auth provider listens and updates state
+    // This triggers the router redirect to login
+    AuthEventNotifier.instance.emitForceLogout(
+      reason: 'Token refresh failed',
+    );
+
     if (kDebugMode) {
-      print('🔴 Auth failed - tokens cleared');
+      print('🔴 Auth failed - tokens cleared, force logout emitted');
     }
   }
 }

@@ -3,10 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/dev_screen_label.dart';
+import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/welcome_page.dart';
+import '../../features/auth/presentation/pages/user_type_selection_page.dart';
+import '../../features/auth/presentation/pages/verify_email_page.dart';
 import '../../features/chat/presentation/pages/chat_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/nutrition/presentation/pages/nutrition_page.dart';
@@ -58,6 +61,7 @@ import '../../features/trainer_home/presentation/pages/trainer_home_page.dart';
 import '../../features/nutritionist_home/presentation/pages/nutritionist_home_page.dart';
 import '../../features/gym_home/presentation/pages/gym_home_page.dart';
 import '../../features/auth/presentation/pages/invite_accept_page.dart';
+import '../../features/onboarding/presentation/pages/onboarding_page.dart';
 import '../../features/trainer_workout/presentation/pages/students_list_page.dart';
 import '../../features/trainer_workout/presentation/pages/student_workouts_page.dart';
 import '../../features/students/presentation/pages/student_detail_page.dart';
@@ -119,12 +123,54 @@ String? _trainerGuardRedirect(BuildContext context) {
   return null;
 }
 
+/// Routes that don't require authentication
+const _publicRoutes = [
+  RouteNames.welcome,
+  RouteNames.login,
+  RouteNames.register,
+  RouteNames.userTypeSelection,
+  RouteNames.forgotPassword,
+  RouteNames.verifyEmail,
+  '/invite/', // Invite accept routes
+];
+
+/// Check if a route is public (no auth required)
+bool _isPublicRoute(String location) {
+  return _publicRoutes.any((route) => location.startsWith(route));
+}
+
 /// App Router Configuration
 final appRouterProvider = Provider<GoRouter>((ref) {
+  // Create a listenable that rebuilds when auth state changes
+  final authStateListenable = ValueNotifier<AuthState>(ref.read(authProvider));
+
+  // Listen to auth state changes and update the listenable
+  ref.listen<AuthState>(authProvider, (previous, next) {
+    authStateListenable.value = next;
+  });
+
   return GoRouter(
     initialLocation: RouteNames.welcome,
     debugLogDiagnostics: true,
     observers: [ObservabilityGoRouterObserver()],
+    refreshListenable: authStateListenable,
+    redirect: (context, state) {
+      final authState = ref.read(authProvider);
+      final isAuthenticated = authState.status == AuthStatus.authenticated;
+      final isPublicRoute = _isPublicRoute(state.matchedLocation);
+
+      // If not authenticated and trying to access protected route, redirect to welcome
+      if (!isAuthenticated && !isPublicRoute) {
+        return RouteNames.welcome;
+      }
+
+      // If authenticated and on welcome/login page, redirect to home
+      if (isAuthenticated && (state.matchedLocation == RouteNames.welcome || state.matchedLocation == RouteNames.login)) {
+        return RouteNames.home;
+      }
+
+      return null; // No redirect needed
+    },
     routes: [
       // Auth routes (no shell)
       GoRoute(
@@ -138,9 +184,30 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => _devLabel('login', const LoginPage()),
       ),
       GoRoute(
+        path: RouteNames.userTypeSelection,
+        name: 'user-type',
+        builder: (context, state) => _devLabel('user-type', const UserTypeSelectionPage()),
+      ),
+      GoRoute(
         path: RouteNames.register,
         name: 'register',
-        builder: (context, state) => _devLabel('register', const RegisterPage()),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final userType = extra?['userType'] as String? ?? 'student';
+          return _devLabel('register', RegisterPage(userType: userType));
+        },
+      ),
+      GoRoute(
+        path: RouteNames.verifyEmail,
+        name: 'verify-email',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return _devLabel('verify-email', VerifyEmailPage(
+            email: extra?['email'] as String? ?? '',
+            redirectTo: extra?['redirectTo'] as String?,
+            userType: extra?['userType'] as String?,
+          ));
+        },
       ),
       GoRoute(
         path: RouteNames.forgotPassword,
@@ -151,6 +218,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: RouteNames.orgSelector,
         name: 'org-selector',
         builder: (context, state) => _devLabel('org-selector', const OrgSelectorPage()),
+      ),
+      GoRoute(
+        path: RouteNames.onboarding,
+        name: 'onboarding',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final userType = extra?['userType'] as String? ?? 'student';
+          return _devLabel('onboarding', OnboardingPage(userType: userType));
+        },
       ),
 
       // Main app with bottom navigation
@@ -294,11 +370,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final planId = state.uri.queryParameters['edit'];
           final basePlanId = state.uri.queryParameters['basePlanId'];
           final phaseType = state.uri.queryParameters['phaseType'];
+          final draftId = state.uri.queryParameters['draft'];
           return _devLabel('plan-wizard', PlanWizardPage(
             studentId: studentId,
             planId: planId,
             basePlanId: basePlanId,
             phaseType: phaseType,
+            draftId: draftId,
           ));
         },
       ),

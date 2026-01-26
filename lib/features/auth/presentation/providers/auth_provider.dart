@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/auth/auth_event_notifier.dart';
 import '../../../../core/error/api_exceptions.dart';
 import '../../../../core/providers/context_provider.dart';
 import '../../../../core/services/auth_service.dart';
@@ -55,8 +58,36 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
   final Ref _ref;
+  StreamSubscription<AuthEvent>? _authEventSubscription;
 
-  AuthNotifier(this._authService, this._ref) : super(const AuthState());
+  AuthNotifier(this._authService, this._ref) : super(const AuthState()) {
+    // Listen for force logout events from the API interceptor
+    _authEventSubscription = AuthEventNotifier.instance.stream.listen(_onAuthEvent);
+  }
+
+  @override
+  void dispose() {
+    _authEventSubscription?.cancel();
+    super.dispose();
+  }
+
+  /// Handle auth events from the interceptor
+  void _onAuthEvent(AuthEvent event) {
+    switch (event.type) {
+      case AuthEventType.forceLogout:
+        _handleForceLogout(event.reason);
+        break;
+    }
+  }
+
+  /// Handle force logout (triggered by API 401 errors)
+  void _handleForceLogout(String? reason) {
+    // Clear local state without calling logout API (already unauthorized)
+    _ref.read(currentUserProvider.notifier).state = null;
+    _ref.read(activeContextProvider.notifier).setContext(null);
+    _ref.invalidate(membershipsProvider);
+    state = const AuthState(status: AuthStatus.unauthenticated);
+  }
 
   /// Initialize push notifications (only on mobile platforms)
   Future<void> _initPushNotifications() async {
@@ -135,6 +166,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String email,
     required String password,
     required String name,
+    String userType = 'student',
   }) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
 
@@ -143,6 +175,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         email: email,
         password: password,
         name: name,
+        userType: userType,
       );
 
       _ref.read(currentUserProvider.notifier).state = response.user;
@@ -167,6 +200,98 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = AuthState(
         status: AuthStatus.error,
         errorMessage: 'Erro ao criar conta. Tente novamente.',
+      );
+      return false;
+    }
+  }
+
+  /// Send email verification code
+  Future<bool> sendVerificationCode({required String email}) async {
+    return _authService.sendVerificationCode(email: email);
+  }
+
+  /// Verify email with code
+  Future<bool> verifyEmail({
+    required String email,
+    required String code,
+  }) async {
+    final success = await _authService.verifyEmailCode(email: email, code: code);
+    if (success && state.user != null) {
+      // Update user state to reflect verified status
+      final updatedUser = await _authService.getCurrentUser();
+      if (updatedUser != null) {
+        _ref.read(currentUserProvider.notifier).state = updatedUser;
+        state = state.copyWith(user: updatedUser);
+      }
+    }
+    return success;
+  }
+
+  /// Login with Google
+  Future<bool> loginWithGoogle({required String idToken}) async {
+    state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+
+    try {
+      final response = await _authService.loginWithGoogle(idToken: idToken);
+
+      _ref.read(currentUserProvider.notifier).state = response.user;
+      _ref.read(activeContextProvider.notifier).setContext(null);
+      _ref.invalidate(membershipsProvider);
+      state = AuthState(
+        status: AuthStatus.authenticated,
+        user: response.user,
+      );
+
+      _initPushNotifications();
+      return true;
+    } on ApiException catch (e) {
+      state = AuthState(
+        status: AuthStatus.error,
+        errorMessage: e.userMessage,
+      );
+      return false;
+    } catch (e) {
+      state = AuthState(
+        status: AuthStatus.error,
+        errorMessage: 'Erro ao fazer login com Google.',
+      );
+      return false;
+    }
+  }
+
+  /// Login with Apple
+  Future<bool> loginWithApple({
+    required String idToken,
+    String? userName,
+  }) async {
+    state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+
+    try {
+      final response = await _authService.loginWithApple(
+        idToken: idToken,
+        userName: userName,
+      );
+
+      _ref.read(currentUserProvider.notifier).state = response.user;
+      _ref.read(activeContextProvider.notifier).setContext(null);
+      _ref.invalidate(membershipsProvider);
+      state = AuthState(
+        status: AuthStatus.authenticated,
+        user: response.user,
+      );
+
+      _initPushNotifications();
+      return true;
+    } on ApiException catch (e) {
+      state = AuthState(
+        status: AuthStatus.error,
+        errorMessage: e.userMessage,
+      );
+      return false;
+    } catch (e) {
+      state = AuthState(
+        status: AuthStatus.error,
+        errorMessage: 'Erro ao fazer login com Apple.',
       );
       return false;
     }
