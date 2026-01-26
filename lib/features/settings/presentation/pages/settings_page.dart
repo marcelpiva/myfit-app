@@ -695,7 +695,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               color: isDark ? AppColors.borderDark : AppColors.border,
             ),
             // Profile options
-            _buildNavTile(
+            _buildProfileTile(
               context,
               isDark,
               LucideIcons.userCog,
@@ -710,7 +710,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               height: 1,
               color: isDark ? AppColors.borderDark : AppColors.border,
             ),
-            _buildNavTile(
+            _buildProfileTile(
               context,
               isDark,
               isTrainer ? LucideIcons.clipboardList : LucideIcons.target,
@@ -729,20 +729,67 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 );
               },
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileTile(
+    BuildContext context,
+    bool isDark,
+    IconData icon,
+    String title,
+    String subtitle,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
             Container(
-              height: 1,
-              color: isDark ? AppColors.borderDark : AppColors.border,
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: AppColors.primary.withAlpha(15),
+              ),
+              child: Icon(
+                icon,
+                size: 20,
+                color: AppColors.primary,
+              ),
             ),
-            _buildNavTile(
-              context,
-              isDark,
-              LucideIcons.userPlus,
-              isTrainer ? 'Adicionar Perfil Aluno' : 'Adicionar Perfil Personal',
-              'Ter ambos os perfis na mesma conta',
-              () {
-                HapticUtils.lightImpact();
-                _showAddProfileDialog(context, isDark, isTrainer);
-              },
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              LucideIcons.chevronRight,
+              size: 18,
+              color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
             ),
           ],
         ),
