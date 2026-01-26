@@ -79,11 +79,12 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
       if (_isTrainer) {
         final notifier = ref.read(trainerOnboardingProvider.notifier);
 
-        // Parse CREF if exists (format: "012345-G/SP")
+        // Parse CREF if exists (format: "012345/SP")
         final cref = profile['cref'] as String?;
         if (cref != null && cref.isNotEmpty) {
           final parts = cref.split('/');
           if (parts.length == 2) {
+            // Remove old -G/-P suffix if present for backwards compatibility
             final crefNumber = parts[0].replaceAll(RegExp(r'-[A-Z]$'), '');
             final stateStr = parts[1];
             final crefState = BrazilState.values.firstWhere(
@@ -207,10 +208,10 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
       if (_isTrainer) {
         final state = ref.read(trainerOnboardingProvider);
         completed = !state.skipped;
-        // Format CREF: combine number + state (e.g., "012345-G/SP")
+        // Format CREF: combine number + state (e.g., "012345/SP")
         String? cref;
         if (state.crefNumber != null && state.crefState != null) {
-          cref = '${state.crefNumber}-G/${state.crefState!.name}';
+          cref = '${state.crefNumber}/${state.crefState!.name}';
         }
         await userService.updateProfile(
           cref: cref,
@@ -2908,40 +2909,22 @@ class _OnboardingStepScaffold extends StatelessWidget {
   }
 }
 
-/// CREF mask formatter: 000000-X (6 digits + dash + G/B/L/F)
-/// G = Graduado, B = Bacharel, L = Licenciado, F = Formação antiga
+/// CREF mask formatter: 000000 (6 digits only)
 class _CrefInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    final text = newValue.text.toUpperCase();
+    // Remove any non-digit characters
+    final cleaned = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
 
-    // Remove any non-alphanumeric characters except dash
-    final cleaned = text.replaceAll(RegExp(r'[^0-9GBLF]'), '');
+    // Limit to 6 digits
+    final limited = cleaned.length > 6 ? cleaned.substring(0, 6) : cleaned;
 
-    final buffer = StringBuffer();
-    for (int i = 0; i < cleaned.length && i < 7; i++) {
-      final char = cleaned[i];
-
-      if (i < 6) {
-        // First 6 characters must be digits
-        if (RegExp(r'[0-9]').hasMatch(char)) {
-          buffer.write(char);
-        }
-      } else if (i == 6) {
-        // 7th character must be G, B, L, or F only
-        if (RegExp(r'[GBLF]').hasMatch(char)) {
-          buffer.write('-$char');
-        }
-      }
-    }
-
-    final formatted = buffer.toString();
     return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
+      text: limited,
+      selection: TextSelection.collapsed(offset: limited.length),
     );
   }
 }

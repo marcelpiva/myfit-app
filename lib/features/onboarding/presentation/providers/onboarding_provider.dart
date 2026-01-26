@@ -162,10 +162,10 @@ class TrainerOnboardingState {
   bool get hasMinimumProfileData =>
       specialties.isNotEmpty || yearsOfExperience != null;
 
-  /// Get formatted CREF string (e.g., "CREF 012345-G/SP")
+  /// Get formatted CREF string (e.g., "CREF 012345/SP")
   String? get formattedCref {
     if (!hasCref) return null;
-    return 'CREF $crefNumber-G/${crefState!.name}';
+    return 'CREF $crefNumber/${crefState!.name}';
   }
 
   /// Get step labels for progress bar
