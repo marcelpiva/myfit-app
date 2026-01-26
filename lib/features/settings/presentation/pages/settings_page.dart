@@ -592,8 +592,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     // Check context: null = org selector, otherwise check role
     final isFromOrgSelector = activeContext == null;
     final isTrainerContext = !isFromOrgSelector && (activeContext?.isTrainer ?? false);
+    final isStudentContext = !isFromOrgSelector && (activeContext?.membership.role == UserRole.student);
 
-    // Check if user has student profile (for showing objectives option)
+    // Check if user has student profile (for showing "add student" option on org selector)
     final hasStudentProfile = memberships.any((m) => m.role == UserRole.student);
 
     return Padding(
@@ -716,45 +717,48 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 _showEditProfileSheet(context, isDark);
               },
             ),
-            // From Org Selector: Show student-related options
-            if (isFromOrgSelector) ...[
+            // From Org Selector: Show "Adicionar perfil Aluno" if no student profile
+            if (isFromOrgSelector && !hasStudentProfile) ...[
               Container(
                 height: 1,
                 color: isDark ? AppColors.borderDark : AppColors.border,
               ),
-              if (hasStudentProfile)
-                // Has student profile: Edit objectives
-                _buildProfileTile(
-                  context,
-                  isDark,
-                  LucideIcons.target,
-                  'Meus Objetivos',
-                  'Objetivo, experiência, dados físicos',
-                  () {
-                    HapticUtils.lightImpact();
-                    context.push(
-                      RouteNames.onboarding,
-                      extra: {
-                        'userType': 'student',
-                        'editMode': true,
-                        'skipOrgCreation': true,
-                      },
-                    );
-                  },
-                )
-              else
-                // No student profile: Option to add one
-                _buildProfileTile(
-                  context,
-                  isDark,
-                  LucideIcons.userPlus,
-                  'Adicionar perfil Aluno',
-                  'Treinar e receber planos personalizados',
-                  () {
-                    HapticUtils.lightImpact();
-                    context.push(RouteNames.joinOrg);
-                  },
-                ),
+              _buildProfileTile(
+                context,
+                isDark,
+                LucideIcons.userPlus,
+                'Adicionar perfil Aluno',
+                'Treinar e receber planos personalizados',
+                () {
+                  HapticUtils.lightImpact();
+                  context.push(RouteNames.joinOrg);
+                },
+              ),
+            ],
+            // From Student context: Show "Meus Objetivos"
+            if (isStudentContext) ...[
+              Container(
+                height: 1,
+                color: isDark ? AppColors.borderDark : AppColors.border,
+              ),
+              _buildProfileTile(
+                context,
+                isDark,
+                LucideIcons.target,
+                'Meus Objetivos',
+                'Objetivo, experiência, dados físicos',
+                () {
+                  HapticUtils.lightImpact();
+                  context.push(
+                    RouteNames.onboarding,
+                    extra: {
+                      'userType': 'student',
+                      'editMode': true,
+                      'skipOrgCreation': true,
+                    },
+                  );
+                },
+              ),
             ],
             // From Trainer context: Show "Dados Profissionais"
             if (isTrainerContext) ...[
