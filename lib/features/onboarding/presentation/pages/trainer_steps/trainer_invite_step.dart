@@ -77,7 +77,19 @@ class _TrainerInviteStepState extends ConsumerState<TrainerInviteStep> {
             _inviteLink = 'https://myfit.app/join/$token';
             _isLoading = false;
           });
+        } else {
+          // No token returned - use preview link
+          setState(() {
+            _inviteLink = 'https://myfit.app/join/preview';
+            _isLoading = false;
+          });
         }
+      } else {
+        // Non-200 response - use preview link
+        setState(() {
+          _inviteLink = 'https://myfit.app/join/preview';
+          _isLoading = false;
+        });
       }
     } catch (e) {
       debugPrint('Error generating invite token: $e');

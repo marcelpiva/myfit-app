@@ -70,68 +70,63 @@ class _TrainerCompleteStepState extends ConsumerState<TrainerCompleteStep> {
               const CelebrationAnimation(autoPlay: true),
               const SizedBox(height: 24),
               // Content - appears after animation
-              AnimatedOpacity(
-                opacity: _showContent ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 500),
-                child: AnimatedSlide(
-                  offset: _showContent ? Offset.zero : const Offset(0, 0.2),
+              Expanded(
+                child: AnimatedOpacity(
+                  opacity: _showContent ? 1.0 : 0.0,
                   duration: const Duration(milliseconds: 500),
-                  curve: Curves.easeOut,
-                  child: Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        children: [
-                          // Title
-                          Text(
-                            'Tudo pronto!',
-                            style: theme.textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: isDark
-                                  ? AppColors.foregroundDark
-                                  : AppColors.foreground,
-                            ),
-                            textAlign: TextAlign.center,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      children: [
+                        // Title
+                        Text(
+                          'Tudo pronto!',
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: isDark
+                                ? AppColors.foregroundDark
+                                : AppColors.foreground,
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Sua conta de Personal Trainer está configurada',
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: isDark
-                                  ? AppColors.mutedForegroundDark
-                                  : AppColors.mutedForeground,
-                            ),
-                            textAlign: TextAlign.center,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Sua conta de Personal Trainer está configurada',
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: isDark
+                                ? AppColors.mutedForegroundDark
+                                : AppColors.mutedForeground,
                           ),
-                          const SizedBox(height: 32),
-                          // Summary card
-                          CompletionSummaryCard(
-                            specialties: state.specialties,
-                            experienceYears: state.yearsOfExperience ?? 0,
-                            cref: state.formattedCref,
-                          ),
-                          const SizedBox(height: 24),
-                          // Next steps
-                          NextStepsChecklist(
-                            hasInvitedStudent: state.hasInvitedStudent,
-                            hasCreatedPlan: state.hasCreatedPlan,
-                            hasExploredTemplates: state.hasExploredTemplates,
-                            onInviteStudentTap: () {
-                              // Will be handled after dashboard loads
-                            },
-                            onCreatePlanTap: () {
-                              // Will be handled after dashboard loads
-                            },
-                            onExploreTemplatesTap: () {
-                              // Will be handled after dashboard loads
-                            },
-                          ),
-                          const SizedBox(height: 24),
-                          // Share profile option
-                          _buildShareProfileCard(isDark),
-                          const SizedBox(height: 100), // Space for bottom action
-                        ],
-                      ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 32),
+                        // Summary card
+                        CompletionSummaryCard(
+                          specialties: state.specialties,
+                          experienceYears: state.yearsOfExperience ?? 0,
+                          cref: state.formattedCref,
+                        ),
+                        const SizedBox(height: 24),
+                        // Next steps
+                        NextStepsChecklist(
+                          hasInvitedStudent: state.hasInvitedStudent,
+                          hasCreatedPlan: state.hasCreatedPlan,
+                          hasExploredTemplates: state.hasExploredTemplates,
+                          onInviteStudentTap: () {
+                            // Will be handled after dashboard loads
+                          },
+                          onCreatePlanTap: () {
+                            // Will be handled after dashboard loads
+                          },
+                          onExploreTemplatesTap: () {
+                            // Will be handled after dashboard loads
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                        // Share profile option
+                        _buildShareProfileCard(isDark),
+                        const SizedBox(height: 24),
+                      ],
                     ),
                   ),
                 ),

@@ -4,7 +4,6 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/utils/haptic_utils.dart';
-import '../../providers/onboarding_provider.dart';
 import '../../widgets/animated_progress_bar.dart';
 
 /// Interactive Create Plan step with animated walkthrough
@@ -31,7 +30,6 @@ class _TrainerCreatePlanStepState extends ConsumerState<TrainerCreatePlanStep>
     with TickerProviderStateMixin {
   late AnimationController _stepsController;
   late List<Animation<double>> _stepAnimations;
-  int _currentHighlightedStep = 0;
 
   final _planSteps = [
     _PlanStepData(
@@ -66,13 +64,13 @@ class _TrainerCreatePlanStepState extends ConsumerState<TrainerCreatePlanStep>
 
     _stepsController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2400),
+      duration: const Duration(milliseconds: 1200),
     );
 
     // Create staggered animations for each step
     _stepAnimations = List.generate(_planSteps.length, (index) {
-      final start = index * 0.2;
-      final end = start + 0.3;
+      final start = index * 0.15;
+      final end = start + 0.25;
       return Tween<double>(begin: 0.0, end: 1.0).animate(
         CurvedAnimation(
           parent: _stepsController,
@@ -82,23 +80,8 @@ class _TrainerCreatePlanStepState extends ConsumerState<TrainerCreatePlanStep>
       );
     });
 
-    // Start animation
+    // Start animation once
     _stepsController.forward();
-
-    // Cycle through highlighted steps
-    _startHighlightCycle();
-  }
-
-  void _startHighlightCycle() async {
-    while (mounted) {
-      await Future.delayed(const Duration(milliseconds: 2000));
-      if (mounted) {
-        setState(() {
-          _currentHighlightedStep =
-              (_currentHighlightedStep + 1) % _planSteps.length;
-        });
-      }
-    }
   }
 
   @override
@@ -172,11 +155,8 @@ class _TrainerCreatePlanStepState extends ConsumerState<TrainerCreatePlanStep>
                         ),
                       ),
                       const SizedBox(height: 32),
-                      // Animated steps
+                      // Steps list
                       _buildAnimatedSteps(isDark),
-                      const SizedBox(height: 32),
-                      // Quick actions
-                      _buildQuickActions(context, isDark),
                       const SizedBox(height: 100), // Space for bottom actions
                     ],
                   ),
@@ -246,7 +226,6 @@ class _TrainerCreatePlanStepState extends ConsumerState<TrainerCreatePlanStep>
     return Column(
       children: List.generate(_planSteps.length, (index) {
         final step = _planSteps[index];
-        final isHighlighted = _currentHighlightedStep == index;
         final isLast = index == _planSteps.length - 1;
 
         return AnimatedBuilder(
@@ -256,7 +235,7 @@ class _TrainerCreatePlanStepState extends ConsumerState<TrainerCreatePlanStep>
               opacity: _stepAnimations[index].value,
               child: Transform.translate(
                 offset: Offset(
-                  (1 - _stepAnimations[index].value) * 30,
+                  (1 - _stepAnimations[index].value) * 20,
                   0,
                 ),
                 child: Column(
@@ -264,7 +243,6 @@ class _TrainerCreatePlanStepState extends ConsumerState<TrainerCreatePlanStep>
                     _PlanStepCard(
                       step: step,
                       stepNumber: index + 1,
-                      isHighlighted: isHighlighted,
                       isDark: isDark,
                     ),
                     if (!isLast)
@@ -279,63 +257,6 @@ class _TrainerCreatePlanStepState extends ConsumerState<TrainerCreatePlanStep>
           },
         );
       }),
-    );
-  }
-
-  Widget _buildQuickActions(BuildContext context, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.cardDark : AppColors.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? AppColors.borderDark : AppColors.border,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Ações rápidas',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: isDark ? AppColors.foregroundDark : AppColors.foreground,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _QuickActionButton(
-                  icon: LucideIcons.play,
-                  label: 'Ver demo',
-                  color: AppColors.info,
-                  isDark: isDark,
-                  onTap: () {
-                    HapticUtils.lightImpact();
-                    // TODO: Show demo video/tutorial
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _QuickActionButton(
-                  icon: LucideIcons.plus,
-                  label: 'Criar plano',
-                  color: AppColors.success,
-                  isDark: isDark,
-                  onTap: () {
-                    HapticUtils.mediumImpact();
-                    ref.read(trainerOnboardingProvider.notifier).markPlanCreated();
-                    // TODO: Navigate to create plan page
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 
@@ -416,70 +337,39 @@ class _PlanStepData {
 class _PlanStepCard extends StatelessWidget {
   final _PlanStepData step;
   final int stepNumber;
-  final bool isHighlighted;
   final bool isDark;
 
   const _PlanStepCard({
     required this.step,
     required this.stepNumber,
-    required this.isHighlighted,
     required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
+    return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isHighlighted
-            ? step.color.withAlpha(isDark ? 25 : 15)
-            : (isDark ? AppColors.cardDark : AppColors.card),
+        color: isDark ? AppColors.cardDark : AppColors.card,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isHighlighted
-              ? step.color.withAlpha(80)
-              : (isDark ? AppColors.borderDark : AppColors.border),
-          width: isHighlighted ? 2 : 1,
+          color: isDark ? AppColors.borderDark : AppColors.border,
         ),
-        boxShadow: isHighlighted
-            ? [
-                BoxShadow(
-                  color: step.color.withAlpha(20),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
       ),
       child: Row(
         children: [
-          // Step number badge
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
+          // Step number badge with icon
+          Container(
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: isHighlighted
-                  ? step.color
-                  : step.color.withAlpha(isDark ? 30 : 20),
+              color: step.color.withAlpha(isDark ? 30 : 20),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Center(
-              child: isHighlighted
-                  ? Icon(
-                      step.icon,
-                      size: 24,
-                      color: Colors.white,
-                    )
-                  : Text(
-                      '$stepNumber',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: step.color,
-                      ),
-                    ),
+            child: Icon(
+              step.icon,
+              size: 24,
+              color: step.color,
             ),
           ),
           const SizedBox(width: 16),
@@ -541,58 +431,6 @@ class _ConnectionLine extends StatelessWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(1),
-      ),
-    );
-  }
-}
-
-class _QuickActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final bool isDark;
-  final VoidCallback? onTap;
-
-  const _QuickActionButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.isDark,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: color.withAlpha(isDark ? 25 : 15),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: color.withAlpha(40),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: color,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

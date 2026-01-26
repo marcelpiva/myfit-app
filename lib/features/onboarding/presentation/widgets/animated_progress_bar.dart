@@ -214,15 +214,19 @@ class SimpleProgressIndicator extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            width: constraints.maxWidth * progress.clamp(0.0, 1.0),
-            height: height,
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(height / 2),
-            ),
+          return Stack(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                width: constraints.maxWidth * progress.clamp(0.0, 1.0),
+                height: height,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(height / 2),
+                ),
+              ),
+            ],
           );
         },
       ),
