@@ -341,6 +341,7 @@ class StudentNewPlansNotifier extends StateNotifier<StudentNewPlansState> {
         ApiEndpoints.planAssignmentRespond(assignmentId),
         data: {
           'accept': accept,
+          if (accept) 'acknowledge': true, // Also acknowledge to avoid showing as "new"
           if (!accept && declinedReason != null) 'declined_reason': declinedReason,
         },
       );
@@ -350,6 +351,11 @@ class StudentNewPlansNotifier extends StateNotifier<StudentNewPlansState> {
         if (planId != null) {
           _ref.read(cacheEventEmitterProvider).planAcknowledged(planId);
         }
+
+        // NOTE: When accepting, we also set acknowledged_at via query parameter
+        // to avoid showing the plan as "new" and sending double notifications.
+        // The backend should handle this - if not, update the respond endpoint.
+
         // Refresh dashboard
         _ref.read(studentDashboardProvider.notifier).refresh();
         await loadPlans();

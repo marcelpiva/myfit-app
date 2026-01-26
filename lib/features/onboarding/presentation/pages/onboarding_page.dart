@@ -16,6 +16,7 @@ import '../../../../core/services/user_service.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/onboarding_provider.dart';
+import 'trainer_steps/trainer_steps.dart';
 
 /// Main onboarding page that routes to trainer or student flow
 class OnboardingPage extends ConsumerStatefulWidget {
@@ -365,50 +366,46 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
     TrainerOnboardingState state,
     TrainerOnboardingNotifier notifier,
   ) {
+    // Calculate progress based on current step
+    final progress = state.stepIndex / state.totalSteps;
+
     switch (state.currentStep) {
       case TrainerOnboardingStep.welcome:
-        return _TrainerWelcomeStep(
+        return TrainerWelcomeStep(
+          progress: progress,
           onNext: () => notifier.nextStep(),
           onSkip: _skip,
         );
       case TrainerOnboardingStep.professionalProfile:
-        return _TrainerProfessionalProfileStep(
-          state: state,
-          onNext: (crefNumber, crefState, specialties, yearsExp, bio) {
-            if (crefNumber != null && crefState != null) {
-              notifier.setCrefData(crefNumber: crefNumber, crefState: crefState);
-            }
-            notifier.setProfileData(
-              specialties: specialties,
-              yearsOfExperience: yearsExp,
-              bio: bio,
-            );
-            notifier.nextStep();
-          },
+        return TrainerProfileStep(
+          progress: progress,
+          onNext: () => notifier.nextStep(),
           onBack: () => notifier.previousStep(),
           onSkip: _skip,
         );
       case TrainerOnboardingStep.inviteStudent:
-        return _TrainerInviteStep(
+        return TrainerInviteStep(
+          progress: progress,
           onNext: () => notifier.nextStep(),
           onBack: () => notifier.previousStep(),
           onSkip: _skip,
         );
       case TrainerOnboardingStep.createPlan:
-        return _TrainerCreatePlanStep(
+        return TrainerCreatePlanStep(
+          progress: progress,
           onNext: () => notifier.nextStep(),
           onBack: () => notifier.previousStep(),
           onSkip: _skip,
         );
       case TrainerOnboardingStep.exploreTemplates:
-        return _TrainerExploreStep(
+        return TrainerTemplatesStep(
+          progress: progress,
           onNext: () => notifier.nextStep(),
           onBack: () => notifier.previousStep(),
           onSkip: _skip,
         );
       case TrainerOnboardingStep.complete:
-        return _CompleteStep(
-          isTrainer: true,
+        return TrainerCompleteStep(
           onComplete: _complete,
           isLoading: _isCreatingOrg,
         );
