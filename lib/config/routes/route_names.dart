@@ -101,6 +101,7 @@ abstract class RouteNames {
   static const trainerPlans = '/trainer-plans';
   static const trainerFeedbacks = '/trainer-feedbacks';
   static const studentFeedbacks = '/students/:studentId/feedbacks';
+  static const broadcast = '/broadcast';
 
   // Student schedule route
   static const mySchedule = '/my-schedule';

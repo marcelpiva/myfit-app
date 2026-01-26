@@ -139,102 +139,256 @@ class StudentPlanHistoryPage extends ConsumerWidget {
       itemCount: history.length,
       itemBuilder: (context, index) {
         final assignment = history[index];
-        return _buildHistoryItem(context, theme, isDark, assignment);
+        final isFirst = index == 0;
+        final isLast = index == history.length - 1;
+        final versionNumber = history.length - index;
+
+        return _buildTimelineItem(
+          context,
+          theme,
+          isDark,
+          assignment,
+          isFirst: isFirst,
+          isLast: isLast,
+          versionNumber: versionNumber,
+        );
       },
     );
   }
 
-  Widget _buildHistoryItem(
+  Widget _buildTimelineItem(
     BuildContext context,
     ThemeData theme,
     bool isDark,
-    Map<String, dynamic> assignment,
-  ) {
-    final planName = assignment['plan_name'] as String? ?? 'Prescrição';
+    Map<String, dynamic> assignment, {
+    required bool isFirst,
+    required bool isLast,
+    required int versionNumber,
+  }) {
+    final planName = assignment['plan_name'] as String? ?? 'Prescricao';
     final startDate = assignment['start_date'] as String?;
     final endDate = assignment['end_date'] as String?;
     final planId = assignment['plan_id'] as String?;
+    final status = assignment['status'] as String? ?? 'completed';
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: isDark
-            ? AppColors.cardDark.withAlpha(150)
-            : AppColors.card.withAlpha(200),
-        border: Border.all(
-          color: isDark ? AppColors.borderDark : AppColors.border,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Timeline indicator
+          SizedBox(
+            width: 60,
+            child: Column(
+              children: [
+                // Top connector line
+                if (!isFirst)
+                  Container(
+                    width: 2,
+                    height: 16,
+                    color: isDark ? AppColors.borderDark : AppColors.border,
+                  ),
+                // Version circle
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: isFirst
+                        ? AppColors.primary.withAlpha(20)
+                        : (isDark ? AppColors.mutedDark : AppColors.muted),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isFirst
+                          ? AppColors.primary
+                          : (isDark ? AppColors.borderDark : AppColors.border),
+                      width: 2,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'v$versionNumber',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: isFirst
+                            ? AppColors.primary
+                            : (isDark
+                                ? AppColors.mutedForegroundDark
+                                : AppColors.mutedForeground),
+                      ),
+                    ),
+                  ),
+                ),
+                // Bottom connector line
+                if (!isLast)
+                  Expanded(
+                    child: Container(
+                      width: 2,
+                      color: isDark ? AppColors.borderDark : AppColors.border,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+
+          // Content card
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
                 color: isDark
-                    ? AppColors.mutedDark.withAlpha(150)
-                    : AppColors.muted.withAlpha(200),
-                borderRadius: BorderRadius.circular(10),
+                    ? AppColors.cardDark.withAlpha(150)
+                    : AppColors.card.withAlpha(200),
+                border: Border.all(
+                  color: isFirst
+                      ? AppColors.primary.withAlpha(100)
+                      : (isDark ? AppColors.borderDark : AppColors.border),
+                ),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                LucideIcons.clipboard,
-                size: 20,
-                color: isDark
-                    ? AppColors.mutedForegroundDark
-                    : AppColors.mutedForeground,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    planName,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: isDark
-                          ? AppColors.foregroundDark
-                          : AppColors.foreground,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header row
+                    Row(
+                      children: [
+                        // Status badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getStatusColor(status).withAlpha(20),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _getStatusIcon(status),
+                                size: 12,
+                                color: _getStatusColor(status),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _getStatusLabel(status),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: _getStatusColor(status),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Spacer(),
+                        // View button
+                        IconButton(
+                          onPressed: () {
+                            HapticUtils.lightImpact();
+                            if (planId != null) {
+                              context.push('/plans/$planId');
+                            }
+                          },
+                          icon: Icon(
+                            LucideIcons.eye,
+                            size: 18,
+                            color: isDark
+                                ? AppColors.mutedForegroundDark
+                                : AppColors.mutedForeground,
+                          ),
+                          tooltip: 'Ver detalhes',
+                          constraints: const BoxConstraints(),
+                          padding: EdgeInsets.zero,
+                        ),
+                      ],
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _formatDateRange(startDate, endDate),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: isDark
-                          ? AppColors.mutedForegroundDark
-                          : AppColors.mutedForeground,
+                    const SizedBox(height: 12),
+
+                    // Plan name
+                    Text(
+                      planName,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: isDark
+                            ? AppColors.foregroundDark
+                            : AppColors.foreground,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+
+                    // Date range
+                    Row(
+                      children: [
+                        Icon(
+                          LucideIcons.calendar,
+                          size: 14,
+                          color: isDark
+                              ? AppColors.mutedForegroundDark
+                              : AppColors.mutedForeground,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _formatDateRange(startDate, endDate),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: isDark
+                                ? AppColors.mutedForegroundDark
+                                : AppColors.mutedForeground,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-            IconButton(
-              onPressed: () {
-                HapticUtils.lightImpact();
-                if (planId != null) {
-                  context.push('/plans/$planId');
-                }
-              },
-              icon: Icon(
-                LucideIcons.eye,
-                size: 18,
-                color: isDark
-                    ? AppColors.mutedForegroundDark
-                    : AppColors.mutedForeground,
-              ),
-              tooltip: 'Ver detalhes',
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return AppColors.success;
+      case 'completed':
+        return AppColors.info;
+      case 'cancelled':
+        return AppColors.destructive;
+      default:
+        return AppColors.mutedForeground;
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return LucideIcons.play;
+      case 'completed':
+        return LucideIcons.checkCircle;
+      case 'cancelled':
+        return LucideIcons.xCircle;
+      default:
+        return LucideIcons.circle;
+    }
+  }
+
+  String _getStatusLabel(String status) {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return 'Ativo';
+      case 'completed':
+        return 'Concluido';
+      case 'cancelled':
+        return 'Cancelado';
+      default:
+        return status;
+    }
   }
 
   String _formatDateRange(String? startDate, String? endDate) {

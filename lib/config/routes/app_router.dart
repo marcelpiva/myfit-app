@@ -69,6 +69,7 @@ import '../../features/students/presentation/pages/student_plan_history_page.dar
 import '../../features/trainer_workout/presentation/pages/trainer_student_progress_page.dart';
 import '../../features/trainer_workout/presentation/pages/trainer_plans_page.dart';
 import '../../features/trainer_workout/presentation/pages/trainer_feedbacks_page.dart';
+import '../../features/broadcast/presentation/pages/broadcast_page.dart';
 import '../../features/schedule/presentation/pages/schedule_page.dart';
 import '../../features/schedule/presentation/pages/student_schedule_page.dart';
 import '../../features/nutrition/presentation/pages/patients_list_page.dart';
@@ -679,6 +680,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           'student-feedbacks',
           TrainerFeedbacksPage(studentId: state.pathParameters['studentId']),
         ),
+      ),
+      GoRoute(
+        path: RouteNames.broadcast,
+        name: 'broadcast',
+        builder: (context, state) => _devLabel('broadcast', const BroadcastPage()),
       ),
 
       // Nutritionist routes

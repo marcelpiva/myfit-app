@@ -29,6 +29,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
   bool _emailNotifications = true;
   bool _workoutReminders = true;
   bool _nutritionReminders = false;
+  bool _gamificationNotifications = true;
+  bool _communicationNotifications = true;
+  TimeOfDay _workoutReminderTime = const TimeOfDay(hour: 8, minute: 0);
   bool _dndEnabled = false;
   TimeOfDay _dndStartTime = const TimeOfDay(hour: 22, minute: 0);
   TimeOfDay _dndEndTime = const TimeOfDay(hour: 7, minute: 0);
@@ -189,8 +192,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                             context,
                             isDark,
                             LucideIcons.utensils,
-                            'Lembretes de Refeição',
-                            'Lembrar das refeições do dia',
+                            'Lembretes de Refeicao',
+                            'Lembrar das refeicoes do dia',
                             _nutritionReminders,
                             (val) {
                               HapticUtils.selectionClick();
@@ -201,8 +204,45 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                           _buildToggleTile(
                             context,
                             isDark,
+                            LucideIcons.trophy,
+                            'Conquistas e Gamificacao',
+                            'Notificar sobre conquistas e streaks',
+                            _gamificationNotifications,
+                            (val) {
+                              HapticUtils.selectionClick();
+                              setState(() => _gamificationNotifications = val);
+                            },
+                          ),
+                          _buildDivider(isDark),
+                          _buildToggleTile(
+                            context,
+                            isDark,
+                            LucideIcons.messageSquare,
+                            'Mensagens e Convites',
+                            'Notificar sobre novas mensagens',
+                            _communicationNotifications,
+                            (val) {
+                              HapticUtils.selectionClick();
+                              setState(() => _communicationNotifications = val);
+                            },
+                          ),
+                          if (_workoutReminders) ...[
+                            _buildDivider(isDark),
+                            _buildTimeTile(
+                              context,
+                              isDark,
+                              LucideIcons.alarmClock,
+                              'Horario do Lembrete',
+                              _formatTimeOfDay(_workoutReminderTime),
+                              () => _selectWorkoutReminderTime(context, isDark),
+                            ),
+                          ],
+                          _buildDivider(isDark),
+                          _buildToggleTile(
+                            context,
+                            isDark,
                             LucideIcons.moonStar,
-                            'Modo Não Perturbe',
+                            'Modo Nao Perturbe',
                             'Silenciar notificações em horários específicos',
                             _dndEnabled,
                             (val) {
@@ -1869,6 +1909,29 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     final hour = time.hour.toString().padLeft(2, '0');
     final minute = time.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
+  }
+
+  Future<void> _selectWorkoutReminderTime(BuildContext context, bool isDark) async {
+    final selectedTime = await showTimePicker(
+      context: context,
+      initialTime: _workoutReminderTime,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: isDark
+                ? const ColorScheme.dark(primary: AppColors.primary)
+                : const ColorScheme.light(primary: AppColors.primary),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (selectedTime != null) {
+      setState(() {
+        _workoutReminderTime = selectedTime;
+      });
+    }
   }
 
   Future<void> _selectDndTime(BuildContext context, bool isDark, bool isStart) async {
