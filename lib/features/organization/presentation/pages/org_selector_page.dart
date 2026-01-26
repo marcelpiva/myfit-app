@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -30,6 +31,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(activeContextProvider.notifier).clearContext();
       ref.invalidate(pendingInvitesForUserProvider);
+      ref.invalidate(trainAloneModeProvider);
     });
   }
 
@@ -240,12 +242,122 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
     }
   }
 
+  void _showRemoveTrainAloneDialog(bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? AppColors.cardDark : AppColors.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.borderDark : AppColors.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.destructive.withAlpha(20),
+              ),
+              child: Icon(
+                LucideIcons.logOut,
+                size: 28,
+                color: AppColors.destructive,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Sair do Treino Solo',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Tem certeza que deseja remover o perfil de treino solo?\n\nVocê pode ativá-lo novamente a qualquer momento.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                height: 1.5,
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Cancelar'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      // Remove train alone preference
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setBool('train_alone_mode', false);
+                      // Refresh the provider
+                      ref.invalidate(trainAloneModeProvider);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Perfil de treino solo removido'),
+                            backgroundColor: AppColors.success,
+                          ),
+                        );
+                      }
+                    },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.destructive,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Remover'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final groupedMemberships = ref.watch(groupedMembershipsProvider);
     final pendingInvitesAsync = ref.watch(pendingInvitesForUserProvider);
+    final trainAloneAsync = ref.watch(trainAloneModeProvider);
+    final isTrainAlone = trainAloneAsync.valueOrNull ?? false;
     final studentMemberships = groupedMemberships['student'] ?? [];
     final trainerMemberships = groupedMemberships['trainer'] ?? [];
     final nutritionistMemberships = groupedMemberships['nutritionist'] ?? [];
@@ -258,7 +370,9 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
     ];
 
     final pendingInvites = pendingInvitesAsync.valueOrNull ?? [];
-    final hasContent = allMemberships.isNotEmpty || pendingInvites.isNotEmpty;
+    // Show content if there are memberships, invites, or train alone mode is active
+    final showTrainAloneCard = isTrainAlone && studentMemberships.isEmpty;
+    final hasContent = allMemberships.isNotEmpty || pendingInvites.isNotEmpty || showTrainAloneCard;
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.backgroundDark : AppColors.background,
@@ -268,7 +382,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
             _buildHeader(context, isDark),
             Expanded(
               child: hasContent
-                  ? _buildContentList(context, isDark, allMemberships, pendingInvites)
+                  ? _buildContentList(context, isDark, allMemberships, pendingInvites, showTrainAloneCard: showTrainAloneCard)
                   : _buildEmptyState(context, isDark),
             ),
           ],
@@ -281,8 +395,12 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
     BuildContext context,
     bool isDark,
     List<OrganizationMembership> memberships,
-    List<PendingInvite> pendingInvites,
-  ) {
+    List<PendingInvite> pendingInvites, {
+    bool showTrainAloneCard = false,
+  }) {
+    // Calculate total profile count including train alone
+    final profileCount = memberships.length + (showTrainAloneCard ? 1 : 0);
+
     return Column(
       children: [
         const SizedBox(height: 24),
@@ -337,8 +455,8 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
           )),
           const SizedBox(height: 20),
         ],
-        // Memberships Section
-        if (memberships.isNotEmpty) ...[
+        // Memberships Section (including train alone card)
+        if (memberships.isNotEmpty || showTrainAloneCard) ...[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
@@ -359,7 +477,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
                     color: AppColors.primary.withAlpha(20),
                   ),
                   child: Text(
-                    '${memberships.length}',
+                    '$profileCount',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -372,18 +490,28 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: ListView.builder(
+            child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: memberships.length,
-              itemBuilder: (context, index) {
-                final membership = memberships[index];
-                return _ProfileCard(
+              children: [
+                // Train alone card (shown first if active)
+                if (showTrainAloneCard)
+                  _TrainAloneCard(
+                    isDark: isDark,
+                    onTap: () {
+                      HapticUtils.mediumImpact();
+                      ref.read(activeContextProvider.notifier).clearContext();
+                      context.go(RouteNames.home);
+                    },
+                    onLeave: () => _showRemoveTrainAloneDialog(isDark),
+                  ),
+                // Regular membership cards
+                ...memberships.map((membership) => _ProfileCard(
                   membership: membership,
                   isDark: isDark,
                   onTap: () => _selectMembership(membership),
                   onLeave: () => _showDeleteProfileDialog(membership),
-                );
-              },
+                )),
+              ],
             ),
           ),
         ] else ...[
@@ -715,6 +843,123 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
   }
 }
 
+/// Card for "Train Alone" mode profile
+class _TrainAloneCard extends StatelessWidget {
+  final bool isDark;
+  final VoidCallback onTap;
+  final VoidCallback onLeave;
+
+  const _TrainAloneCard({
+    required this.isDark,
+    required this.onTap,
+    required this.onLeave,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const color = AppColors.secondary;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: isDark ? AppColors.cardDark : AppColors.card,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? AppColors.borderDark : AppColors.border,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    color: color.withAlpha(20),
+                  ),
+                  child: Icon(
+                    LucideIcons.dumbbell,
+                    size: 24,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Treino Solo',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? AppColors.foregroundDark
+                              : AppColors.foreground,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          color: color.withAlpha(15),
+                        ),
+                        child: Text(
+                          'Treinar por conta própria',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: color,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: onLeave,
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: AppColors.destructive.withAlpha(15),
+                    ),
+                    child: Icon(
+                      LucideIcons.logOut,
+                      size: 18,
+                      color: AppColors.destructive.withAlpha(180),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  LucideIcons.chevronRight,
+                  size: 20,
+                  color: isDark
+                      ? AppColors.mutedForegroundDark
+                      : AppColors.mutedForeground,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ProfileCard extends StatelessWidget {
   final OrganizationMembership membership;
   final bool isDark;
@@ -728,14 +973,35 @@ class _ProfileCard extends StatelessWidget {
     this.onLeave,
   });
 
-  /// Get the label to display for this membership
-  /// - For students: show organization type (Personal Trainer, Academia, etc.)
-  /// - For professionals: show their role (Personal, Coach, etc.)
+  /// Get the title to display for this membership
+  /// - For students: "Treinos com [Org Name]"
+  /// - For professionals: "Meus Alunos"
+  String _getDisplayTitle() {
+    if (membership.role == UserRole.student) {
+      return 'Treinos com ${membership.organization.name}';
+    }
+    return 'Meus Alunos';
+  }
+
+  /// Get the label badge text
+  /// - For students: "Aluno"
+  /// - For professionals: their role (Personal Trainer, Coach, etc.)
   String _getDisplayLabel() {
     if (membership.role == UserRole.student) {
-      return membership.organization.type.displayName;
+      return 'Aluno';
     }
     return membership.role.displayName;
+  }
+
+  /// Get the member count text
+  /// - For students: null (not shown)
+  /// - For professionals: "[N] alunos"
+  String? _getMemberCountText() {
+    if (membership.role == UserRole.student) {
+      return null; // Not relevant for students
+    }
+    final count = membership.organization.memberCount - 1; // Exclude self
+    return count == 1 ? '1 aluno' : '$count alunos';
   }
 
   @override
@@ -782,7 +1048,7 @@ class _ProfileCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        org.name,
+                        _getDisplayTitle(),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -814,24 +1080,26 @@ class _ProfileCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Icon(
-                            LucideIcons.users,
-                            size: 12,
-                            color: isDark
-                                ? AppColors.mutedForegroundDark
-                                : AppColors.mutedForeground,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${org.memberCount}',
-                            style: TextStyle(
-                              fontSize: 12,
+                          if (_getMemberCountText() != null) ...[
+                            const SizedBox(width: 8),
+                            Icon(
+                              LucideIcons.users,
+                              size: 12,
                               color: isDark
                                   ? AppColors.mutedForegroundDark
                                   : AppColors.mutedForeground,
                             ),
-                          ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _getMemberCountText()!,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark
+                                    ? AppColors.mutedForegroundDark
+                                    : AppColors.mutedForeground,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ],

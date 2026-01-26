@@ -194,9 +194,12 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
 
     try {
       final userService = UserService();
+      final currentUser = ref.read(currentUserProvider);
+      final bool completed;
 
       if (_isTrainer) {
         final state = ref.read(trainerOnboardingProvider);
+        completed = !state.skipped;
         // Format CREF: combine number + state (e.g., "012345-G/SP")
         String? cref;
         if (state.crefNumber != null && state.crefState != null) {
@@ -207,10 +210,11 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
           specialties: state.specialties,
           yearsOfExperience: state.yearsOfExperience,
           bio: state.bio,
-          onboardingCompleted: !state.skipped,
+          onboardingCompleted: completed,
         );
       } else {
         final state = ref.read(studentOnboardingProvider);
+        completed = !state.skipped;
         debugPrint('Saving student onboarding data:');
         debugPrint('  fitnessGoal: ${state.fitnessGoal?.name}');
         debugPrint('  experienceLevel: ${state.experienceLevel?.name}');
@@ -229,9 +233,18 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
           weeklyFrequency: state.weeklyFrequency,
           injuries: state.injuries,
           injuriesOther: state.otherInjuries,
-          onboardingCompleted: !state.skipped,
+          onboardingCompleted: completed,
         );
       }
+
+      // Update local user state with onboardingCompleted flag
+      if (currentUser != null) {
+        ref.read(currentUserProvider.notifier).state = currentUser.copyWith(
+          onboardingCompleted: completed,
+        );
+        debugPrint('Updated currentUserProvider with onboardingCompleted: $completed');
+      }
+
       return true;
     } catch (e) {
       debugPrint('Error saving onboarding data: $e');

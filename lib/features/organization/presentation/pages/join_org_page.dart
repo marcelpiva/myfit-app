@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/utils/haptic_utils.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
+import '../../../../core/providers/context_provider.dart';
 
 class JoinOrgPage extends ConsumerStatefulWidget {
   const JoinOrgPage({super.key});
@@ -98,6 +100,10 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final hasStudentProfile = ref.watch(hasStudentRoleProvider);
+    final isTrainAlone = ref.watch(trainAloneModeProvider).valueOrNull ?? false;
+    // Hide train alone option if user already has a student profile OR is already in train alone mode
+    final showTrainAloneOption = !hasStudentProfile && !isTrainAlone;
 
     return Scaffold(
       body: Container(
@@ -120,28 +126,28 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
                         // Illustration/Icon
                         Center(
                           child: Container(
-                            width: 120,
-                            height: 120,
+                            width: 100,
+                            height: 100,
                             decoration: BoxDecoration(
                               color: AppColors.primary.withAlpha(25),
                               borderRadius: BorderRadius.circular(8),
                             ),
                           child: Icon(
                             LucideIcons.userPlus,
-                            size: 48,
+                            size: 40,
                             color: AppColors.primary,
                           ),
                         ),
                       ),
 
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 24),
 
                       // Title and description
                       Center(
                         child: Text(
-                          'Entrar com Código',
+                          'Como você quer treinar?',
                           style: TextStyle(
-                            fontSize: 24,
+                            fontSize: 22,
                             fontWeight: FontWeight.w700,
                             color: isDark ? AppColors.foregroundDark : AppColors.foreground,
                           ),
@@ -150,7 +156,7 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
                       const SizedBox(height: 8),
                       Center(
                         child: Text(
-                          'Digite o código de convite fornecido pelo administrador da organização',
+                          'Escolha como deseja começar sua jornada fitness',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14,
@@ -159,9 +165,43 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
                         ),
                       ),
 
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 24),
 
-                      // Code input
+                      // Train alone option - Only show if user has no student profile AND is not already in train alone mode
+                      if (showTrainAloneOption) ...[
+                        _buildTrainAloneOption(isDark),
+                        const SizedBox(height: 16),
+
+                        // Divider with "ou"
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                color: isDark ? AppColors.borderDark : AppColors.border,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Text(
+                                'ou',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Divider(
+                                color: isDark ? AppColors.borderDark : AppColors.border,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+                      ],
+
+                      // Code input section
                       Text(
                         'Código de Convite',
                         style: TextStyle(
@@ -170,7 +210,15 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
                           color: isDark ? AppColors.foregroundDark : AppColors.foreground,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Digite o código fornecido pelo seu personal ou academia',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
@@ -274,6 +322,20 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
                         ),
                       ],
 
+                      const SizedBox(height: 16),
+
+                      // QR Code option
+                      Center(
+                        child: TextButton.icon(
+                          onPressed: () {
+                            HapticUtils.lightImpact();
+                            context.push('/qr-scanner');
+                          },
+                          icon: Icon(LucideIcons.scanLine, size: 18),
+                          label: const Text('Escanear QR Code'),
+                        ),
+                      ),
+
                       const SizedBox(height: 24),
 
                       // Info box
@@ -314,20 +376,6 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
                             _buildInfoItem(isDark, '2', 'Sua solicitação será enviada ao administrador'),
                             _buildInfoItem(isDark, '3', 'Aguarde a aprovação para acessar'),
                           ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // QR Code option
-                      Center(
-                        child: TextButton.icon(
-                          onPressed: () {
-                            HapticUtils.lightImpact();
-                            context.push('/qr-scanner');
-                          },
-                          icon: Icon(LucideIcons.scanLine, size: 18),
-                          label: const Text('Escanear QR Code'),
                         ),
                       ),
                     ],
@@ -425,6 +473,180 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTrainAloneOption(bool isDark) {
+    return GestureDetector(
+      onTap: () {
+        HapticUtils.lightImpact();
+        _showTrainAloneConfirmation(isDark);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark
+              ? AppColors.cardDark.withAlpha(100)
+              : AppColors.card.withAlpha(150),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.border,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withAlpha(25),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                LucideIcons.dumbbell,
+                size: 24,
+                color: AppColors.secondary,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Treinar por conta própria',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Crie seus próprios treinos sem personal',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              LucideIcons.chevronRight,
+              size: 20,
+              color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTrainAloneConfirmation(bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : AppColors.card,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.borderDark : AppColors.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withAlpha(25),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(
+                LucideIcons.dumbbell,
+                size: 36,
+                color: AppColors.secondary,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Treinar sozinho',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Você poderá criar seus próprios treinos e acompanhar seu progresso. A qualquer momento você pode adicionar um personal digitando o código de convite.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  HapticUtils.mediumImpact();
+                  Navigator.pop(sheetContext);
+
+                  // Save train alone preference
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool('train_alone_mode', true);
+
+                  // Clear any active organization context
+                  ref.read(activeContextProvider.notifier).clearContext();
+
+                  // Invalidate train alone provider so org selector picks up the change
+                  ref.invalidate(trainAloneModeProvider);
+
+                  // Navigate to student home
+                  if (mounted) {
+                    context.go(RouteNames.home);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.secondary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text(
+                  'Começar a treinar',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => Navigator.pop(sheetContext),
+              child: Text(
+                'Cancelar',
+                style: TextStyle(
+                  color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                ),
+              ),
+            ),
+            SizedBox(height: MediaQuery.of(sheetContext).padding.bottom),
+          ],
+        ),
       ),
     );
   }

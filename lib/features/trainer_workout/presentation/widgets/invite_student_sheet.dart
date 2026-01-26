@@ -360,7 +360,9 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
                   label: 'WhatsApp',
                   color: const Color(0xFF25D366),
                   onTap: () {
-                    Navigator.pop(ctx);
+                    Navigator.pop(ctx); // Close share options dialog
+                    Navigator.pop(context); // Close invite sheet
+                    widget.onSuccess?.call();
                     _shareViaWhatsApp(token);
                   },
                 ),
@@ -369,7 +371,9 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
                   label: 'Copiar',
                   color: AppColors.primary,
                   onTap: () {
-                    Navigator.pop(ctx);
+                    Navigator.pop(ctx); // Close share options dialog
+                    Navigator.pop(context); // Close invite sheet
+                    widget.onSuccess?.call();
                     _copyLink(token);
                   },
                 ),
@@ -378,7 +382,9 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
                   label: 'QR Code',
                   color: AppColors.secondary,
                   onTap: () {
-                    Navigator.pop(ctx);
+                    Navigator.pop(ctx); // Close share options dialog
+                    Navigator.pop(context); // Close invite sheet
+                    widget.onSuccess?.call();
                     _showQRCode(token);
                   },
                 ),
@@ -387,7 +393,9 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
                   label: 'Outros',
                   color: AppColors.mutedForeground,
                   onTap: () {
-                    Navigator.pop(ctx);
+                    Navigator.pop(ctx); // Close share options dialog
+                    Navigator.pop(context); // Close invite sheet
+                    widget.onSuccess?.call();
                     _shareLink(token);
                   },
                 ),

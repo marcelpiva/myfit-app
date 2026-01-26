@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../domain/entities/entities.dart';
 import '../network/api_client.dart';
@@ -11,6 +12,12 @@ import '../../features/trainer_workout/presentation/providers/trainer_students_p
 /// Provider for MembershipService
 final membershipServiceProvider = Provider<MembershipService>((ref) {
   return MembershipService();
+});
+
+/// Provider for train alone mode preference
+final trainAloneModeProvider = FutureProvider<bool>((ref) async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getBool('train_alone_mode') ?? false;
 });
 
 /// Provider for all user memberships (async from API)

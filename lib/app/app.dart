@@ -7,6 +7,7 @@ import '../config/routes/app_router.dart';
 import '../config/theme/app_theme.dart';
 import '../core/cache/cache.dart';
 import '../core/providers/context_provider.dart';
+import '../features/auth/presentation/providers/auth_provider.dart';
 
 /// Theme mode provider
 final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);
@@ -32,6 +33,10 @@ class _MyFitAppState extends ConsumerState<MyFitApp> with WidgetsBindingObserver
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Check if user is already authenticated (restore session from stored tokens)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(authProvider.notifier).checkAuthStatus();
+    });
   }
 
   @override

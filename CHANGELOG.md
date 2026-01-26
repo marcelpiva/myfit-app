@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.1] - 2026-01-26
+
+### Fixed
+- **Invite Student Sheet Not Closing** - Sheet now closes after sharing invite
+  - All share options (WhatsApp, Copy, QR Code, Others) now close both dialogs
+  - onSuccess callback triggered to refresh invite list
+
+- **Organization Selector Labels** - Activity-focused labeling for clarity
+  - Students: "Treinos com [Org Name]" + "Aluno" badge (no member count)
+  - Trainers: "Meus Alunos" + role badge + "[N] alunos" count
+
+- **Train Alone Mode Improvements**
+  - "Treinar por conta própria" hidden when user already has student profile or is in train alone mode
+  - "Adicionar perfil Aluno" hidden in Settings when in train alone mode
+  - "Meus Objetivos" now shows in Settings for train alone users (student context)
+  - Train alone card appears in organization selector when active
+
+- **Auth Session Persistence** - Session restored on app startup
+  - Added `checkAuthStatus()` call in app.dart initState
+  - Users no longer prompted repeatedly after Google login
+
+### Changed
+- `trainAloneModeProvider` moved to context_provider.dart for shared access
+- Organization selector profile cards now show activity-focused titles
+
 ## [1.12.0] - 2026-01-26
 
 ### Added
