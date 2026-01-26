@@ -1211,6 +1211,7 @@ class _ActiveWorkoutPageState extends ConsumerState<ActiveWorkoutPage> {
             },
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.destructive,
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             child: const Text('Sair'),

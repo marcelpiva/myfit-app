@@ -163,6 +163,7 @@ class _NotesContentState extends State<_NotesContent> {
             },
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.destructive,
+              foregroundColor: Colors.white,
             ),
             child: const Text('Excluir'),
           ),

@@ -3390,7 +3390,10 @@ class _MilestonesTab extends ConsumerWidget {
               ref.read(milestoneProvider.notifier).deleteMilestone(milestone.id);
               Navigator.pop(ctx);
             },
-            style: FilledButton.styleFrom(backgroundColor: AppColors.destructive),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.destructive,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Excluir'),
           ),
         ],

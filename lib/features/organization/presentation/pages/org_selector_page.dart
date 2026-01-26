@@ -183,6 +183,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
                           },
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.destructive,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -333,6 +334,7 @@ class _OrgSelectorPageState extends ConsumerState<OrgSelectorPage> {
                     },
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.destructive,
+                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

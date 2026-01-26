@@ -967,6 +967,7 @@ class StudentPlansTab extends ConsumerWidget {
             },
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.destructive,
+              foregroundColor: Colors.white,
             ),
             child: const Text('Cancelar atribuição'),
           ),
