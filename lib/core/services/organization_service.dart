@@ -264,16 +264,23 @@ class OrganizationService {
   }
 
   /// Send invite
+  /// [expirationDays] - Number of days until the invite expires (0 = never expires)
   Future<Map<String, dynamic>> sendInvite(
     String orgId, {
     required String email,
     required String role,
+    int? expirationDays,
   }) async {
     try {
       final data = <String, dynamic>{
         'email': email,
         'role': role,
       };
+      if (expirationDays != null && expirationDays > 0) {
+        data['expiration_days'] = expirationDays;
+      } else if (expirationDays == 0) {
+        data['never_expires'] = true;
+      }
 
       final response = await _client.post(
         ApiEndpoints.organizationInvite(orgId),

@@ -112,6 +112,23 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
           onNext: () => notifier.nextStep(),
           onSkip: _skip,
         );
+      case TrainerOnboardingStep.professionalProfile:
+        return _TrainerProfessionalProfileStep(
+          state: state,
+          onNext: (crefNumber, crefState, specialties, yearsExp, bio) {
+            if (crefNumber != null && crefState != null) {
+              notifier.setCrefData(crefNumber: crefNumber, crefState: crefState);
+            }
+            notifier.setProfileData(
+              specialties: specialties,
+              yearsOfExperience: yearsExp,
+              bio: bio,
+            );
+            notifier.nextStep();
+          },
+          onBack: () => notifier.previousStep(),
+          onSkip: _skip,
+        );
       case TrainerOnboardingStep.inviteStudent:
         return _TrainerInviteStep(
           onNext: () => notifier.nextStep(),
@@ -360,6 +377,365 @@ class _TrainerWelcomeStep extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _TrainerProfessionalProfileStep extends StatefulWidget {
+  final TrainerOnboardingState state;
+  final Function(String?, BrazilState?, List<String>, int?, String?) onNext;
+  final VoidCallback onBack;
+  final VoidCallback onSkip;
+
+  const _TrainerProfessionalProfileStep({
+    required this.state,
+    required this.onNext,
+    required this.onBack,
+    required this.onSkip,
+  });
+
+  @override
+  State<_TrainerProfessionalProfileStep> createState() =>
+      _TrainerProfessionalProfileStepState();
+}
+
+class _TrainerProfessionalProfileStepState
+    extends State<_TrainerProfessionalProfileStep> {
+  final _crefController = TextEditingController();
+  final _bioController = TextEditingController();
+  BrazilState? _selectedState;
+  int _yearsOfExperience = 5;
+  final Set<String> _selectedSpecialties = {};
+
+  static const _specialties = [
+    'Musculacao',
+    'Funcional',
+    'HIIT',
+    'Crossfit',
+    'Pilates',
+    'Yoga',
+    'Corrida',
+    'Natacao',
+    'Artes Marciais',
+    'Reabilitacao',
+    'Esportes',
+    'Idosos',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _crefController.text = widget.state.crefNumber ?? '';
+    _bioController.text = widget.state.bio ?? '';
+    _selectedState = widget.state.crefState;
+    _yearsOfExperience = widget.state.yearsOfExperience ?? 5;
+    _selectedSpecialties.addAll(widget.state.specialties);
+  }
+
+  @override
+  void dispose() {
+    _crefController.dispose();
+    _bioController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return _OnboardingStepScaffold(
+      progress: 1 / 5,
+      onSkip: widget.onSkip,
+      onBack: widget.onBack,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Perfil Profissional',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Suas credenciais ajudam a construir confianca com seus alunos.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // CREF Section
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.cardDark : AppColors.card,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDark ? AppColors.borderDark : AppColors.border,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        LucideIcons.badgeCheck,
+                        size: 20,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Registro CREF',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.info.withAlpha(20),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          'Opcional',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.info,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      // CREF Number
+                      Expanded(
+                        flex: 2,
+                        child: TextField(
+                          controller: _crefController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Numero CREF',
+                            hintText: '012345',
+                            filled: true,
+                            fillColor: isDark ? AppColors.mutedDark : AppColors.muted,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // State dropdown
+                      Expanded(
+                        child: DropdownButtonFormField<BrazilState>(
+                          value: _selectedState,
+                          decoration: InputDecoration(
+                            labelText: 'UF',
+                            filled: true,
+                            fillColor: isDark ? AppColors.mutedDark : AppColors.muted,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                          items: BrazilState.values.map((state) {
+                            return DropdownMenuItem(
+                              value: state,
+                              child: Text(state.name),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() => _selectedState = value);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Specialties
+            Text(
+              'Especialidades',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _specialties.map((specialty) {
+                final isSelected = _selectedSpecialties.contains(specialty);
+                return GestureDetector(
+                  onTap: () {
+                    HapticUtils.selectionClick();
+                    setState(() {
+                      if (isSelected) {
+                        _selectedSpecialties.remove(specialty);
+                      } else {
+                        _selectedSpecialties.add(specialty);
+                      }
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.primary.withAlpha(20)
+                          : (isDark ? AppColors.cardDark : AppColors.card),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isSelected
+                            ? AppColors.primary
+                            : (isDark ? AppColors.borderDark : AppColors.border),
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Text(
+                      specialty,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        color: isSelected
+                            ? AppColors.primary
+                            : (isDark
+                                ? AppColors.foregroundDark
+                                : AppColors.foreground),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Years of experience
+            Text(
+              'Anos de experiencia: $_yearsOfExperience',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                activeTrackColor: AppColors.primary,
+                inactiveTrackColor: isDark ? AppColors.mutedDark : AppColors.muted,
+                thumbColor: AppColors.primary,
+                overlayColor: AppColors.primary.withAlpha(30),
+              ),
+              child: Slider(
+                value: _yearsOfExperience.toDouble(),
+                min: 1,
+                max: 30,
+                divisions: 29,
+                label: '$_yearsOfExperience anos',
+                onChanged: (value) {
+                  HapticUtils.selectionClick();
+                  setState(() => _yearsOfExperience = value.toInt());
+                },
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Bio
+            Text(
+              'Sobre voce',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _bioController,
+              maxLines: 3,
+              maxLength: 300,
+              decoration: InputDecoration(
+                hintText: 'Conte um pouco sobre sua experiencia e metodologia...',
+                filled: true,
+                fillColor: isDark ? AppColors.cardDark : AppColors.card,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: isDark ? AppColors.borderDark : AppColors.border,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: isDark ? AppColors.borderDark : AppColors.border,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.primary, width: 2),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 32),
+
+            // Continue button
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () {
+                  final cref = _crefController.text.trim();
+                  widget.onNext(
+                    cref.isNotEmpty ? cref : null,
+                    _selectedState,
+                    _selectedSpecialties.toList(),
+                    _yearsOfExperience,
+                    _bioController.text.trim().isNotEmpty
+                        ? _bioController.text.trim()
+                        : null,
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Continuar',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

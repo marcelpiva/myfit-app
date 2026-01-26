@@ -76,6 +76,14 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   bool _isLoading = false;
+  int _expirationDays = 7; // Default: 7 days
+
+  static const _expirationOptions = [
+    (7, '7 dias'),
+    (14, '14 dias'),
+    (30, '30 dias'),
+    (0, 'Sem expiracao'),
+  ];
 
   @override
   void dispose() {
@@ -510,12 +518,13 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
 
     // Send invite via API
     try {
-      debugPrint('🔵 Sending invite to: $email for org: ${widget.orgId}');
+      debugPrint('🔵 Sending invite to: $email for org: ${widget.orgId} with expiration: $_expirationDays days');
       final orgService = OrganizationService();
       final result = await orgService.sendInvite(
         widget.orgId,
         email: email,
         role: 'student',
+        expirationDays: _expirationDays,
       );
       debugPrint('🟢 Invite sent successfully');
 
@@ -766,6 +775,64 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
               style: TextStyle(
                 color: isDark ? AppColors.foregroundDark : AppColors.foreground,
               ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Expiration dropdown
+          Text(
+            'Validade do convite',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: isDark
+                  ? AppColors.mutedDark.withAlpha(100)
+                  : AppColors.muted.withAlpha(100),
+              border: Border.all(
+                color: isDark ? AppColors.borderDark : AppColors.border,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: DropdownButtonFormField<int>(
+              value: _expirationDays,
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+              ),
+              dropdownColor: isDark ? AppColors.cardDark : AppColors.card,
+              style: TextStyle(
+                color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                fontSize: 14,
+              ),
+              icon: Icon(
+                LucideIcons.chevronDown,
+                size: 18,
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+              items: _expirationOptions.map((option) {
+                final (days, label) = option;
+                return DropdownMenuItem<int>(
+                  value: days,
+                  child: Text(label),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => _expirationDays = value);
+                }
+              },
             ),
           ),
 

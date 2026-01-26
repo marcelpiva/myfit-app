@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Onboarding step types for trainers
 enum TrainerOnboardingStep {
   welcome,
+  professionalProfile, // CREF and professional info
   inviteStudent,
   createPlan,
   exploreTemplates,
@@ -38,6 +39,12 @@ enum ExperienceLevel {
   advanced,
 }
 
+/// Brazilian states for CREF registration
+enum BrazilState {
+  AC, AL, AP, AM, BA, CE, DF, ES, GO, MA, MT, MS, MG, PA,
+  PB, PR, PE, PI, RJ, RN, RS, RO, RR, SC, SP, SE, TO,
+}
+
 /// State for trainer onboarding
 @immutable
 class TrainerOnboardingState {
@@ -46,6 +53,12 @@ class TrainerOnboardingState {
   final bool hasCreatedPlan;
   final bool hasExploredTemplates;
   final bool skipped;
+  // Professional profile fields
+  final String? crefNumber;
+  final BrazilState? crefState;
+  final List<String> specialties;
+  final int? yearsOfExperience;
+  final String? bio;
 
   const TrainerOnboardingState({
     this.currentStep = TrainerOnboardingStep.welcome,
@@ -53,6 +66,11 @@ class TrainerOnboardingState {
     this.hasCreatedPlan = false,
     this.hasExploredTemplates = false,
     this.skipped = false,
+    this.crefNumber,
+    this.crefState,
+    this.specialties = const [],
+    this.yearsOfExperience,
+    this.bio,
   });
 
   TrainerOnboardingState copyWith({
@@ -61,6 +79,11 @@ class TrainerOnboardingState {
     bool? hasCreatedPlan,
     bool? hasExploredTemplates,
     bool? skipped,
+    String? crefNumber,
+    BrazilState? crefState,
+    List<String>? specialties,
+    int? yearsOfExperience,
+    String? bio,
   }) {
     return TrainerOnboardingState(
       currentStep: currentStep ?? this.currentStep,
@@ -68,12 +91,37 @@ class TrainerOnboardingState {
       hasCreatedPlan: hasCreatedPlan ?? this.hasCreatedPlan,
       hasExploredTemplates: hasExploredTemplates ?? this.hasExploredTemplates,
       skipped: skipped ?? this.skipped,
+      crefNumber: crefNumber ?? this.crefNumber,
+      crefState: crefState ?? this.crefState,
+      specialties: specialties ?? this.specialties,
+      yearsOfExperience: yearsOfExperience ?? this.yearsOfExperience,
+      bio: bio ?? this.bio,
     );
   }
 
   int get stepIndex => currentStep.index;
   int get totalSteps => TrainerOnboardingStep.values.length - 1; // Exclude complete
   double get progress => stepIndex / totalSteps;
+
+  /// Check if CREF is filled
+  bool get hasCref => crefNumber != null && crefNumber!.isNotEmpty && crefState != null;
+
+  /// Get formatted CREF string (e.g., "CREF 012345-G/SP")
+  String? get formattedCref {
+    if (!hasCref) return null;
+    return 'CREF $crefNumber-G/${crefState!.name}';
+  }
+
+  Map<String, dynamic> toProfileData() {
+    return {
+      'cref_number': crefNumber,
+      'cref_state': crefState?.name,
+      'specialties': specialties,
+      'years_of_experience': yearsOfExperience,
+      'bio': bio,
+      'onboarding_completed': !skipped,
+    };
+  }
 }
 
 /// State for student onboarding
@@ -189,6 +237,28 @@ class TrainerOnboardingNotifier extends StateNotifier<TrainerOnboardingState> {
 
   void markTemplatesExplored() {
     state = state.copyWith(hasExploredTemplates: true);
+  }
+
+  void setCrefData({
+    required String crefNumber,
+    required BrazilState crefState,
+  }) {
+    state = state.copyWith(
+      crefNumber: crefNumber,
+      crefState: crefState,
+    );
+  }
+
+  void setProfileData({
+    List<String>? specialties,
+    int? yearsOfExperience,
+    String? bio,
+  }) {
+    state = state.copyWith(
+      specialties: specialties,
+      yearsOfExperience: yearsOfExperience,
+      bio: bio,
+    );
   }
 
   void skip() {

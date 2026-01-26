@@ -8,6 +8,7 @@ import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
 import '../../../../shared/presentation/components/components.dart';
+import '../../../../shared/presentation/widgets/verified_badge.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
@@ -46,8 +47,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final currentUser = ref.watch(currentUserProvider);
-    final userName = currentUser?.name ?? 'Usuário';
+    final userName = currentUser?.name ?? 'Usuario';
     final userEmail = currentUser?.email ?? '';
+    final isTrainer = currentUser?.userType == 'trainer';
+    final hasCref = currentUser?.cref != null && currentUser!.cref!.isNotEmpty;
+    final crefVerified = currentUser?.crefVerified ?? false;
 
     return Scaffold(
       body: Container(
@@ -201,6 +205,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                                 : AppColors.mutedForeground,
                           ),
                         ),
+
+                        // CREF Badge for trainers
+                        if (isTrainer && hasCref) ...[
+                          const SizedBox(height: 12),
+                          VerifiedBadge(
+                            crefNumber: currentUser!.cref,
+                            isVerified: crefVerified,
+                            size: 'medium',
+                          ),
+                        ],
 
                         const SizedBox(height: 8),
 
