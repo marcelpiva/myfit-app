@@ -132,12 +132,16 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
         // Load physical data
         final weight = profile['weight_kg'] as num?;
         final height = profile['height_cm'] as num?;
-        final age = profile['age'] as int?;
-        if (weight != null || height != null || age != null) {
+        final birthDateStr = profile['birth_date'] as String?;
+        DateTime? birthDate;
+        if (birthDateStr != null) {
+          birthDate = DateTime.tryParse(birthDateStr);
+        }
+        if (weight != null || height != null || birthDate != null) {
           notifier.setPhysicalData(
             weight: weight?.toDouble(),
             height: height?.toDouble(),
-            age: age,
+            birthDate: birthDate,
           );
         }
 
@@ -452,9 +456,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
         return StudentPhysicalDataStep(
           initialWeight: state.weight,
           initialHeight: state.height,
-          initialAge: state.age,
-          onContinue: (weight, height, age) {
-            notifier.setPhysicalData(weight: weight, height: height, age: age);
+          initialBirthDate: state.birthDate,
+          onContinue: (weight, height, birthDate) {
+            notifier.setPhysicalData(weight: weight, height: height, birthDate: birthDate);
             notifier.nextStep();
           },
           onBack: () => notifier.previousStep(),

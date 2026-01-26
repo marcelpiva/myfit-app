@@ -264,7 +264,7 @@ class StudentOnboardingState {
   final ExperienceLevel? experienceLevel;
   final double? weight; // kg
   final double? height; // cm
-  final int? age;
+  final DateTime? birthDate;
   final int? weeklyFrequency;
   final List<String> injuries;
   final String? otherInjuries;
@@ -277,12 +277,24 @@ class StudentOnboardingState {
     this.experienceLevel,
     this.weight,
     this.height,
-    this.age,
+    this.birthDate,
     this.weeklyFrequency,
     this.injuries = const [],
     this.otherInjuries,
     this.skipped = false,
   });
+
+  /// Calculate age from birth date
+  int? get age {
+    if (birthDate == null) return null;
+    final now = DateTime.now();
+    int years = now.year - birthDate!.year;
+    if (now.month < birthDate!.month ||
+        (now.month == birthDate!.month && now.day < birthDate!.day)) {
+      years--;
+    }
+    return years;
+  }
 
   StudentOnboardingState copyWith({
     StudentOnboardingStep? currentStep,
@@ -291,7 +303,7 @@ class StudentOnboardingState {
     ExperienceLevel? experienceLevel,
     double? weight,
     double? height,
-    int? age,
+    DateTime? birthDate,
     int? weeklyFrequency,
     List<String>? injuries,
     String? otherInjuries,
@@ -304,7 +316,7 @@ class StudentOnboardingState {
       experienceLevel: experienceLevel ?? this.experienceLevel,
       weight: weight ?? this.weight,
       height: height ?? this.height,
-      age: age ?? this.age,
+      birthDate: birthDate ?? this.birthDate,
       weeklyFrequency: weeklyFrequency ?? this.weeklyFrequency,
       injuries: injuries ?? this.injuries,
       otherInjuries: otherInjuries ?? this.otherInjuries,
@@ -323,7 +335,8 @@ class StudentOnboardingState {
       'experience_level': experienceLevel?.name,
       'weight': weight,
       'height': height,
-      'age': age,
+      'birth_date': birthDate?.toIso8601String(),
+      'age': age, // Calculated from birthDate
       'weekly_frequency': weeklyFrequency,
       'injuries': injuries,
       'injuries_other': otherInjuries,
@@ -632,11 +645,11 @@ class StudentOnboardingNotifier extends StateNotifier<StudentOnboardingState> {
     state = state.copyWith(experienceLevel: level);
   }
 
-  void setPhysicalData({double? weight, double? height, int? age}) {
+  void setPhysicalData({double? weight, double? height, DateTime? birthDate}) {
     state = state.copyWith(
       weight: weight,
       height: height,
-      age: age,
+      birthDate: birthDate,
     );
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../../config/theme/app_colors.dart';
@@ -10,17 +11,17 @@ import '../../widgets/animated_progress_bar.dart';
 class StudentPhysicalDataStep extends StatefulWidget {
   final double? initialWeight;
   final double? initialHeight;
-  final int? initialAge;
+  final DateTime? initialBirthDate;
   final VoidCallback onBack;
   final VoidCallback onSkip;
-  final Function(double?, double?, int?) onContinue;
+  final Function(double?, double?, DateTime?) onContinue;
   final double progress;
 
   const StudentPhysicalDataStep({
     super.key,
     this.initialWeight,
     this.initialHeight,
-    this.initialAge,
+    this.initialBirthDate,
     required this.onBack,
     required this.onSkip,
     required this.onContinue,
@@ -34,7 +35,7 @@ class StudentPhysicalDataStep extends StatefulWidget {
 class _StudentPhysicalDataStepState extends State<StudentPhysicalDataStep> {
   late TextEditingController _weightController;
   late TextEditingController _heightController;
-  late TextEditingController _ageController;
+  DateTime? _selectedBirthDate;
 
   @override
   void initState() {
@@ -45,17 +46,68 @@ class _StudentPhysicalDataStepState extends State<StudentPhysicalDataStep> {
     _heightController = TextEditingController(
       text: widget.initialHeight?.toStringAsFixed(0) ?? '',
     );
-    _ageController = TextEditingController(
-      text: widget.initialAge?.toString() ?? '',
-    );
+    _selectedBirthDate = widget.initialBirthDate;
   }
 
   @override
   void dispose() {
     _weightController.dispose();
     _heightController.dispose();
-    _ageController.dispose();
     super.dispose();
+  }
+
+  int? _calculateAge() {
+    if (_selectedBirthDate == null) return null;
+    final now = DateTime.now();
+    int years = now.year - _selectedBirthDate!.year;
+    if (now.month < _selectedBirthDate!.month ||
+        (now.month == _selectedBirthDate!.month && now.day < _selectedBirthDate!.day)) {
+      years--;
+    }
+    return years;
+  }
+
+  Future<void> _selectBirthDate(BuildContext context, bool isDark) async {
+    HapticUtils.selectionClick();
+
+    final now = DateTime.now();
+    final minDate = DateTime(now.year - 100, 1, 1);
+    final maxDate = DateTime(now.year - 10, 12, 31); // Minimum 10 years old
+
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedBirthDate ?? DateTime(now.year - 25, 1, 1),
+      firstDate: minDate,
+      lastDate: maxDate,
+      locale: const Locale('pt', 'BR'),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: isDark
+                ? ColorScheme.dark(
+                    primary: AppColors.primary,
+                    onPrimary: Colors.white,
+                    surface: AppColors.cardDark,
+                    onSurface: AppColors.foregroundDark,
+                  )
+                : ColorScheme.light(
+                    primary: AppColors.primary,
+                    onPrimary: Colors.white,
+                    surface: AppColors.card,
+                    onSurface: AppColors.foreground,
+                  ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      HapticUtils.lightImpact();
+      setState(() {
+        _selectedBirthDate = picked;
+      });
+    }
   }
 
   @override
@@ -151,19 +203,8 @@ class _StudentPhysicalDataStepState extends State<StudentPhysicalDataStep> {
                         isDark: isDark,
                       ),
                       const SizedBox(height: 16),
-                      // Age
-                      _buildInputCard(
-                        icon: LucideIcons.calendar,
-                        title: 'Idade',
-                        suffix: 'anos',
-                        controller: _ageController,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(3),
-                        ],
-                        isDark: isDark,
-                      ),
+                      // Birth Date
+                      _buildBirthDateCard(isDark),
                       const SizedBox(height: 24),
                       // Privacy note
                       Container(
@@ -351,6 +392,98 @@ class _StudentPhysicalDataStepState extends State<StudentPhysicalDataStep> {
     );
   }
 
+  Widget _buildBirthDateCard(bool isDark) {
+    final age = _calculateAge();
+    final dateFormat = DateFormat('dd/MM/yyyy');
+
+    return GestureDetector(
+      onTap: () => _selectBirthDate(context, isDark),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : AppColors.card,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? AppColors.borderDark : AppColors.border,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.warning.withAlpha(isDark ? 30 : 20),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                LucideIcons.calendar,
+                size: 24,
+                color: AppColors.warning,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Data de Nascimento',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark
+                          ? AppColors.mutedForegroundDark
+                          : AppColors.mutedForeground,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _selectedBirthDate != null
+                        ? dateFormat.format(_selectedBirthDate!)
+                        : 'Toque para selecionar',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: _selectedBirthDate != null
+                          ? (isDark ? AppColors.foregroundDark : AppColors.foreground)
+                          : (isDark
+                              ? AppColors.mutedForegroundDark.withAlpha(100)
+                              : AppColors.mutedForeground.withAlpha(100)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (age != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withAlpha(isDark ? 30 : 20),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '$age anos',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                ),
+              )
+            else
+              Icon(
+                LucideIcons.chevronRight,
+                size: 20,
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildBottomActions(BuildContext context, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -375,8 +508,7 @@ class _StudentPhysicalDataStepState extends State<StudentPhysicalDataStep> {
                 HapticUtils.mediumImpact();
                 final weight = double.tryParse(_weightController.text);
                 final height = double.tryParse(_heightController.text);
-                final age = int.tryParse(_ageController.text);
-                widget.onContinue(weight, height, age);
+                widget.onContinue(weight, height, _selectedBirthDate);
               },
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.primary,
