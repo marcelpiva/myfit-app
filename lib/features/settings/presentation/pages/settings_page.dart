@@ -713,16 +713,37 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             _buildProfileTile(
               context,
               isDark,
-              isTrainer ? LucideIcons.clipboardList : LucideIcons.target,
-              isTrainer ? 'Dados Profissionais' : 'Meus Objetivos',
-              isTrainer ? 'CREF, especialidades' : 'Objetivo, experiência, dados físicos',
+              LucideIcons.target,
+              'Meus Objetivos',
+              'Objetivo, experiência, dados físicos',
               () {
                 HapticUtils.lightImpact();
-                // Navigate to onboarding in edit mode
                 context.push(
                   RouteNames.onboarding,
                   extra: {
-                    'userType': isTrainer ? 'personal' : 'student',
+                    'userType': 'student',
+                    'editMode': true,
+                    'skipOrgCreation': true,
+                  },
+                );
+              },
+            ),
+            Container(
+              height: 1,
+              color: isDark ? AppColors.borderDark : AppColors.border,
+            ),
+            _buildProfileTile(
+              context,
+              isDark,
+              LucideIcons.clipboardList,
+              'Dados Profissionais',
+              'CREF, especialidades',
+              () {
+                HapticUtils.lightImpact();
+                context.push(
+                  RouteNames.onboarding,
+                  extra: {
+                    'userType': 'personal',
                     'editMode': true,
                     'skipOrgCreation': true,
                   },
