@@ -179,8 +179,17 @@ class _LoginPageState extends ConsumerState<LoginPage>
       setState(() => _loading = false);
 
       if (success) {
+        final authState = ref.read(authProvider);
         ref.invalidate(membershipsProvider);
-        context.go(RouteNames.orgSelector);
+        // New users from social login go to user type selection, then onboarding
+        if (authState.isNewUser == true) {
+          context.go(
+            RouteNames.userTypeSelection,
+            extra: {'isAlreadyAuthenticated': true},
+          );
+        } else {
+          context.go(RouteNames.orgSelector);
+        }
       } else {
         final authState = ref.read(authProvider);
         _showError(authState.errorMessage ?? 'Erro ao fazer login com Google');
@@ -211,8 +220,17 @@ class _LoginPageState extends ConsumerState<LoginPage>
       setState(() => _loading = false);
 
       if (success) {
+        final authState = ref.read(authProvider);
         ref.invalidate(membershipsProvider);
-        context.go(RouteNames.orgSelector);
+        // New users from social login go to user type selection, then onboarding
+        if (authState.isNewUser == true) {
+          context.go(
+            RouteNames.userTypeSelection,
+            extra: {'isAlreadyAuthenticated': true},
+          );
+        } else {
+          context.go(RouteNames.orgSelector);
+        }
       } else {
         final authState = ref.read(authProvider);
         _showError(authState.errorMessage ?? 'Erro ao fazer login com Apple');

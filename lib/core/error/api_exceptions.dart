@@ -168,6 +168,7 @@ extension ApiExceptionMessage on ApiException {
     return switch (this) {
       NetworkException() => true,
       ServerException(statusCode: final code) => code != null && code >= 500,
+      UnknownApiException() => true, // Unknown errors might be transient
       _ => false,
     };
   }

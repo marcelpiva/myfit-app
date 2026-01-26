@@ -12,12 +12,14 @@ class UserTypeSelectionPage extends StatefulWidget {
   final String? name;
   final String? email;
   final String? password;
+  final bool isAlreadyAuthenticated;
 
   const UserTypeSelectionPage({
     super.key,
     this.name,
     this.email,
     this.password,
+    this.isAlreadyAuthenticated = false,
   });
 
   @override
@@ -58,16 +60,24 @@ class _UserTypeSelectionPageState extends State<UserTypeSelectionPage>
     if (_selectedType == null) return;
     HapticUtils.mediumImpact();
 
-    // Navigate to register with user type
-    context.go(
-      RouteNames.register,
-      extra: {
-        'userType': _selectedType,
-        'name': widget.name,
-        'email': widget.email,
-        'password': widget.password,
-      },
-    );
+    if (widget.isAlreadyAuthenticated) {
+      // Already logged in via social auth, go directly to onboarding
+      context.go(
+        RouteNames.onboarding,
+        extra: {'userType': _selectedType},
+      );
+    } else {
+      // Navigate to register with user type
+      context.go(
+        RouteNames.register,
+        extra: {
+          'userType': _selectedType,
+          'name': widget.name,
+          'email': widget.email,
+          'password': widget.password,
+        },
+      );
+    }
   }
 
   @override

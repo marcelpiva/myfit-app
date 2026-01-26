@@ -9,8 +9,11 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/domain/entities/entities.dart';
 import '../../../../core/providers/context_provider.dart';
+import '../../../../core/services/organization_service.dart';
 import '../../../../core/utils/haptic_utils.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/onboarding_provider.dart';
 
 /// Main onboarding page that routes to trainer or student flow
@@ -31,7 +34,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
 
-  bool get _isTrainer => widget.userType == 'trainer';
+  bool get _isTrainer => widget.userType == 'trainer' || widget.userType == 'personal';
 
   @override
   void initState() {
@@ -52,20 +55,72 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
     super.dispose();
   }
 
-  void _skip() {
+  Future<void> _skip() async {
     HapticUtils.lightImpact();
     if (_isTrainer) {
       ref.read(trainerOnboardingProvider.notifier).skip();
+      // Create organization for trainer even on skip
+      await _complete();
     } else {
       ref.read(studentOnboardingProvider.notifier).skip();
+      context.go(RouteNames.orgSelector);
     }
-    context.go(RouteNames.orgSelector);
   }
 
-  void _complete() {
+  bool _isCreatingOrg = false;
+
+  Future<void> _complete() async {
+    if (_isCreatingOrg) return;
+
     HapticUtils.mediumImpact();
-    // TODO: Save onboarding data to profile
-    context.go(RouteNames.orgSelector);
+
+    // For trainers, create organization automatically
+    if (_isTrainer) {
+      setState(() => _isCreatingOrg = true);
+
+      try {
+        final user = ref.read(currentUserProvider);
+        if (user == null) {
+          if (mounted) context.go(RouteNames.orgSelector);
+          return;
+        }
+
+        // Create organization with user's name
+        final orgService = OrganizationService();
+        final orgData = await orgService.createOrganization(
+          name: 'Personal ${user.name}',
+          type: 'personal',
+        );
+
+        // The API returns the organization with membership
+        // Parse and set as active context
+        if (orgData['membership'] != null) {
+          final membership = OrganizationMembership.fromJson(
+            orgData['membership'] as Map<String, dynamic>,
+          );
+          ref.read(activeContextProvider.notifier).setContext(
+            ActiveContext(membership: membership),
+          );
+        }
+
+        // Refresh memberships
+        ref.invalidate(membershipsProvider);
+
+        if (mounted) {
+          // Go directly to trainer home
+          context.go(RouteNames.trainerHome);
+        }
+      } catch (e) {
+        debugPrint('Error creating organization: $e');
+        // Fallback to org selector on error
+        if (mounted) context.go(RouteNames.orgSelector);
+      } finally {
+        if (mounted) setState(() => _isCreatingOrg = false);
+      }
+    } else {
+      // Students go to org selector to join a trainer
+      context.go(RouteNames.orgSelector);
+    }
   }
 
   @override
@@ -151,6 +206,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
         return _CompleteStep(
           isTrainer: true,
           onComplete: _complete,
+          isLoading: _isCreatingOrg,
         );
     }
   }
@@ -527,10 +583,12 @@ class _TrainerProfessionalProfileStepState
                         flex: 2,
                         child: TextField(
                           controller: _crefController,
-                          keyboardType: TextInputType.number,
+                          keyboardType: TextInputType.text,
+                          textCapitalization: TextCapitalization.characters,
+                          inputFormatters: [_CrefInputFormatter()],
                           decoration: InputDecoration(
-                            labelText: 'Numero CREF',
-                            hintText: '012345',
+                            labelText: 'Número CREF',
+                            hintText: '012345-G',
                             filled: true,
                             fillColor: isDark ? AppColors.mutedDark : AppColors.muted,
                             border: OutlineInputBorder(
@@ -2440,10 +2498,12 @@ class _StudentInjuriesStepState extends State<_StudentInjuriesStep> {
 class _CompleteStep extends StatelessWidget {
   final bool isTrainer;
   final VoidCallback onComplete;
+  final bool isLoading;
 
   const _CompleteStep({
     required this.isTrainer,
     required this.onComplete,
+    this.isLoading = false,
   });
 
   @override
@@ -2499,21 +2559,31 @@ class _CompleteStep extends StatelessWidget {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: onComplete,
+                  onPressed: isLoading ? null : onComplete,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
+                    disabledBackgroundColor: AppColors.primary.withAlpha(150),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Text(
-                    isTrainer ? 'Ir para o Dashboard' : 'Começar a treinar',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          isTrainer ? 'Ir para o Dashboard' : 'Começar a treinar',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
             ),
@@ -2542,16 +2612,19 @@ class _OnboardingStepScaffold extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Container(
-      color: isDark ? AppColors.backgroundDark : AppColors.background,
-      child: SafeArea(
-        child: Column(
-          children: [
-            // Header with progress and skip
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        color: isDark ? AppColors.backgroundDark : AppColors.background,
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Header with progress and skip
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
                   if (onBack != null)
                     GestureDetector(
                       onTap: () {
@@ -2609,11 +2682,49 @@ class _OnboardingStepScaffold extends StatelessWidget {
                 ],
               ),
             ),
-            // Content
-            Expanded(child: child),
-          ],
+              // Content
+              Expanded(child: child),
+            ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+/// CREF mask formatter: 000000-G (6 digits + dash + letter)
+class _CrefInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text.toUpperCase();
+
+    // Remove any non-alphanumeric characters except dash
+    final cleaned = text.replaceAll(RegExp(r'[^0-9A-Z]'), '');
+
+    final buffer = StringBuffer();
+    for (int i = 0; i < cleaned.length && i < 7; i++) {
+      final char = cleaned[i];
+
+      if (i < 6) {
+        // First 6 characters must be digits
+        if (RegExp(r'[0-9]').hasMatch(char)) {
+          buffer.write(char);
+        }
+      } else if (i == 6) {
+        // 7th character must be a letter
+        if (RegExp(r'[A-Z]').hasMatch(char)) {
+          buffer.write('-$char');
+        }
+      }
+    }
+
+    final formatted = buffer.toString();
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }

@@ -187,7 +187,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.userTypeSelection,
         name: 'user-type',
-        builder: (context, state) => _devLabel('user-type', const UserTypeSelectionPage()),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return _devLabel('user-type', UserTypeSelectionPage(
+            isAlreadyAuthenticated: extra?['isAlreadyAuthenticated'] as bool? ?? false,
+          ));
+        },
       ),
       GoRoute(
         path: RouteNames.register,

@@ -30,11 +30,9 @@ class VerifyEmailPage extends ConsumerStatefulWidget {
 
 class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage>
     with SingleTickerProviderStateMixin {
-  final List<TextEditingController> _controllers = List.generate(
-    6,
-    (_) => TextEditingController(),
-  );
-  final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
+  // Single controller for all 6 digits
+  final _codeController = TextEditingController();
+  final _codeFocusNode = FocusNode();
 
   bool _loading = false;
   bool _resending = false;
@@ -59,20 +57,19 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage>
     // Start cooldown timer (assume code was just sent)
     _startCooldown();
 
-    // Auto-focus first field
+    // Auto-focus the hidden input
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _focusNodes[0].requestFocus();
+      _codeFocusNode.requestFocus();
     });
+
+    // Listen for changes
+    _codeController.addListener(_onCodeChanged);
   }
 
   @override
   void dispose() {
-    for (final c in _controllers) {
-      c.dispose();
-    }
-    for (final f in _focusNodes) {
-      f.dispose();
-    }
+    _codeController.dispose();
+    _codeFocusNode.dispose();
     _cooldownTimer?.cancel();
     _animController.dispose();
     super.dispose();
@@ -90,25 +87,14 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage>
     });
   }
 
-  String get _code => _controllers.map((c) => c.text).join();
+  String get _code => _codeController.text;
 
-  void _onCodeChanged(int index, String value) {
-    if (value.length == 1 && index < 5) {
-      _focusNodes[index + 1].requestFocus();
-    }
+  void _onCodeChanged() {
+    setState(() {}); // Rebuild to show digits
 
-    // Check if all fields are filled
+    // Auto-verify when 6 digits entered
     if (_code.length == 6) {
       _verifyCode();
-    }
-  }
-
-  void _onKeyPressed(int index, KeyEvent event) {
-    if (event is KeyDownEvent &&
-        event.logicalKey == LogicalKeyboardKey.backspace &&
-        _controllers[index].text.isEmpty &&
-        index > 0) {
-      _focusNodes[index - 1].requestFocus();
     }
   }
 
@@ -171,10 +157,8 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage>
   }
 
   void _clearCode() {
-    for (final c in _controllers) {
-      c.clear();
-    }
-    _focusNodes[0].requestFocus();
+    _codeController.clear();
+    _codeFocusNode.requestFocus();
   }
 
   void _showError(String message) {
@@ -204,7 +188,9 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -309,62 +295,62 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage>
 
                   const SizedBox(height: 48),
 
-                  // Code input
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: List.generate(6, (index) {
-                      return SizedBox(
-                        width: 48,
-                        height: 56,
-                        child: KeyboardListener(
-                          focusNode: FocusNode(),
-                          onKeyEvent: (event) => _onKeyPressed(index, event),
-                          child: TextField(
-                            controller: _controllers[index],
-                            focusNode: _focusNodes[index],
-                            textAlign: TextAlign.center,
-                            keyboardType: TextInputType.number,
-                            maxLength: 1,
-                            style: theme.textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
+                  // Code input - single hidden TextField with visual boxes
+                  GestureDetector(
+                    onTap: () => _codeFocusNode.requestFocus(),
+                    child: Stack(
+                      children: [
+                        // Hidden TextField
+                        Opacity(
+                          opacity: 0,
+                          child: SizedBox(
+                            height: 56,
+                            child: TextField(
+                              controller: _codeController,
+                              focusNode: _codeFocusNode,
+                              keyboardType: TextInputType.number,
+                              maxLength: 6,
+                              autofocus: true,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(6),
+                              ],
                             ),
-                            decoration: InputDecoration(
-                              counterText: '',
-                              filled: true,
-                              fillColor:
-                                  isDark ? AppColors.cardDark : AppColors.card,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: isDark
-                                      ? AppColors.borderDark
-                                      : AppColors.border,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: isDark
-                                      ? AppColors.borderDark
-                                      : AppColors.border,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(
-                                  color: AppColors.primary,
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            onChanged: (value) => _onCodeChanged(index, value),
                           ),
                         ),
-                      );
-                    }),
+                        // Visual digit boxes
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: List.generate(6, (index) {
+                            final hasDigit = index < _code.length;
+                            final isFocused = _codeFocusNode.hasFocus && index == _code.length;
+
+                            return Container(
+                              width: 48,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: isDark ? AppColors.cardDark : AppColors.card,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: isFocused
+                                      ? AppColors.primary
+                                      : (isDark ? AppColors.borderDark : AppColors.border),
+                                  width: isFocused ? 2 : 1,
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  hasDigit ? _code[index] : '',
+                                  style: theme.textTheme.headlineMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 32),
@@ -479,6 +465,7 @@ class _VerifyEmailPageState extends ConsumerState<VerifyEmailPage>
           ),
         ),
       ),
+    ),
     );
   }
 }

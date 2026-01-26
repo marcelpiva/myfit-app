@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.1] - 2026-01-26
+
+### Fixed
+- **Google/Apple Auth Network Error** - Fixed "Sem conexão com a internet" error on first click
+  - Added retry logic with progressive backoff for social auth
+  - Made `UnknownApiException` retryable for transient errors
+  - Added 300ms initial delay to allow popup to fully close
+
+- **Keyboard Not Dismissing on CREF Field** - Fixed keyboard staying open when tapping outside
+  - Added `GestureDetector` to `_OnboardingStepScaffold` with `unfocus()` behavior
+
+- **Organization Not Created for Trainers** - Fixed trainers not having org after onboarding
+  - Auto-create organization with name "Personal {userName}" on onboarding completion
+  - Set trainer as owner and activate context
+  - Redirect to trainer home instead of org selector
+
+- **Keyboard Collapsing Between Code Input Fields** - Fixed keyboard closing when moving between digits
+  - Refactored to single hidden `TextField` with visual digit boxes
+  - Prevents focus loss during code entry
+
+- **Social Auth from Login Page** - Fixed new users going to register instead of onboarding
+  - New users from Google/Apple sign-in on login page now go to user type selection → onboarding
+  - Added `isAlreadyAuthenticated` flag to skip registration for already-authenticated users
+
+### Added
+- **CREF Mask Formatter** - Auto-format CREF field as `000000-X`
+  - Supports all formation letters: G (Graduado), B (Bacharel), L (Licenciado), F (Formação antiga)
+  - Numbers only for first 6 characters, letter for suffix
+
 ## [1.11.0] - 2026-01-25
 
 ### Added

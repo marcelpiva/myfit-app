@@ -30,22 +30,26 @@ class AuthState {
   final AuthStatus status;
   final UserResponse? user;
   final String? errorMessage;
+  final bool? isNewUser;
 
   const AuthState({
     this.status = AuthStatus.initial,
     this.user,
     this.errorMessage,
+    this.isNewUser,
   });
 
   AuthState copyWith({
     AuthStatus? status,
     UserResponse? user,
     String? errorMessage,
+    bool? isNewUser,
   }) {
     return AuthState(
       status: status ?? this.status,
       user: user ?? this.user,
       errorMessage: errorMessage,
+      isNewUser: isNewUser ?? this.isNewUser,
     );
   }
 
@@ -228,73 +232,134 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   /// Login with Google
-  Future<bool> loginWithGoogle({required String idToken}) async {
-    state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
-
-    try {
-      final response = await _authService.loginWithGoogle(idToken: idToken);
-
-      _ref.read(currentUserProvider.notifier).state = response.user;
-      _ref.read(activeContextProvider.notifier).setContext(null);
-      _ref.invalidate(membershipsProvider);
-      state = AuthState(
-        status: AuthStatus.authenticated,
-        user: response.user,
-      );
-
-      _initPushNotifications();
-      return true;
-    } on ApiException catch (e) {
-      state = AuthState(
-        status: AuthStatus.error,
-        errorMessage: e.userMessage,
-      );
-      return false;
-    } catch (e) {
-      state = AuthState(
-        status: AuthStatus.error,
-        errorMessage: 'Erro ao fazer login com Google.',
-      );
-      return false;
-    }
-  }
-
-  /// Login with Apple
-  Future<bool> loginWithApple({
+  /// Includes automatic retry for transient network errors
+  Future<bool> loginWithGoogle({
     required String idToken,
-    String? userName,
+    String? userType,
   }) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
 
-    try {
-      final response = await _authService.loginWithApple(
-        idToken: idToken,
-        userName: userName,
-      );
+    // Retry logic for transient errors after Google auth popup
+    // The first request often fails due to network state recovery after popup closes
+    const maxRetries = 3;
+    ApiException? lastError;
 
-      _ref.read(currentUserProvider.notifier).state = response.user;
-      _ref.read(activeContextProvider.notifier).setContext(null);
-      _ref.invalidate(membershipsProvider);
-      state = AuthState(
-        status: AuthStatus.authenticated,
-        user: response.user,
-      );
+    for (var attempt = 0; attempt < maxRetries; attempt++) {
+      // Small delay before first attempt to let network recover after popup
+      if (attempt == 0) {
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
 
-      _initPushNotifications();
-      return true;
-    } on ApiException catch (e) {
-      state = AuthState(
-        status: AuthStatus.error,
-        errorMessage: e.userMessage,
-      );
-      return false;
-    } catch (e) {
-      state = AuthState(
-        status: AuthStatus.error,
-        errorMessage: 'Erro ao fazer login com Apple.',
-      );
-      return false;
+      try {
+        final response = await _authService.loginWithGoogle(
+          idToken: idToken,
+          userType: userType,
+        );
+
+        _ref.read(currentUserProvider.notifier).state = response.user;
+        _ref.read(activeContextProvider.notifier).setContext(null);
+        _ref.invalidate(membershipsProvider);
+        state = AuthState(
+          status: AuthStatus.authenticated,
+          user: response.user,
+          isNewUser: response.isNewUser,
+        );
+
+        _initPushNotifications();
+        return true;
+      } on ApiException catch (e) {
+        lastError = e;
+        // Only retry on retryable errors (network, server errors)
+        if (e.isRetryable && attempt < maxRetries - 1) {
+          await Future.delayed(Duration(milliseconds: 500 * (attempt + 1)));
+          continue;
+        }
+        break;
+      } catch (e) {
+        // Retry on unknown errors too (might be transient)
+        if (attempt < maxRetries - 1) {
+          await Future.delayed(Duration(milliseconds: 500 * (attempt + 1)));
+          continue;
+        }
+        state = AuthState(
+          status: AuthStatus.error,
+          errorMessage: 'Erro ao fazer login com Google.',
+        );
+        return false;
+      }
     }
+
+    state = AuthState(
+      status: AuthStatus.error,
+      errorMessage: lastError?.userMessage ?? 'Erro ao fazer login com Google.',
+    );
+    return false;
+  }
+
+  /// Login with Apple
+  /// Includes automatic retry for transient network errors
+  Future<bool> loginWithApple({
+    required String idToken,
+    String? userName,
+    String? userType,
+  }) async {
+    state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+
+    // Retry logic for transient errors after Apple auth popup
+    const maxRetries = 3;
+    ApiException? lastError;
+
+    for (var attempt = 0; attempt < maxRetries; attempt++) {
+      // Small delay before first attempt to let network recover after popup
+      if (attempt == 0) {
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
+
+      try {
+        final response = await _authService.loginWithApple(
+          idToken: idToken,
+          userName: userName,
+          userType: userType,
+        );
+
+        _ref.read(currentUserProvider.notifier).state = response.user;
+        _ref.read(activeContextProvider.notifier).setContext(null);
+        _ref.invalidate(membershipsProvider);
+        state = AuthState(
+          status: AuthStatus.authenticated,
+          user: response.user,
+          isNewUser: response.isNewUser,
+        );
+
+        _initPushNotifications();
+        return true;
+      } on ApiException catch (e) {
+        lastError = e;
+        // Only retry on retryable errors (network, server errors)
+        if (e.isRetryable && attempt < maxRetries - 1) {
+          await Future.delayed(Duration(milliseconds: 500 * (attempt + 1)));
+          continue;
+        }
+        break;
+      } catch (e) {
+        // Retry on unknown errors too (might be transient)
+        if (attempt < maxRetries - 1) {
+          await Future.delayed(Duration(milliseconds: 500 * (attempt + 1)));
+          continue;
+        }
+        state = AuthState(
+          status: AuthStatus.error,
+          errorMessage: 'Erro ao fazer login com Apple.',
+        );
+        return false;
+      }
+    }
+
+    state = AuthState(
+      status: AuthStatus.error,
+      errorMessage: lastError?.userMessage ?? 'Erro ao fazer login com Apple.',
+    );
+    return false;
   }
 
   /// Logout user
