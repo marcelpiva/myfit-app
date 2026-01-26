@@ -1,9 +1,12 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/cache/cache.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/error/api_exceptions.dart';
@@ -106,6 +109,343 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
     );
   }
 
+  String _getInviteLink(String token) {
+    // Use HTTPS link for better compatibility
+    return 'https://myfitplatform.com/invite/$token';
+  }
+
+  String _getInviteMessage(String link) {
+    return 'Olá! Estou te convidando para treinar comigo no MyFit. '
+        'Clique no link para aceitar: $link';
+  }
+
+  Future<void> _shareViaWhatsApp(String token) async {
+    HapticUtils.lightImpact();
+    final link = _getInviteLink(token);
+    final message = _getInviteMessage(link);
+    final whatsappUrl = Uri.parse(
+      'https://wa.me/?text=${Uri.encodeComponent(message)}',
+    );
+
+    try {
+      if (await canLaunchUrl(whatsappUrl)) {
+        await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('WhatsApp não disponível'),
+              backgroundColor: AppColors.warning,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error opening WhatsApp: $e');
+    }
+  }
+
+  Future<void> _copyLink(String token) async {
+    HapticUtils.lightImpact();
+    final link = _getInviteLink(token);
+    await Clipboard.setData(ClipboardData(text: link));
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(LucideIcons.copy, color: Colors.white, size: 18),
+              SizedBox(width: 12),
+              Text('Link copiado!'),
+            ],
+          ),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    }
+  }
+
+  Future<void> _shareLink(String token) async {
+    HapticUtils.lightImpact();
+    final link = _getInviteLink(token);
+    final message = _getInviteMessage(link);
+
+    try {
+      await Share.share(message, subject: 'Convite MyFit');
+    } catch (e) {
+      debugPrint('Error sharing: $e');
+    }
+  }
+
+  void _showQRCode(String token) {
+    HapticUtils.lightImpact();
+    final link = _getInviteLink(token);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: widget.isDark ? AppColors.cardDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: widget.isDark ? AppColors.borderDark : AppColors.border,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            Text(
+              'QR Code do Convite',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: widget.isDark
+                    ? AppColors.foregroundDark
+                    : AppColors.foreground,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Peça para seu aluno escanear',
+              style: TextStyle(
+                fontSize: 14,
+                color: widget.isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // QR Code
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: QrImageView(
+                data: link,
+                version: QrVersions.auto,
+                size: 200,
+                backgroundColor: Colors.white,
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Share button
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                onPressed: () => _shareLink(token),
+                icon: const Icon(LucideIcons.share2),
+                label: const Text('Compartilhar'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showShareOptions(String token, String email) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: widget.isDark ? AppColors.cardDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: widget.isDark ? AppColors.borderDark : AppColors.border,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Success icon
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: AppColors.success.withAlpha(30),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                LucideIcons.checkCircle,
+                size: 32,
+                color: AppColors.success,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            Text(
+              'Convite Enviado!',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: widget.isDark
+                    ? AppColors.foregroundDark
+                    : AppColors.foreground,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Um email foi enviado para $email',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: widget.isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            Text(
+              'Compartilhe também por:',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: widget.isDark
+                    ? AppColors.foregroundDark
+                    : AppColors.foreground,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Share options
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildShareButton(
+                  icon: LucideIcons.messageCircle,
+                  label: 'WhatsApp',
+                  color: const Color(0xFF25D366),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _shareViaWhatsApp(token);
+                  },
+                ),
+                _buildShareButton(
+                  icon: LucideIcons.copy,
+                  label: 'Copiar',
+                  color: AppColors.primary,
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _copyLink(token);
+                  },
+                ),
+                _buildShareButton(
+                  icon: LucideIcons.qrCode,
+                  label: 'QR Code',
+                  color: AppColors.secondary,
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showQRCode(token);
+                  },
+                ),
+                _buildShareButton(
+                  icon: LucideIcons.share2,
+                  label: 'Outros',
+                  color: AppColors.mutedForeground,
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _shareLink(token);
+                  },
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // Done button
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.pop(context);
+                  widget.onSuccess?.call();
+                },
+                style: OutlinedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text('Concluído'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShareButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: color.withAlpha(30),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: widget.isDark
+                  ? AppColors.foregroundDark
+                  : AppColors.foreground,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _reactivateMember(String membershipId) async {
     setState(() => _isLoading = true);
     try {
@@ -181,26 +521,33 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
 
       // Emit cache event to refresh pending invites list
       final inviteId = result['id'] as String? ?? '';
+      final token = result['token'] as String? ?? '';
       ref.read(cacheEventEmitterProvider).inviteCreated(
             inviteId,
             organizationId: widget.orgId,
           );
 
       if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(LucideIcons.mail, color: Colors.white, size: 18),
-                const SizedBox(width: 12),
-                Text('Convite enviado para $email'),
-              ],
+        setState(() => _isLoading = false);
+        // Show share options dialog with the token
+        if (token.isNotEmpty) {
+          _showShareOptions(token, email);
+        } else {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(LucideIcons.mail, color: Colors.white, size: 18),
+                  const SizedBox(width: 12),
+                  Text('Convite enviado para $email'),
+                ],
+              ),
+              backgroundColor: AppColors.success,
             ),
-            backgroundColor: AppColors.success,
-          ),
-        );
-        widget.onSuccess?.call();
+          );
+          widget.onSuccess?.call();
+        }
       }
     } catch (e, stackTrace) {
       debugPrint('🔴 Error sending invite: $e');

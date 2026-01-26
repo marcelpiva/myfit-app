@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/providers/context_provider.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import '../providers/onboarding_provider.dart';
 
@@ -360,7 +365,7 @@ class _TrainerWelcomeStep extends StatelessWidget {
   }
 }
 
-class _TrainerInviteStep extends StatelessWidget {
+class _TrainerInviteStep extends ConsumerWidget {
   final VoidCallback onNext;
   final VoidCallback onBack;
   final VoidCallback onSkip;
@@ -371,8 +376,184 @@ class _TrainerInviteStep extends StatelessWidget {
     required this.onSkip,
   });
 
+  String _getOrgInviteLink(WidgetRef ref) {
+    final orgId = ref.read(activeContextProvider)?.organization.id;
+    if (orgId == null) {
+      return 'https://myfitplatform.com/signup';
+    }
+    return 'https://myfitplatform.com/join/$orgId';
+  }
+
+  String _getInviteMessage(WidgetRef ref) {
+    final orgName = ref.read(activeContextProvider)?.organization.name ?? 'MyFit';
+    final link = _getOrgInviteLink(ref);
+    return 'Olá! Estou te convidando para treinar comigo no $orgName. '
+        'Clique no link para começar: $link';
+  }
+
+  Future<void> _copyInviteLink(BuildContext context, WidgetRef ref) async {
+    final link = _getOrgInviteLink(ref);
+    await Clipboard.setData(ClipboardData(text: link));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(LucideIcons.copy, color: Colors.white, size: 18),
+            SizedBox(width: 12),
+            Text('Link copiado!'),
+          ],
+        ),
+        backgroundColor: AppColors.success,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    );
+  }
+
+  void _showQRCode(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final link = _getOrgInviteLink(ref);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.borderDark : AppColors.border,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'QR Code de Convite',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Peça para seu aluno escanear',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: isDark
+                    ? AppColors.mutedForegroundDark
+                    : AppColors.mutedForeground,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: QrImageView(
+                data: link,
+                version: QrVersions.auto,
+                size: 200,
+                backgroundColor: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildShareButton(
+                  context,
+                  icon: LucideIcons.messageCircle,
+                  label: 'WhatsApp',
+                  color: const Color(0xFF25D366),
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    final message = _getInviteMessage(ref);
+                    final whatsappUrl = Uri.parse(
+                      'https://wa.me/?text=${Uri.encodeComponent(message)}',
+                    );
+                    if (await canLaunchUrl(whatsappUrl)) {
+                      await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+                    }
+                  },
+                ),
+                _buildShareButton(
+                  context,
+                  icon: LucideIcons.copy,
+                  label: 'Copiar',
+                  color: AppColors.primary,
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _copyInviteLink(context, ref);
+                  },
+                ),
+                _buildShareButton(
+                  context,
+                  icon: LucideIcons.share2,
+                  label: 'Outros',
+                  color: AppColors.mutedForeground,
+                  onTap: () async {
+                    Navigator.pop(ctx);
+                    final message = _getInviteMessage(ref);
+                    await Share.share(message, subject: 'Convite MyFit');
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShareButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: color.withAlpha(30),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: isDark
+                  ? AppColors.foregroundDark
+                  : AppColors.foreground,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -436,6 +617,7 @@ class _TrainerInviteStep extends StatelessWidget {
                     LucideIcons.link,
                     'Copiar link de convite',
                     'Envie via WhatsApp, email, etc.',
+                    onTap: () => _copyInviteLink(context, ref),
                   ),
                   const SizedBox(height: 16),
                   _buildOptionTile(
@@ -443,6 +625,7 @@ class _TrainerInviteStep extends StatelessWidget {
                     LucideIcons.qrCode,
                     'Mostrar QR Code',
                     'Seu aluno escaneia e se conecta',
+                    onTap: () => _showQRCode(context, ref),
                   ),
                 ],
               ),
@@ -498,15 +681,16 @@ class _TrainerInviteStep extends StatelessWidget {
     BuildContext context,
     IconData icon,
     String title,
-    String subtitle,
-  ) {
+    String subtitle, {
+    VoidCallback? onTap,
+  }) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     return InkWell(
       onTap: () {
         HapticUtils.lightImpact();
-        // TODO: Implement action
+        onTap?.call();
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
