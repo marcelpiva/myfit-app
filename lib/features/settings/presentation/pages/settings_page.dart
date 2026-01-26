@@ -715,30 +715,45 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 _showEditProfileSheet(context, isDark);
               },
             ),
-            // From Org Selector: Show "Meus Objetivos" if has student profile
-            if (isFromOrgSelector && hasStudentProfile) ...[
+            // From Org Selector: Show student-related options
+            if (isFromOrgSelector) ...[
               Container(
                 height: 1,
                 color: isDark ? AppColors.borderDark : AppColors.border,
               ),
-              _buildProfileTile(
-                context,
-                isDark,
-                LucideIcons.target,
-                'Meus Objetivos',
-                'Objetivo, experiência, dados físicos',
-                () {
-                  HapticUtils.lightImpact();
-                  context.push(
-                    RouteNames.onboarding,
-                    extra: {
-                      'userType': 'student',
-                      'editMode': true,
-                      'skipOrgCreation': true,
-                    },
-                  );
-                },
-              ),
+              if (hasStudentProfile)
+                // Has student profile: Edit objectives
+                _buildProfileTile(
+                  context,
+                  isDark,
+                  LucideIcons.target,
+                  'Meus Objetivos',
+                  'Objetivo, experiência, dados físicos',
+                  () {
+                    HapticUtils.lightImpact();
+                    context.push(
+                      RouteNames.onboarding,
+                      extra: {
+                        'userType': 'student',
+                        'editMode': true,
+                        'skipOrgCreation': true,
+                      },
+                    );
+                  },
+                )
+              else
+                // No student profile: Option to add one
+                _buildProfileTile(
+                  context,
+                  isDark,
+                  LucideIcons.userPlus,
+                  'Adicionar perfil Aluno',
+                  'Treinar e receber planos personalizados',
+                  () {
+                    HapticUtils.lightImpact();
+                    context.push(RouteNames.joinOrg);
+                  },
+                ),
             ],
             // From Trainer context: Show "Dados Profissionais"
             if (isTrainerContext) ...[
