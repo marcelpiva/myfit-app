@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0] - 2026-01-26
+
+### Added
+- **Onboarding Data Persistence** - Save and load onboarding data from backend
+  - Student data: fitness goal, experience level, weight, height, age, weekly frequency, injuries
+  - Trainer data: CREF, specialties, years of experience, bio
+  - Data persists across app sessions and devices
+  - New `onboarding_completed` flag in user profile
+
+- **Onboarding Incomplete Banner** - Subtle reminder when profile is incomplete
+  - Shows on student/trainer home page if onboarding not completed
+  - Tapping banner opens onboarding in edit mode
+  - Different messages for student vs trainer
+
+- **Auto-open Onboarding on First Access** - Guide users to complete profile
+  - Opens automatically on first access to student/trainer view
+  - Only opens once per profile (tracks via SharedPreferences)
+  - If skipped, shows banner instead of re-opening
+
+- **Edit Mode for Onboarding** - Access via Settings to update profile data
+  - "Meus Objetivos" for students
+  - "Dados Profissionais" for trainers
+  - Pre-fills with existing data from backend
+  - Returns to previous screen on completion
+
+### Changed
+- `UserResponse` now includes `onboardingCompleted` field
+- `UserService.updateProfile()` accepts all onboarding fields
+
 ## [1.11.1] - 2026-01-26
 
 ### Fixed

@@ -12,6 +12,7 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../core/domain/entities/entities.dart';
 import '../../../../core/providers/context_provider.dart';
 import '../../../../core/services/organization_service.dart';
+import '../../../../core/services/user_service.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/onboarding_provider.dart';
@@ -51,6 +52,111 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
       CurvedAnimation(parent: _animController, curve: Curves.easeOut),
     );
     _animController.forward();
+
+    // Reset to welcome step and load existing data when in edit mode
+    if (widget.editMode) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_isTrainer) {
+          ref.read(trainerOnboardingProvider.notifier).reset();
+        } else {
+          ref.read(studentOnboardingProvider.notifier).reset();
+        }
+        _loadExistingData();
+      });
+    }
+  }
+
+  /// Load existing profile data and populate the onboarding providers
+  Future<void> _loadExistingData() async {
+    try {
+      final userService = UserService();
+      final profile = await userService.getProfile();
+      debugPrint('Loaded profile data: $profile');
+
+      if (_isTrainer) {
+        final notifier = ref.read(trainerOnboardingProvider.notifier);
+
+        // Parse CREF if exists (format: "012345-G/SP")
+        final cref = profile['cref'] as String?;
+        if (cref != null && cref.isNotEmpty) {
+          final parts = cref.split('/');
+          if (parts.length == 2) {
+            final crefNumber = parts[0].replaceAll(RegExp(r'-[A-Z]$'), '');
+            final stateStr = parts[1];
+            final crefState = BrazilState.values.firstWhere(
+              (s) => s.name == stateStr,
+              orElse: () => BrazilState.SP,
+            );
+            notifier.setCrefData(crefNumber: crefNumber, crefState: crefState);
+          }
+        }
+
+        // Load specialties
+        final specialties = profile['specialties'] as List<dynamic>?;
+        final yearsExp = profile['years_of_experience'] as int?;
+        final bio = profile['bio'] as String?;
+        notifier.setProfileData(
+          specialties: specialties?.map((e) => e.toString()).toList(),
+          yearsOfExperience: yearsExp,
+          bio: bio,
+        );
+      } else {
+        final notifier = ref.read(studentOnboardingProvider.notifier);
+
+        // Load fitness goal
+        final fitnessGoalStr = profile['fitness_goal'] as String?;
+        if (fitnessGoalStr != null) {
+          final fitnessGoal = FitnessGoal.values.firstWhere(
+            (g) => g.name == fitnessGoalStr,
+            orElse: () => FitnessGoal.maintainHealth,
+          );
+          notifier.setFitnessGoal(
+            fitnessGoal,
+            otherGoal: profile['fitness_goal_other'] as String?,
+          );
+        }
+
+        // Load experience level
+        final expLevelStr = profile['experience_level'] as String?;
+        if (expLevelStr != null) {
+          final expLevel = ExperienceLevel.values.firstWhere(
+            (l) => l.name == expLevelStr,
+            orElse: () => ExperienceLevel.beginner,
+          );
+          notifier.setExperienceLevel(expLevel);
+        }
+
+        // Load physical data
+        final weight = profile['weight_kg'] as num?;
+        final height = profile['height_cm'] as num?;
+        final age = profile['age'] as int?;
+        if (weight != null || height != null || age != null) {
+          notifier.setPhysicalData(
+            weight: weight?.toDouble(),
+            height: height?.toDouble(),
+            age: age,
+          );
+        }
+
+        // Load weekly frequency
+        final weeklyFreq = profile['weekly_frequency'] as int?;
+        if (weeklyFreq != null) {
+          notifier.setWeeklyFrequency(weeklyFreq);
+        }
+
+        // Load injuries
+        final injuries = profile['injuries'] as List<dynamic>?;
+        final injuriesOther = profile['injuries_other'] as String?;
+        if (injuries != null || injuriesOther != null) {
+          notifier.setInjuries(
+            injuries?.map((e) => e.toString()).toList() ?? [],
+            otherInjuries: injuriesOther,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading existing data: $e');
+    }
   }
 
   @override
@@ -79,11 +185,61 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
   }
 
   bool _isCreatingOrg = false;
+  bool _isSaving = false;
+
+  /// Save onboarding data to the backend API
+  Future<bool> _saveOnboardingData() async {
+    if (_isSaving) return false;
+    setState(() => _isSaving = true);
+
+    try {
+      final userService = UserService();
+
+      if (_isTrainer) {
+        final state = ref.read(trainerOnboardingProvider);
+        // Format CREF: combine number + state (e.g., "012345-G/SP")
+        String? cref;
+        if (state.crefNumber != null && state.crefState != null) {
+          cref = '${state.crefNumber}-G/${state.crefState!.name}';
+        }
+        await userService.updateProfile(
+          cref: cref,
+          specialties: state.specialties,
+          yearsOfExperience: state.yearsOfExperience,
+          bio: state.bio,
+          onboardingCompleted: !state.skipped,
+        );
+      } else {
+        final state = ref.read(studentOnboardingProvider);
+        await userService.updateProfile(
+          fitnessGoal: state.fitnessGoal?.name,
+          fitnessGoalOther: state.otherGoal,
+          experienceLevel: state.experienceLevel?.name,
+          weightKg: state.weight,
+          heightCm: state.height,
+          age: state.age,
+          weeklyFrequency: state.weeklyFrequency,
+          injuries: state.injuries,
+          injuriesOther: state.otherInjuries,
+          onboardingCompleted: !state.skipped,
+        );
+      }
+      return true;
+    } catch (e) {
+      debugPrint('Error saving onboarding data: $e');
+      return false;
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
 
   Future<void> _complete() async {
     if (_isCreatingOrg) return;
 
     HapticUtils.mediumImpact();
+
+    // Save onboarding data to API
+    await _saveOnboardingData();
 
     // If in edit mode, just go back to previous screen
     if (widget.editMode) {

@@ -39,6 +39,7 @@ sealed class UserResponse with _$UserResponse {
     @JsonKey(name: 'auth_provider') @Default('email') String authProvider,
     String? cref,
     @JsonKey(name: 'cref_verified') @Default(false) bool crefVerified,
+    @JsonKey(name: 'onboarding_completed') @Default(false) bool onboardingCompleted,
   }) = _UserResponse;
 
   factory UserResponse.fromJson(Map<String, dynamic> json) =>

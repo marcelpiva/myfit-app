@@ -37,6 +37,7 @@ _UserResponse _$UserResponseFromJson(Map<String, dynamic> json) =>
       authProvider: json['auth_provider'] as String? ?? 'email',
       cref: json['cref'] as String?,
       crefVerified: json['cref_verified'] as bool? ?? false,
+      onboardingCompleted: json['onboarding_completed'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$UserResponseToJson(_UserResponse instance) =>
@@ -56,6 +57,7 @@ Map<String, dynamic> _$UserResponseToJson(_UserResponse instance) =>
       'auth_provider': instance.authProvider,
       'cref': instance.cref,
       'cref_verified': instance.crefVerified,
+      'onboarding_completed': instance.onboardingCompleted,
     };
 
 _AuthResponse _$AuthResponseFromJson(Map<String, dynamic> json) =>

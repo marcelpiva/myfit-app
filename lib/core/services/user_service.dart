@@ -33,6 +33,18 @@ class UserService {
     String? gender,
     double? heightCm,
     String? bio,
+    String? cref,
+    List<String>? specialties,
+    int? yearsOfExperience,
+    String? fitnessGoal,
+    String? fitnessGoalOther,
+    String? experienceLevel,
+    double? weightKg,
+    int? age,
+    int? weeklyFrequency,
+    List<String>? injuries,
+    String? injuriesOther,
+    bool? onboardingCompleted,
   }) async {
     try {
       final data = <String, dynamic>{};
@@ -42,6 +54,18 @@ class UserService {
       if (gender != null) data['gender'] = gender;
       if (heightCm != null) data['height_cm'] = heightCm;
       if (bio != null) data['bio'] = bio;
+      if (cref != null) data['cref'] = cref;
+      if (specialties != null) data['specialties'] = specialties;
+      if (yearsOfExperience != null) data['years_of_experience'] = yearsOfExperience;
+      if (fitnessGoal != null) data['fitness_goal'] = fitnessGoal;
+      if (fitnessGoalOther != null) data['fitness_goal_other'] = fitnessGoalOther;
+      if (experienceLevel != null) data['experience_level'] = experienceLevel;
+      if (weightKg != null) data['weight_kg'] = weightKg;
+      if (age != null) data['age'] = age;
+      if (weeklyFrequency != null) data['weekly_frequency'] = weeklyFrequency;
+      if (injuries != null) data['injuries'] = injuries;
+      if (injuriesOther != null) data['injuries_other'] = injuriesOther;
+      if (onboardingCompleted != null) data['onboarding_completed'] = onboardingCompleted;
 
       final response = await _client.put(ApiEndpoints.userProfile, data: data);
       if (response.statusCode == 200 && response.data != null) {

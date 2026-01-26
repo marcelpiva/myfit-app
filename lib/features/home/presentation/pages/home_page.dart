@@ -3,11 +3,13 @@ import '../../../../core/utils/haptic_utils.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
 import '../../../../core/providers/context_provider.dart';
+import '../../../../shared/presentation/widgets/onboarding_incomplete_banner.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../trainer_home/presentation/pages/trainer_home_page.dart';
 import '../../../nutritionist_home/presentation/pages/nutritionist_home_page.dart';
@@ -59,6 +61,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
+  bool _hasCheckedOnboarding = false;
 
   @override
   void initState() {
@@ -71,6 +74,40 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
       CurvedAnimation(parent: _controller, curve: AppAnimations.easeOut),
     );
     _controller.forward();
+
+    // Check onboarding status on first access
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkOnboardingStatus();
+    });
+  }
+
+  Future<void> _checkOnboardingStatus() async {
+    if (_hasCheckedOnboarding) return;
+    _hasCheckedOnboarding = true;
+
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) return;
+
+    // Check if onboarding was already shown for this user
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'student_onboarding_shown_${currentUser.id}';
+    final wasShown = prefs.getBool(key) ?? false;
+
+    if (!currentUser.onboardingCompleted && !wasShown) {
+      // Mark as shown (even if user skips)
+      await prefs.setBool(key, true);
+
+      // First access - auto-open onboarding
+      if (mounted) {
+        context.push(
+          RouteNames.onboarding,
+          extra: {
+            'userType': 'student',
+            'editMode': true,
+          },
+        );
+      }
+    }
   }
 
   @override
@@ -121,7 +158,16 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                             // Header
                             _buildHeader(context, isDark, userName, userInitials),
 
-                            const SizedBox(height: 32),
+                            const SizedBox(height: 24),
+
+                            // Onboarding incomplete banner
+                            if (currentUser != null && !currentUser.onboardingCompleted)
+                              OnboardingIncompleteBanner(
+                                isDark: isDark,
+                                isTrainer: false,
+                              ),
+
+                            const SizedBox(height: 8),
 
                             // Trainer Info Card (if has trainer)
                             if (dashboardState.hasTrainer) ...[

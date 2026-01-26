@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
@@ -13,6 +14,7 @@ import '../../../../core/providers/context_provider.dart';
 import '../../../../core/services/trainer_service.dart';
 import '../../../../shared/presentation/components/animations/fade_in_up.dart';
 import '../../../../shared/presentation/components/role_bottom_navigation.dart';
+import '../../../../shared/presentation/widgets/onboarding_incomplete_banner.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../trainer_workout/presentation/widgets/invite_student_sheet.dart' show showInviteStudentSheet;
 import '../providers/trainer_home_provider.dart';
@@ -31,6 +33,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
+  bool _hasCheckedOnboarding = false;
 
   @override
   void initState() {
@@ -44,13 +47,43 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
     );
     _controller.forward();
 
-    // Load dashboard data
+    // Load dashboard data and check onboarding
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final orgId = ref.read(activeContextProvider)?.membership.organization.id;
       if (orgId != null) {
         ref.read(trainerDashboardNotifierProvider(orgId).notifier).loadDashboard();
       }
+      _checkOnboardingStatus();
     });
+  }
+
+  Future<void> _checkOnboardingStatus() async {
+    if (_hasCheckedOnboarding) return;
+    _hasCheckedOnboarding = true;
+
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) return;
+
+    // Check if onboarding was already shown for this user
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'trainer_onboarding_shown_${currentUser.id}';
+    final wasShown = prefs.getBool(key) ?? false;
+
+    if (!currentUser.onboardingCompleted && !wasShown) {
+      // Mark as shown (even if user skips)
+      await prefs.setBool(key, true);
+
+      // First access - auto-open onboarding
+      if (mounted) {
+        context.push(
+          RouteNames.onboarding,
+          extra: {
+            'userType': 'trainer',
+            'editMode': true,
+          },
+        );
+      }
+    }
   }
 
   @override
@@ -111,7 +144,19 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
+
+                  // Onboarding incomplete banner
+                  if (currentUser != null && !currentUser.onboardingCompleted)
+                    FadeInUp(
+                      delay: const Duration(milliseconds: 50),
+                      child: OnboardingIncompleteBanner(
+                        isDark: isDark,
+                        isTrainer: true,
+                      ),
+                    ),
+
+                  const SizedBox(height: 8),
 
                   // 2. Stats Cards
                   FadeInUp(
