@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -67,47 +68,98 @@ class _StudentPhysicalDataStepState extends State<StudentPhysicalDataStep> {
     return years;
   }
 
-  Future<void> _selectBirthDate(BuildContext context, bool isDark) async {
+  void _selectBirthDate(BuildContext context, bool isDark) {
     HapticUtils.selectionClick();
 
     final now = DateTime.now();
     final minDate = DateTime(now.year - 100, 1, 1);
     final maxDate = DateTime(now.year - 10, 12, 31); // Minimum 10 years old
 
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedBirthDate ?? DateTime(now.year - 25, 1, 1),
-      firstDate: minDate,
-      lastDate: maxDate,
-      locale: const Locale('pt', 'BR'),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: isDark
-                ? ColorScheme.dark(
-                    primary: AppColors.primary,
-                    onPrimary: Colors.white,
-                    surface: AppColors.cardDark,
-                    onSurface: AppColors.foregroundDark,
-                  )
-                : ColorScheme.light(
-                    primary: AppColors.primary,
-                    onPrimary: Colors.white,
-                    surface: AppColors.card,
-                    onSurface: AppColors.foreground,
-                  ),
-          ),
-          child: child!,
-        );
-      },
-    );
+    DateTime tempDate = _selectedBirthDate ?? DateTime(now.year - 25, 1, 1);
 
-    if (picked != null) {
-      HapticUtils.lightImpact();
-      setState(() {
-        _selectedBirthDate = picked;
-      });
-    }
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? AppColors.cardDark : AppColors.card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Container(
+        height: 320,
+        padding: const EdgeInsets.only(top: 8),
+        child: Column(
+          children: [
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.borderDark : AppColors.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: Text(
+                      'Cancelar',
+                      style: TextStyle(
+                        color: isDark
+                            ? AppColors.mutedForegroundDark
+                            : AppColors.mutedForeground,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    'Data de Nascimento',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isDark
+                          ? AppColors.foregroundDark
+                          : AppColors.foreground,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      HapticUtils.lightImpact();
+                      setState(() {
+                        _selectedBirthDate = tempDate;
+                      });
+                      Navigator.pop(ctx);
+                    },
+                    child: Text(
+                      'Confirmar',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            // Date picker
+            Expanded(
+              child: CupertinoDatePicker(
+                mode: CupertinoDatePickerMode.date,
+                initialDateTime: tempDate,
+                minimumDate: minDate,
+                maximumDate: maxDate,
+                onDateTimeChanged: (date) {
+                  tempDate = date;
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
