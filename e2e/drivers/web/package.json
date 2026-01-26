@@ -10,6 +10,7 @@
     "test:debug": "playwright test --debug",
     "test:cotraining": "playwright test cotraining",
     "test:feedback": "playwright test feedback-loop",
+    "test:auth": "playwright test auth-onboarding",
     "report": "playwright show-report",
     "install:browsers": "playwright install chromium --with-deps"
   },

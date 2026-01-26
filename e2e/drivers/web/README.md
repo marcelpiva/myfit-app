@@ -70,6 +70,7 @@ cd myfit-app/e2e/drivers/web
 npm test
 
 # Run specific scenarios
+npm run test:auth         # Auth & onboarding flow
 npm run test:cotraining   # Co-training flow
 npm run test:feedback     # Feedback loop flow
 
@@ -91,15 +92,18 @@ npm run report
 ```
 e2e/drivers/web/
 ├── tests/
-│   ├── cotraining.spec.ts    # Multi-actor co-training tests
-│   ├── feedback-loop.spec.ts # Real-time feedback tests
-│   └── debug-flutter.spec.ts # Flutter Web debugging utilities
+│   ├── auth-onboarding.spec.ts # Auth & onboarding flow tests
+│   ├── cotraining.spec.ts      # Multi-actor co-training tests
+│   ├── feedback-loop.spec.ts   # Real-time feedback tests
+│   └── debug-flutter.spec.ts   # Flutter Web debugging utilities
 ├── pages/
-│   ├── flutter.helper.ts     # Flutter Web interaction helper (keyboard nav)
-│   ├── login.page.ts         # Login page object
-│   ├── dashboard.page.ts     # Dashboard page object
+│   ├── flutter.helper.ts       # Flutter Web interaction helper (keyboard nav)
+│   ├── login.page.ts           # Login page object
+│   ├── register.page.ts        # Registration & user type selection page object
+│   ├── onboarding.page.ts      # Onboarding flow page object
+│   ├── dashboard.page.ts       # Dashboard page object
 │   └── workout-session.page.ts # Workout session page object
-├── playwright.config.ts      # Playwright configuration
+├── playwright.config.ts        # Playwright configuration
 └── package.json
 ```
 
@@ -107,6 +111,9 @@ e2e/drivers/web/
 
 | Test | Status | Description |
 |------|--------|-------------|
+| Welcome page CTAs | ✅ Pass | Shows "Começar Gratuitamente" and "Já tenho uma conta" |
+| User type selection | ✅ Pass | Personal Trainer and Student cards display correctly |
+| Social auth buttons | ✅ Pass | Google and Apple buttons visible on login/register |
 | Login flow | ✅ Pass | Both trainer and student can login with credentials |
 | Student sees plan | ✅ Pass | Student dashboard shows assigned workout plan |
 | Workout navigation | ✅ Pass | Student can navigate to workout detail and see StartWorkoutSheet |
@@ -117,6 +124,7 @@ e2e/drivers/web/
 | Database reset | ✅ Pass | Database clears between test runs |
 | Co-training interaction | ⏸️ Skip | Flutter Web button clicks don't trigger handlers (see Known Limitations) |
 | Feedback loop | ⏸️ Skip | Requires working co-training mode |
+| Onboarding completion | ⏸️ Skip | Requires authenticated user state |
 
 ### Known Limitations
 

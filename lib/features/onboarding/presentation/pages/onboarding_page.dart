@@ -2692,7 +2692,8 @@ class _OnboardingStepScaffold extends StatelessWidget {
   }
 }
 
-/// CREF mask formatter: 000000-G (6 digits + dash + letter)
+/// CREF mask formatter: 000000-X (6 digits + dash + G/B/L/F)
+/// G = Graduado, B = Bacharel, L = Licenciado, F = Formação antiga
 class _CrefInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
@@ -2702,7 +2703,7 @@ class _CrefInputFormatter extends TextInputFormatter {
     final text = newValue.text.toUpperCase();
 
     // Remove any non-alphanumeric characters except dash
-    final cleaned = text.replaceAll(RegExp(r'[^0-9A-Z]'), '');
+    final cleaned = text.replaceAll(RegExp(r'[^0-9GBLF]'), '');
 
     final buffer = StringBuffer();
     for (int i = 0; i < cleaned.length && i < 7; i++) {
@@ -2714,8 +2715,8 @@ class _CrefInputFormatter extends TextInputFormatter {
           buffer.write(char);
         }
       } else if (i == 6) {
-        // 7th character must be a letter
-        if (RegExp(r'[A-Z]').hasMatch(char)) {
+        // 7th character must be G, B, L, or F only
+        if (RegExp(r'[GBLF]').hasMatch(char)) {
           buffer.write('-$char');
         }
       }
