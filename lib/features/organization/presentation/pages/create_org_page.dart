@@ -12,6 +12,7 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
 import '../../../../core/providers/context_provider.dart';
 import '../../../../core/services/organization_service.dart';
+import '../../../../core/domain/entities/organization.dart';
 
 enum OrgType { personal, gym, nutritionist, coach }
 
@@ -105,7 +106,7 @@ class _CreateOrgPageState extends ConsumerState<CreateOrgPage>
         OrgType.coach: 'clinic',  // Backend uses 'clinic' for coach/other
       };
 
-      await orgService.createOrganization(
+      final orgData = await orgService.createOrganization(
         name: _nameController.text.trim(),
         description: _descriptionController.text.trim().isNotEmpty
             ? _descriptionController.text.trim()
@@ -114,6 +115,16 @@ class _CreateOrgPageState extends ConsumerState<CreateOrgPage>
       );
 
       ref.invalidate(membershipsProvider);
+
+      // Set the new organization as active context
+      if (orgData['membership'] != null) {
+        final membership = OrganizationMembership.fromJson(
+          orgData['membership'] as Map<String, dynamic>,
+        );
+        ref.read(activeContextProvider.notifier).setContext(
+          ActiveContext(membership: membership),
+        );
+      }
 
       if (mounted) {
         setState(() => _isCreating = false);
@@ -132,7 +143,15 @@ class _CreateOrgPageState extends ConsumerState<CreateOrgPage>
         await Future.delayed(const Duration(milliseconds: 500));
 
         if (mounted) {
-          context.go(RouteNames.orgSelector);
+          // If creating a Personal org, redirect to trainer onboarding for CREF etc.
+          if (_selectedType == OrgType.personal) {
+            context.go(
+              RouteNames.onboarding,
+              extra: {'userType': 'personal', 'skipOrgCreation': true},
+            );
+          } else {
+            context.go(RouteNames.orgSelector);
+          }
         }
       }
     } catch (e) {

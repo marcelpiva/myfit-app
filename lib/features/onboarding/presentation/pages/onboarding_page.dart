@@ -19,10 +19,12 @@ import '../providers/onboarding_provider.dart';
 /// Main onboarding page that routes to trainer or student flow
 class OnboardingPage extends ConsumerStatefulWidget {
   final String userType;
+  final bool skipOrgCreation;
 
   const OnboardingPage({
     super.key,
     this.userType = 'student',
+    this.skipOrgCreation = false,
   });
 
   @override
@@ -74,8 +76,16 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
 
     HapticUtils.mediumImpact();
 
-    // For trainers, create organization automatically
+    // For trainers, create organization automatically (unless already created)
     if (_isTrainer) {
+      // If org was already created (e.g., from create org page), just navigate
+      if (widget.skipOrgCreation) {
+        if (mounted) {
+          context.go(RouteNames.trainerHome);
+        }
+        return;
+      }
+
       setState(() => _isCreatingOrg = true);
 
       try {

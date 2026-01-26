@@ -231,7 +231,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           final userType = extra?['userType'] as String? ?? 'student';
-          return _devLabel('onboarding', OnboardingPage(userType: userType));
+          final skipOrgCreation = extra?['skipOrgCreation'] as bool? ?? false;
+          return _devLabel('onboarding', OnboardingPage(
+            userType: userType,
+            skipOrgCreation: skipOrgCreation,
+          ));
         },
       ),
 
