@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.2] - 2026-01-26
+
+### Fixed
+- **Onboarding Edit Mode Starting at Wrong Step** - Fixed race condition causing edit mode to open at Complete step
+  - Added `_hasBeenReset` flag to prevent async state loading from overriding reset
+  - "Dados Profissionais" and "Meus Objetivos" now correctly start from Welcome step
+
+- **Trainer Onboarding Edit Mode Flow** - Flow now continues through all steps
+  - Removed premature exit after Profile step in edit mode
+  - Complete step now properly saves and exits
+
+- **Keyboard Not Dismissing** - Fixed in "Treino Concluído" screen
+  - Added `GestureDetector` with `FocusScope.unfocus()` to dismiss keyboard on tap outside
+
+- **Bottom Sheet Content Cut Off** - Fixed in invite success dialog
+  - Added `isScrollControlled: true` and `SingleChildScrollView`
+
+- **"Outros" Share Button** - Now works correctly
+  - Changed order to share content before closing dialogs
+
+### Added
+- **Weight/Height Input Masks** - Added validation and formatting
+  - Weight: max 300 kg with decimal support
+  - Height: max 250 cm
+
+- **Invite Code Input Mask** - Format: MFP-XXXXX
+  - Auto-uppercase and character filtering
+  - Proper cursor positioning
+
+- **Debug Logging** - Added for error diagnosis
+  - Share profile functionality
+  - Invite error handling with detailed type checking
+
 ## [1.12.1] - 2026-01-26
 
 ### Fixed

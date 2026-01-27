@@ -348,6 +348,7 @@ class StudentOnboardingState {
 /// Provider for trainer onboarding
 class TrainerOnboardingNotifier extends StateNotifier<TrainerOnboardingState> {
   final SharedPreferences? _prefs;
+  bool _hasBeenReset = false;
 
   TrainerOnboardingNotifier({SharedPreferences? prefs})
       : _prefs = prefs,
@@ -358,10 +359,14 @@ class TrainerOnboardingNotifier extends StateNotifier<TrainerOnboardingState> {
   /// Load previously saved progress
   Future<void> _loadSavedProgress() async {
     if (_prefs == null) return;
+    // Don't load if reset() was called - prevents race condition
+    if (_hasBeenReset) return;
 
     state = state.copyWith(isLoading: true);
     try {
       final savedJson = _prefs.getString(OnboardingStorageKeys.trainerProgress);
+      // Check again in case reset was called while we were loading
+      if (_hasBeenReset) return;
       if (savedJson != null) {
         final json = jsonDecode(savedJson) as Map<String, dynamic>;
         state = TrainerOnboardingState.fromJson(json).copyWith(isLoading: false);
@@ -370,7 +375,9 @@ class TrainerOnboardingNotifier extends StateNotifier<TrainerOnboardingState> {
       }
     } catch (e) {
       debugPrint('Error loading onboarding progress: $e');
-      state = state.copyWith(isLoading: false);
+      if (!_hasBeenReset) {
+        state = state.copyWith(isLoading: false);
+      }
     }
   }
 
@@ -589,6 +596,7 @@ class TrainerOnboardingNotifier extends StateNotifier<TrainerOnboardingState> {
   }
 
   void reset() {
+    _hasBeenReset = true;
     state = const TrainerOnboardingState();
     clearSavedProgress();
   }

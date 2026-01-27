@@ -160,6 +160,7 @@ class _TrainerCompleteStepState extends ConsumerState<TrainerCompleteStep> {
 
     return GestureDetector(
       onTap: () async {
+        debugPrint('🔵 Share profile tapped');
         HapticUtils.lightImpact();
         // Build share message
         final specialtiesText = state.specialties.isNotEmpty
@@ -179,7 +180,15 @@ class _TrainerCompleteStepState extends ConsumerState<TrainerCompleteStep> {
           'Baixe o MyFit e conecte-se comigo!',
         ];
 
-        await Share.share(parts.join('\n'));
+        final message = parts.join('\n');
+        debugPrint('🔵 Sharing: $message');
+
+        try {
+          final result = await Share.share(message, subject: 'Meu Perfil MyFit');
+          debugPrint('🟢 Share result: $result');
+        } catch (e) {
+          debugPrint('🔴 Share error: $e');
+        }
       },
       child: Container(
         padding: const EdgeInsets.all(16),

@@ -1297,17 +1297,20 @@ class _WorkoutCompleteSheetState extends State<_WorkoutCompleteSheet> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return WorkoutCelebration(
-      isPlaying: _showCelebration,
-      child: Container(
-        padding: EdgeInsets.fromLTRB(32, 32, 32, 32 + MediaQuery.of(context).viewInsets.bottom),
-        decoration: BoxDecoration(
-          color: isDark
-              ? theme.colorScheme.surface
-              : theme.colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        child: SingleChildScrollView(
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      behavior: HitTestBehavior.opaque,
+      child: WorkoutCelebration(
+        isPlaying: _showCelebration,
+        child: Container(
+          padding: EdgeInsets.fromLTRB(32, 32, 32, 32 + MediaQuery.of(context).viewInsets.bottom),
+          decoration: BoxDecoration(
+            color: isDark
+                ? theme.colorScheme.surface
+                : theme.colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1477,6 +1480,7 @@ class _WorkoutCompleteSheetState extends State<_WorkoutCompleteSheet> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

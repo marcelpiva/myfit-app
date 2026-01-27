@@ -675,32 +675,48 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
       }
     } catch (e, stackTrace) {
       debugPrint('🔴 Error sending invite: $e');
+      debugPrint('🔴 Error type: ${e.runtimeType}');
       debugPrint('🔴 Stack trace: $stackTrace');
       if (mounted) {
         setState(() => _isLoading = false);
 
-        // Extract the actual API exception from DioException
+        // Extract the actual API exception from DioException or direct ApiException
         String? errorCode;
         String? membershipId;
         String? errorMessage;
 
+        debugPrint('🔴 Checking error type...');
+
         if (e is DioException) {
+          debugPrint('🔴 Is DioException, checking e.error: ${e.error?.runtimeType}');
           final apiError = e.error;
-          if (apiError is ValidationException && apiError.fieldErrors != null) {
-            final fieldErrors = apiError.fieldErrors!;
-            errorCode = fieldErrors['code']?.firstOrNull;
-            membershipId = fieldErrors['membership_id']?.firstOrNull;
-            errorMessage = fieldErrors['message']?.firstOrNull;
+          if (apiError is ValidationException) {
+            debugPrint('🔴 Is ValidationException, fieldErrors: ${apiError.fieldErrors}');
+            if (apiError.fieldErrors != null) {
+              final fieldErrors = apiError.fieldErrors!;
+              errorCode = fieldErrors['code']?.firstOrNull;
+              membershipId = fieldErrors['membership_id']?.firstOrNull;
+              errorMessage = fieldErrors['message']?.firstOrNull;
+              debugPrint('🔴 Extracted: code=$errorCode, membershipId=$membershipId, message=$errorMessage');
+            }
           } else if (apiError is ApiException) {
             errorMessage = apiError.userMessage;
+            debugPrint('🔴 Is ApiException, message: $errorMessage');
           }
-        } else if (e is ValidationException && e.fieldErrors != null) {
-          errorCode = e.fieldErrors!['code']?.firstOrNull;
-          membershipId = e.fieldErrors!['membership_id']?.firstOrNull;
-          errorMessage = e.fieldErrors!['message']?.firstOrNull;
+        } else if (e is ValidationException) {
+          debugPrint('🔴 Direct ValidationException, fieldErrors: ${e.fieldErrors}');
+          if (e.fieldErrors != null) {
+            errorCode = e.fieldErrors!['code']?.firstOrNull;
+            membershipId = e.fieldErrors!['membership_id']?.firstOrNull;
+            errorMessage = e.fieldErrors!['message']?.firstOrNull;
+            debugPrint('🔴 Extracted: code=$errorCode, membershipId=$membershipId, message=$errorMessage');
+          }
         } else if (e is ApiException) {
           errorMessage = e.userMessage;
+          debugPrint('🔴 Direct ApiException, message: $errorMessage');
         }
+
+        debugPrint('🔴 Final: errorCode=$errorCode, membershipId=$membershipId, errorMessage=$errorMessage');
 
         // Handle specific error codes from backend
         if (errorCode == 'ALREADY_MEMBER') {

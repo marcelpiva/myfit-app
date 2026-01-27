@@ -41,6 +41,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
+  bool _editModeInitialized = false;
 
   bool get _isTrainer => widget.userType == 'trainer' || widget.userType == 'personal';
 
@@ -68,7 +69,12 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
           notifier.reset();
           await _loadExistingData();
         }
+        if (mounted) {
+          setState(() => _editModeInitialized = true);
+        }
       });
+    } else {
+      _editModeInitialized = true;
     }
   }
 
@@ -342,6 +348,19 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
 
   @override
   Widget build(BuildContext context) {
+    // Show loading while initializing in edit mode
+    if (widget.editMode && !_editModeInitialized) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      return Scaffold(
+        body: Container(
+          color: isDark ? AppColors.backgroundDark : AppColors.background,
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
+
     if (_isTrainer) {
       return _buildTrainerOnboarding(context);
     } else {
@@ -391,18 +410,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
       case TrainerOnboardingStep.professionalProfile:
         return TrainerProfileStep(
           progress: progress,
-          onNext: widget.editMode
-              ? () async {
-                  // In edit mode, save and go back
-                  await _saveOnboardingData();
-                  if (mounted) context.pop();
-                }
-              : () => notifier.nextStep(),
-          onBack: widget.editMode
-              ? () {
-                  if (mounted) context.pop();
-                }
-              : () => notifier.previousStep(),
+          onNext: () => notifier.nextStep(),
+          onBack: () => notifier.previousStep(),
           onSkip: _skip,
         );
       case TrainerOnboardingStep.inviteStudent:

@@ -228,7 +228,7 @@ class _StudentPhysicalDataStepState extends State<StudentPhysicalDataStep> {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      // Weight
+                      // Weight (20-300 kg)
                       _buildInputCard(
                         icon: LucideIcons.scale,
                         title: 'Peso',
@@ -237,11 +237,12 @@ class _StudentPhysicalDataStepState extends State<StudentPhysicalDataStep> {
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,1}')),
+                          _WeightInputFormatter(),
                         ],
                         isDark: isDark,
                       ),
                       const SizedBox(height: 16),
-                      // Height
+                      // Height (50-250 cm)
                       _buildInputCard(
                         icon: LucideIcons.arrowUpDown,
                         title: 'Altura',
@@ -250,7 +251,7 @@ class _StudentPhysicalDataStepState extends State<StudentPhysicalDataStep> {
                         keyboardType: TextInputType.number,
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(3),
+                          _HeightInputFormatter(),
                         ],
                         isDark: isDark,
                       ),
@@ -595,5 +596,61 @@ class _StudentPhysicalDataStepState extends State<StudentPhysicalDataStep> {
         ],
       ),
     );
+  }
+}
+
+/// Weight formatter: limits to 20-300 kg with one decimal place
+class _WeightInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) return newValue;
+
+    // Parse the value
+    final value = double.tryParse(newValue.text);
+    if (value == null) return oldValue;
+
+    // Limit to max 300 kg
+    if (value > 300) {
+      return const TextEditingValue(
+        text: '300',
+        selection: TextSelection.collapsed(offset: 3),
+      );
+    }
+
+    // Allow values up to 300
+    return newValue;
+  }
+}
+
+/// Height formatter: limits to 50-250 cm
+class _HeightInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) return newValue;
+
+    // Only allow 3 digits max
+    if (newValue.text.length > 3) {
+      return oldValue;
+    }
+
+    // Parse the value
+    final value = int.tryParse(newValue.text);
+    if (value == null) return oldValue;
+
+    // Limit to max 250 cm
+    if (value > 250) {
+      return const TextEditingValue(
+        text: '250',
+        selection: TextSelection.collapsed(offset: 3),
+      );
+    }
+
+    return newValue;
   }
 }

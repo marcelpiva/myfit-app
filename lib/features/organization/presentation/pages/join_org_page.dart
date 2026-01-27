@@ -413,9 +413,14 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
                               controller: _codeController,
                               focusNode: _focusNode,
                               textCapitalization: TextCapitalization.characters,
+                              maxLength: 9,
+                              inputFormatters: [
+                                _InviteCodeFormatter(),
+                              ],
                               onChanged: (_) => setState(() => _errorMessage = null),
                               decoration: InputDecoration(
                                 hintText: 'MFP-A1B2C',
+                                counterText: '',
                                 filled: true,
                                 fillColor: isDark ? AppColors.cardDark : AppColors.card,
                                 prefixIcon: Icon(
@@ -876,6 +881,66 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
               : const Text('Enviar Solicitação'),
         ),
       ),
+    );
+  }
+}
+
+/// Custom formatter for invite code format: MFP-XXXXX
+class _InviteCodeFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    String text = newValue.text.toUpperCase();
+
+    // Remove invalid characters
+    text = text.replaceAll(RegExp(r'[^A-Z0-9\-]'), '');
+
+    // Handle prefix
+    if (text.isEmpty) return newValue.copyWith(text: '');
+
+    // Auto-add MFP- prefix
+    if (!text.startsWith('M')) {
+      if (RegExp(r'^[A-F0-9]').hasMatch(text)) {
+        text = 'MFP-$text';
+      }
+    }
+
+    // Ensure correct prefix structure
+    if (text.length >= 4) {
+      final prefix = text.substring(0, 4);
+      if (prefix != 'MFP-') {
+        // Try to fix common mistakes
+        String fixed = '';
+        if (text.startsWith('M')) fixed = 'M';
+        if (text.length > 1 && (text[1] == 'F' || text[1] == 'f')) fixed += 'F';
+        else if (text.length > 1) fixed = 'MF';
+        if (text.length > 2 && (text[2] == 'P' || text[2] == 'p')) fixed += 'P';
+        else if (text.length > 2) fixed = 'MFP';
+        if (text.length > 3) fixed += '-';
+        if (text.length > 3) {
+          final rest = text.substring(3).replaceAll('-', '').replaceAll(RegExp(r'[^A-F0-9]'), '');
+          fixed += rest;
+        }
+        text = fixed;
+      }
+    }
+
+    // After MFP-, only allow hex characters (0-9, A-F)
+    if (text.length > 4) {
+      final afterPrefix = text.substring(4).replaceAll(RegExp(r'[^A-F0-9]'), '');
+      text = 'MFP-$afterPrefix';
+    }
+
+    // Limit to 9 characters
+    if (text.length > 9) {
+      text = text.substring(0, 9);
+    }
+
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
     );
   }
 }
