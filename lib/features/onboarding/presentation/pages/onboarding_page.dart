@@ -56,15 +56,22 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
     );
     _animController.forward();
 
-    // Reset to welcome step and load existing data when in edit mode
+    // Reset and go directly to edit step when in edit mode
     if (widget.editMode) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (_isTrainer) {
-          ref.read(trainerOnboardingProvider.notifier).reset();
+          final notifier = ref.read(trainerOnboardingProvider.notifier);
+          notifier.reset();
+          await _loadExistingData();
+          // In edit mode, go directly to professional profile step (skip welcome)
+          notifier.goToStep(TrainerOnboardingStep.professionalProfile);
         } else {
-          ref.read(studentOnboardingProvider.notifier).reset();
+          final notifier = ref.read(studentOnboardingProvider.notifier);
+          notifier.reset();
+          await _loadExistingData();
+          // In edit mode, go directly to fitness goal step (skip welcome)
+          notifier.goToStep(StudentOnboardingStep.fitnessGoal);
         }
-        _loadExistingData();
       });
     }
   }
@@ -388,8 +395,18 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
       case TrainerOnboardingStep.professionalProfile:
         return TrainerProfileStep(
           progress: progress,
-          onNext: () => notifier.nextStep(),
-          onBack: () => notifier.previousStep(),
+          onNext: widget.editMode
+              ? () async {
+                  // In edit mode, save and go back
+                  await _saveOnboardingData();
+                  if (mounted) context.pop();
+                }
+              : () => notifier.nextStep(),
+          onBack: widget.editMode
+              ? () {
+                  if (mounted) context.pop();
+                }
+              : () => notifier.previousStep(),
           onSkip: _skip,
         );
       case TrainerOnboardingStep.inviteStudent:
