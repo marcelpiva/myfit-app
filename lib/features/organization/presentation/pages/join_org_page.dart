@@ -10,7 +10,9 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
+import '../../../../core/error/api_exceptions.dart';
 import '../../../../core/providers/context_provider.dart';
+import '../../../../core/services/organization_service.dart';
 
 class JoinOrgPage extends ConsumerStatefulWidget {
   const JoinOrgPage({super.key});
@@ -50,7 +52,12 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
     super.dispose();
   }
 
-  bool get _canJoin => _codeController.text.trim().length >= 6;
+  // Format: MFP-XXXXX (e.g., MFP-A1B2C)
+  bool get _canJoin {
+    final code = _codeController.text.trim().toUpperCase();
+    // Accept format MFP-XXXXX where X is hex (0-9, A-F)
+    return RegExp(r'^MFP-[A-F0-9]{5}$').hasMatch(code);
+  }
 
   Future<void> _joinOrganization() async {
     if (!_canJoin) return;
@@ -60,31 +67,211 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
       _errorMessage = null;
     });
 
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
+    final code = _codeController.text.trim().toUpperCase();
+    final orgService = OrganizationService();
 
-    if (mounted) {
-      // Simulate validation - in real app would check against backend
-      final code = _codeController.text.trim().toUpperCase();
+    try {
+      // First, preview the invite to get organization details
+      final preview = await orgService.getInvitePreviewByCode(code);
 
-      if (code == 'INVALID') {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = 'Código inválido ou expirado. Verifique e tente novamente.';
-        });
+      if (!mounted) return;
+
+      // Show confirmation dialog with organization details
+      final confirmed = await _showConfirmationDialog(
+        organizationName: preview['organization_name'] ?? 'Organização',
+        inviterName: preview['invited_by_name'] ?? 'Desconhecido',
+        role: preview['role'] ?? 'student',
+      );
+
+      if (!confirmed || !mounted) {
+        setState(() => _isLoading = false);
         return;
       }
+
+      // Accept the invite
+      await orgService.acceptInviteByCode(code);
+
+      if (!mounted) return;
 
       setState(() => _isLoading = false);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Solicitação enviada com sucesso!', style: const TextStyle(color: Colors.white)),
+          content: Text('Convite aceito com sucesso!', style: TextStyle(color: Colors.white)),
           backgroundColor: AppColors.success,
         ),
       );
 
+      // Invalidate providers to refresh memberships
+      ref.invalidate(trainAloneModeProvider);
+
       context.go(RouteNames.orgSelector);
+    } on NotFoundException {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Código de convite não encontrado. Verifique e tente novamente.';
+        });
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = e.userMessage;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Erro ao processar convite. Tente novamente.';
+        });
+      }
+    }
+  }
+
+  Future<bool> _showConfirmationDialog({
+    required String organizationName,
+    required String inviterName,
+    required String role,
+  }) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final roleLabel = _getRoleLabel(role);
+
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetContext) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : AppColors.card,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.borderDark : AppColors.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withAlpha(25),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(
+                LucideIcons.userPlus,
+                size: 36,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Confirmar Entrada',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Você foi convidado por $inviterName para entrar em:',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              organizationName,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withAlpha(20),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                roleLabel,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  HapticUtils.mediumImpact();
+                  Navigator.pop(sheetContext, true);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text(
+                  'Aceitar Convite',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => Navigator.pop(sheetContext, false),
+              child: Text(
+                'Cancelar',
+                style: TextStyle(
+                  color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                ),
+              ),
+            ),
+            SizedBox(height: MediaQuery.of(sheetContext).padding.bottom),
+          ],
+        ),
+      ),
+    );
+
+    return result ?? false;
+  }
+
+  String _getRoleLabel(String role) {
+    switch (role) {
+      case 'student':
+        return 'Aluno';
+      case 'trainer':
+        return 'Personal Trainer';
+      case 'coach':
+        return 'Coach';
+      case 'nutritionist':
+        return 'Nutricionista';
+      case 'gym_admin':
+        return 'Administrador';
+      case 'gym_owner':
+        return 'Proprietário';
+      default:
+        return 'Membro';
     }
   }
 
@@ -228,7 +415,7 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
                               textCapitalization: TextCapitalization.characters,
                               onChanged: (_) => setState(() => _errorMessage = null),
                               decoration: InputDecoration(
-                                hintText: 'Ex: ABC123',
+                                hintText: 'MFP-A1B2C',
                                 filled: true,
                                 fillColor: isDark ? AppColors.cardDark : AppColors.card,
                                 prefixIcon: Icon(

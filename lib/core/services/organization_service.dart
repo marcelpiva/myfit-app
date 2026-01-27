@@ -385,6 +385,40 @@ class OrganizationService {
     }
   }
 
+  /// Get invite preview by short code (public, no auth required)
+  /// Short code format: MFP-XXXXX (e.g., MFP-A1B2C)
+  Future<Map<String, dynamic>> getInvitePreviewByCode(String shortCode) async {
+    try {
+      final response = await _client.get(ApiEndpoints.invitePreviewByCode(shortCode.toUpperCase()));
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw const NotFoundException('Código de convite não encontrado');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Código inválido ou expirado', e);
+    }
+  }
+
+  /// Accept invite using short code
+  Future<Map<String, dynamic>> acceptInviteByCode(String shortCode) async {
+    try {
+      final response = await _client.post(
+        ApiEndpoints.acceptInviteByCode,
+        data: {'short_code': shortCode.toUpperCase()},
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw const ServerException('Erro ao aceitar convite');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Código inválido ou expirado', e);
+    }
+  }
+
   // ==================== Stats ====================
 
   /// Get organization statistics

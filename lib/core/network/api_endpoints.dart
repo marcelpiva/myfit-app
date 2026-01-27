@@ -38,7 +38,9 @@ class ApiEndpoints {
   static String resendInvite(String orgId, String inviteId) =>
       '/organizations/$orgId/invites/$inviteId/resend';
   static const String acceptInvite = '/organizations/accept-invite';
+  static const String acceptInviteByCode = '/organizations/accept-invite-by-code';
   static String invitePreview(String token) => '/organizations/invite/preview/$token';
+  static String invitePreviewByCode(String shortCode) => '/organizations/invite/code/$shortCode';
 
   // ==================== Workouts ====================
   static const String workouts = '/workouts';

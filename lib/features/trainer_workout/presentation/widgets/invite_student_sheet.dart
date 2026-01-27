@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/cache/cache.dart';
@@ -122,15 +123,18 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
     return 'https://myfitplatform.com/invite/$token';
   }
 
-  String _getInviteMessage(String link) {
+  String _getInviteMessage(String link, {String? shortCode}) {
+    final codeInfo = shortCode != null
+        ? '\n\nOu digite o código: $shortCode'
+        : '';
     return 'Olá! Estou te convidando para treinar comigo no MyFit. '
-        'Clique no link para aceitar: $link';
+        'Clique no link para aceitar: $link$codeInfo';
   }
 
-  Future<void> _shareViaWhatsApp(String token) async {
+  Future<void> _shareViaWhatsApp(String token, {String? shortCode}) async {
     HapticUtils.lightImpact();
     final link = _getInviteLink(token);
-    final message = _getInviteMessage(link);
+    final message = _getInviteMessage(link, shortCode: shortCode);
     final whatsappUrl = Uri.parse(
       'https://wa.me/?text=${Uri.encodeComponent(message)}',
     );
@@ -174,10 +178,10 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
     }
   }
 
-  Future<void> _shareLink(String token) async {
+  Future<void> _shareLink(String token, {String? shortCode}) async {
     HapticUtils.lightImpact();
     final link = _getInviteLink(token);
-    final message = _getInviteMessage(link);
+    final message = _getInviteMessage(link, shortCode: shortCode);
 
     try {
       await Share.share(message, subject: 'Convite MyFit');
@@ -276,18 +280,25 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
     );
   }
 
-  void _showShareOptions(String token, String email) {
+  void _showShareOptions(String token, String email, {String? shortCode}) {
     showModalBottomSheet(
       context: context,
       backgroundColor: widget.isDark ? AppColors.cardDark : AppColors.background,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
+      isScrollControlled: true,
       builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+        padding: EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: 24,
+          bottom: MediaQuery.of(ctx).padding.bottom + 24,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
             // Handle
             Container(
               width: 40,
@@ -337,6 +348,99 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
               ),
             ),
 
+            // Short code display
+            if (shortCode != null && shortCode.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: widget.isDark
+                      ? AppColors.primaryDark.withAlpha(20)
+                      : AppColors.primary.withAlpha(15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: widget.isDark
+                        ? AppColors.primaryDark.withAlpha(40)
+                        : AppColors.primary.withAlpha(30),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Código de Convite',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: widget.isDark
+                            ? AppColors.mutedForegroundDark
+                            : AppColors.mutedForeground,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          shortCode,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'monospace',
+                            letterSpacing: 2,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        GestureDetector(
+                          onTap: () async {
+                            HapticUtils.lightImpact();
+                            await Clipboard.setData(ClipboardData(text: shortCode));
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Row(
+                                    children: [
+                                      Icon(LucideIcons.copy, color: Colors.white, size: 18),
+                                      SizedBox(width: 12),
+                                      Text('Código copiado!'),
+                                    ],
+                                  ),
+                                  backgroundColor: AppColors.success,
+                                  duration: const Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withAlpha(20),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              LucideIcons.copy,
+                              size: 18,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Seu aluno pode usar este código para entrar',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: widget.isDark
+                            ? AppColors.mutedForegroundDark
+                            : AppColors.mutedForeground,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             const SizedBox(height: 24),
 
             Text(
@@ -363,7 +467,7 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
                     Navigator.pop(ctx); // Close share options dialog
                     Navigator.pop(context); // Close invite sheet
                     widget.onSuccess?.call();
-                    _shareViaWhatsApp(token);
+                    _shareViaWhatsApp(token, shortCode: shortCode);
                   },
                 ),
                 _buildShareButton(
@@ -392,11 +496,12 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
                   icon: LucideIcons.share2,
                   label: 'Outros',
                   color: AppColors.mutedForeground,
-                  onTap: () {
-                    Navigator.pop(ctx); // Close share options dialog
-                    Navigator.pop(context); // Close invite sheet
+                  onTap: () async {
+                    // Share first before closing dialogs
+                    await _shareLink(token, shortCode: shortCode);
+                    if (ctx.mounted) Navigator.pop(ctx);
+                    if (context.mounted) Navigator.pop(context);
                     widget.onSuccess?.call();
-                    _shareLink(token);
                   },
                 ),
               ],
@@ -423,6 +528,7 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
               ),
             ),
           ],
+        ),
         ),
       ),
     );
@@ -539,6 +645,7 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
       // Emit cache event to refresh pending invites list
       final inviteId = result['id'] as String? ?? '';
       final token = result['token'] as String? ?? '';
+      final shortCode = result['short_code'] as String?;
       ref.read(cacheEventEmitterProvider).inviteCreated(
             inviteId,
             organizationId: widget.orgId,
@@ -546,9 +653,9 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
 
       if (mounted) {
         setState(() => _isLoading = false);
-        // Show share options dialog with the token
+        // Show share options dialog with the token and short code
         if (token.isNotEmpty) {
-          _showShareOptions(token, email);
+          _showShareOptions(token, email, shortCode: shortCode);
         } else {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -572,18 +679,27 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
       if (mounted) {
         setState(() => _isLoading = false);
 
-        // Check for structured error response with code
+        // Extract the actual API exception from DioException
         String? errorCode;
         String? membershipId;
-        if (e is ValidationException) {
-          // Try to extract code from detail
-          final detail = e.fieldErrors;
-          if (detail != null && detail.containsKey('code')) {
-            errorCode = detail['code']?.firstOrNull;
+        String? errorMessage;
+
+        if (e is DioException) {
+          final apiError = e.error;
+          if (apiError is ValidationException && apiError.fieldErrors != null) {
+            final fieldErrors = apiError.fieldErrors!;
+            errorCode = fieldErrors['code']?.firstOrNull;
+            membershipId = fieldErrors['membership_id']?.firstOrNull;
+            errorMessage = fieldErrors['message']?.firstOrNull;
+          } else if (apiError is ApiException) {
+            errorMessage = apiError.userMessage;
           }
-          if (detail != null && detail.containsKey('membership_id')) {
-            membershipId = detail['membership_id']?.firstOrNull;
-          }
+        } else if (e is ValidationException && e.fieldErrors != null) {
+          errorCode = e.fieldErrors!['code']?.firstOrNull;
+          membershipId = e.fieldErrors!['membership_id']?.firstOrNull;
+          errorMessage = e.fieldErrors!['message']?.firstOrNull;
+        } else if (e is ApiException) {
+          errorMessage = e.userMessage;
         }
 
         // Handle specific error codes from backend
@@ -591,7 +707,7 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Você já tem esse aluno'),
+              content: Text(errorMessage ?? 'Este aluno já faz parte dos seus alunos'),
               backgroundColor: AppColors.warning,
               behavior: SnackBarBehavior.floating,
             ),
@@ -601,7 +717,7 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Este aluno já possui um convite pendente'),
+              content: Text(errorMessage ?? 'Este aluno já possui um convite pendente'),
               backgroundColor: AppColors.warning,
               behavior: SnackBarBehavior.floating,
             ),
@@ -613,23 +729,17 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
           return;
         }
 
-        // Extract a more user-friendly error message
-        String errorMsg;
+        // Use the extracted error message or provide a fallback
         final errorString = e.toString();
-        if (e is ApiException) {
-          errorMsg = e.userMessage;
+        String errorMsg;
+        if (errorMessage != null && errorMessage.isNotEmpty) {
+          errorMsg = errorMessage;
         } else if (errorString.contains('401')) {
           errorMsg = 'Sessão expirada. Faça login novamente.';
         } else if (errorString.contains('403')) {
           errorMsg = 'Você não tem permissão para convidar alunos.';
         } else if (errorString.contains('404')) {
           errorMsg = 'Organização não encontrada.';
-        } else if (errorString.contains('409') || errorString.contains('ALREADY_MEMBER')) {
-          errorMsg = 'Você já tem esse aluno.';
-        } else if (errorString.contains('PENDING_INVITE')) {
-          errorMsg = 'Este aluno já possui um convite pendente.';
-        } else if (errorString.contains('INACTIVE_MEMBER')) {
-          errorMsg = 'Este aluno está inativo. Deseja reativá-lo?';
         } else {
           errorMsg = 'Erro ao enviar convite. Tente novamente.';
         }

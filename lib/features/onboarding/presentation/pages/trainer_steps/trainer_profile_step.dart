@@ -16,6 +16,7 @@ class TrainerProfileStep extends ConsumerStatefulWidget {
   final VoidCallback onBack;
   final VoidCallback onSkip;
   final double progress;
+  final bool editMode;
 
   const TrainerProfileStep({
     super.key,
@@ -23,6 +24,7 @@ class TrainerProfileStep extends ConsumerStatefulWidget {
     required this.onBack,
     required this.onSkip,
     this.progress = 0.2,
+    this.editMode = false,
   });
 
   @override
@@ -447,8 +449,9 @@ class _TrainerProfileStepState extends ConsumerState<TrainerProfileStep> {
       child: OnboardingStepActions(
         onBack: widget.onBack,
         onNext: _canContinue ? _handleNext : null,
-        nextLabel: 'Continuar',
+        nextLabel: widget.editMode ? 'Salvar' : 'Continuar',
         showBack: true,
+        backLabel: widget.editMode ? 'Cancelar' : 'Voltar',
       ),
     );
   }
