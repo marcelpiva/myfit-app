@@ -7,6 +7,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
+import '../../../../core/providers/context_provider.dart';
 import '../../../../shared/presentation/components/components.dart';
 import '../../../../shared/presentation/widgets/verified_badge.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -47,9 +48,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final currentUser = ref.watch(currentUserProvider);
+    final activeContext = ref.watch(activeContextProvider);
     final userName = currentUser?.name ?? 'Usuario';
     final userEmail = currentUser?.email ?? '';
-    final isTrainer = currentUser?.userType == 'trainer';
+    final isTrainer = activeContext?.isTrainer ?? false;
     final hasCref = currentUser?.cref != null && currentUser!.cref!.isNotEmpty;
     final crefVerified = currentUser?.crefVerified ?? false;
 

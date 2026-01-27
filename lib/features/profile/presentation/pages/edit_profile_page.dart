@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
+import '../../../../core/providers/context_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 class EditProfilePage extends ConsumerStatefulWidget {
@@ -313,7 +314,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage>
                         ),
 
                         // CREF field (only for Personal Trainers)
-                        if (ref.watch(currentUserProvider)?.userType == 'personal') ...[
+                        if (ref.watch(activeContextProvider)?.isTrainer ?? false) ...[
                           const SizedBox(height: 20),
                           _buildCrefField(isDark),
                         ],

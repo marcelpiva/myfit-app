@@ -592,9 +592,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
 
     // Check context: null = org selector (unless in train alone mode), otherwise check role
     final isFromOrgSelector = activeContext == null && !isTrainAlone;
-    final isTrainerContext = activeContext != null && (activeContext.isTrainer);
-    // Student context: either in a student org OR in train alone mode
-    final isStudentContext = (activeContext != null && activeContext.membership.role == UserRole.student) || isTrainAlone;
+
+    // Trainer context: in a trainer org
+    final isTrainerContext = activeContext != null && activeContext.isTrainer;
+
+    // Student context: in student org OR train alone mode
+    final isStudentContext = (activeContext != null && activeContext.membership.role == UserRole.student) ||
+        isTrainAlone;
 
     // Check if user has student profile (including train alone mode)
     final hasStudentProfile = memberships.any((m) => m.role == UserRole.student) || isTrainAlone;

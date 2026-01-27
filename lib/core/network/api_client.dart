@@ -37,7 +37,8 @@ class ApiClient {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        validateStatus: (status) => status != null && status < 500,
+        // Only 2xx responses are successful, 4xx and 5xx trigger error interceptor
+        validateStatus: (status) => status != null && status >= 200 && status < 300,
       );
 
   /// Setup interceptors

@@ -531,7 +531,13 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
         ),
         ),
       ),
-    );
+    ).then((_) {
+      // When share options is dismissed (tap outside or swipe down), close the invite sheet too
+      if (context.mounted) {
+        Navigator.pop(context);
+        widget.onSuccess?.call();
+      }
+    });
   }
 
   Widget _buildShareButton({
@@ -680,43 +686,31 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
       if (mounted) {
         setState(() => _isLoading = false);
 
-        // Extract the actual API exception from DioException or direct ApiException
+        // Extract error details from the exception
         String? errorCode;
         String? membershipId;
         String? errorMessage;
 
-        debugPrint('🔴 Checking error type...');
-
-        if (e is DioException) {
-          debugPrint('🔴 Is DioException, checking e.error: ${e.error?.runtimeType}');
-          final apiError = e.error;
-          if (apiError is ValidationException) {
-            debugPrint('🔴 Is ValidationException, fieldErrors: ${apiError.fieldErrors}');
-            if (apiError.fieldErrors != null) {
-              final fieldErrors = apiError.fieldErrors!;
-              errorCode = fieldErrors['code']?.firstOrNull;
-              membershipId = fieldErrors['membership_id']?.firstOrNull;
-              errorMessage = fieldErrors['message']?.firstOrNull;
-              debugPrint('🔴 Extracted: code=$errorCode, membershipId=$membershipId, message=$errorMessage');
-            }
-          } else if (apiError is ApiException) {
-            errorMessage = apiError.userMessage;
-            debugPrint('🔴 Is ApiException, message: $errorMessage');
-          }
-        } else if (e is ValidationException) {
-          debugPrint('🔴 Direct ValidationException, fieldErrors: ${e.fieldErrors}');
-          if (e.fieldErrors != null) {
-            errorCode = e.fieldErrors!['code']?.firstOrNull;
-            membershipId = e.fieldErrors!['membership_id']?.firstOrNull;
-            errorMessage = e.fieldErrors!['message']?.firstOrNull;
-            debugPrint('🔴 Extracted: code=$errorCode, membershipId=$membershipId, message=$errorMessage');
-          }
-        } else if (e is ApiException) {
-          errorMessage = e.userMessage;
-          debugPrint('🔴 Direct ApiException, message: $errorMessage');
+        // Get the actual ApiException (either direct or from DioException)
+        ApiException? apiException;
+        if (e is ApiException) {
+          apiException = e;
+        } else if (e is DioException && e.error is ApiException) {
+          apiException = e.error as ApiException;
         }
 
-        debugPrint('🔴 Final: errorCode=$errorCode, membershipId=$membershipId, errorMessage=$errorMessage');
+        // Extract details from ValidationException
+        if (apiException is ValidationException && apiException.fieldErrors != null) {
+          final fieldErrors = apiException.fieldErrors!;
+          errorCode = fieldErrors['code']?.firstOrNull;
+          membershipId = fieldErrors['membership_id']?.firstOrNull;
+          errorMessage = fieldErrors['message']?.firstOrNull;
+        }
+
+        // Fallback to exception message
+        errorMessage ??= apiException?.message;
+
+        debugPrint('🔴 Extracted: code=$errorCode, message=$errorMessage, membershipId=$membershipId');
 
         // Handle specific error codes from backend
         if (errorCode == 'ALREADY_MEMBER') {
@@ -745,20 +739,8 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
           return;
         }
 
-        // Use the extracted error message or provide a fallback
-        final errorString = e.toString();
-        String errorMsg;
-        if (errorMessage != null && errorMessage.isNotEmpty) {
-          errorMsg = errorMessage;
-        } else if (errorString.contains('401')) {
-          errorMsg = 'Sessão expirada. Faça login novamente.';
-        } else if (errorString.contains('403')) {
-          errorMsg = 'Você não tem permissão para convidar alunos.';
-        } else if (errorString.contains('404')) {
-          errorMsg = 'Organização não encontrada.';
-        } else {
-          errorMsg = 'Erro ao enviar convite. Tente novamente.';
-        }
+        // Use the error message from API or fallback
+        final errorMsg = errorMessage ?? 'Erro ao enviar convite. Tente novamente.';
 
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
