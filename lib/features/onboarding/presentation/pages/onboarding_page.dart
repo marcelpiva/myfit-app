@@ -228,6 +228,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
         debugPrint('  experienceLevel: ${state.experienceLevel?.name}');
         debugPrint('  weight: ${state.weight}');
         debugPrint('  height: ${state.height}');
+        debugPrint('  birthDate: ${state.birthDate}');
         debugPrint('  age: ${state.age}');
         debugPrint('  weeklyFrequency: ${state.weeklyFrequency}');
         debugPrint('  injuries: ${state.injuries}');
@@ -237,6 +238,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
           experienceLevel: state.experienceLevel?.name,
           weightKg: state.weight,
           heightCm: state.height,
+          birthDate: state.birthDate,
           age: state.age,
           weeklyFrequency: state.weeklyFrequency,
           injuries: state.injuries,

@@ -337,7 +337,7 @@ class StudentNewPlansNotifier extends StateNotifier<StudentNewPlansState> {
   Future<bool> respondToPlan(String assignmentId, {required bool accept, String? declinedReason}) async {
     state = state.copyWith(isResponding: true, error: null);
     try {
-      final response = await _client.put(
+      final response = await _client.post(
         ApiEndpoints.planAssignmentRespond(assignmentId),
         data: {
           'accept': accept,

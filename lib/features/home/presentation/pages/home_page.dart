@@ -15,6 +15,7 @@ import '../../../trainer_home/presentation/pages/trainer_home_page.dart';
 import '../../../nutritionist_home/presentation/pages/nutritionist_home_page.dart';
 import '../../../gym_home/presentation/pages/gym_home_page.dart';
 import '../../data/models/student_dashboard.dart';
+import '../../../notifications/presentation/providers/notifications_provider.dart';
 import '../providers/student_home_provider.dart';
 import '../widgets/plan_review_sheet.dart';
 import '../widgets/streak_calendar.dart';
@@ -130,6 +131,9 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
     final pendingPlansState = dashboardState.hasTrainer
         ? ref.watch(studentPendingPlansProvider)
         : null;
+    // Watch notifications for unread count
+    final notificationsState = ref.watch(notificationsProvider);
+    final unreadNotifications = notificationsState.unreadCount;
 
     return Scaffold(
       body: Container(
@@ -156,7 +160,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                             const SizedBox(height: 24),
 
                             // Header
-                            _buildHeader(context, isDark, userName, userInitials),
+                            _buildHeader(context, isDark, userName, userInitials, unreadNotifications),
 
                             const SizedBox(height: 24),
 
@@ -307,7 +311,7 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
     return completedDays;
   }
 
-  Widget _buildHeader(BuildContext context, bool isDark, String userName, String userInitials) {
+  Widget _buildHeader(BuildContext context, bool isDark, String userName, String userInitials, int unreadNotifications) {
     return Row(
       children: [
         // Avatar
@@ -410,18 +414,19 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                     color: isDark ? AppColors.foregroundDark : AppColors.foreground,
                   ),
                 ),
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: AppColors.destructive,
-                      shape: BoxShape.circle,
+                if (unreadNotifications > 0)
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppColors.destructive,
+                        shape: BoxShape.circle,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),

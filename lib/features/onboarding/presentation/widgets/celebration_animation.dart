@@ -340,29 +340,26 @@ class CompletionSummaryCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 16,
+            runSpacing: 8,
             children: [
-              if (specialties.isNotEmpty) ...[
+              if (specialties.isNotEmpty)
                 _SummaryItem(
                   icon: LucideIcons.award,
-                  label: '${specialties.length} especialidades',
+                  label: '${specialties.length} especialidade${specialties.length > 1 ? 's' : ''}',
                 ),
-                const SizedBox(width: 16),
-              ],
-              if (experienceYears > 0) ...[
+              if (experienceYears > 0)
                 _SummaryItem(
                   icon: LucideIcons.clock,
-                  label: '$experienceYears anos de exp.',
+                  label: '$experienceYears anos',
                 ),
-              ],
-              if (cref != null) ...[
-                const SizedBox(width: 16),
+              if (cref != null)
                 _SummaryItem(
                   icon: LucideIcons.badgeCheck,
-                  label: 'CREF Verificado',
+                  label: 'CREF',
                 ),
-              ],
             ],
           ),
         ],
@@ -452,12 +449,6 @@ class NextStepsChecklist extends StatelessWidget {
           label: 'Criar primeiro plano',
           isCompleted: hasCreatedPlan,
           onTap: hasCreatedPlan ? null : onCreatePlanTap,
-        ),
-        const SizedBox(height: 8),
-        _ChecklistItem(
-          label: 'Explorar templates',
-          isCompleted: hasExploredTemplates,
-          onTap: hasExploredTemplates ? null : onExploreTemplatesTap,
         ),
       ],
     );

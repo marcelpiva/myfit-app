@@ -34,7 +34,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>com.myfit.app</string>
+			<string>com.marcelpiva.myfitplatform</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>myfit</string>

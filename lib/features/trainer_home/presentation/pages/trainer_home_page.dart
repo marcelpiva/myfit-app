@@ -16,6 +16,7 @@ import '../../../../shared/presentation/components/animations/fade_in_up.dart';
 import '../../../../shared/presentation/components/role_bottom_navigation.dart';
 import '../../../../shared/presentation/widgets/onboarding_incomplete_banner.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../notifications/presentation/providers/notifications_provider.dart';
 import '../../../trainer_workout/presentation/widgets/invite_student_sheet.dart' show showInviteStudentSheet;
 import '../providers/trainer_home_provider.dart';
 import '../widgets/students_now_section.dart';
@@ -105,6 +106,9 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
     final dashboardState = orgId != null
         ? ref.watch(trainerDashboardNotifierProvider(orgId))
         : const TrainerDashboardState();
+    // Watch notifications for unread count
+    final notificationsState = ref.watch(notificationsProvider);
+    final unreadNotifications = notificationsState.unreadCount;
 
     // Build schedule, activities, and alerts from provider data
     final schedule = _buildScheduleFromData(dashboardState.todaySchedule);
@@ -141,13 +145,17 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
                     child: _HeaderSection(
                       isDark: isDark,
                       userName: currentUser?.name ?? 'Trainer',
+                      unreadNotifications: unreadNotifications,
                     ),
                   ),
 
                   const SizedBox(height: 16),
 
                   // Onboarding incomplete banner
-                  if (currentUser != null && !currentUser.onboardingCompleted)
+                  // Show only if onboarding not completed AND profile has no data (CREF)
+                  if (currentUser != null &&
+                      !currentUser.onboardingCompleted &&
+                      (currentUser.cref == null || currentUser.cref!.isEmpty))
                     FadeInUp(
                       delay: const Duration(milliseconds: 50),
                       child: OnboardingIncompleteBanner(
@@ -647,8 +655,13 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
 class _HeaderSection extends StatelessWidget {
   final bool isDark;
   final String userName;
+  final int unreadNotifications;
 
-  const _HeaderSection({required this.isDark, required this.userName});
+  const _HeaderSection({
+    required this.isDark,
+    required this.userName,
+    required this.unreadNotifications,
+  });
 
   String _getInitials(String name) {
     final parts = name.trim().split(' ');
@@ -814,18 +827,19 @@ class _HeaderSection extends StatelessWidget {
                     color: isDark ? AppColors.foregroundDark : AppColors.foreground,
                   ),
                 ),
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: AppColors.destructive,
-                      shape: BoxShape.circle,
+                if (unreadNotifications > 0)
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppColors.destructive,
+                        shape: BoxShape.circle,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),

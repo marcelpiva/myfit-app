@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:share_plus/share_plus.dart';
 
+import '../../../../../config/routes/route_names.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/utils/haptic_utils.dart';
 import '../../providers/onboarding_provider.dart';
@@ -111,16 +114,28 @@ class _TrainerCompleteStepState extends ConsumerState<TrainerCompleteStep> {
                         NextStepsChecklist(
                           hasInvitedStudent: state.hasInvitedStudent,
                           hasCreatedPlan: state.hasCreatedPlan,
-                          hasExploredTemplates: state.hasExploredTemplates,
+                          hasExploredTemplates: true, // Hide this option as templates aren't available
                           onInviteStudentTap: () {
-                            // Will be handled after dashboard loads
+                            HapticUtils.lightImpact();
+                            // Complete onboarding then navigate to students
+                            widget.onComplete();
+                            Future.delayed(const Duration(milliseconds: 300), () {
+                              if (context.mounted) {
+                                context.push(RouteNames.students);
+                              }
+                            });
                           },
                           onCreatePlanTap: () {
-                            // Will be handled after dashboard loads
+                            HapticUtils.lightImpact();
+                            // Complete onboarding then navigate to plans
+                            widget.onComplete();
+                            Future.delayed(const Duration(milliseconds: 300), () {
+                              if (context.mounted) {
+                                context.push(RouteNames.trainerPlans);
+                              }
+                            });
                           },
-                          onExploreTemplatesTap: () {
-                            // Will be handled after dashboard loads
-                          },
+                          onExploreTemplatesTap: null, // Templates not available
                         ),
                         const SizedBox(height: 24),
                         // Share profile option
@@ -141,10 +156,30 @@ class _TrainerCompleteStepState extends ConsumerState<TrainerCompleteStep> {
   }
 
   Widget _buildShareProfileCard(bool isDark) {
+    final state = ref.read(trainerOnboardingProvider);
+
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         HapticUtils.lightImpact();
-        // TODO: Share profile
+        // Build share message
+        final specialtiesText = state.specialties.isNotEmpty
+            ? state.specialties.join(', ')
+            : null;
+        final experienceText = state.yearsOfExperience != null
+            ? '${state.yearsOfExperience} anos de experiência'
+            : null;
+        final crefText = state.formattedCref;
+
+        final parts = <String>[
+          '💪 Personal Trainer no MyFit',
+          if (specialtiesText != null) '📋 Especialidades: $specialtiesText',
+          if (experienceText != null) '⏰ $experienceText',
+          if (crefText != null) '✅ $crefText',
+          '',
+          'Baixe o MyFit e conecte-se comigo!',
+        ];
+
+        await Share.share(parts.join('\n'));
       },
       child: Container(
         padding: const EdgeInsets.all(16),
