@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
+import '../../../../core/providers/context_provider.dart';
 import '../../../../core/services/trainer_service.dart';
 import '../../../../core/utils/haptic_utils.dart';
 import '../../../trainer_workout/presentation/providers/trainer_students_provider.dart';
@@ -41,14 +42,16 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
     );
     _controller.forward();
 
-    // Load students from provider (null org means all students for the trainer)
+    // Load students using the active organization's ID
     Future.microtask(() {
-      ref.read(trainerStudentsNotifierProvider(null).notifier).loadStudents();
+      final orgId = ref.read(activeContextProvider)?.membership.organization.id;
+      ref.read(trainerStudentsNotifierProvider(orgId).notifier).loadStudents();
     });
   }
 
   Future<void> _onRefresh() async {
-    await ref.read(trainerStudentsNotifierProvider(null).notifier).loadStudents();
+    final orgId = ref.read(activeContextProvider)?.membership.organization.id;
+    await ref.read(trainerStudentsNotifierProvider(orgId).notifier).loadStudents();
   }
 
   List<TrainerStudent> _getFilteredStudents(List<TrainerStudent> students) {
@@ -74,6 +77,8 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    // Get orgId from active context for proper student loading
+    final orgId = ref.watch(activeContextProvider)?.membership.organization.id;
 
     return Scaffold(
       body: Container(
@@ -250,7 +255,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Builder(builder: (context) {
-                          final state = ref.watch(trainerStudentsNotifierProvider(null));
+                          final state = ref.watch(trainerStudentsNotifierProvider(orgId));
                           return _buildMiniStat(isDark, '${state.students.length}', 'Total');
                         }),
                         Container(
@@ -259,7 +264,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                           color: isDark ? AppColors.borderDark : AppColors.border,
                         ),
                         Builder(builder: (context) {
-                          final state = ref.watch(trainerStudentsNotifierProvider(null));
+                          final state = ref.watch(trainerStudentsNotifierProvider(orgId));
                           return _buildMiniStat(isDark, '${state.activeCount}', 'Ativos', color: AppColors.success);
                         }),
                         Container(
@@ -268,7 +273,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                           color: isDark ? AppColors.borderDark : AppColors.border,
                         ),
                         Builder(builder: (context) {
-                          final state = ref.watch(trainerStudentsNotifierProvider(null));
+                          final state = ref.watch(trainerStudentsNotifierProvider(orgId));
                           return _buildMiniStat(isDark, '${state.inactiveCount}', 'Inativos', color: AppColors.warning);
                         }),
                         Container(
@@ -277,7 +282,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                           color: isDark ? AppColors.borderDark : AppColors.border,
                         ),
                         Builder(builder: (context) {
-                          final state = ref.watch(trainerStudentsNotifierProvider(null));
+                          final state = ref.watch(trainerStudentsNotifierProvider(orgId));
                           final newCount = state.students.where((s) => s.isNew).length;
                           return _buildMiniStat(isDark, '$newCount', 'Novos', color: AppColors.primary);
                         }),
@@ -291,7 +296,7 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                 // Students list
                 Expanded(
                   child: Builder(builder: (context) {
-                    final studentsState = ref.watch(trainerStudentsNotifierProvider(null));
+                    final studentsState = ref.watch(trainerStudentsNotifierProvider(orgId));
                     final filteredStudents = _getFilteredStudents(studentsState.students);
 
                     if (studentsState.isLoading) {

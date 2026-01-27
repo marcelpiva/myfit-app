@@ -93,6 +93,20 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
 
       if (!mounted) return;
 
+      // CRITICAL: Refresh memberships BEFORE navigating
+      ref.invalidate(membershipsProvider);
+      ref.invalidate(trainAloneModeProvider);
+      ref.invalidate(pendingInvitesForUserProvider);
+
+      // Wait for memberships to refresh
+      try {
+        await ref.read(membershipsProvider.future);
+      } catch (_) {
+        // Continue even if refresh fails
+      }
+
+      if (!mounted) return;
+
       setState(() => _isLoading = false);
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -101,9 +115,6 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
           backgroundColor: AppColors.success,
         ),
       );
-
-      // Invalidate providers to refresh memberships
-      ref.invalidate(trainAloneModeProvider);
 
       context.go(RouteNames.orgSelector);
     } on NotFoundException {
@@ -799,15 +810,17 @@ class _JoinOrgPageState extends ConsumerState<JoinOrgPage>
                   HapticUtils.mediumImpact();
                   Navigator.pop(sheetContext);
 
+                  // Clear any active organization context FIRST
+                  ref.read(activeContextProvider.notifier).clearContext();
+
                   // Save train alone preference
                   final prefs = await SharedPreferences.getInstance();
                   await prefs.setBool('train_alone_mode', true);
 
-                  // Clear any active organization context
-                  ref.read(activeContextProvider.notifier).clearContext();
-
-                  // Invalidate train alone provider so org selector picks up the change
+                  // Invalidate all relevant providers for clean state
                   ref.invalidate(trainAloneModeProvider);
+                  ref.invalidate(membershipsProvider);
+                  ref.invalidate(pendingInvitesForUserProvider);
 
                   // Navigate to student home
                   if (mounted) {

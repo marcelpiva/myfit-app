@@ -5,13 +5,32 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/providers/shared_preferences_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
 /// Storage keys for onboarding persistence
+/// Keys are user-specific to prevent data leakage between accounts
 class OnboardingStorageKeys {
-  static const trainerProgress = 'onboarding_trainer_progress';
-  static const studentProgress = 'onboarding_student_progress';
-  static const skippedSteps = 'onboarding_skipped_steps';
-  static const stepTimestamps = 'onboarding_step_timestamps';
+  /// Get user-specific trainer progress key
+  static String trainerProgress(String userId) => 'onboarding_trainer_progress_$userId';
+
+  /// Get user-specific student progress key
+  static String studentProgress(String userId) => 'onboarding_student_progress_$userId';
+
+  /// Get user-specific skipped steps key
+  static String skippedSteps(String userId) => 'onboarding_skipped_steps_$userId';
+
+  /// Get user-specific step timestamps key
+  static String stepTimestamps(String userId) => 'onboarding_step_timestamps_$userId';
+
+  /// Clear all onboarding data for a user
+  static Future<void> clearUserOnboardingData(dynamic prefs, String userId) async {
+    if (prefs == null) return;
+    await prefs.remove(trainerProgress(userId));
+    await prefs.remove(studentProgress(userId));
+    await prefs.remove(skippedSteps(userId));
+    await prefs.remove(stepTimestamps(userId));
+    await prefs.remove('trainer_onboarding_shown_$userId');
+  }
 }
 
 /// Onboarding step types for trainers
@@ -348,23 +367,28 @@ class StudentOnboardingState {
 /// Provider for trainer onboarding
 class TrainerOnboardingNotifier extends StateNotifier<TrainerOnboardingState> {
   final SharedPreferences? _prefs;
+  final String? _userId;
   bool _hasBeenReset = false;
 
-  TrainerOnboardingNotifier({SharedPreferences? prefs})
+  TrainerOnboardingNotifier({SharedPreferences? prefs, String? userId})
       : _prefs = prefs,
+        _userId = userId,
         super(const TrainerOnboardingState()) {
-    _loadSavedProgress();
+    // Only load saved progress if we have a userId
+    if (userId != null) {
+      _loadSavedProgress();
+    }
   }
 
   /// Load previously saved progress
   Future<void> _loadSavedProgress() async {
-    if (_prefs == null) return;
+    if (_prefs == null || _userId == null) return;
     // Don't load if reset() was called - prevents race condition
     if (_hasBeenReset) return;
 
     state = state.copyWith(isLoading: true);
     try {
-      final savedJson = _prefs.getString(OnboardingStorageKeys.trainerProgress);
+      final savedJson = _prefs.getString(OnboardingStorageKeys.trainerProgress(_userId));
       // Check again in case reset was called while we were loading
       if (_hasBeenReset) return;
       if (savedJson != null) {
@@ -383,11 +407,11 @@ class TrainerOnboardingNotifier extends StateNotifier<TrainerOnboardingState> {
 
   /// Save current progress to storage
   Future<void> _saveProgress() async {
-    if (_prefs == null) return;
+    if (_prefs == null || _userId == null) return;
 
     try {
       await _prefs.setString(
-        OnboardingStorageKeys.trainerProgress,
+        OnboardingStorageKeys.trainerProgress(_userId),
         jsonEncode(state.toJson()),
       );
     } catch (e) {
@@ -397,8 +421,8 @@ class TrainerOnboardingNotifier extends StateNotifier<TrainerOnboardingState> {
 
   /// Clear saved progress
   Future<void> clearSavedProgress() async {
-    if (_prefs == null) return;
-    await _prefs.remove(OnboardingStorageKeys.trainerProgress);
+    if (_prefs == null || _userId == null) return;
+    await _prefs.remove(OnboardingStorageKeys.trainerProgress(_userId));
   }
 
   /// Start tracking time for current step
@@ -686,7 +710,9 @@ final trainerOnboardingProvider =
     StateNotifierProvider<TrainerOnboardingNotifier, TrainerOnboardingState>(
   (ref) {
     final prefs = ref.watch(sharedPreferencesProvider).valueOrNull;
-    return TrainerOnboardingNotifier(prefs: prefs);
+    // Get userId from current user - user-specific storage prevents data leakage
+    final userId = ref.watch(currentUserProvider)?.id;
+    return TrainerOnboardingNotifier(prefs: prefs, userId: userId);
   },
 );
 

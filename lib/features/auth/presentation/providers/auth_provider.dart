@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/auth/auth_event_notifier.dart';
 import '../../../../core/error/api_exceptions.dart';
@@ -9,6 +10,7 @@ import '../../../../core/providers/context_provider.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../../core/services/push_notification_service.dart';
 import '../../data/models/auth_models.dart';
+import '../../../onboarding/presentation/providers/onboarding_provider.dart';
 
 /// Auth service provider
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
@@ -364,6 +366,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Logout user
   Future<void> logout() async {
+    // Get userId before clearing user state
+    final userId = _ref.read(currentUserProvider)?.id;
+
+    // Clear onboarding data for this user
+    if (userId != null) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await OnboardingStorageKeys.clearUserOnboardingData(prefs, userId);
+      } catch (e) {
+        // Non-critical, continue with logout
+      }
+    }
+
     await _authService.logout();
     _ref.read(currentUserProvider.notifier).state = null;
     _ref.read(activeContextProvider.notifier).setContext(null);
