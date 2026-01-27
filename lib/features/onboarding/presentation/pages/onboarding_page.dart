@@ -56,21 +56,17 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
     );
     _animController.forward();
 
-    // Reset and go directly to edit step when in edit mode
+    // In edit mode, reset and load existing data (starts from welcome step)
     if (widget.editMode) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (_isTrainer) {
           final notifier = ref.read(trainerOnboardingProvider.notifier);
           notifier.reset();
           await _loadExistingData();
-          // In edit mode, go directly to professional profile step (skip welcome)
-          notifier.goToStep(TrainerOnboardingStep.professionalProfile);
         } else {
           final notifier = ref.read(studentOnboardingProvider.notifier);
           notifier.reset();
           await _loadExistingData();
-          // In edit mode, go directly to fitness goal step (skip welcome)
-          notifier.goToStep(StudentOnboardingStep.fitnessGoal);
         }
       });
     }
