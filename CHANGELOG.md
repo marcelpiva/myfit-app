@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.5] - 2026-01-28
+
+### Fixed
+- **Authentication Required on Context Switch** - Critical fix for token refresh flow
+  - AuthInterceptor now correctly attempts token refresh for `/auth/me` endpoint
+  - Previously, the endpoint was incorrectly excluded from refresh attempts
+  - Removed duplicate token clearing in `getCurrentUser()` that caused auth state corruption
+  - Users no longer get logged out when switching between profiles
+
 ## [1.12.4] - 2026-01-27
 
 ### Fixed

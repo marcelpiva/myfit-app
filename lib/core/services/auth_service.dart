@@ -260,10 +260,9 @@ class AuthService {
       }
 
       return null;
-    } on DioException catch (e) {
-      if (e.error is AuthenticationException) {
-        await TokenStorage.clearTokens();
-      }
+    } on DioException {
+      // Don't clear tokens here - AuthInterceptor handles token refresh
+      // and emits forceLogout if refresh fails
       return null;
     }
   }

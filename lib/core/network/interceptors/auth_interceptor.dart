@@ -92,8 +92,13 @@ class AuthInterceptor extends Interceptor {
     return _publicEndpoints.any((endpoint) => path.contains(endpoint));
   }
 
-  /// Check if endpoint is an auth endpoint
+  /// Check if endpoint is an auth endpoint that should NOT retry on 401
+  /// (login, register, refresh endpoints - NOT /auth/me)
   bool _isAuthEndpoint(String path) {
+    // /auth/me should still attempt token refresh on 401
+    if (path.contains('/auth/me')) {
+      return false;
+    }
     return path.contains('/auth/');
   }
 
