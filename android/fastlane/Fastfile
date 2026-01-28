@@ -6,9 +6,9 @@ default_platform(:android)
 platform :android do
   desc "Build App Bundle for release"
   lane :build do
-    # Build Flutter App Bundle
+    # Build Flutter App Bundle with production environment
     Dir.chdir("../..") do
-      sh("flutter build appbundle --release")
+      sh("flutter build appbundle --release --dart-define=ENV=prod")
     end
 
     puts "App Bundle built successfully!"
