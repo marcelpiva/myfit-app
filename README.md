@@ -1,6 +1,6 @@
 # MyFit App
 
-[![Version](https://img.shields.io/badge/version-1.12.2-blue.svg)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](./CHANGELOG.md)
 [![Flutter](https://img.shields.io/badge/Flutter-3.10+-02569B.svg?logo=flutter)](https://flutter.dev)
 [![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20Android%20%7C%20Web-lightgrey.svg)](https://flutter.dev/multi-platform)
 [![Tests](https://img.shields.io/badge/tests-240+-green.svg)]()
