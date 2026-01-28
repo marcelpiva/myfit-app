@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../error/api_exceptions.dart';
 import '../network/api_client.dart';
@@ -57,6 +58,7 @@ class AuthService {
     required String name,
     String userType = 'student',
   }) async {
+    debugPrint('🔴 AUTH SERVICE register() called with userType: $userType');
     try {
       final response = await _client.post(
         ApiEndpoints.authRegister,
@@ -67,6 +69,7 @@ class AuthService {
           'user_type': userType,
         },
       );
+      debugPrint('🔴 AUTH SERVICE register() response user_type: ${response.data?['user']?['user_type']}');
 
       if (response.statusCode == 201 && response.data != null) {
         final authResponse = AuthResponse.fromJson(response.data);

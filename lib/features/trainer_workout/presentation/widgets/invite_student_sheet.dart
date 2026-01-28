@@ -13,6 +13,8 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../core/error/api_exceptions.dart';
 import '../../../../core/providers/context_provider.dart';
 import '../../../../core/services/organization_service.dart';
+import '../../../../core/services/trainer_service.dart';
+import '../providers/trainer_students_provider.dart';
 
 /// Shows the invite student bottom sheet
 /// This is a standalone function that can be called from anywhere
@@ -93,13 +95,14 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
     super.dispose();
   }
 
-  void _showReactivateDialog(String membershipId) {
+  void _showReinviteDialog(String userId) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Aluno Inativo'),
         content: const Text(
-          'Este aluno já está em seus alunos, mas está inativo. Deseja reativá-lo?',
+          'Este aluno já foi seu aluno anteriormente, mas está inativo. '
+          'Deseja enviar um convite para reativá-lo?',
         ),
         actions: [
           TextButton(
@@ -109,9 +112,9 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
           FilledButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await _reactivateMember(membershipId);
+              await _reinviteFormerStudent(userId);
             },
-            child: const Text('Reativar'),
+            child: const Text('Enviar Convite'),
           ),
         ],
       ),
@@ -574,13 +577,17 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
     );
   }
 
-  Future<void> _reactivateMember(String membershipId) async {
+  Future<void> _reinviteFormerStudent(String userId) async {
     setState(() => _isLoading = true);
     try {
-      final orgService = OrganizationService();
-      await orgService.reactivateMember(widget.orgId, membershipId);
+      final trainerService = TrainerService();
+      await trainerService.reinviteFormerStudent(userId);
 
       if (mounted) {
+        // Invalidar cache de convites E forçar recarga
+        ref.invalidate(pendingInvitesNotifierProvider(widget.orgId));
+        ref.read(pendingInvitesNotifierProvider(widget.orgId).notifier).loadInvites();
+
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -588,7 +595,7 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
               children: [
                 Icon(LucideIcons.checkCircle, color: Colors.white, size: 18),
                 SizedBox(width: 12),
-                Text('Aluno reativado com sucesso'),
+                Text('Convite de reativação enviado com sucesso!'),
               ],
             ),
             backgroundColor: AppColors.success,
@@ -601,7 +608,7 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erro ao reativar aluno: $e'),
+            content: Text('Erro ao enviar convite: $e'),
             backgroundColor: AppColors.destructive,
           ),
         );
@@ -700,17 +707,19 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
         }
 
         // Extract details from ValidationException
+        String? userId;
         if (apiException is ValidationException && apiException.fieldErrors != null) {
           final fieldErrors = apiException.fieldErrors!;
           errorCode = fieldErrors['code']?.firstOrNull;
           membershipId = fieldErrors['membership_id']?.firstOrNull;
+          userId = fieldErrors['user_id']?.firstOrNull;
           errorMessage = fieldErrors['message']?.firstOrNull;
         }
 
         // Fallback to exception message
         errorMessage ??= apiException?.message;
 
-        debugPrint('🔴 Extracted: code=$errorCode, message=$errorMessage, membershipId=$membershipId');
+        debugPrint('🔴 Extracted: code=$errorCode, message=$errorMessage, membershipId=$membershipId, userId=$userId');
 
         // Handle specific error codes from backend
         if (errorCode == 'ALREADY_MEMBER') {
@@ -733,9 +742,9 @@ class _InviteStudentSheetContentState extends ConsumerState<_InviteStudentSheetC
             ),
           );
           return;
-        } else if (errorCode == 'INACTIVE_MEMBER' && membershipId != null) {
-          // Show dialog to reactivate
-          _showReactivateDialog(membershipId);
+        } else if (errorCode == 'INACTIVE_MEMBER' && userId != null) {
+          // Show dialog to send reinvite (NOT direct reactivation)
+          _showReinviteDialog(userId);
           return;
         }
 

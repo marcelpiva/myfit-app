@@ -9,6 +9,7 @@ import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
 import '../../../../core/providers/context_provider.dart';
+import '../../../../shared/presentation/widgets/archived_organization_banner.dart';
 import '../../../../shared/presentation/widgets/onboarding_incomplete_banner.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../trainer_home/presentation/pages/trainer_home_page.dart';
@@ -170,6 +171,23 @@ class _StudentHomePageState extends ConsumerState<_StudentHomePage>
                                 isDark: isDark,
                                 isTrainer: false,
                               ),
+
+                            // Archived organization banner
+                            Builder(
+                              builder: (context) {
+                                final activeContext = ref.watch(activeContextProvider);
+                                if (activeContext != null && activeContext.isArchived) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: ArchivedOrganizationBanner(
+                                      organizationName: activeContext.organization.name,
+                                      isDark: isDark,
+                                    ),
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
 
                             const SizedBox(height: 8),
 

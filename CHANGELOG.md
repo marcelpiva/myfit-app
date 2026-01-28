@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.4] - 2026-01-27
+
+### Fixed
+- **Former Student Reinvite Flow** - Critical fix for student reactivation journey
+  - Inactive students now receive reinvite instead of being reactivated directly
+  - Dialog now asks "Enviar convite de reativação?" instead of "Reativar?"
+  - Uses `/trainers/students/{userId}/reinvite` endpoint correctly
+  - Pending invites list refreshes immediately after sending reinvite
+  - Student must accept invite before membership is reactivated
+
+- **Error Interceptor user_id Extraction** - Now extracts `user_id` from validation errors
+  - Enables proper handling of `INACTIVE_MEMBER` error responses
+
 ## [1.12.3] - 2026-01-27
 
 ### Fixed

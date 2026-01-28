@@ -221,37 +221,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
                         const SizedBox(height: 8),
 
                         // Organization badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+                        if (activeContext != null)
+                          _buildOrganizationBadge(
+                            activeContext.organization.name,
+                            activeContext.isArchived,
+                            isDark,
                           ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: AppColors.primary.withAlpha(25),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                LucideIcons.building2,
-                                size: 14,
-                                color: AppColors.primary,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                'Academia FitPro',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: isDark
-                                      ? AppColors.primaryDark
-                                      : AppColors.primary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -429,6 +404,59 @@ class _ProfilePageState extends ConsumerState<ProfilePage>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildOrganizationBadge(String organizationName, bool isArchived, bool isDark) {
+    final color = isArchived ? AppColors.warning : AppColors.primary;
+    final darkColor = isArchived ? AppColors.warning : AppColors.primaryDark;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: color.withAlpha(25),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isArchived ? LucideIcons.archive : LucideIcons.building2,
+            size: 14,
+            color: color,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            organizationName,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: isDark ? darkColor : color,
+            ),
+          ),
+          if (isArchived) ...[
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: AppColors.warning.withAlpha(40),
+              ),
+              child: Text(
+                'Indisponível',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.warning,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 

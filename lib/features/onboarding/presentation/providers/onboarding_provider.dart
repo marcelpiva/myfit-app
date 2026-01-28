@@ -23,13 +23,16 @@ class OnboardingStorageKeys {
   static String stepTimestamps(String userId) => 'onboarding_step_timestamps_$userId';
 
   /// Clear all onboarding data for a user
+  /// Note: We intentionally keep the "shown" flags so onboarding doesn't
+  /// reappear after logout/login cycles
   static Future<void> clearUserOnboardingData(dynamic prefs, String userId) async {
     if (prefs == null) return;
     await prefs.remove(trainerProgress(userId));
     await prefs.remove(studentProgress(userId));
     await prefs.remove(skippedSteps(userId));
     await prefs.remove(stepTimestamps(userId));
-    await prefs.remove('trainer_onboarding_shown_$userId');
+    // Don't remove trainer_onboarding_shown_$userId or student_onboarding_shown_$userId
+    // These should persist to prevent onboarding from reappearing on login
   }
 }
 

@@ -51,6 +51,26 @@ class OrganizationService {
     }
   }
 
+  /// Create an autonomous organization for self-training
+  /// This creates a personal profile where the user is both owner and student
+  Future<Map<String, dynamic>> createAutonomousOrganization({
+    String name = 'Meus Treinos',
+  }) async {
+    try {
+      final response = await _client.post(
+        '${ApiEndpoints.organizationsAutonomous}?name=$name',
+      );
+      if (response.statusCode == 201 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw const ServerException('Erro ao criar perfil autônomo');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao criar perfil autônomo', e);
+    }
+  }
+
   /// Create organization
   Future<Map<String, dynamic>> createOrganization({
     required String name,
@@ -122,6 +142,23 @@ class OrganizationService {
       throw e.error is ApiException
           ? e.error as ApiException
           : UnknownApiException(e.message ?? 'Erro ao excluir organização', e);
+    }
+  }
+
+  /// Reactivate an archived organization
+  Future<Map<String, dynamic>> reactivateOrganization(String orgId) async {
+    try {
+      final response = await _client.post(
+        '${ApiEndpoints.organization(orgId)}/reactivate',
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data as Map<String, dynamic>;
+      }
+      throw const ServerException('Erro ao reativar organização');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao reativar organização', e);
     }
   }
 
@@ -208,6 +245,18 @@ class OrganizationService {
       throw e.error is ApiException
           ? e.error as ApiException
           : UnknownApiException(e.message ?? 'Erro ao remover membro', e);
+    }
+  }
+
+  /// Leave organization as a student
+  /// This only removes the student membership, not trainer/owner roles
+  Future<void> leaveOrganization(String orgId) async {
+    try {
+      await _client.post(ApiEndpoints.leaveOrganization(orgId));
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao sair da organização', e);
     }
   }
 

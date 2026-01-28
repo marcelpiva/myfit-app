@@ -78,7 +78,7 @@ class ErrorInterceptor extends Interceptor {
       401 => AuthenticationException(message),
       403 => ForbiddenException(message),
       404 => NotFoundException(message),
-      409 => ConflictException(message),
+      409 => _handleConflictError(message, data),
       429 => RateLimitException(message),
       >= 500 => ServerException(message, statusCode),
       _ => UnknownApiException(message, err),
@@ -146,6 +146,9 @@ class ErrorInterceptor extends Interceptor {
         if (detail['membership_id'] != null) {
           fieldErrors['membership_id'] = [detail['membership_id'].toString()];
         }
+        if (detail['user_id'] != null) {
+          fieldErrors['user_id'] = [detail['user_id'].toString()];
+        }
         if (detail['invite_id'] != null) {
           fieldErrors['invite_id'] = [detail['invite_id'].toString()];
         }
@@ -153,6 +156,34 @@ class ErrorInterceptor extends Interceptor {
     }
 
     return ValidationException(message, fieldErrors: fieldErrors);
+  }
+
+  /// Handle 409 conflict errors with structured data
+  ConflictException _handleConflictError(String message, dynamic data) {
+    String? code;
+    Map<String, dynamic>? errorData;
+
+    if (data is Map && data['detail'] != null) {
+      final detail = data['detail'];
+
+      if (detail is Map) {
+        code = detail['code'] as String?;
+        errorData = <String, dynamic>{};
+
+        // Extract common fields
+        if (detail['user_id'] != null) {
+          errorData['user_id'] = detail['user_id'].toString();
+        }
+        if (detail['membership_id'] != null) {
+          errorData['membership_id'] = detail['membership_id'].toString();
+        }
+        if (detail['invite_id'] != null) {
+          errorData['invite_id'] = detail['invite_id'].toString();
+        }
+      }
+    }
+
+    return ConflictException(message, code: code, data: errorData);
   }
 }
 

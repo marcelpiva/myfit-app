@@ -15,6 +15,8 @@ import '../../../../core/services/trainer_service.dart';
 import '../../../../shared/presentation/components/animations/fade_in_up.dart';
 import '../../../../shared/presentation/components/role_bottom_navigation.dart';
 import '../../../../shared/presentation/widgets/onboarding_incomplete_banner.dart';
+import '../../../../shared/presentation/widgets/reactivate_organization_banner.dart';
+import '../../../../core/services/organization_service.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../notifications/presentation/providers/notifications_provider.dart';
 import '../../../trainer_workout/presentation/widgets/invite_student_sheet.dart' show showInviteStudentSheet;
@@ -35,6 +37,7 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   bool _hasCheckedOnboarding = false;
+  bool _isReactivating = false;
 
   @override
   void initState() {
@@ -83,6 +86,42 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
             'editMode': true,
           },
         );
+      }
+    }
+  }
+
+  Future<void> _reactivateOrganization(String orgId) async {
+    if (_isReactivating) return;
+
+    setState(() => _isReactivating = true);
+
+    try {
+      final orgService = OrganizationService();
+      await orgService.reactivateOrganization(orgId);
+
+      // Refresh memberships to get updated organization state
+      ref.invalidate(membershipsProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Organização reativada com sucesso!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao reativar: ${e.toString()}'),
+            backgroundColor: AppColors.destructive,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isReactivating = false);
       }
     }
   }
@@ -161,6 +200,21 @@ class _TrainerHomePageState extends ConsumerState<TrainerHomePage>
                       child: OnboardingIncompleteBanner(
                         isDark: isDark,
                         isTrainer: true,
+                      ),
+                    ),
+
+                  // Reactivate Organization Banner (if archived)
+                  if (activeContext != null && activeContext.isArchived)
+                    FadeInUp(
+                      delay: const Duration(milliseconds: 75),
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: ReactivateOrganizationBanner(
+                          organizationName: activeContext.organization.name,
+                          isDark: isDark,
+                          isLoading: _isReactivating,
+                          onReactivate: () => _reactivateOrganization(activeContext.organization.id),
+                        ),
                       ),
                     ),
 

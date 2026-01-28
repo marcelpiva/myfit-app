@@ -101,6 +101,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage>
     HapticUtils.mediumImpact();
     setState(() => _loading = true);
 
+    debugPrint('🟢 REGISTER PAGE calling register with userType: ${widget.userType}');
     final success = await ref.read(authProvider.notifier).register(
       email: email,
       password: password,

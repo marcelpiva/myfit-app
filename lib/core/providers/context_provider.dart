@@ -33,8 +33,16 @@ final groupedMembershipsProvider =
 
   return membershipsAsync.when(
     data: (memberships) {
-      final studentMemberships =
-          memberships.where((m) => m.role == UserRole.student).toList();
+      // Autonomous students (self-training without trainer)
+      final autonomousMemberships = memberships
+          .where((m) => m.organization.type == OrganizationType.autonomous)
+          .toList();
+      // Students with a trainer (not autonomous)
+      final studentMemberships = memberships
+          .where((m) =>
+              m.role == UserRole.student &&
+              m.organization.type != OrganizationType.autonomous)
+          .toList();
       final trainerMemberships =
           memberships.where((m) => m.role == UserRole.trainer || m.role == UserRole.coach).toList();
       final nutritionistMemberships =
@@ -43,6 +51,7 @@ final groupedMembershipsProvider =
           memberships.where((m) => m.role.isGymRole).toList();
 
       return {
+        'autonomous': autonomousMemberships,
         'student': studentMemberships,
         'trainer': trainerMemberships,
         'nutritionist': nutritionistMemberships,
@@ -50,12 +59,14 @@ final groupedMembershipsProvider =
       };
     },
     loading: () => {
+      'autonomous': <OrganizationMembership>[],
       'student': <OrganizationMembership>[],
       'trainer': <OrganizationMembership>[],
       'nutritionist': <OrganizationMembership>[],
       'gym': <OrganizationMembership>[],
     },
     error: (_, __) => {
+      'autonomous': <OrganizationMembership>[],
       'student': <OrganizationMembership>[],
       'trainer': <OrganizationMembership>[],
       'nutritionist': <OrganizationMembership>[],
@@ -101,11 +112,34 @@ final hasTrainerRoleProvider = Provider<bool>((ref) {
   );
 });
 
-/// Provider to check if user has any student roles
+/// Provider to check if user has any student roles (including autonomous)
 final hasStudentRoleProvider = Provider<bool>((ref) {
   final membershipsAsync = ref.watch(membershipsProvider);
   return membershipsAsync.when(
     data: (memberships) => memberships.any((m) => m.role == UserRole.student),
+    loading: () => false,
+    error: (_, __) => false,
+  );
+});
+
+/// Provider to check if user has any autonomous profiles
+final hasAutonomousProfileProvider = Provider<bool>((ref) {
+  final membershipsAsync = ref.watch(membershipsProvider);
+  return membershipsAsync.when(
+    data: (memberships) =>
+        memberships.any((m) => m.organization.type == OrganizationType.autonomous),
+    loading: () => false,
+    error: (_, __) => false,
+  );
+});
+
+/// Provider to check if user has any student profiles with a trainer (not autonomous)
+final hasStudentWithTrainerProvider = Provider<bool>((ref) {
+  final membershipsAsync = ref.watch(membershipsProvider);
+  return membershipsAsync.when(
+    data: (memberships) => memberships.any((m) =>
+        m.role == UserRole.student &&
+        m.organization.type != OrganizationType.autonomous),
     loading: () => false,
     error: (_, __) => false,
   );

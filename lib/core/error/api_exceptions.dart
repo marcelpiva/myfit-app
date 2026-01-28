@@ -73,14 +73,37 @@ class ValidationException extends ApiException {
   }
 }
 
-/// 409 Conflict - Resource already exists
+/// 409 Conflict - Resource already exists or business rule conflict
 class ConflictException extends ApiException {
-  const ConflictException([
-    String message = 'Este recurso já existe.',
-  ]) : super(message, statusCode: 409);
+  final String? code;
+  final Map<String, dynamic>? data;
+
+  const ConflictException(
+    String message, {
+    this.code,
+    this.data,
+  }) : super(message, statusCode: 409);
+
+  /// Check if this is a former student error
+  bool get isFormerStudent => code == 'FORMER_STUDENT';
+
+  /// Check if this is a pending invite error
+  bool get isPendingInvite => code == 'PENDING_INVITE';
+
+  /// Check if this is an already member error
+  bool get isAlreadyMember => code == 'ALREADY_MEMBER';
+
+  /// Get the user ID from data (for former student)
+  String? get userId => data?['user_id'] as String?;
+
+  /// Get the membership ID from data
+  String? get membershipId => data?['membership_id'] as String?;
+
+  /// Get the invite ID from data
+  String? get inviteId => data?['invite_id'] as String?;
 
   @override
-  String toString() => 'ConflictException: $message';
+  String toString() => 'ConflictException: $message (code: $code)';
 }
 
 /// 429 Too Many Requests - Rate limit exceeded

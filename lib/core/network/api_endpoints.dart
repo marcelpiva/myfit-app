@@ -25,12 +25,14 @@ class ApiEndpoints {
 
   // ==================== Organizations ====================
   static const String organizations = '/organizations/';
+  static const String organizationsAutonomous = '/organizations/autonomous';
   static String organization(String id) => '/organizations/$id';
   static String organizationMembers(String id) => '/organizations/$id/members';
   static String organizationMember(String orgId, String userId) =>
       '/organizations/$orgId/members/$userId';
   static String reactivateMember(String orgId, String membershipId) =>
       '/organizations/$orgId/members/$membershipId/reactivate';
+  static String leaveOrganization(String orgId) => '/organizations/$orgId/leave';
   static String organizationInvite(String id) => '/organizations/$id/invite';
   static String organizationInvites(String id) => '/organizations/$id/invites';
   static String cancelInvite(String orgId, String inviteId) =>
@@ -211,6 +213,7 @@ class ApiEndpoints {
   static String trainerStudentStats(String id) => '/trainers/students/$id/stats';
   static String trainerStudentWorkouts(String id) => '/trainers/students/$id/workouts';
   static String trainerStudentProgress(String id) => '/trainers/students/$id/progress';
+  static String trainerStudentReinvite(String userId) => '/trainers/students/$userId/reinvite';
   static const String trainerInviteCode = '/trainers/my-invite-code';
 
   // ==================== Notifications ====================

@@ -586,7 +586,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
                         GestureDetector(
                           onTap: () {
                             HapticUtils.lightImpact();
-                            context.go(RouteNames.register);
+                            context.go(RouteNames.userTypeSelection);
                           },
                           child: Text(
                             l10n.createAccount,

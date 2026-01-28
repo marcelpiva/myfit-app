@@ -100,6 +100,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
               (s) => s.name == stateStr,
               orElse: () => BrazilState.SP,
             );
+            notifier.toggleCref(true); // Enable the toggle since CREF exists
             notifier.setCrefData(crefNumber: crefNumber, crefState: crefState);
           }
         }
@@ -216,7 +217,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
 
       if (_isTrainer) {
         final state = ref.read(trainerOnboardingProvider);
-        completed = !state.skipped;
+        // Always mark as completed when reaching the complete step
+        completed = true;
         // Format CREF: combine number + state (e.g., "012345/SP")
         String? cref;
         if (state.crefNumber != null && state.crefState != null) {
@@ -231,7 +233,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage>
         );
       } else {
         final state = ref.read(studentOnboardingProvider);
-        completed = !state.skipped;
+        // Always mark as completed when reaching the complete step
+        // The skipped flag only indicates HOW they got there, not IF they completed
+        completed = true;
         debugPrint('Saving student onboarding data:');
         debugPrint('  fitnessGoal: ${state.fitnessGoal?.name}');
         debugPrint('  experienceLevel: ${state.experienceLevel?.name}');

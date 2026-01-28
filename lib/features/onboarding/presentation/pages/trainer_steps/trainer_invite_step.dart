@@ -93,9 +93,12 @@ class _TrainerInviteStepState extends ConsumerState<TrainerInviteStep> {
       }
     } catch (e) {
       debugPrint('Error generating invite token: $e');
+      // On error, fall back to preview link instead of blocking the user
       setState(() {
-        _error = 'Erro ao gerar convite';
+        _inviteLink = 'https://myfitplatform.com/join/preview';
         _isLoading = false;
+        // Don't show error - allow user to continue onboarding
+        // They can generate a real invite later from the students page
       });
     }
   }

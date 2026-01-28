@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../config/routes/route_names.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/utils/haptic_utils.dart';
+import '../providers/auth_provider.dart';
 
 /// Page for selecting user type after registration
 /// Routes to appropriate onboarding flow based on selection
-class UserTypeSelectionPage extends StatefulWidget {
+class UserTypeSelectionPage extends ConsumerStatefulWidget {
   final String? name;
   final String? email;
   final String? password;
@@ -23,10 +25,10 @@ class UserTypeSelectionPage extends StatefulWidget {
   });
 
   @override
-  State<UserTypeSelectionPage> createState() => _UserTypeSelectionPageState();
+  ConsumerState<UserTypeSelectionPage> createState() => _UserTypeSelectionPageState();
 }
 
-class _UserTypeSelectionPageState extends State<UserTypeSelectionPage>
+class _UserTypeSelectionPageState extends ConsumerState<UserTypeSelectionPage>
     with SingleTickerProviderStateMixin {
   String? _selectedType;
   late AnimationController _animController;
@@ -56,16 +58,26 @@ class _UserTypeSelectionPageState extends State<UserTypeSelectionPage>
     setState(() => _selectedType = type);
   }
 
-  void _continue() {
+  Future<void> _continue() async {
     if (_selectedType == null) return;
     HapticUtils.mediumImpact();
 
     if (widget.isAlreadyAuthenticated) {
-      // Already logged in via social auth, go directly to onboarding
-      context.go(
-        RouteNames.onboarding,
-        extra: {'userType': _selectedType},
-      );
+      // Already logged in via social auth - update local state for UI
+      final currentUser = ref.read(currentUserProvider);
+      if (currentUser != null) {
+        ref.read(currentUserProvider.notifier).state = currentUser.copyWith(
+          userType: _selectedType!,
+        );
+      }
+
+      // Go to onboarding - it will save user_type to API
+      if (mounted) {
+        context.go(
+          RouteNames.onboarding,
+          extra: {'userType': _selectedType},
+        );
+      }
     } else {
       // Navigate to register with user type
       context.go(

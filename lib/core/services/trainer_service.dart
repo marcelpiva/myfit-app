@@ -277,4 +277,23 @@ class TrainerService {
           : UnknownApiException(e.message ?? 'Erro ao enviar convite', e);
     }
   }
+
+  /// Reinvite a former student who left the organization
+  Future<Map<String, dynamic>> reinviteFormerStudent(String userId) async {
+    try {
+      final response = await _client.post(
+        ApiEndpoints.trainerStudentReinvite(userId),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (response.data != null) {
+          return response.data as Map<String, dynamic>;
+        }
+      }
+      throw const ServerException('Erro ao reenviar convite');
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : UnknownApiException(e.message ?? 'Erro ao reenviar convite', e);
+    }
+  }
 }

@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/tokens/animations.dart';
+import '../../../../core/error/api_exceptions.dart';
 import '../../../../core/providers/context_provider.dart';
 import '../../../../core/services/trainer_service.dart';
 import '../../../../core/utils/haptic_utils.dart';
@@ -433,6 +434,10 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
         isDark: isDark,
         onStudentAdded: () {
           Navigator.pop(context);
+          // Invalidar cache de convites e alunos E forçar recarga
+          final orgId = ref.read(activeContextProvider)?.membership.organization.id;
+          ref.invalidate(pendingInvitesNotifierProvider(orgId));
+          ref.read(pendingInvitesNotifierProvider(orgId).notifier).loadInvites();
           _onRefresh();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -1248,6 +1253,18 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
                   ),
                 );
               }),
+              _buildOptionItem(
+                context,
+                isDark,
+                student['isActive'] == true ? LucideIcons.userX : LucideIcons.userCheck,
+                student['isActive'] == true ? 'Desativar aluno' : 'Ativar aluno',
+                student['isActive'] == true ? AppColors.warning : AppColors.success,
+                () {
+                  HapticUtils.lightImpact();
+                  Navigator.pop(context);
+                  _showToggleStatusConfirmation(context, isDark, student);
+                },
+              ),
               _buildOptionItem(context, isDark, LucideIcons.trash2, 'Remover', AppColors.destructive, () {
                 HapticUtils.lightImpact();
                 Navigator.pop(context);
@@ -1310,6 +1327,164 @@ class _StudentsPageState extends ConsumerState<StudentsPage>
         ),
       ),
     );
+  }
+
+  Future<void> _showToggleStatusConfirmation(BuildContext context, bool isDark, Map<String, dynamic> student) async {
+    final isActive = student['isActive'] == true;
+    final newStatus = !isActive;
+    final action = newStatus ? 'ativar' : 'desativar';
+    final actionTitle = newStatus ? 'Ativar' : 'Desativar';
+
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: isDark ? AppColors.cardDark : AppColors.background,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: (newStatus ? AppColors.success : AppColors.warning).withAlpha(25),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  newStatus ? LucideIcons.userCheck : LucideIcons.userX,
+                  size: 32,
+                  color: newStatus ? AppColors.success : AppColors.warning,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '$actionTitle aluno?',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                newStatus
+                    ? 'O aluno poderá voltar a acessar seus treinos e funcionalidades.'
+                    : 'O aluno será marcado como inativo e não aparecerá na lista de alunos ativos.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? AppColors.mutedForegroundDark : AppColors.mutedForeground,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticUtils.lightImpact();
+                        Navigator.pop(ctx, false);
+                      },
+                      child: Container(
+                        height: 52,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: isDark ? AppColors.borderDark : AppColors.border),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Cancelar',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: isDark ? AppColors.foregroundDark : AppColors.foreground,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticUtils.lightImpact();
+                        Navigator.pop(ctx, true);
+                      },
+                      child: Container(
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: newStatus ? AppColors.success : AppColors.warning,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Center(
+                          child: Text(
+                            actionTitle,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      final trainerService = TrainerService();
+      final studentId = student['id'] as String;
+      await trainerService.updateStudentStatus(studentId, newStatus);
+
+      // Refresh students list
+      final activeContext = ref.read(activeContextProvider);
+      if (activeContext != null) {
+        ref.invalidate(trainerStudentsNotifierProvider(activeContext.organization.id));
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  newStatus ? LucideIcons.checkCircle : LucideIcons.userX,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Text('Aluno ${newStatus ? 'ativado' : 'desativado'} com sucesso'),
+              ],
+            ),
+            backgroundColor: newStatus ? AppColors.success : AppColors.warning,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao $action aluno: ${e.toString()}'),
+            backgroundColor: AppColors.destructive,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+      }
+    }
   }
 
   void _showRemoveConfirmation(BuildContext context, bool isDark, Map<String, dynamic> student) {
@@ -2095,12 +2270,85 @@ class _AddStudentSheetState extends State<_AddStudentSheet> with SingleTickerPro
         goal: _goalController.text.trim().isNotEmpty ? _goalController.text.trim() : null,
       );
       widget.onStudentAdded();
+    } on ConflictException catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+
+        // Handle former student - show dialog to reinvite
+        if (e.isFormerStudent && e.userId != null) {
+          final shouldReinvite = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Ex-Aluno Encontrado'),
+              content: Text(e.message),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Cancelar'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Sim, Convidar'),
+                ),
+              ],
+            ),
+          );
+
+          if (shouldReinvite == true) {
+            await _reinviteFormerStudent(e.userId!);
+          }
+        } else {
+          // Other conflict errors
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.message, style: const TextStyle(color: Colors.white)),
+              backgroundColor: AppColors.warning,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          );
+        }
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erro: $e', style: const TextStyle(color: Colors.white)),
+            backgroundColor: AppColors.destructive,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _reinviteFormerStudent(String userId) async {
+    setState(() => _isLoading = true);
+
+    try {
+      final service = TrainerService();
+      await service.reinviteFormerStudent(userId);
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Convite enviado com sucesso!'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+        widget.onStudentAdded();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao enviar convite: $e', style: const TextStyle(color: Colors.white)),
             backgroundColor: AppColors.destructive,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

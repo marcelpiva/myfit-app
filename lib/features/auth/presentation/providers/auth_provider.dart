@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -174,6 +174,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String name,
     String userType = 'student',
   }) async {
+    debugPrint('🟡 AUTH PROVIDER register() called with userType: $userType');
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
 
     try {
@@ -183,6 +184,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         name: name,
         userType: userType,
       );
+      debugPrint('🟡 AUTH PROVIDER register() response user.userType: ${response.user.userType}');
 
       _ref.read(currentUserProvider.notifier).state = response.user;
       _ref.read(activeContextProvider.notifier).setContext(null);

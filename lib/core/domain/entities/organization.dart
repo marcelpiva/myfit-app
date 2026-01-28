@@ -13,6 +13,9 @@ enum OrganizationType {
 
   /// Health clinic
   clinic,
+
+  /// Autonomous student (self-training without a trainer)
+  autonomous,
 }
 
 extension OrganizationTypeExtension on OrganizationType {
@@ -26,6 +29,8 @@ extension OrganizationTypeExtension on OrganizationType {
         return 'Nutricionista';
       case OrganizationType.clinic:
         return 'Clínica';
+      case OrganizationType.autonomous:
+        return 'Treino Autônomo';
     }
   }
 
@@ -39,6 +44,8 @@ extension OrganizationTypeExtension on OrganizationType {
         return '🥗';
       case OrganizationType.clinic:
         return '🏥';
+      case OrganizationType.autonomous:
+        return '🎯';
     }
   }
 }
@@ -53,6 +60,8 @@ class Organization {
   final int memberCount;
   final int trainerCount;
   final DateTime createdAt;
+  final DateTime? archivedAt;
+  final bool isArchived;
 
   const Organization({
     required this.id,
@@ -63,6 +72,8 @@ class Organization {
     this.memberCount = 0,
     this.trainerCount = 0,
     required this.createdAt,
+    this.archivedAt,
+    this.isArchived = false,
   });
 
   factory Organization.fromJson(Map<String, dynamic> json) {
@@ -75,6 +86,10 @@ class Organization {
       memberCount: json['member_count'] as int? ?? 0,
       trainerCount: json['trainer_count'] as int? ?? 0,
       createdAt: DateTime.parse(json['created_at'] as String),
+      archivedAt: json['archived_at'] != null
+          ? DateTime.parse(json['archived_at'] as String)
+          : null,
+      isArchived: json['is_archived'] as bool? ?? false,
     );
   }
 
@@ -88,6 +103,8 @@ class Organization {
         return OrganizationType.nutritionist;
       case 'clinic':
         return OrganizationType.clinic;
+      case 'autonomous':
+        return OrganizationType.autonomous;
       default:
         return OrganizationType.personal;
     }
@@ -167,10 +184,19 @@ class ActiveContext {
   bool get isGymAdmin => role == UserRole.gymAdmin;
   bool get isGymRole => role.isGymRole;
 
+  /// Check if this is an autonomous student (self-training without a trainer)
+  bool get isAutonomous => organization.type == OrganizationType.autonomous;
+
+  /// Check if this is a student with a trainer (not autonomous)
+  bool get isStudentWithTrainer => isStudent && !isAutonomous;
+
   bool get canManageStudents => role.canManageStudents;
   bool get canManageTrainers => role.canManageTrainers;
   bool get canCreateWorkouts => role.canCreateWorkouts;
   bool get canCreateNutritionPlans => role.canCreateNutritionPlans;
+
+  /// Check if the organization is archived (trainer left)
+  bool get isArchived => organization.isArchived;
 
   /// Get the home route for this context
   String get homeRoute {
